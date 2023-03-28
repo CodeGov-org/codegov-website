@@ -1,0 +1,16 @@
+---
+import type { AstroBuiltinAttributes } from 'astro';
+import Link from '../Link.astro';
+
+const { className, ...props } = Astro.props;
+
+export interface Props {
+  href: string;
+  disabled?: boolean;
+  className?: AstroBuiltinAttributes['class:list'];
+}
+---
+
+<Link className={['nav-link', className]} {...props}>
+  <slot />
+</Link>

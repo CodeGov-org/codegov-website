@@ -1,0 +1,25 @@
+{
+  "name": "codegov",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.7",
+    "astro": "^2.1.8",
+    "bootstrap": "5.3.0-alpha3",
+    "bootstrap-icons": "^1.10.4",
+    "sass": "^1.60.0"
+  },
+  "devDependencies": {
+    "hastscript": "^7.2.0",
+    "rehype-autolink-headings": "^6.1.1",
+    "rehype-external-links": "^2.0.1",
+    "rehype-figure": "^1.0.1",
+    "rehype-slug": "^5.1.0"
+  }
+}

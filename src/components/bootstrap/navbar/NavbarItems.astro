@@ -1,0 +1,54 @@
+---
+import type { AstroBuiltinAttributes } from 'astro';
+import Dropdown from '../dropdown/Dropdown.astro';
+import DropdownHeader from '../dropdown/DropdownHeader.astro';
+import DropdownItem from '../dropdown/DropdownItem.astro';
+import DropdownMenu from '../dropdown/DropdownMenu.astro';
+import NavItem from '../nav/NavItem.astro';
+import NavbarNav from './NavbarNav.astro';
+
+export interface NavbarLink {
+  title: string;
+  href: string;
+}
+
+export interface NavbarDropdown {
+  title: string;
+  children: NavbarLink[];
+}
+
+export type NavbarItem = NavbarLink | NavbarDropdown;
+
+export interface Props {
+  items: NavbarItem[];
+  className?: AstroBuiltinAttributes['class:list'];
+}
+
+const { items, className } = Astro.props;
+
+function isDropdownChildActive(dropdown: NavbarDropdown): boolean {
+  return dropdown.children.some((child) => child.href === Astro.url.pathname);
+}
+---
+
+<NavbarNav className={className}>
+  {
+    items.map((item) =>
+      'children' in item ? (
+        <Dropdown nav>
+          <DropdownHeader active={isDropdownChildActive(item)} nav>
+            {item.title}
+          </DropdownHeader>
+
+          <DropdownMenu>
+            {item.children.map((subItem) => (
+              <DropdownItem href={subItem.href}>{subItem.title}</DropdownItem>
+            ))}
+          </DropdownMenu>
+        </Dropdown>
+      ) : (
+        <NavItem href={item.href}>{item.title}</NavItem>
+      ),
+    )
+  }
+</NavbarNav>

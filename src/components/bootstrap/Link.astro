@@ -1,0 +1,24 @@
+---
+import type { AstroBuiltinAttributes } from 'astro';
+
+const { href, className, disabled = false, parent, ...props } = Astro.props;
+
+export interface Props {
+  href: string;
+  className?: AstroBuiltinAttributes['class:list'];
+  disabled?: boolean;
+  parent?: boolean;
+}
+
+const active =
+  href === Astro.url.pathname || (parent && Astro.url.pathname.includes(href));
+---
+
+<a
+  href={disabled ? undefined : href}
+  class:list={[className, { active: active }, { disabled: disabled }]}
+  aria-current={active ? 'page' : null}
+  {...props}
+>
+  <slot />
+</a>
