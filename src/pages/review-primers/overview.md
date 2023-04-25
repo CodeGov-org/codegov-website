@@ -21,11 +21,12 @@ Review primers are onboarding documents that aim to arm CodeGov code reviewers w
 
 ## Resources
 
-There are already many great resources that you can use
+There are already many great resources that you can use to learn about the Internet Computer overall before diving deeper into one of the lower level layers.
 
 - [Internetcomputer.org](https://internetcomputer.org/)
-- [Wiki.internetcomputer.org](https://wiki.internetcomputer.org/)
+- [wiki.internetcomputer.org](https://wiki.internetcomputer.org/)
 - [Internet Computer Whitepaper](https://internetcomputer.org/whitepaper.pdf)
+- [Internet Computer Interface Spec](https://github.com/dfinity/interface-spec/blob/master/spec/index.adoc)
 - [Dfinity YouTube channel](https://www.youtube.com/@DFINITY/featured)
 - [Inside the Internet Computer - YouTube Playlist](https://www.youtube.com/playlist?list=PLuhDt1vhGcrfHG_rnRKsqZO1jL_Pd970h)
 - [Git Codeowners](https://github.com/dfinity/ic/blob/master/.gitlab/CODEOWNERS): The Codeowners configuration assigns “ownership” of Dfinity teams to certain parts of the codebase. Since the team structure aligns with components of the stack and review categories, this is a useful resource for identifying which parts of the codebase are relevant for each category.
@@ -40,6 +41,8 @@ Several technologies are used throughout many layers of the Internet Computer Pr
 
 - [The Rust Book](https://doc.rust-lang.org/book/)
 - [Rust by Example](https://doc.rust-lang.org/rust-by-example/)
+- [The Easy Rust Book](https://dhghomon.github.io/easy_rust/)
+- [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)
 - [Mmapped: Designing error types in Rust](https://mmapped.blog/posts/12-rust-error-handling.html)
 
 ### Tokio
