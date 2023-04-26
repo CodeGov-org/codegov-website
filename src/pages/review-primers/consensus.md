@@ -4,7 +4,7 @@ description: Prepare for reviewing consensus layer Internet Computer Protocol re
 layout: ../../layout/BaseLayout.astro
 ---
 
-### Scope
+## Scope
 
 - Consensus crate
 - Artifact pool
@@ -17,13 +17,13 @@ layout: ../../layout/BaseLayout.astro
 - Subnet backup
 - Subnet splitting
 
-### Summary
+## Summary
 
 - The consensus layer receives unordered messages from the P2P layer.
 - Consensus achieves agreement as to which messages and in which order the IC should execute.
 - It can do this as long as more than ⅔ of the nodes are honest and functioning well.
 
-### Resources
+## Resources
 
 - Consensus
   - [YouTube: Inside the Internet Computer | Consensus Overview](https://www.youtube.com/watch?v=vVLRRYh3JYo)
@@ -43,7 +43,7 @@ layout: ../../layout/BaseLayout.astro
   - [NIDKG Whitepaper](https://eprint.iacr.org/2021/339.pdf)
 - [GitHub: Orchestrator Docs](https://github.com/dfinity/ic/tree/master/rs/orchestrator)
 
-### Codebase
+## Codebase
 
 - Testnet
   - [NNS State Deployment](https://github.com/dfinity/ic/blob/master/testnet/tools/nns_state_deployment.sh)

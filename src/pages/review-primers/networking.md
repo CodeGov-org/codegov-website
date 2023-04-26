@@ -22,7 +22,7 @@ layout: ../../layout/BaseLayout.astro
   - Networking adapters are used by the Bitcoin integration and HTTPS outcalls feature.
   - The main replica process uses gRPC for communicating with the co-located adapters via Unix domain sockets.
 
-### Resources
+## Resources
 
 - How it works
   - [Internet Computer Docs: Fault Tolerance](https://internetcomputer.org/how-it-works/fault-tolerance/)
