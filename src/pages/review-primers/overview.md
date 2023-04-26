@@ -21,7 +21,7 @@ Review primers are onboarding documents that aim to arm CodeGov code reviewers w
 
 ## Resources
 
-There are already many great resources that you can use to learn about the Internet Computer overall before diving deeper into one of the lower level layers.
+There are already many great resources that you can use to learn about the Internet Computer overall before diving deeper into one of the lower-level layers.
 
 - [Internetcomputer.org](https://internetcomputer.org/)
 - [wiki.internetcomputer.org](https://wiki.internetcomputer.org/)

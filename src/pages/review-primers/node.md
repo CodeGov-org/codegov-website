@@ -12,9 +12,10 @@ layout: ../../layout/BaseLayout.astro
 - HostOS (Host)
 - Testnet Deployment
 
-### Summary
+## Summary
 
-- IC-OS is an all-encompassing term for all the operating systems within the IC—hostOS, guestOS, SetupOS, and boundary-guestOS
+- IC-OS is an all-encompassing term for all Internet Computer operating system images including HostOS, GuestOS, SetupOS, and Boundary-GuestOS
+- Boundary-GuestOS is not relevant for replica upgrade reviews.
 - SetupOS is an image containing both the HostOS and GuestOS
     - Deploys and bootstraps HostOS
 - HostOS is the operating system that runs on the host machine
@@ -28,7 +29,7 @@ layout: ../../layout/BaseLayout.astro
   - Secure enclave is only possible in a virtual machine
   - Secure enclave is a work in progress
 
-### Resources
+## Resources
 
 - IC OS
   - [IC OS Readme](https://github.com/dfinity/ic/tree/master/ic-os#readme)
@@ -37,7 +38,7 @@ layout: ../../layout/BaseLayout.astro
   - [GuestOS Readme](https://github.com/dfinity/ic/tree/master/ic-os/guestos)
 - [Node Provider Onboarding](https://wiki.internetcomputer.org/wiki/Node_Provider_Onboarding)
 
-### Codebase
+## Codebase
 
 - [IC OS Disk Images](https://github.com/dfinity/ic/tree/master/ic-os) (except `boundary-os` and `boundary-api-os`)
 - [GuestOS Vsock Agent](https://github.com/dfinity/ic/tree/master/rs/guestos_vsock_agent)
