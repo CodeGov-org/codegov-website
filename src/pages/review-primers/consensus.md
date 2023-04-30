@@ -56,6 +56,7 @@ layout: ../../layout/BaseLayout.astro
   - [Consensus Pool Interface](https://github.com/dfinity/ic/blob/master/rs/interfaces/src/consensus_pool.rs)
   - [Consensus Types](https://github.com/dfinity/ic/blob/master/rs/types/types/src/consensus.rs)
   - [More Consensus Types](https://github.com/dfinity/ic/tree/master/rs/types/types/src/consensus)
+  - [HTTPS Outcalls Consensus](https://github.com/dfinity/ic/tree/master/rs/https_outcalls/consensus)
 - Canister HTTP
   - [Canister HTTP Protobuf Definition](https://github.com/dfinity/ic/tree/master/rs/protobuf/def/canister_http)
   - [Canister HTTP Protobuf Generator](https://github.com/dfinity/ic/tree/master/rs/protobuf/src/gen/canister_http)
@@ -73,3 +74,8 @@ layout: ../../layout/BaseLayout.astro
   - [HTTP Canister Basic Tests](https://github.com/dfinity/ic/blob/master/rs/tests/src/canister_http/http_basic.rs)
   - [Orchestrator Tests](https://github.com/dfinity/ic/tree/master/rs/tests/src/orchestrator)
   - [tECDSA Tests](https://github.com/dfinity/ic/tree/master/rs/tests/src/tecdsa)
+
+## Glossary
+
+- CUP: Catch-Up Package
+- Orchestrator:

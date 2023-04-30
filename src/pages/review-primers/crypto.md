@@ -57,3 +57,8 @@ layout: ../../layout/BaseLayout.astro
 - [Crypto types](https://github.com/dfinity/ic/blob/master/rs/types/types/src/crypto.rs)
 - [More crypto types](https://github.com/dfinity/ic/tree/master/rs/types/types/src/crypto)
 - [Validator](https://github.com/dfinity/ic/tree/master/rs/validator)
+
+## Glossary
+
+- CSP: Crypto Service Provider
+- CSP Vault:

@@ -45,7 +45,7 @@ Several technologies are used throughout many layers of the Internet Computer Pr
 - [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)
 - [Mmapped: Designing error types in Rust](https://mmapped.blog/posts/12-rust-error-handling.html)
 
-### Tokio
+#### Tokio
 
 [Tokio](https://tokio.rs/) is an [async](https://rust-lang.github.io/async-book/) implementation and runtime for Rust commonly used throughout the Internet Computer Protocol.
 
@@ -53,6 +53,10 @@ Several technologies are used throughout many layers of the Internet Computer Pr
 - [Tokio Blog](https://tokio.rs/blog)
 - [Rhyl: Async - what is blocking?](https://ryhl.io/blog/async-what-is-blocking/)
 - [Rhyl: Actors with Tokio](https://ryhl.io/blog/actors-with-tokio/)
+
+#### Tarpc
+
+[Tarpc](https://github.com/google/tarpc): RPC framework for Rust.
 
 ### Protobuf
 
