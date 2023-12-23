@@ -33,6 +33,9 @@ const config: Config = {
 
   themeConfig: {
     image: 'img/codegov-logo.png',
+    colorMode: {
+      respectPrefersColorScheme: true,
+    },
     navbar: {
       title: 'CodeGov Docs',
       logo: {
