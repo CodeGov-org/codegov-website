@@ -1,5 +1,5 @@
 ---
-title: Overview
+title: Review Primers
 description: Prepare for reviewing Internet Computer Protocol replica upgrades
 slug: /
 sidebar_position: 1
