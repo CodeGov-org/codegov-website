@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: mainnet
-      url: https://docs.codegov.org
+      url: https://n5otb-3yaaa-aaaal-qcxzq-cai.icp0.io
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
