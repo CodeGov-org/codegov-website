@@ -6,7 +6,7 @@ const config: Config = {
   title: 'CodeGov',
   tagline: 'Catalyzing participation in ICP replica version management',
   favicon: 'img/codegov-logo.png',
-  url: 'https://docs.codegov.org',
+  url: 'https://n5otb-3yaaa-aaaal-qcxzq-cai.icp0.io',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
