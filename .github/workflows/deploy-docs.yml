@@ -23,7 +23,7 @@ jobs:
         run: |
           echo "${{ secrets.MAINNET_PEM }}" > ./mainnet.pem
           dfx identity import --ic --storage-mode plaintext mainnet ./mainnet.pem
-          dfx use mainnet
+          dfx identity use mainnet
 
       - name: Deploy docs to mainnet
         run: dfx deploy --ic docs
