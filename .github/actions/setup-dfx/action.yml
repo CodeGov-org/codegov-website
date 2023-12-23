@@ -1,0 +1,30 @@
+name: Setup DFX
+description: Setup DFX
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Get DFX version
+      shell: bash
+      run: echo "dfx_version=$(cat dfx.json | jq -r .dfx)" >> "$GITHUB_ENV"
+
+    - name: Setup DFX
+      uses: dfinity/setup-dfx@main
+      with:
+        dfx-version: ${{ env.dfx_version }}
+
+    - name: Configure system subnet
+      shell: bash
+      run: |
+        mkdir -p $HOME/.config/dfx
+        cat <<EOF >$HOME/.config/dfx/networks.json
+        {
+          "local": {
+            "bind": "127.0.0.1:8080",
+            "type": "ephemeral",
+            "replica": {
+              "subnet_type": "system"
+            }
+          }
+        }
+        EOF

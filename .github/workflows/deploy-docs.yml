@@ -1,0 +1,29 @@
+name: Deploy docs
+
+on: workflow_dispatch
+
+jobs:
+  deploy_docs:
+    name: Deploy docs
+    runs-on: ubuntu-latest
+    environment:
+      name: mainnet
+      url: https://docs.codegov.org
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - uses: ./.github/actions/setup-node
+
+      - uses: ./.github/actions/setup-pnpm
+
+      - uses: ./.github/actions/setup-dfx
+
+      - name: Import DFX identity
+        run: |
+          echo ${{ secrets.MAINNET_PEM }} > ./mainnet.pem
+          dfx identity import --ic --storage-mode plaintext mainnet ./mainnet.pem
+          dfx use mainnet
+
+      - name: Deploy docs to mainnet
+        run: dfx deploy --ic docs

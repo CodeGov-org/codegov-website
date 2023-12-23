@@ -1,0 +1,32 @@
+name: Build & test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_test:
+    name: Build & test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - uses: ./.github/actions/setup-node
+
+      - uses: ./.github/actions/setup-pnpm
+
+      - uses: ./.github/actions/setup-dfx
+
+      - name: Start DFX
+        run: dfx start --background
+
+      - name: Build Docs
+        run: pnpm run -F docs... build
+
+      - name: Stop DFX
+        run: dfx stop
