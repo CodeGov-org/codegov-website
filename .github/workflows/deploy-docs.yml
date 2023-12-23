@@ -21,7 +21,7 @@ jobs:
 
       - name: Import DFX identity
         run: |
-          echo ${{ secrets.MAINNET_PEM }} > ./mainnet.pem
+          echo "${{ secrets.MAINNET_PEM }}" > ./mainnet.pem
           dfx identity import --ic --storage-mode plaintext mainnet ./mainnet.pem
           dfx use mainnet
 
