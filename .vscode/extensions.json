@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "editorconfig.editorconfig",
+    "esbenp.prettier-vscode",
+    "dfinity-foundation.vscode-motoko",
+    "dbaeumer.vscode-eslint"
+  ]
+}

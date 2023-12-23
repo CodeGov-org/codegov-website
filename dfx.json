@@ -9,6 +9,15 @@
       "optimize": "cycles",
       "main": "src/backend/main.mo"
     },
+    "frontend": {
+      "dependencies": ["backend"],
+      "frontend": {
+        "entrypoint": "src/frontend/src/index.html"
+      },
+      "source": ["src/frontend/dist"],
+      "type": "assets",
+      "build": ["pnpm -F frontend... build"]
+    },
     "docs": {
       "type": "assets",
       "gzip": true,

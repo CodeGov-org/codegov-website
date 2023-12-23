@@ -1,14 +1,14 @@
-name: Deploy docs
+name: Mainnet deploy
 
 on: workflow_dispatch
 
 jobs:
-  deploy_docs:
-    name: Deploy docs
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
     environment:
       name: mainnet
-      url: https://n5otb-3yaaa-aaaal-qcxzq-cai.icp0.io
+      url: https://npiey-xiaaa-aaaal-qcx2q-cai.icp0.io
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -25,5 +25,5 @@ jobs:
           dfx identity import --ic --storage-mode plaintext mainnet ./mainnet.pem
           dfx identity use mainnet
 
-      - name: Deploy docs to mainnet
-        run: dfx deploy --ic docs
+      - name: Deploy to mainnet
+        run: dfx deploy --ic

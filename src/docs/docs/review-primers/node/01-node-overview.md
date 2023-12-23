@@ -16,7 +16,7 @@ description: Prepare for reviewing node Internet Computer Protocol replica upgra
 - IC-OS is an all-encompassing term for all Internet Computer operating system images including HostOS, GuestOS, SetupOS, and Boundary-GuestOS
 - Boundary-GuestOS is not relevant for replica upgrade reviews.
 - SetupOS is an image containing both the HostOS and GuestOS
-    - Deploys and bootstraps HostOS
+  - Deploys and bootstraps HostOS
 - HostOS is the operating system that runs on the host machine
   - Main responsibility is to launch and run the GuestOS in a virtual machine
   - Creates a contained running environment across different hardware for the GuestOS

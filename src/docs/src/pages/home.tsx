@@ -2,7 +2,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 
-function HomepageHeader() {
+function HomepageHeader(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
   return (
     <header>

@@ -1,4 +1,4 @@
-name: Build & test
+name: Lint
 
 on:
   push:
@@ -9,8 +9,8 @@ on:
       - main
 
 jobs:
-  build_and_test:
-    name: Build & test
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -20,13 +20,8 @@ jobs:
 
       - uses: ./.github/actions/setup-pnpm
 
-      - uses: ./.github/actions/setup-dfx
+      - name: Check TypeScript Formatting
+        run: pnpm format:check
 
-      - name: Start DFX
-        run: dfx start --background
-
-      - name: Create canisters
-        run: dfx canister create --all
-
-      - name: Build
-        run: dfx build
+      - name: Run ESLint
+        run: pnpm lint

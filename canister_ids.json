@@ -1,5 +1,11 @@
 {
+  "backend": {
+    "ic": "nijcm-2qaaa-aaaal-qcx2a-cai"
+  },
   "docs": {
     "ic": "n5otb-3yaaa-aaaal-qcxzq-cai"
+  },
+  "frontend": {
+    "ic": "npiey-xiaaa-aaaal-qcx2q-cai"
   }
 }
