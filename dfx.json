@@ -1,0 +1,23 @@
+{
+  "dfx": "0.15.2",
+  "output_env_file": ".env",
+  "version": 1,
+  "canisters": {
+    "backend": {
+      "type": "motoko",
+      "gzip": true,
+      "optimize": "cycles",
+      "main": "src/backend/main.mo"
+    },
+    "docs": {
+      "type": "assets",
+      "gzip": true,
+      "optimize": "cycles",
+      "frontend": {
+        "entrypoint": "src/docs/build/index.html"
+      },
+      "source": ["src/docs/build"],
+      "build": ["pnpm -F docs... build"]
+    }
+  }
+}
