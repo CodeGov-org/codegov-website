@@ -14,10 +14,8 @@
     ]
   },
   "scripts": {
-    "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "build": "tsc && docusaurus build",
-    "typecheck": "tsc"
+    "build": "tsc && docusaurus build"
   },
   "dependencies": {
     "@docusaurus/core": "3.0.1",

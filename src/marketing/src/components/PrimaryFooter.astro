@@ -1,0 +1,89 @@
+---
+import twitterLogo from '../assets/twitter-logo.png';
+import dscvrLogo from '../assets/dscvr-logo.png';
+---
+
+<div class="container primary-footer">
+  <div class="row">
+    <div class="col-12 col-sm-3 footer-left">
+      <a
+        href="https://dscvr.one/p/codegov"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="social-icon"
+        title="CodeGov Portal on DSCVR"
+        aria-label="CodeGov Portal on DSCVR"
+      >
+        <img src={dscvrLogo.src} height="25" alt="DSCVR Logo" />
+      </a>
+
+      <a
+        href="https://twitter.com/codegovorg"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="social-icon"
+        title="Follow CodeGov on Twitter"
+        aria-label="Follow CodeGov on Twitter"
+      >
+        <img src={twitterLogo.src} height="25" alt="Twitter Logo" />
+      </a>
+    </div>
+
+    <div class="col-12 col-sm footer-center">
+      <div>
+        CodeGov Neuron ID: <a
+          href="https://dashboard.internetcomputer.org/neuron/2649066124191664356"
+          target="_blank"
+          rel="noopener noreferrer">2649066124191664356</a
+        >
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-3 footer-right">
+      <a href="/apply">Apply</a>
+    </div>
+  </div>
+</div>
+
+<style lang="scss">
+  @use 'sass:map';
+  @import '../styles/common';
+
+  .primary-footer {
+    margin-top: map.get($spacers, 5);
+    margin-bottom: map.get($spacers, 5);
+  }
+
+  .footer-left {
+    text-align: left;
+  }
+
+  .footer-center {
+    text-align: left;
+
+    @include media-breakpoint-up(sm) {
+      text-align: center;
+    }
+  }
+
+  .footer-right {
+    text-align: left;
+
+    @include media-breakpoint-up(sm) {
+      text-align: right;
+    }
+  }
+
+  .footer-center,
+  .footer-right {
+    @include media-breakpoint-down(sm) {
+      margin-top: map.get($spacers, 4);
+    }
+  }
+
+  .social-icon {
+    &:not(:last-of-type) {
+      margin-right: map.get($spacers, 3);
+    }
+  }
+</style>

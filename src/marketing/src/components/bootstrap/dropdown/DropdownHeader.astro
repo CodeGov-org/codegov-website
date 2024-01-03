@@ -1,0 +1,22 @@
+---
+import type { AstroBuiltinAttributes } from 'astro';
+
+const { className, nav = false, active = false } = Astro.props;
+
+export interface Props {
+  nav?: boolean;
+  active?: boolean;
+  className?: AstroBuiltinAttributes['class:list'];
+}
+---
+
+<a
+  class:list={['dropdown-toggle', { 'nav-link': nav }, { active }, className]}
+  href="#"
+  role="button"
+  aria-current={active ? 'page' : null}
+  data-bs-toggle="dropdown"
+  aria-expanded="false"
+>
+  <slot />
+</a>

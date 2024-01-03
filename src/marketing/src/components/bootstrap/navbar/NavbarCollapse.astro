@@ -1,0 +1,15 @@
+---
+const { id } = Astro.props;
+
+export interface Props {
+  id: string;
+}
+---
+
+<div class="collapse navbar-collapse" id={id}>
+  <slot />
+</div>
+
+<script>
+  import 'bootstrap/js/dist/collapse';
+</script>

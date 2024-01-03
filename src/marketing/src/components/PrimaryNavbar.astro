@@ -1,0 +1,37 @@
+---
+import PrimaryNavbarMenu from './PrimaryNavbarMenu.astro';
+import codegovLogo from '../assets/codegov-logo.png';
+import NavbarToggler from './bootstrap/navbar/NavbarToggler.astro';
+import NavbarCollapse from './bootstrap/navbar/NavbarCollapse.astro';
+import Navbar from './bootstrap/navbar/Navbar.astro';
+---
+
+<Navbar className="navbar-expand-lg">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">
+      <img
+        class="navbar-logo"
+        height="40"
+        src={codegovLogo.src}
+        alt="CodeGov Logo"
+      />
+
+      <span>codegov.org</span>
+    </a>
+
+    <NavbarToggler controls="navbar-menu" />
+
+    <NavbarCollapse id="navbar-menu">
+      <PrimaryNavbarMenu />
+    </NavbarCollapse>
+  </div>
+</Navbar>
+
+<style lang="scss">
+  @use 'sass:map';
+  @import '../styles/common';
+
+  .navbar-logo {
+    margin-right: map.get($spacers, 2);
+  }
+</style>

@@ -1,0 +1,57 @@
+---
+import NavbarItems, {
+  type NavbarItem,
+} from './bootstrap/navbar/NavbarItems.astro';
+
+const items: NavbarItem[] = [
+  {
+    title: 'Organization',
+    children: [
+      {
+        title: 'Manifesto',
+        href: '/organization/manifesto',
+      },
+      {
+        title: 'People',
+        href: '/organization/people',
+      },
+      {
+        title: 'Roadmap',
+        href: '/organization/roadmap',
+      },
+    ],
+  },
+  {
+    title: 'Education',
+    children: [
+      {
+        title: 'Resources',
+        href: '/education/resources',
+      },
+      {
+        title: 'Training',
+        href: '/education/training',
+      },
+    ],
+  },
+  {
+    title: 'Participation',
+    children: [
+      {
+        title: 'DSCVR Portal',
+        href: '/participation/dscvr-portal',
+      },
+      {
+        title: 'Deliverables',
+        href: '/participation/deliverables',
+      },
+    ],
+  },
+  {
+    title: 'Apply',
+    href: '/apply',
+  },
+];
+---
+
+<NavbarItems items={items} />

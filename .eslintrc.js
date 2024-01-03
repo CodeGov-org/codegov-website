@@ -12,6 +12,13 @@ module.exports = {
       rules: {},
     },
     {
+      files: ['*.mjs'],
+      parserOptions: {
+        sourceType: 'module',
+        ecmaVersion: '2015',
+      },
+    },
+    {
       files: ['*.ts', '*.tsx'],
       env: {
         browser: true,

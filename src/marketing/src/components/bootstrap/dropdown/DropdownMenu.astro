@@ -1,0 +1,13 @@
+---
+import type { AstroBuiltinAttributes } from 'astro';
+
+const { className } = Astro.props;
+
+export interface Props {
+  className?: AstroBuiltinAttributes['class:list'];
+}
+---
+
+<ul class:list={['dropdown-menu', className]}>
+  <slot />
+</ul>

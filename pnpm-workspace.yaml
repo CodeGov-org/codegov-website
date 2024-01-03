@@ -1,3 +1,4 @@
 packages:
   - src/frontend
+  - src/marketing
   - src/docs

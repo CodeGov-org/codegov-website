@@ -3,6 +3,7 @@
     "editorconfig.editorconfig",
     "esbenp.prettier-vscode",
     "dfinity-foundation.vscode-motoko",
-    "dbaeumer.vscode-eslint"
+    "dbaeumer.vscode-eslint",
+    "astro-build.astro-vscode"
   ]
 }

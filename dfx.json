@@ -18,6 +18,16 @@
       "type": "assets",
       "build": ["pnpm -F frontend... build"]
     },
+    "marketing": {
+      "type": "assets",
+      "gzip": true,
+      "optimize": "cycles",
+      "frontend": {
+        "entrypoint": "src/marketing/dist/index.html"
+      },
+      "source": ["src/marketing/dist"],
+      "build": ["pnpm -F marketing... build"]
+    },
     "docs": {
       "type": "assets",
       "gzip": true,
