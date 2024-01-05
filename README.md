@@ -4,14 +4,21 @@
 
 ### Marketing
 
-| Command                          | Description                    |
-| -------------------------------- | ------------------------------ |
-| `dfx deploy marketing`           | Deploy to a local DFX replica  |
-| `pnpm run -F marketing... start` | Run a local development server |
+| Command                      | Description                    |
+| ---------------------------- | ------------------------------ |
+| `dfx deploy marketing`       | Deploy to a local DFX replica  |
+| `pnpm -F marketing... start` | Run a local development server |
 
-### Docs
+### Frontend
 
 | Command                     | Description                    |
 | --------------------------- | ------------------------------ |
-| `dfx deploy docs`           | Deploy to a local DFX replica  |
-| `pnpm run -F docs... start` | Run a local development server |
+| `dfx deploy frontend`       | Deploy to a local DFX replica  |
+| `pnpm -F frontend... start` | Run a local development server |
+
+### Docs
+
+| Command                 | Description                    |
+| ----------------------- | ------------------------------ |
+| `dfx deploy docs`       | Deploy to a local DFX replica  |
+| `pnpm -F docs... start` | Run a local development server |

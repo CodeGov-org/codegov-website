@@ -12,9 +12,9 @@
     "frontend": {
       "dependencies": ["backend"],
       "frontend": {
-        "entrypoint": "src/frontend/src/index.html"
+        "entrypoint": "src/frontend/dist/browser/index.html"
       },
-      "source": ["src/frontend/dist"],
+      "source": ["src/frontend/dist/browser"],
       "type": "assets",
       "build": ["pnpm -F frontend... build"]
     },

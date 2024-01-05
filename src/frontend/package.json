@@ -1,27 +1,36 @@
 {
   "name": "frontend",
   "private": true,
-  "type": "module",
   "scripts": {
-    "start": "vite dev",
-    "build": "vite build",
-    "test": "vitest run",
-    "test:watch": "vitest watch",
-    "test:coverage": "vitest run --coverage"
+    "start": "ng serve frontend -c development",
+    "build": "ng build frontend -c production",
+    "build:dev": "ng build frontend -c development",
+    "test": "ng test frontend",
+    "test:ci": "ng test frontend --no-watch --no-progress --browsers=ChromeHeadless"
   },
   "dependencies": {
-    "@dfinity/agent": "^0.20.2",
-    "@dfinity/auth-client": "^0.20.2",
-    "@dfinity/candid": "^0.20.2",
-    "@dfinity/principal": "^0.20.2"
+    "@hadronous/ic-angular": "^0.1.1",
+    "@angular/animations": "^17.0.8",
+    "@angular/common": "^17.0.8",
+    "@angular/compiler": "^17.0.8",
+    "@angular/core": "^17.0.8",
+    "@angular/forms": "^17.0.8",
+    "@angular/platform-browser": "^17.0.8",
+    "@angular/platform-browser-dynamic": "^17.0.8",
+    "@angular/router": "^17.0.8",
+    "rxjs": "~7.8.1"
   },
   "devDependencies": {
-    "vite": "^5.0.10",
-    "vitest": "^1.1.0",
-    "@vitejs/plugin-react": "^4.2.1",
-    "vite-plugin-checker": "^0.6.2",
-    "vite-plugin-static-copy": "^1.0.0",
-    "vite-tsconfig-paths": "^4.2.2",
-    "dotenv": "^16.3.1"
+    "@hadronous/ic-build-angular": "^0.1.1",
+    "@angular/compiler": "^17.0.8",
+    "@angular/compiler-cli": "^17.0.8",
+    "@types/jasmine": "~5.1.4",
+    "globalthis": "^1.0.3",
+    "jasmine-core": "~5.1.1",
+    "karma": "~6.4.2",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.1",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0"
   }
 }

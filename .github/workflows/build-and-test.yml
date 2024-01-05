@@ -30,3 +30,6 @@ jobs:
 
       - name: Build
         run: dfx build
+
+      - name: Run frontend tests
+        run: pnpm -F frontend test:ci
