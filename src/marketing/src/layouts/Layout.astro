@@ -1,9 +1,8 @@
 ---
 import type { MarkdownLayoutProps } from 'astro';
 import PrimaryNavbar from '../components/PrimaryNavbar.astro';
-
-import '../index.scss';
 import PrimaryFooter from '../components/PrimaryFooter.astro';
+import '../styles.css';
 
 type Props = MarkdownLayoutProps<{
   title: string;
@@ -13,7 +12,7 @@ type Props = MarkdownLayoutProps<{
 const { frontmatter } = Astro.props;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -43,19 +42,3 @@ const { frontmatter } = Astro.props;
     </footer>
   </body>
 </html>
-
-<style lang="scss">
-  @use 'sass:map';
-  @import '../styles/common';
-
-  body {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
-  .main-content {
-    flex: 1;
-    padding-top: map.get($spacers, 4);
-  }
-</style>

@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Must be imported after tailwind directives or the CSS stylesheet size will ~double */
+@import '@cg/tailwind/common.css';

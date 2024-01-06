@@ -5,8 +5,7 @@
   "schematics": {
     "@schematics/angular:component": {
       "inlineTemplate": true,
-      "inlineStyle": true,
-      "style": "scss",
+      "style": "none",
       "changeDetection": "OnPush",
       "standalone": true
     }
@@ -32,13 +31,12 @@
             "index": "src/frontend/src/index.html",
             "browser": "src/frontend/src/main.ts",
             "tsConfig": "src/frontend/tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
             "assets": [
               "src/frontend/src/favicon.ico",
               "src/frontend/src/.ic-assets.json",
               "src/frontend/src/assets"
             ],
-            "styles": ["src/frontend/src/app.scss"],
+            "styles": ["src/frontend/src/app.css"],
             "polyfills": ["zone.js"],
             "scripts": []
           },
@@ -94,12 +92,11 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "tsConfig": "src/frontend/tsconfig.spec.json",
-            "inlineStyleLanguage": "scss",
             "assets": [
               "src/frontend/src/favicon.ico",
               "src/frontend/src/assets"
             ],
-            "styles": ["src/frontend/src/app.scss"],
+            "styles": ["src/frontend/src/app.css"],
             "polyfills": ["zone.js", "zone.js/testing"],
             "scripts": []
           }

@@ -4,6 +4,7 @@
     "esbenp.prettier-vscode",
     "dfinity-foundation.vscode-motoko",
     "dbaeumer.vscode-eslint",
-    "astro-build.astro-vscode"
+    "astro-build.astro-vscode",
+    "bradlc.vscode-tailwindcss"
   ]
 }

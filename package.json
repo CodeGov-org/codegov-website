@@ -14,29 +14,33 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
     "@dfinity/agent": "^0.20.2",
     "@dfinity/auth-client": "^0.20.2",
     "@dfinity/candid": "^0.20.2",
     "@dfinity/principal": "^0.20.2",
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/typography": "^0.5.10",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "tailwindcss": "^3.4.1",
     "zone.js": "~0.14.2"
   },
   "devDependencies": {
     "@angular/cli": "^17.0.8",
+    "@cg/tailwind": "workspace:*",
+    "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "dotenv": "^16.3.1",
     "eslint": "^8.0.1",
     "eslint-config-standard-with-typescript": "^43.0.0",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
     "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-react": "^7.33.2",
-    "typescript": "~5.2.2",
-    "tslib": "^2.6.2",
     "prettier": "^3.1.1",
-    "dotenv": "^16.3.1"
+    "tslib": "^2.6.2",
+    "typescript": "~5.2.2"
   }
 }

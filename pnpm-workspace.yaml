@@ -1,4 +1,5 @@
 packages:
+  - lib/tailwind
+  - src/docs
   - src/frontend
   - src/marketing
-  - src/docs
