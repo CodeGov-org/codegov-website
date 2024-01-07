@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@astrojs/tailwind": "^5.1.0",
-    "astro": "^4.0.9"
+    "astro": "^4.0.9",
+    "@cg/tailwind": "workspace:*"
   },
   "devDependencies": {
     "@astrojs/check": "^0.3.4",

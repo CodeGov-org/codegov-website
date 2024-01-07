@@ -1,7 +1,7 @@
 {
   "name": "codegov-website",
   "private": true,
-  "packageManager": "pnpm@8.12.1",
+  "packageManager": "pnpm@8.13.1",
   "engines": {
     "node": "^20",
     "pnpm": "^8",
@@ -14,10 +14,11 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@dfinity/agent": "^0.20.2",
-    "@dfinity/auth-client": "^0.20.2",
-    "@dfinity/candid": "^0.20.2",
-    "@dfinity/principal": "^0.20.2",
+    "@dfinity/agent": "^0.19.3",
+    "@dfinity/auth-client": "^0.19.3",
+    "@dfinity/candid": "^0.19.3",
+    "@dfinity/principal": "^0.19.3",
+    "@dfinity/identity": "^0.19.3",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.10",
     "react": "^18.0.0",
@@ -27,7 +28,6 @@
   },
   "devDependencies": {
     "@angular/cli": "^17.0.8",
-    "@cg/tailwind": "workspace:*",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
@@ -41,6 +41,8 @@
     "eslint-plugin-react": "^7.33.2",
     "prettier": "^3.1.1",
     "tslib": "^2.6.2",
-    "typescript": "~5.2.2"
+    "typescript": "~5.2.2",
+    "@hadronous/pic": "~0.2.0",
+    "bun-types": "^1.0.3"
   }
 }

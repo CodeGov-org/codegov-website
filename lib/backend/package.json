@@ -1,0 +1,9 @@
+{
+  "name": "@cg/backend",
+  "private": true,
+  "scripts": {
+    "build": "dfx generate backend"
+  },
+  "module": "src/shim.js",
+  "types": "src/shim.d.ts"
+}

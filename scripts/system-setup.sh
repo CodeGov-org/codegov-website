@@ -26,6 +26,10 @@ corepack enable
 echo "****** SYSTEM SETUP: PNPM version ******"
 pnpm --version
 
+# Set up Bun
+echo "****** SYSTEM SETUP: Installing Bun ******"
+curl -fsSL https://bun.sh/install | bash
+
 # Set up DFX
 echo "****** SYSTEM SETUP: Installing DFX ******"
 $HOME/.cache/dfinity/uninstall.sh

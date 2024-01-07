@@ -1,5 +1,7 @@
 packages:
+  - lib/backend
   - lib/tailwind
+  - src/backend/integration
   - src/docs
   - src/frontend
   - src/marketing

@@ -1,5 +1,5 @@
 module.exports = {
-  ignorePatterns: ['**/node_modules/**', '**/dist/**', '**/build/**'],
+  ignorePatterns: ['**/node_modules/**', '**/dist/**', '**/build/**', 'shim.js'],
   overrides: [
     {
       files: ['.eslintrc.{js,cjs}'],
@@ -28,7 +28,7 @@ module.exports = {
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: ['./src/*/tsconfig.json'],
+        project: ['./src/*/tsconfig.json', './src/*/*/tsconfig.json'],
       },
       plugins: ['react'],
       rules: {

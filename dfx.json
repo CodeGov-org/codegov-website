@@ -4,10 +4,15 @@
   "version": 1,
   "canisters": {
     "backend": {
-      "type": "motoko",
+      "type": "rust",
       "gzip": true,
       "optimize": "cycles",
-      "main": "src/backend/main.mo"
+      "package": "backend_impl",
+      "candid": "src/backend/api/backend.did",
+      "declarations": {
+        "bindings": ["js", "ts", "did"],
+        "output": "./dist"
+      }
     },
     "frontend": {
       "dependencies": ["backend"],

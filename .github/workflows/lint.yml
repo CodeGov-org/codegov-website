@@ -25,3 +25,6 @@ jobs:
 
       - name: Run ESLint
         run: pnpm lint
+
+      - name: Run Clippy
+        run: cargo clippy
