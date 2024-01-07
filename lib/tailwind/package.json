@@ -1,5 +1,5 @@
 {
   "name": "@cg/tailwind",
   "private": true,
-  "main": "preset.js"
+  "main": "tailwind.config.js"
 }

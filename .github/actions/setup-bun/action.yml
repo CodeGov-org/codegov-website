@@ -1,0 +1,8 @@
+name: Setup Bun
+description: Setup Bun
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1

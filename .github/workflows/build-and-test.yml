@@ -20,6 +20,8 @@ jobs:
 
       - uses: ./.github/actions/setup-pnpm
 
+      - uses: ./.github/actions/setup-bun
+
       - uses: ./.github/actions/setup-dfx
 
       - name: Start DFX
@@ -33,3 +35,11 @@ jobs:
 
       - name: Run frontend tests
         run: pnpm -F frontend test:ci
+
+      - name: Canister unit tests
+        run: cargo test
+
+      - name: Canister integration tests
+        run: |
+          pnpm -F @cg/backend build
+          pnpm -F backend-integration test

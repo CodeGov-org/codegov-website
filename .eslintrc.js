@@ -1,45 +1,87 @@
+/**
+ * @type {import("eslint").Linter.Config}
+ */
 module.exports = {
-  ignorePatterns: ['**/node_modules/**', '**/dist/**', '**/build/**', 'shim.js'],
+  root: true,
+  extends: ['eslint:recommended', 'prettier'],
+  ignorePatterns: [
+    '**/dist/**',
+    '**/build/**',
+    '**/.docusaurus/**',
+    '**/.dfx/**',
+    'eslint.config.js',
+  ],
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
   overrides: [
     {
-      files: ['.eslintrc.{js,cjs}'],
+      files: ['**/*.{js,cjs,mjs}'],
+      parserOptions: {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+      },
+    },
+    {
+      files: ['**/.eslintrc.{js,cjs,mjs}', '**/*.config.{js,cjs,mjs}'],
       env: {
         node: true,
       },
-      parserOptions: {
-        sourceType: 'script',
-      },
-      rules: {},
     },
     {
-      files: ['*.mjs'],
+      files: ['**/*.ts'],
+      extends: [
+        'eslint:recommended',
+        'plugin:@typescript-eslint/recommended',
+        'prettier',
+      ],
+      parser: '@typescript-eslint/parser',
+      plugins: ['@typescript-eslint'],
+    },
+    {
+      files: ['src/{docs,marketing}/**/*.{js,jsx,ts,tsx}'],
+      extends: [
+        'eslint:recommended',
+        'plugin:@typescript-eslint/recommended',
+        'plugin:react/recommended',
+        'plugin:react/jsx-runtime',
+        'plugin:mdx/recommended',
+        'prettier',
+      ],
       parserOptions: {
         sourceType: 'module',
-        ecmaVersion: '2015',
-      },
-    },
-    {
-      files: ['*.ts', '*.tsx'],
-      env: {
-        browser: true,
-        es2021: true,
-      },
-      extends: ['standard-with-typescript', 'plugin:react/recommended'],
-      parserOptions: {
         ecmaVersion: 'latest',
-        sourceType: 'module',
-        project: ['./src/*/tsconfig.json', './src/*/*/tsconfig.json'],
+        project: ['./src/{docs,marketing}/tsconfig.json'],
       },
-      plugins: ['react'],
+    },
+    {
+      files: ['src/frontend/**/*.ts'],
+      extends: [
+        'eslint:recommended',
+        'plugin:@typescript-eslint/recommended',
+        'plugin:@angular-eslint/recommended',
+        'plugin:@angular-eslint/template/process-inline-templates',
+        'prettier',
+      ],
       rules: {
-        '@typescript-eslint/semi': 'off',
-        'react/react-in-jsx-scope': 'off',
-        '@typescript-eslint/comma-dangle': ['error', 'always-multiline'],
-        '@typescript-eslint/triple-slash-reference': 'off',
-        '@typescript-eslint/space-before-function-paren': 'off',
-        '@typescript-eslint/quotes': 'off',
-        '@typescript-eslint/member-delimiter-style': 'off',
-        'import/first': 'off',
+        '@angular-eslint/directive-selector': [
+          'error',
+          {
+            type: 'attribute',
+            prefix: 'app',
+            style: 'camelCase',
+          },
+        ],
+        '@angular-eslint/component-selector': [
+          'error',
+          {
+            type: 'element',
+            prefix: 'app',
+            style: 'kebab-case',
+          },
+        ],
       },
     },
   ],

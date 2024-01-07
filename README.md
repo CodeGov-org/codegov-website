@@ -27,11 +27,11 @@
 
 The primary backend canister for CodeGov proposal review management.
 
-| Command                           | Description                               |
-| --------------------------------- | ----------------------------------------- |
-| `dfx deploy backend`              | Deploy to a local DFX replica             |
-| `pnpm run -F @cg/backend build`   | Generate TS/JS bindings for this canister |
-| `pnpm run -F backend-integration` | Run integration tests                     |
+| Command                       | Description                               |
+| ----------------------------- | ----------------------------------------- |
+| `dfx deploy backend`          | Deploy to a local DFX replica             |
+| `pnpm -F @cg/backend build`   | Generate TS/JS bindings for this canister |
+| `pnpm -F backend-integration` | Run integration tests                     |
 
 ## System Setup
 

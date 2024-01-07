@@ -17,8 +17,8 @@
     "@dfinity/agent": "^0.19.3",
     "@dfinity/auth-client": "^0.19.3",
     "@dfinity/candid": "^0.19.3",
-    "@dfinity/principal": "^0.19.3",
     "@dfinity/identity": "^0.19.3",
+    "@dfinity/principal": "^0.19.3",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.10",
     "react": "^18.0.0",
@@ -27,22 +27,24 @@
     "zone.js": "~0.14.2"
   },
   "devDependencies": {
+    "@angular-eslint/builder": "^17.2.0",
+    "@angular-eslint/eslint-plugin": "^17.2.0",
+    "@angular-eslint/eslint-plugin-template": "^17.2.0",
+    "@angular-eslint/template-parser": "^17.2.0",
     "@angular/cli": "^17.0.8",
+    "@hadronous/pic": "0.2.1-b1",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "bun-types": "^1.0.3",
     "dotenv": "^16.3.1",
     "eslint": "^8.0.1",
-    "eslint-config-standard-with-typescript": "^43.0.0",
-    "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
-    "eslint-plugin-promise": "^6.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-mdx": "^2.3.2",
     "eslint-plugin-react": "^7.33.2",
     "prettier": "^3.1.1",
     "tslib": "^2.6.2",
-    "typescript": "~5.2.2",
-    "@hadronous/pic": "~0.2.0",
-    "bun-types": "^1.0.3"
+    "typescript": "~5.2.2"
   }
 }
