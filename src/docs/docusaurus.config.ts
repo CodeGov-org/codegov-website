@@ -54,6 +54,10 @@ const config: Config = {
               label: 'Review Pimers',
               to: '/',
             },
+            {
+              label: 'IC Book',
+              to: '/ic-book',
+            },
           ],
         },
         {

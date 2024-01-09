@@ -1,3 +1,8 @@
+---
+title: Purger
+description: The Purger eliminates old artifacts and replicated states.
+---
+
 ## Summary
 
 The [Purger](https://github.com/dfinity/ic/blob/3ffc532770cbb9b72930024e3bf6ab7dadb956ce/rs/consensus/src/consensus/purger.rs#L36C1-L47C2) examines the state of the consensus pool to determine which artifacts can be purged, and instructs the state manager about the old replicated states that are no longer needed.
