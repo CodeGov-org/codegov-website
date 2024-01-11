@@ -5,6 +5,9 @@
     "dfinity-foundation.vscode-motoko",
     "dbaeumer.vscode-eslint",
     "astro-build.astro-vscode",
-    "bradlc.vscode-tailwindcss"
+    "bradlc.vscode-tailwindcss",
+    "angular.ng-template",
+    "tamasfe.even-better-toml",
+    "rust-lang.rust-analyzer"
   ]
 }

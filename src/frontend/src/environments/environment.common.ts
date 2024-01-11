@@ -7,9 +7,12 @@ export const API_GATEWAY = IS_MAINNET
 export const BACKEND_CANISTER_ID = import.meta.BACKEND_CANISTER_ID ?? '';
 export const MARKETING_CANISTER_ID = import.meta.MARKETING_CANISTER_ID ?? '';
 
+export const INTERNET_IDENTITY_CANISTER_ID =
+  import.meta.INTERNET_IDENTITY_CANISTER_ID ?? '';
+
 export const IDENTITY_PROVIDER = IS_MAINNET
-  ? 'https://identity.ic0.app/'
-  : 'http://qhbym-qaaaa-aaaaa-aaafq-cai.localhost:8080/';
+  ? 'https://identity.ic0.app'
+  : `http://${INTERNET_IDENTITY_CANISTER_ID}.localhost:8080`;
 
 // don't use derivation origins locally because II rejects them as invalid
 // this can be enabled locally once II supports it
