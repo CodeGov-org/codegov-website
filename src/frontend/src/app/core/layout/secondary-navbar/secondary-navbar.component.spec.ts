@@ -1,19 +1,18 @@
-import { type ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IcAuthService } from '@hadronous/ic-angular';
 import { IcAuthServiceMock, icAuthServiceMockFactory } from '@testing';
-import { AppComponent } from './app.component';
+import { SecondaryNavbarComponent } from './secondary-navbar.component';
 
-describe('AppComponent', () => {
-  let fixture: ComponentFixture<AppComponent>;
-  let component: AppComponent;
+describe('SecondaryNavbarComponent', () => {
+  let component: SecondaryNavbarComponent;
+  let fixture: ComponentFixture<SecondaryNavbarComponent>;
   let icAuthServiceMock: IcAuthServiceMock;
 
   beforeEach(async () => {
     icAuthServiceMock = icAuthServiceMockFactory();
 
     await TestBed.configureTestingModule({
-      imports: [AppComponent, RouterTestingModule],
+      imports: [SecondaryNavbarComponent],
       providers: [
         {
           provide: IcAuthService,
@@ -22,8 +21,9 @@ describe('AppComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(AppComponent);
+    fixture = TestBed.createComponent(SecondaryNavbarComponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
   it('should create', () => {
