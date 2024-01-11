@@ -1,3 +1,39 @@
+type Err = record {
+  code : nat16;
+  message : text;
+};
+
+type UserConfig = variant {
+  admin : record {
+    bio : text;
+  };
+  reviewer : record {
+    bio : text;
+    neuron_id : nat64;
+    wallet_address : text;
+  };
+  anonymous;
+};
+
+type GetMyUserProfileResponse = variant {
+  ok : record {
+    id : text;
+    username : text;
+    config : UserConfig;
+  };
+  err : Err;
+};
+
+type CreateMyUserProfileResponse = variant {
+  ok : record {
+    id : text;
+    username : text;
+    config : UserConfig;
+  };
+  err : Err;
+};
+
 service : {
-  "say_hello" : () -> (text) query;
+  get_my_user_profile : () -> (GetMyUserProfileResponse) query;
+  create_my_user_profile : () -> (CreateMyUserProfileResponse);
 };
