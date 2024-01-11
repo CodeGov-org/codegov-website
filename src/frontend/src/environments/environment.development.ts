@@ -2,10 +2,16 @@ import {
   API_GATEWAY,
   BACKEND_CANISTER_ID,
   DFX_NETWORK,
-} from './enviornment.common';
+  IDENTITY_PROVIDER,
+  IS_MAINNET,
+  DERIVATION_ORIGIN,
+} from './environment.common';
 
 export const environment = {
   API_GATEWAY,
   BACKEND_CANISTER_ID,
   DFX_NETWORK,
+  IDENTITY_PROVIDER,
+  IS_MAINNET,
+  DERIVATION_ORIGIN,
 };

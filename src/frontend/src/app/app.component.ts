@@ -1,15 +1,24 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
+import { PrimaryNavbarComponent, SecondaryNavbarComponent } from '@core/layout';
 
 @Component({
   standalone: true,
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    PrimaryNavbarComponent,
+    SecondaryNavbarComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1>CodeGov</h1>
-    <router-outlet />
+    <app-primary-navbar />
+    <app-secondary-navbar />
+    <main>
+      <router-outlet />
+    </main>
   `,
 })
 export class AppComponent {}

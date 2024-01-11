@@ -23,9 +23,6 @@ module.exports = {
         sourceType: 'module',
         ecmaVersion: 'latest',
       },
-    },
-    {
-      files: ['**/.eslintrc.{js,cjs,mjs}', '**/*.config.{js,cjs,mjs}'],
       env: {
         node: true,
       },
