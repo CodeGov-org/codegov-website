@@ -40,7 +40,13 @@ import { socialMediaInputs } from './profile.model';
 
       <div>
         <a title="Cancel your edits" routerLink="/"> Cancel </a>
-        <button type="submit">Save</button>
+        <button
+          type="submit"
+          [title]="profileForm.valid ? 'Save' : 'Fix the validation errors'"
+          [disabled]="!profileForm.valid"
+        >
+          Save
+        </button>
       </div>
     </form>
   `,
