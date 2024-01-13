@@ -1,6 +1,7 @@
 interface ImportMeta {
   BACKEND_CANISTER_ID?: string;
   MARKETING_CANISTER_ID?: string;
+  INTERNET_IDENTITY_CANISTER_ID?: string;
   DFX_NETWORK?: string;
 }
 
