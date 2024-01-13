@@ -227,6 +227,7 @@ dependencies = [
  "backend_api",
  "candid",
  "candid_parser",
+ "chrono",
  "ic-cdk",
  "ic-cdk-macros",
  "ic-cdk-timers",
@@ -235,7 +236,6 @@ dependencies = [
  "rand",
  "rand_chacha",
  "rstest",
- "rstest_reuse",
  "serde",
  "uuid",
 ]
@@ -401,6 +401,15 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
+name = "chrono"
+version = "0.4.31"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f2c685bad3eb3d45a01354cedb7d5faa66194d1d58ba6e267a8de788f79db38"
+dependencies = [
+ "num-traits",
+]
 
 [[package]]
 name = "codespan-reporting"
@@ -1336,8 +1345,6 @@ version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
 dependencies = [
- "libc",
- "rand_chacha",
  "rand_core",
 ]
 
@@ -1356,9 +1363,6 @@ name = "rand_core"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
-dependencies = [
- "getrandom",
-]
 
 [[package]]
 name = "redox_syscall"
@@ -1454,18 +1458,6 @@ dependencies = [
  "rustc_version",
  "syn 2.0.48",
  "unicode-ident",
-]
-
-[[package]]
-name = "rstest_reuse"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88530b681abe67924d42cca181d070e3ac20e0740569441a9e35a7cedd2b34a4"
-dependencies = [
- "quote",
- "rand",
- "rustc_version",
- "syn 2.0.48",
 ]
 
 [[package]]

@@ -18,7 +18,10 @@ export const BACKEND_WASM_PATH = resolve(
 
 export async function setupBackendCanister(
   pic: PocketIc,
+  initialDate: Date = new Date(),
 ): Promise<CanisterFixture<_SERVICE>> {
+  await pic.setTime(initialDate.getTime());
+
   const fixture = await pic.setupCanister<_SERVICE>(
     idlFactory,
     BACKEND_WASM_PATH,
@@ -28,8 +31,6 @@ export async function setupBackendCanister(
   );
 
   // make sure init timers run
-  await pic.resetTime();
-  await pic.tick();
   await pic.tick();
   await pic.tick();
 

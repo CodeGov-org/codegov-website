@@ -3,6 +3,13 @@ type Err = record {
   message : text;
 };
 
+type HistoryAction = variant {
+  create;
+  update;
+  delete;
+  restore;
+};
+
 type UserConfig = variant {
   admin : record {
     bio : text;
@@ -24,6 +31,23 @@ type GetMyUserProfileResponse = variant {
   err : Err;
 };
 
+type UserProfileHistoryEntry = record {
+  username : text;
+  config : UserConfig;
+};
+
+type GetMyUserProfileHistoryResponse = variant {
+  ok : record {
+    history : vec record {
+      action : HistoryAction;
+      date_time : text;
+      user : principal;
+      data : UserProfileHistoryEntry;
+    };
+  };
+  err : Err;
+};
+
 type CreateMyUserProfileResponse = variant {
   ok : record {
     id : text;
@@ -35,5 +59,6 @@ type CreateMyUserProfileResponse = variant {
 
 service : {
   get_my_user_profile : () -> (GetMyUserProfileResponse) query;
+  get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;
   create_my_user_profile : () -> (CreateMyUserProfileResponse);
 };

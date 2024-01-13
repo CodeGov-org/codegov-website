@@ -21,5 +21,4 @@ uuid = "1.6"
 
 mockall = "0.12"
 rstest = "0.18"
-rstest_reuse = "0.6"
 async-std = { version = "1.5", features = ["attributes"] }
