@@ -1,11 +1,4 @@
-export enum SocialMediaType {
-  DSCVR = 'DSCVR',
-  OpenChat = 'OpenChat',
-  Taggr = 'Taggr',
-  X = 'X',
-  DfinityForum = 'DfinityForum',
-  Discord = 'Discord',
-}
+import { SocialMediaType } from '@core/state';
 
 export type SocialMediaInputs = {
   [K in SocialMediaType]: SocialMediaInputProps;
