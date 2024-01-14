@@ -1,8 +1,15 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Observable, filter, take } from 'rxjs';
 import { keysOf } from '@core/utils';
+import {
+  Profile,
+  SocialLink,
+  UpdatableProfile,
+  ProfileService,
+} from '@core/state';
 import { socialMediaInputs } from './profile.model';
 
 @Component({
@@ -11,9 +18,20 @@ import { socialMediaInputs } from './profile.model';
   imports: [ReactiveFormsModule, CommonModule, RouterModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div><span>Role</span></div>
-    <div><span>Proposal Types</span></div>
-    <div><span>Neuron ID</span></div>
+    @if (userProfile$ | async; as userProfile) {
+      <div>
+        <span>Role</span>
+        <span>{{ userProfile.role }}</span>
+      </div>
+      <div>
+        <span>Proposal Types</span>
+        <span>{{ userProfile.proposalTypes.join(', ') }}</span>
+      </div>
+      <div>
+        <span>Neuron ID</span>
+        <span>{{ userProfile.neuronId }}</span>
+      </div>
+    }
 
     <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
       <div>
@@ -51,22 +69,62 @@ import { socialMediaInputs } from './profile.model';
     </form>
   `,
 })
-export class ProfileEditComponent {
-  public readonly profileForm!: FormGroup;
+export class ProfileEditComponent implements OnInit {
+  public readonly userProfile$: Observable<Profile | null>;
+  public readonly profileForm: FormGroup;
 
   public readonly socialMediaKeys = keysOf(socialMediaInputs);
   public readonly socialMediaInputs = socialMediaInputs;
 
-  constructor(formBuilder: FormBuilder) {
+  constructor(
+    formBuilder: FormBuilder,
+    private readonly profileService: ProfileService,
+  ) {
     this.profileForm = formBuilder.group({
       username: [''],
       bio: [''],
       socialMedia: formBuilder.group(this.generateSocialMedia()),
     });
+
+    this.userProfile$ = profileService.userProfile$;
+
+    profileService.userProfile$
+      .pipe(
+        filter((userProfile): userProfile is Profile => userProfile !== null),
+        take(1),
+      )
+      .subscribe(userProfile => {
+        this.profileForm.patchValue({
+          username: userProfile.username,
+          bio: userProfile.bio,
+          socialMedia: userProfile.socialMedia.reduce(
+            (accum, value) => ({ ...accum, [value.type]: value.link }),
+            {},
+          ),
+        });
+      });
+  }
+
+  public ngOnInit(): void {
+    this.profileService.loadProfile();
   }
 
   public onSubmit(): void {
-    throw new Error('Method not implemented.');
+    const formValues = this.profileForm.value;
+
+    const updatedProfile: UpdatableProfile = {
+      username: formValues.username.value,
+      bio: formValues.bio.value,
+      socialMedia: Object.entries(formValues.socialMedia).map(
+        ([key, value]) =>
+          ({
+            type: key,
+            link: value,
+          }) as SocialLink,
+      ),
+    };
+
+    this.profileService.saveProfile(updatedProfile);
   }
 
   private generateSocialMedia(): Record<string, string[]> {
