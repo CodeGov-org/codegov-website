@@ -1,10 +1,10 @@
-import { SocialMediaType } from '@core/state';
+import { SocialMediaType } from '~core/state';
 
 export type SocialMediaInputs = {
   [K in SocialMediaType]: SocialMediaInputProps;
 };
 
-export const socialMediaInputs: SocialMediaInputs = {
+export const SOCIAL_MEDIA_INPUTS: SocialMediaInputs = {
   DSCVR: { label: 'DSCVR' },
   OpenChat: { label: 'Open Chat' },
   Taggr: { label: 'TAGGR' },

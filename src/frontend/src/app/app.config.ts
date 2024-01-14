@@ -1,22 +1,23 @@
 import { type ApplicationConfig } from '@angular/core';
-import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideRouter } from '@angular/router';
 import { provideIcAgent, provideIcAuth } from '@hadronous/ic-angular';
-import { environment } from '@env';
-import { routes } from './app.routes';
-import { BackendActorService } from '@core/services';
 
-export const appConfig: ApplicationConfig = {
+import { BackendActorService } from '~core/services';
+import { ENV } from '~env';
+import { ROUTES } from './app.routes';
+
+export const APP_CONFIG: ApplicationConfig = {
   providers: [
     provideAnimations(),
-    provideRouter(routes),
+    provideRouter(ROUTES),
     provideIcAgent({
-      apiGateway: environment.API_GATEWAY,
-      fetchRootKey: !environment.IS_MAINNET,
+      apiGateway: ENV.API_GATEWAY,
+      fetchRootKey: !ENV.IS_MAINNET,
     }),
     provideIcAuth({
-      identityProvider: environment.IDENTITY_PROVIDER,
-      derivationOrigin: environment.DERIVATION_ORIGIN,
+      identityProvider: ENV.IDENTITY_PROVIDER,
+      derivationOrigin: ENV.DERIVATION_ORIGIN,
     }),
     BackendActorService,
   ],

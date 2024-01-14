@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IcAuthService } from '@hadronous/ic-angular';
-import { IcAuthServiceMock, icAuthServiceMockFactory } from '@testing';
+
+import { IcAuthServiceMock, icAuthServiceMockFactory } from '~testing';
 import { SecondaryNavbarComponent } from './secondary-navbar.component';
 
 describe('SecondaryNavbarComponent', () => {
