@@ -1,6 +1,6 @@
 import { type Routes } from '@angular/router';
 
-export const routes: Routes = [
+export const ROUTES: Routes = [
   {
     path: 'profile/edit',
     loadComponent: () =>

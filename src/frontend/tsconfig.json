@@ -13,9 +13,9 @@
     "useDefineForClassFields": false,
     "baseUrl": ".",
     "paths": {
-      "@env": ["./src/environments/environment.ts"],
-      "@testing": ["./src/app/testing/index.ts"],
-      "@core/*": ["./src/app/core/*"]
+      "~env": ["./src/environments/environment.ts"],
+      "~testing": ["./src/app/testing/index.ts"],
+      "~core/*": ["./src/app/core/*"]
     }
   },
   "angularCompilerOptions": {
