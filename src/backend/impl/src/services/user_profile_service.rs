@@ -9,7 +9,7 @@ use crate::{
 };
 use backend_api::{
     ApiError, CreateMyUserProfileResponse, GetMyUserProfileHistoryResponse,
-    GetMyUserProfileResponse, UpdateUserProfileRequest,
+    GetMyUserProfileResponse, UpdateMyUserProfileRequest, UpdateUserProfileRequest,
 };
 use candid::Principal;
 
@@ -29,6 +29,12 @@ pub trait UserProfileService {
         &self,
         calling_principal: Principal,
     ) -> Result<CreateMyUserProfileResponse, ApiError>;
+
+    fn update_my_user_profile(
+        &self,
+        calling_principal: Principal,
+        request: UpdateMyUserProfileRequest,
+    ) -> Result<(), ApiError>;
 
     fn update_user_profile(
         &self,
@@ -93,6 +99,77 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
             .await?;
 
         Ok(map_create_my_user_profile_response(id, profile))
+    }
+
+    fn update_my_user_profile(
+        &self,
+        calling_principal: Principal,
+        request: UpdateMyUserProfileRequest,
+    ) -> Result<(), ApiError> {
+        let user_id = self
+            .user_profile_repository
+            .get_user_id_by_principal(&calling_principal)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "User id for principal {} not found",
+                    calling_principal.to_text()
+                ))
+            })?;
+
+        let mut current_user_profile = self
+            .user_profile_repository
+            .get_user_profile_by_user_id(&user_id)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "User profile for principal {} not found",
+                    calling_principal.to_text()
+                ))
+            })?;
+
+        if let Some(username) = request.username {
+            current_user_profile.username = username;
+        }
+
+        current_user_profile.config = match (request.config, current_user_profile.config) {
+            (
+                Some(backend_api::MyUserConfigUpdate::Admin { bio: bio_update }),
+                UserConfig::Admin { bio },
+            ) => UserConfig::Admin {
+                bio: bio_update.unwrap_or(bio),
+            },
+            (
+                Some(backend_api::MyUserConfigUpdate::Reviewer {
+                    bio: bio_update,
+                    wallet_address: wallet_address_update,
+                }),
+                UserConfig::Reviewer {
+                    bio,
+                    neuron_id,
+                    wallet_address,
+                },
+            ) => UserConfig::Reviewer {
+                bio: bio_update.unwrap_or(bio),
+                neuron_id,
+                wallet_address: wallet_address_update.unwrap_or(wallet_address),
+            },
+            (Some(backend_api::MyUserConfigUpdate::Anonymous), UserConfig::Anonymous) => {
+                UserConfig::Anonymous
+            }
+            (None, existing_config) => existing_config,
+            (_, _) => {
+                return Err(ApiError::permission_denied(
+                    "Users are not allowed to change their own role",
+                ))
+            }
+        };
+
+        self.user_profile_repository.update_user_profile(
+            calling_principal,
+            user_id,
+            current_user_profile,
+        )?;
+
+        Ok(())
     }
 
     fn update_user_profile(
@@ -186,7 +263,9 @@ mod tests {
         fixtures::{self},
         repositories::MockUserProfileRepository,
     };
-    use backend_api::{HistoryAction, HistoryEntry, UserConfigUpdate, UserProfileHistoryEntry};
+    use backend_api::{
+        HistoryAction, HistoryEntry, MyUserConfigUpdate, UserConfigUpdate, UserProfileHistoryEntry,
+    };
     use mockall::predicate::*;
     use rstest::*;
 
@@ -328,6 +407,106 @@ mod tests {
                 username: profile.username,
                 config: profile.config.into(),
             }
+        )
+    }
+
+    #[rstest]
+    #[case(my_anonymous_update())]
+    #[case(my_admin_update())]
+    #[case(my_reviewer_update())]
+    fn update_my_user_profile(
+        #[case] fixture: (UserProfile, UpdateMyUserProfileRequest, UserProfile),
+    ) {
+        let (original_profile, profile_update_request, updated_profile) = fixture;
+        let calling_principal = fixtures::principal();
+        let user_id = UserId::try_from(fixtures::user_id().to_string().as_str()).unwrap();
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(user_id));
+        repository_mock
+            .expect_get_user_profile_by_user_id()
+            .once()
+            .with(eq(user_id))
+            .return_const(Some(original_profile));
+        repository_mock
+            .expect_update_user_profile()
+            .once()
+            .with(eq(calling_principal), eq(user_id), eq(updated_profile))
+            .return_const(Ok(()));
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        service
+            .update_my_user_profile(calling_principal, profile_update_request)
+            .unwrap();
+    }
+
+    #[fixture]
+    fn my_anonymous_update() -> (UserProfile, UpdateMyUserProfileRequest, UserProfile) {
+        let original_profile = fixtures::anonymous_user_profile();
+        let username = "new_username".to_string();
+
+        (
+            original_profile.clone(),
+            UpdateMyUserProfileRequest {
+                username: Some(username.clone()),
+                config: None,
+            },
+            UserProfile {
+                username,
+                ..original_profile
+            },
+        )
+    }
+
+    #[fixture]
+    fn my_admin_update() -> (UserProfile, UpdateMyUserProfileRequest, UserProfile) {
+        let original_profile = fixtures::admin_user_profile();
+        let bio = "New bio...".to_string();
+
+        (
+            original_profile.clone(),
+            UpdateMyUserProfileRequest {
+                username: None,
+                config: Some(MyUserConfigUpdate::Admin {
+                    bio: Some(bio.clone()),
+                }),
+            },
+            UserProfile {
+                config: UserConfig::Admin { bio },
+                ..original_profile
+            },
+        )
+    }
+
+    #[fixture]
+    fn my_reviewer_update() -> (UserProfile, UpdateMyUserProfileRequest, UserProfile) {
+        let original_profile = fixtures::reviewer_user_profile();
+        let neuron_id = fixtures::neuron_id();
+        let wallet_address = fixtures::wallet_address();
+        let bio = "New bio...".to_string();
+
+        (
+            original_profile.clone(),
+            UpdateMyUserProfileRequest {
+                username: None,
+                config: Some(MyUserConfigUpdate::Reviewer {
+                    bio: Some(bio.clone()),
+                    wallet_address: None,
+                }),
+            },
+            UserProfile {
+                config: UserConfig::Reviewer {
+                    bio,
+                    neuron_id,
+                    wallet_address,
+                },
+                ..original_profile
+            },
         )
     }
 
