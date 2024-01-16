@@ -6,7 +6,7 @@ use crate::{
 };
 use backend_api::{
     ApiError, ApiResult, CreateMyUserProfileResponse, GetMyUserProfileHistoryResponse,
-    GetMyUserProfileResponse,
+    GetMyUserProfileResponse, UpdateUserProfileRequest,
 };
 use candid::Principal;
 use ic_cdk::*;
@@ -36,6 +36,15 @@ async fn create_my_user_profile() -> ApiResult<CreateMyUserProfileResponse> {
     UserProfileController::default()
         .create_my_user_profile(calling_principal)
         .await
+        .into()
+}
+
+#[update]
+async fn update_user_profile(request: UpdateUserProfileRequest) -> ApiResult<()> {
+    let calling_principal = caller();
+
+    UserProfileController::default()
+        .update_user_profile(calling_principal, request)
         .into()
 }
 
@@ -108,6 +117,22 @@ impl<A: AccessControlService, U: UserProfileService> UserProfileController<A, U>
 
         Ok(profile)
     }
+
+    fn update_user_profile(
+        &self,
+        calling_principal: Principal,
+        request: UpdateUserProfileRequest,
+    ) -> Result<(), ApiError> {
+        self.access_control_service
+            .assert_principal_not_anonymous(&calling_principal)?;
+        self.access_control_service
+            .assert_principal_is_admin(calling_principal)?;
+
+        self.user_profile_service
+            .update_user_profile(calling_principal, request)?;
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -146,9 +171,9 @@ mod tests {
         let controller =
             UserProfileController::new(access_control_service_mock, user_profile_service_mock);
 
-        let res = controller.get_my_user_profile(calling_principal).unwrap();
+        let result = controller.get_my_user_profile(calling_principal).unwrap();
 
-        assert_eq!(res, profile);
+        assert_eq!(result, profile);
     }
 
     #[rstest]
@@ -167,11 +192,11 @@ mod tests {
 
         let controller = UserProfileController::new(access_control_service_mock, service_mock);
 
-        let res = controller
+        let result = controller
             .get_my_user_profile(calling_principal)
             .unwrap_err();
 
-        assert_eq!(res, ApiError::unauthenticated());
+        assert_eq!(result, ApiError::unauthenticated());
     }
 
     #[rstest]
@@ -192,15 +217,15 @@ mod tests {
             .expect_get_my_user_profile()
             .once()
             .with(eq(calling_principal))
-            .return_once(move |_| Err(returned_error));
+            .return_const(Err(returned_error));
 
         let controller = UserProfileController::new(access_control_service_mock, service_mock);
 
-        let res = controller
+        let result = controller
             .get_my_user_profile(calling_principal)
             .unwrap_err();
 
-        assert_eq!(res, error);
+        assert_eq!(result, error);
     }
 
     #[rstest]
@@ -226,11 +251,11 @@ mod tests {
 
         let controller = UserProfileController::new(access_control_service_mock, service_mock);
 
-        let res = controller
+        let result = controller
             .get_my_user_profile_history(calling_principal)
             .unwrap();
 
-        assert_eq!(res, profile_history);
+        assert_eq!(result, profile_history);
     }
 
     #[rstest]
@@ -249,11 +274,11 @@ mod tests {
 
         let controller = UserProfileController::new(access_control_service_mock, service_mock);
 
-        let res = controller
+        let result = controller
             .get_my_user_profile_history(calling_principal)
             .unwrap_err();
 
-        assert_eq!(res, ApiError::unauthenticated());
+        assert_eq!(result, ApiError::unauthenticated());
     }
 
     #[rstest]
@@ -272,11 +297,11 @@ mod tests {
 
         let controller = UserProfileController::new(access_control_service_mock, service_mock);
 
-        let res = controller
+        let result = controller
             .get_my_user_profile_history(calling_principal)
             .unwrap_err();
 
-        assert_eq!(res, ApiError::unauthenticated());
+        assert_eq!(result, ApiError::unauthenticated());
     }
 
     #[rstest]
@@ -301,16 +326,16 @@ mod tests {
             .expect_create_my_user_profile()
             .once()
             .with(eq(calling_principal))
-            .return_once(move |_| Ok(returned_profile));
+            .return_const(Ok(returned_profile));
 
         let controller = UserProfileController::new(access_control_service_mock, service_mock);
 
-        let res = controller
+        let result = controller
             .create_my_user_profile(calling_principal)
             .await
             .unwrap();
 
-        assert_eq!(res, profile);
+        assert_eq!(result, profile);
     }
 
     #[rstest]
@@ -329,11 +354,118 @@ mod tests {
 
         let controller = UserProfileController::new(access_control_service_mock, service_mock);
 
-        let res = controller
+        let result = controller
             .create_my_user_profile(calling_principal)
             .await
             .unwrap_err();
 
-        assert_eq!(res, ApiError::unauthenticated());
+        assert_eq!(result, ApiError::unauthenticated());
+    }
+
+    #[rstest]
+    fn update_user_profile() {
+        let calling_principal = fixtures::principal();
+        let user_id = fixtures::user_id();
+        let request = UpdateUserProfileRequest {
+            user_id: user_id.to_string(),
+            username: Some("username".to_string()),
+            config: None,
+        };
+
+        let mut access_control_service_mock = MockAccessControlService::new();
+        access_control_service_mock
+            .expect_assert_principal_not_anonymous()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Ok(()));
+        access_control_service_mock
+            .expect_assert_principal_is_admin()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Ok(()));
+
+        let mut service_mock = MockUserProfileService::new();
+        service_mock
+            .expect_update_user_profile()
+            .once()
+            .with(eq(calling_principal), eq(request.clone()))
+            .return_const(Ok(()));
+
+        let controller = UserProfileController::new(access_control_service_mock, service_mock);
+
+        controller
+            .update_user_profile(calling_principal, request)
+            .unwrap();
+    }
+
+    #[rstest]
+    fn update_user_profile_anonymous_principal() {
+        let calling_principal = Principal::anonymous();
+        let user_id = fixtures::user_id();
+        let request = UpdateUserProfileRequest {
+            user_id: user_id.to_string(),
+            username: Some("username".to_string()),
+            config: None,
+        };
+
+        let mut access_control_service_mock = MockAccessControlService::new();
+        access_control_service_mock
+            .expect_assert_principal_not_anonymous()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Err(ApiError::unauthenticated()));
+        access_control_service_mock
+            .expect_assert_principal_is_admin()
+            .never();
+
+        let mut service_mock = MockUserProfileService::new();
+        service_mock.expect_update_user_profile().never();
+
+        let controller = UserProfileController::new(access_control_service_mock, service_mock);
+
+        let result = controller
+            .update_user_profile(calling_principal, request)
+            .unwrap_err();
+
+        assert_eq!(result, ApiError::unauthenticated());
+    }
+
+    #[rstest]
+    fn update_user_profile_non_admin_principal() {
+        let calling_principal = fixtures::principal();
+        let user_id = fixtures::user_id();
+        let request = UpdateUserProfileRequest {
+            user_id: user_id.to_string(),
+            username: Some("username".to_string()),
+            config: None,
+        };
+
+        let error = ApiError::permission_denied(&format!(
+            "Principal {} must be an admin to call this endpoint",
+            &calling_principal.to_text()
+        ));
+
+        let mut access_control_service_mock = MockAccessControlService::new();
+        access_control_service_mock
+            .expect_assert_principal_not_anonymous()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Ok(()));
+        access_control_service_mock
+            .expect_assert_principal_is_admin()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Err(error.clone()));
+
+        let mut service_mock = MockUserProfileService::new();
+        service_mock.expect_update_user_profile().never();
+
+        let controller = UserProfileController::new(access_control_service_mock, service_mock);
+
+        let result = controller
+            .update_user_profile(calling_principal, request)
+            .unwrap_err();
+
+        assert_eq!(result, error);
     }
 }

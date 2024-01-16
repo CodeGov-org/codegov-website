@@ -21,6 +21,18 @@ impl Uuid {
     }
 }
 
+impl TryFrom<&str> for Uuid {
+    type Error = ApiError;
+
+    fn try_from(uuid: &str) -> Result<Uuid, Self::Error> {
+        let uuid = UuidImpl::parse_str(uuid).map_err(|_| {
+            ApiError::internal(&format!("Failed to parse UUID from string: {}", uuid))
+        })?;
+
+        Ok(Self(uuid))
+    }
+}
+
 impl ToString for Uuid {
     fn to_string(&self) -> String {
         self.0.to_string()
@@ -56,5 +68,29 @@ mod tests {
         let deserialized_uuid = Uuid::from_bytes(serialized_uuid);
 
         assert_eq!(deserialized_uuid, uuid);
+    }
+
+    #[rstest]
+    fn try_from() {
+        let uuid = fixtures::uuid();
+
+        let result = Uuid::try_from(uuid.to_string().as_str()).unwrap();
+
+        assert_eq!(result, uuid);
+    }
+
+    #[rstest]
+    fn try_from_invalid_uuid() {
+        let uuid_string = "not a uuid";
+
+        let result = Uuid::try_from(uuid_string).unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::internal(&format!(
+                "Failed to parse UUID from string: {}",
+                uuid_string
+            ))
+        );
     }
 }

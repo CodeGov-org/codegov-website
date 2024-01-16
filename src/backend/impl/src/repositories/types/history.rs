@@ -51,23 +51,41 @@ impl<T> HistoryEntry<T> {
     pub fn create_action(calling_principal: Principal, data: T) -> Result<Self, ApiError> {
         Self::new(HistoryAction::Create, calling_principal, data)
     }
+
+    pub fn update_action(calling_principal: Principal, data: T) -> Result<Self, ApiError> {
+        Self::new(HistoryAction::Update, calling_principal, data)
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::fixtures;
+    use crate::{fixtures, repositories::UserProfileHistoryEntry};
     use rstest::*;
 
     #[rstest]
-    fn storable_impl_user_profile() {
-        let user_profile = fixtures::reviewer_user_profile();
-        let principal = fixtures::principal();
-        let history_entry = HistoryEntry::create_action(principal, user_profile.clone()).unwrap();
-
+    #[case::create_action(create_action())]
+    #[case::update_date(update_action())]
+    fn storable_impl_user_profile(#[case] history_entry: UserProfileHistoryEntry) {
         let bytes = history_entry.to_bytes();
         let deserialized_history_entry = HistoryEntry::from_bytes(bytes);
 
         assert_eq!(history_entry, deserialized_history_entry);
+    }
+
+    #[fixture]
+    fn create_action() -> UserProfileHistoryEntry {
+        let user_profile = fixtures::reviewer_user_profile();
+        let principal = fixtures::principal();
+
+        HistoryEntry::create_action(principal, user_profile.clone()).unwrap()
+    }
+
+    #[fixture]
+    fn update_action() -> UserProfileHistoryEntry {
+        let user_profile = fixtures::reviewer_user_profile();
+        let principal = fixtures::principal();
+
+        HistoryEntry::update_action(principal, user_profile.clone()).unwrap()
     }
 }

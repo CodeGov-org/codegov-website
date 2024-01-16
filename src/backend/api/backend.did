@@ -57,8 +57,32 @@ type CreateMyUserProfileResponse = variant {
   err : Err;
 };
 
+type UserConfigUpdate = variant {
+  admin : record {
+    bio : opt text;
+  };
+  reviewer : record {
+    bio : opt text;
+    neuron_id : opt nat64;
+    wallet_address : opt text;
+  };
+  anonymous;
+};
+
+type UpdateUserProfileRequest = record {
+  user_id : text;
+  username : opt text;
+  config : opt UserConfigUpdate;
+};
+
+type UpdateUserProfileResponse = variant {
+  ok;
+  err : Err;
+};
+
 service : {
   get_my_user_profile : () -> (GetMyUserProfileResponse) query;
   get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;
   create_my_user_profile : () -> (CreateMyUserProfileResponse);
+  update_user_profile : (UpdateUserProfileRequest) -> (UpdateUserProfileResponse);
 };
