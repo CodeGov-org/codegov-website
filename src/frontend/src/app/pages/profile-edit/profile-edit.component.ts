@@ -1,16 +1,17 @@
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Observable, filter, take } from 'rxjs';
-import { keysOf } from '@core/utils';
+
 import {
   Profile,
+  ProfileService,
   SocialLink,
   UpdatableProfile,
-  ProfileService,
-} from '@core/state';
-import { socialMediaInputs } from './profile.model';
+} from '~core/state';
+import { keysOf } from '~core/utils';
+import { SOCIAL_MEDIA_INPUTS } from './profile.model';
 
 @Component({
   selector: 'app-profile-edit',
@@ -73,8 +74,8 @@ export class ProfileEditComponent implements OnInit {
   public readonly userProfile$: Observable<Profile | null>;
   public readonly profileForm: FormGroup;
 
-  public readonly socialMediaKeys = keysOf(socialMediaInputs);
-  public readonly socialMediaInputs = socialMediaInputs;
+  public readonly socialMediaKeys = keysOf(SOCIAL_MEDIA_INPUTS);
+  public readonly socialMediaInputs = SOCIAL_MEDIA_INPUTS;
 
   constructor(
     formBuilder: FormBuilder,

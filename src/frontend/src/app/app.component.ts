@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { PrimaryNavbarComponent, SecondaryNavbarComponent } from '@core/layout';
+
+import { PrimaryNavbarComponent, SecondaryNavbarComponent } from '~core/layout';
 
 @Component({
   standalone: true,

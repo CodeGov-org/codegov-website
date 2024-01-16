@@ -1,7 +1,8 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { IcAuthService } from '@hadronous/ic-angular';
-import { IcAuthServiceMock, icAuthServiceMockFactory } from '@testing';
+
+import { IcAuthServiceMock, icAuthServiceMockFactory } from '~testing';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
