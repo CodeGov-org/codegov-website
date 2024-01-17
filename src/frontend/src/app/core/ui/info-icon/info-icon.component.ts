@@ -23,6 +23,6 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   `,
 })
 export class InfoIconComponent {
-  @Input()
+  @Input({ required: true })
   public infoText!: string;
 }
