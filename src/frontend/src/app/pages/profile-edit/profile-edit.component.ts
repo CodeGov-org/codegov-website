@@ -117,7 +117,7 @@ import { SOCIAL_MEDIA_INPUTS } from './profile.model';
             <button
               type="submit"
               [title]="profileForm.invalid ? 'Fix the validation errors' : undefined"
-              [disabled]="!profileForm.valid"
+              [disabled]="profileForm.invalid"
               class="text-white bg-blue-500 py-1 px-4 rounded text-lg enabled:hover:bg-blue-600 disabled:bg-blue-300"
             >
               Save
