@@ -141,7 +141,7 @@ export class ProfileEditComponent implements OnInit {
   private validationMessages: Record<string, Record<string, string>> = {
     username: {
       required: 'Username cannot be empty',
-      minlength: 'Minimum username length 3 characters',
+      minlength: 'Username must have at least 3 characters',
     },
   };
 
