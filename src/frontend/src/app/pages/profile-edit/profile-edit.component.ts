@@ -1,6 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Observable, filter, take } from 'rxjs';
 
@@ -10,73 +15,144 @@ import {
   SocialLink,
   UpdatableProfile,
 } from '~core/state';
+import { InfoIconComponent } from '~core/ui';
 import { keysOf } from '~core/utils';
 import { SOCIAL_MEDIA_INPUTS } from './profile.model';
 
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [ReactiveFormsModule, CommonModule, RouterModule, InfoIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (userProfile$ | async; as userProfile) {
-      <div>
-        <span>Role</span>
-        <span>{{ userProfile.role }}</span>
-      </div>
-      <div>
-        <span>Proposal Types</span>
-        <span>{{ userProfile.proposalTypes.join(', ') }}</span>
-      </div>
-      <div>
-        <span>Neuron ID</span>
-        <span>{{ userProfile.neuronId }}</span>
-      </div>
-    }
+    <div class="container mx-auto bg-gray-200 px-5 py-5">
+      <h1
+        class="mb-4 text-center text-2xl font-medium text-gray-900 sm:text-3xl"
+      >
+        Edit Profile
+      </h1>
+      <div class="mx-auto md:w-2/3">
+        <div>
+          @if (userProfile$ | async; as userProfile) {
+            <div class="mb-4 flex flex-row items-center">
+              <span class="w-1/3 font-bold">Role</span>
+              <span>{{ userProfile.role }}</span>
+              <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
+            </div>
 
-    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-      <div>
-        <label for="username">Username</label>
-        <input id="username" type="text" formControlName="username" />
-      </div>
+            <div class="mb-4 flex flex-row items-center">
+              <span class="w-1/3 font-bold">Proposal Types</span>
+              <span>{{ userProfile.proposalTypes.join(', ') }}</span>
+              <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
+            </div>
 
-      <div>
-        <label for="bio">Bio</label>
-        <input id="bio" type="text" formControlName="bio" />
-      </div>
-
-      <div>
-        Social Media
-        <div formGroupName="socialMedia">
-          @for (key of socialMediaKeys; track key) {
-            <div>
-              <label [for]="key">{{ socialMediaInputs[key].label }}</label>
-              <input [id]="key" type="text" [formControlName]="key" />
+            <div class="mb-4 flex flex-row items-center">
+              <span class="h-6 w-1/3 font-bold">Neuron ID</span>
+              <span>{{ userProfile.neuronId }}</span>
+              <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
             </div>
           }
         </div>
-      </div>
 
-      <div>
-        <a title="Cancel your edits" routerLink="/"> Cancel </a>
-        <button type="submit">Save</button>
+        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+          <div class="flex flex-row">
+            <label for="username" class="w-1/3 font-bold">Username</label>
+
+            <div class="mb-3 flex w-2/3 flex-col">
+              <input
+                id="username"
+                type="text"
+                formControlName="username"
+                class="mb-1"
+                [ngClass]="{
+                  'border-red-600 bg-red-100': isControlInvalid('username')
+                }"
+              />
+
+              <div class="h-4 text-xs text-red-600">
+                @if (isControlInvalid('username')) {
+                  {{ getErrorMessage('username') }}
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4 flex flex-row">
+            <label for="bio" class="w-1/3 font-bold">Bio</label>
+            <textarea
+              id="bio"
+              type="text"
+              formControlName="bio"
+              class="leading-24 h-24 w-2/3 resize-y"
+            ></textarea>
+          </div>
+
+          <div class="py-5">
+            <h2
+              class="mb-4 text-left text-lg font-normal text-gray-900 sm:text-xl"
+            >
+              Social Media
+            </h2>
+            <div formGroupName="socialMedia">
+              @for (key of socialMediaKeys; track key) {
+                <div class="mb-7 flex items-center">
+                  <label [for]="key" class="w-1/3 font-bold">{{
+                    socialMediaInputs[key].label
+                  }}</label>
+                  <input
+                    [id]="key"
+                    type="text"
+                    [formControlName]="key"
+                    class="w-2/3"
+                  />
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="flex items-center">
+            <a title="Cancel your edits" routerLink="/" class="ml-auto mr-4">
+              Cancel
+            </a>
+            <button
+              type="submit"
+              [title]="
+                profileForm.invalid ? 'Fix the validation errors' : undefined
+              "
+              [disabled]="profileForm.invalid"
+              class="rounded bg-blue-500 px-4 py-1 text-lg text-white enabled:hover:bg-blue-600 disabled:bg-blue-300"
+            >
+              Save
+            </button>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
   `,
 })
 export class ProfileEditComponent implements OnInit {
   public readonly userProfile$: Observable<Profile | null>;
   public readonly profileForm: FormGroup;
 
+  public readonly nonEditableInfo: string =
+    'To change this property, contact a CodeGov admin.';
+
   public readonly socialMediaKeys = keysOf(SOCIAL_MEDIA_INPUTS);
   public readonly socialMediaInputs = SOCIAL_MEDIA_INPUTS;
+
+  private validationMessages: Record<string, Record<string, string>> = {
+    username: {
+      required: 'Username cannot be empty',
+      minlength: 'Username must have at least 3 characters',
+    },
+  };
 
   constructor(
     formBuilder: FormBuilder,
     private readonly profileService: ProfileService,
   ) {
     this.profileForm = formBuilder.group({
-      username: [''],
+      username: ['', [Validators.required, Validators.minLength(3)]],
       bio: [''],
       socialMedia: formBuilder.group(this.generateSocialMedia()),
     });
@@ -120,6 +196,32 @@ export class ProfileEditComponent implements OnInit {
     };
 
     this.profileService.saveProfile(updatedProfile);
+  }
+
+  public isControlInvalid(controlName: string): boolean {
+    const control = this.profileForm.get(controlName);
+    if (control === null) {
+      throw new Error(`Control "${controlName} not found."`);
+    }
+
+    return (control.touched || control.dirty) && control.invalid;
+  }
+
+  public getErrorMessage(controlName: string): string {
+    const control = this.profileForm.get(controlName);
+    if (control === null) {
+      throw new Error(`Control "${controlName} not found."`);
+    }
+
+    if (control.errors) {
+      for (const err in control.errors) {
+        if (this.validationMessages[controlName][err]) {
+          return this.validationMessages[controlName][err];
+        }
+      }
+    }
+
+    return 'This field is invalid';
   }
 
   private generateSocialMedia(): Record<string, string[]> {
