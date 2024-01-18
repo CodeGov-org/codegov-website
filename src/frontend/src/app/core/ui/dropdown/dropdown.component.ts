@@ -24,7 +24,9 @@ import { ChevronIconComponent } from '../chevron-icon';
         <ng-content select="[menuTrigger]" />
       </div>
 
-      <app-chevron-icon />
+      @if (showChevron) {
+        <app-chevron-icon />
+      }
     </button>
 
     <div class="dropdown-menu" [ngClass]="{ hidden: !isOpen }">
@@ -35,6 +37,9 @@ import { ChevronIconComponent } from '../chevron-icon';
 export class DropdownComponent {
   @HostBinding('class.dropdown')
   public hostCssClass = true;
+
+  @Input()
+  public showChevron = true;
 
   public isOpen = false;
 
