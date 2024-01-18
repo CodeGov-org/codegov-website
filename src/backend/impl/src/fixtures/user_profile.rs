@@ -1,4 +1,7 @@
-use crate::repositories::{UserConfig, UserProfile};
+use crate::{
+    fixtures::{date_time_a, principal},
+    repositories::{HistoryAction, UserConfig, UserProfile, UserProfileHistoryEntry},
+};
 use rstest::*;
 
 #[fixture]
@@ -30,4 +33,16 @@ pub fn admin_user_profile() -> UserProfile {
             bio: "Active in the ICP community and on the developer forum.".to_string(),
         },
     }
+}
+
+#[fixture]
+pub fn user_profile_history() -> Vec<UserProfileHistoryEntry> {
+    vec![UserProfileHistoryEntry {
+        action: HistoryAction::Create,
+        principal: principal(),
+        date_time: date_time_a(),
+        data: UserProfile {
+            ..reviewer_user_profile()
+        },
+    }]
 }

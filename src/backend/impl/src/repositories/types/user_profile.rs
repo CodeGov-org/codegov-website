@@ -43,11 +43,11 @@ impl UserProfile {
 }
 
 impl Storable for UserProfile {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+    fn to_bytes(&self) -> Cow<[u8]> {
         Cow::Owned(Encode!(self).unwrap())
     }
 
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
         Decode!(bytes.as_ref(), Self).unwrap()
     }
 
@@ -59,17 +59,12 @@ mod tests {
     use super::*;
     use crate::fixtures;
     use rstest::*;
-    use rstest_reuse::*;
 
-    #[template]
     #[rstest]
     #[case::anonymous_user(fixtures::anonymous_user_profile())]
     #[case::reviewer(fixtures::reviewer_user_profile())]
     #[case::admin(fixtures::admin_user_profile())]
-    fn user_profiles(#[case] profile: UserProfile) {}
-
-    #[apply(user_profiles)]
-    fn storable_impl_admin(profile: UserProfile) {
+    fn storable_impl(#[case] profile: UserProfile) {
         let serialized_user_profile = profile.to_bytes();
         let deserialized_user_profile = UserProfile::from_bytes(serialized_user_profile);
 

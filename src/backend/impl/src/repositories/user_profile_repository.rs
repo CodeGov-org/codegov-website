@@ -1,6 +1,8 @@
 use super::{
-    init_user_profile_principal_index, init_user_profiles, UserId, UserProfile, UserProfileMemory,
-    UserProfilePrincipalIndexMemory,
+    init_user_profile_principal_index, init_user_profiles,
+    memories::{init_user_profiles_history, UserProfileHistoryMemory},
+    UserId, UserProfile, UserProfileHistoryEntry, UserProfileHistoryKey, UserProfileHistoryRange,
+    UserProfileMemory, UserProfilePrincipalIndexMemory,
 };
 use backend_api::ApiError;
 use candid::Principal;
@@ -11,9 +13,14 @@ pub trait UserProfileRepository {
     fn get_user_profile_by_principal(&self, principal: &Principal)
         -> Option<(UserId, UserProfile)>;
 
+    fn get_user_profile_history_by_principal(
+        &self,
+        principal: &Principal,
+    ) -> Result<Option<Vec<UserProfileHistoryEntry>>, ApiError>;
+
     async fn create_user_profile(
         &self,
-        principal: Principal,
+        calling_principal: Principal,
         user_profile: UserProfile,
     ) -> Result<UserId, ApiError>;
 }
@@ -38,17 +45,35 @@ impl UserProfileRepository for UserProfileRepositoryImpl {
             })
     }
 
+    fn get_user_profile_history_by_principal(
+        &self,
+        principal: &Principal,
+    ) -> Result<Option<Vec<UserProfileHistoryEntry>>, ApiError> {
+        self.get_user_id_by_principal(principal)
+            .map(|user_id| self.get_user_profile_history_by_user_id(user_id))
+            .transpose()
+    }
+
     async fn create_user_profile(
         &self,
-        principal: Principal,
+        calling_principal: Principal,
         user_profile: UserProfile,
     ) -> Result<UserId, ApiError> {
         let user_id = UserId::new().await?;
 
         STATE.with_borrow_mut(|s| {
-            s.profiles.insert(user_id, user_profile);
-            s.principal_index.insert(principal, user_id);
-        });
+            s.profiles.insert(user_id, user_profile.clone());
+            s.principal_index.insert(calling_principal, user_id);
+
+            let history_entry =
+                UserProfileHistoryEntry::create_action(calling_principal, user_profile)?;
+            s.profiles_history.insert(
+                UserProfileHistoryKey::new(user_id, history_entry.date_time.clone())?,
+                history_entry,
+            );
+
+            Ok(())
+        })?;
 
         Ok(user_id)
     }
@@ -66,11 +91,24 @@ impl UserProfileRepositoryImpl {
     fn get_user_profile_by_user_id(&self, user_id: &UserId) -> Option<UserProfile> {
         STATE.with_borrow(|s| s.profiles.get(user_id))
     }
+
+    fn get_user_profile_history_by_user_id(
+        &self,
+        user_id: UserId,
+    ) -> Result<Vec<UserProfileHistoryEntry>, ApiError> {
+        STATE.with_borrow(|s| {
+            Ok(s.profiles_history
+                .range(UserProfileHistoryRange::new(user_id)?)
+                .map(|(_, entry)| entry)
+                .collect())
+        })
+    }
 }
 
 struct UserProfileState {
     profiles: UserProfileMemory,
     principal_index: UserProfilePrincipalIndexMemory,
+    profiles_history: UserProfileHistoryMemory,
 }
 
 impl Default for UserProfileState {
@@ -78,6 +116,7 @@ impl Default for UserProfileState {
         Self {
             profiles: init_user_profiles(),
             principal_index: init_user_profile_principal_index(),
+            profiles_history: init_user_profiles_history(),
         }
     }
 }
@@ -89,7 +128,11 @@ thread_local! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::fixtures;
+    use crate::{
+        fixtures,
+        repositories::{DateTime, HistoryAction},
+        system_api::get_date_time,
+    };
     use rstest::*;
 
     #[rstest]
@@ -99,6 +142,7 @@ mod tests {
     async fn create_and_get_user_profile_by_principal(#[case] profile: UserProfile) {
         STATE.set(UserProfileState::default());
         let principal = fixtures::principal();
+        let date_time = get_date_time().unwrap();
 
         let repository = UserProfileRepositoryImpl::default();
         let user_id = repository
@@ -107,7 +151,21 @@ mod tests {
             .unwrap();
 
         let result = repository.get_user_profile_by_principal(&principal);
+        let history_result = repository
+            .get_user_profile_history_by_principal(&principal)
+            .unwrap()
+            .unwrap();
 
-        assert_eq!(result, Some((user_id, profile)));
+        assert_eq!(result, Some((user_id, profile.clone())));
+        assert_eq!(history_result.len(), 1);
+        assert_eq!(
+            history_result[0],
+            UserProfileHistoryEntry {
+                action: HistoryAction::Create,
+                principal,
+                date_time: DateTime::new(date_time).unwrap(),
+                data: profile,
+            }
+        );
     }
 }
