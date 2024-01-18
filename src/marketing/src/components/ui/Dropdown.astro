@@ -9,8 +9,8 @@ export interface Props {
 const { menuTriggerClassName } = Astro.props;
 ---
 
-<dropdown-component class="dropdown">
-  <div data-wrapper>
+<dropdown-component>
+  <div data-wrapper class="dropdown">
     <button
       data-menu-trigger
       class:list={[menuTriggerClassName, 'dropdown-trigger']}

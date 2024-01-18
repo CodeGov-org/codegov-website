@@ -9,5 +9,6 @@
   "editor.wordWrap": "on",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
-  }
+  },
+  "editor.formatOnSave": true
 }
