@@ -5,7 +5,10 @@
   "editor.quickSuggestions": {
     "strings": "on"
   },
+  "prettier.configPath": "./prettier.config.cjs",
+  "editor.wordWrap": "on",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
-  }
+  },
+  "editor.formatOnSave": true
 }

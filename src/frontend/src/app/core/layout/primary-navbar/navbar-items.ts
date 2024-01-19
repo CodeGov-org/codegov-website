@@ -1,9 +1,16 @@
----
-import NavbarItems, {
-  type NavbarItem,
-} from './bootstrap/navbar/NavbarItems.astro';
+export interface NavbarLink {
+  title: string;
+  href: string;
+}
 
-const items: NavbarItem[] = [
+export interface NavbarDropdown {
+  title: string;
+  children: NavbarLink[];
+}
+
+export type NavbarItem = NavbarLink | NavbarDropdown;
+
+const NAVBAR_ITEMS: NavbarItem[] = [
   {
     title: 'Organization',
     children: [
@@ -52,6 +59,5 @@ const items: NavbarItem[] = [
     href: '/apply',
   },
 ];
----
 
-<NavbarItems items={items} />
+export default NAVBAR_ITEMS;
