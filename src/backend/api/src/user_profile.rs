@@ -1,3 +1,4 @@
+use crate::HistoryEntry;
 use candid::{CandidType, Deserialize};
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
@@ -28,4 +29,15 @@ pub struct CreateMyUserProfileResponse {
     pub id: String,
     pub username: String,
     pub config: UserConfig,
+}
+
+#[derive(Debug, Clone, CandidType, PartialEq, Eq)]
+pub struct UserProfileHistoryEntry {
+    pub username: String,
+    pub config: UserConfig,
+}
+
+#[derive(Debug, Clone, CandidType, PartialEq, Eq)]
+pub struct GetMyUserProfileHistoryResponse {
+    pub history: Vec<HistoryEntry<UserProfileHistoryEntry>>,
 }

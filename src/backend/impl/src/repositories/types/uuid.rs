@@ -1,8 +1,5 @@
 use backend_api::ApiError;
-use candid::{
-    types::{Serializer, Type, TypeInner},
-    CandidType, Deserialize,
-};
+use candid::Deserialize;
 use ic_stable_structures::{storable::Bound, Storable};
 use std::borrow::Cow;
 use uuid::{Builder, Uuid as UuidImpl};
@@ -27,19 +24,6 @@ impl Uuid {
 impl ToString for Uuid {
     fn to_string(&self) -> String {
         self.0.to_string()
-    }
-}
-
-impl CandidType for Uuid {
-    fn _ty() -> Type {
-        TypeInner::Vec(TypeInner::Nat8.into()).into()
-    }
-
-    fn idl_serialize<S>(&self, serializer: S) -> Result<(), S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_blob(self.0.as_bytes())
     }
 }
 

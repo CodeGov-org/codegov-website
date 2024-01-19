@@ -54,6 +54,7 @@ mod tests {
         let mut repository_mock = MockUserProfileRepository::new();
         repository_mock
             .expect_create_user_profile()
+            .once()
             .with(eq(calling_principal), eq(profile.clone()))
             .return_const(Ok(id));
 

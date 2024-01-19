@@ -10,11 +10,6 @@ mod repositories;
 mod services;
 mod system_api;
 
-// https://github.com/la10736/rstest/tree/master/rstest_reuse#cavelets
-#[cfg(test)]
-#[allow(clippy::single_component_path_imports)]
-use rstest_reuse;
-
 #[cfg(test)]
 mod fixtures;
 
