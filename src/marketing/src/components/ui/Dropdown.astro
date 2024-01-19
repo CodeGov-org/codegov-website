@@ -1,0 +1,62 @@
+---
+import type { AstroBuiltinAttributes } from 'astro';
+import ChevronIcon from '../icons/ChevronIcon.astro';
+
+export interface Props {
+  menuTriggerClassName?: AstroBuiltinAttributes['class:list'];
+}
+
+const { menuTriggerClassName } = Astro.props;
+---
+
+<dropdown-component class="dropdown">
+  <div data-wrapper>
+    <button
+      data-menu-trigger
+      class:list={[menuTriggerClassName, 'dropdown-trigger']}
+    >
+      <div><slot name="menuTrigger" /></div>
+
+      <ChevronIcon />
+    </button>
+
+    <div class:list={['dropdown-menu', 'hidden']} data-menu-wrapper>
+      <slot name="menu" />
+    </div>
+  </div>
+</dropdown-component>
+
+<script>
+  class DropdownComponent extends HTMLElement {
+    constructor() {
+      super();
+
+      const wrapper = this.querySelector('[data-wrapper]');
+      if (!wrapper) {
+        throw new Error('Dropdown must have a wrapper');
+      }
+
+      const menuTriggerBtn = this.querySelector('[data-menu-trigger]');
+      if (!menuTriggerBtn) {
+        throw new Error('Dropdown must have a menu trigger button');
+      }
+
+      const menuWrapper = this.querySelector('[data-menu-wrapper]');
+      if (!menuWrapper) {
+        throw new Error('Dropdown must have a menu wrapper');
+      }
+
+      menuTriggerBtn.addEventListener('click', () => {
+        menuWrapper.classList.toggle('hidden');
+      });
+
+      document.addEventListener('click', event => {
+        if (event.target && !wrapper.contains(event.target as Node)) {
+          menuWrapper.classList.add('hidden');
+        }
+      });
+    }
+  }
+
+  customElements.define('dropdown-component', DropdownComponent);
+</script>

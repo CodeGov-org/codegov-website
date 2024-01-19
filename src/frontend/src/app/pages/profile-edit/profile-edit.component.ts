@@ -25,29 +25,29 @@ import { SOCIAL_MEDIA_INPUTS } from './profile.model';
   imports: [ReactiveFormsModule, CommonModule, RouterModule, InfoIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="container px-5 py-5 mx-auto bg-gray-200">
+    <div class="container mx-auto bg-gray-200 px-5 py-5">
       <h1
-        class="text-center text-2xl sm:text-3xl font-medium mb-4 text-gray-900"
+        class="mb-4 text-center text-2xl font-medium text-gray-900 sm:text-3xl"
       >
         Edit Profile
       </h1>
-      <div class="md:w-2/3 mx-auto">
+      <div class="mx-auto md:w-2/3">
         <div>
           @if (userProfile$ | async; as userProfile) {
-            <div class="flex flex-row mb-4 items-center">
+            <div class="mb-4 flex flex-row items-center">
               <span class="w-1/3 font-bold">Role</span>
               <span>{{ userProfile.role }}</span>
               <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
             </div>
 
-            <div class="flex flex-row mb-4 items-center">
+            <div class="mb-4 flex flex-row items-center">
               <span class="w-1/3 font-bold">Proposal Types</span>
               <span>{{ userProfile.proposalTypes.join(', ') }}</span>
               <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
             </div>
 
-            <div class="flex flex-row mb-4 items-center">
-              <span class="w-1/3 h-6 font-bold">Neuron ID</span>
+            <div class="mb-4 flex flex-row items-center">
+              <span class="h-6 w-1/3 font-bold">Neuron ID</span>
               <span>{{ userProfile.neuronId }}</span>
               <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
             </div>
@@ -58,7 +58,7 @@ import { SOCIAL_MEDIA_INPUTS } from './profile.model';
           <div class="flex flex-row">
             <label for="username" class="w-1/3 font-bold">Username</label>
 
-            <div class="flex flex-col mb-3 w-2/3">
+            <div class="mb-3 flex w-2/3 flex-col">
               <input
                 id="username"
                 type="text"
@@ -69,7 +69,7 @@ import { SOCIAL_MEDIA_INPUTS } from './profile.model';
                 }"
               />
 
-              <div class="h-4 text-red-600 text-xs">
+              <div class="h-4 text-xs text-red-600">
                 @if (isControlInvalid('username')) {
                   {{ getErrorMessage('username') }}
                 }
@@ -77,25 +77,25 @@ import { SOCIAL_MEDIA_INPUTS } from './profile.model';
             </div>
           </div>
 
-          <div class="flex flex-row mb-4">
+          <div class="mb-4 flex flex-row">
             <label for="bio" class="w-1/3 font-bold">Bio</label>
             <textarea
               id="bio"
               type="text"
               formControlName="bio"
-              class="w-2/3 h-24 resize-y leading-24"
+              class="leading-24 h-24 w-2/3 resize-y"
             ></textarea>
           </div>
 
           <div class="py-5">
             <h2
-              class="text-left text-lg sm:text-xl font-normal mb-4 text-gray-900"
+              class="mb-4 text-left text-lg font-normal text-gray-900 sm:text-xl"
             >
               Social Media
             </h2>
             <div formGroupName="socialMedia">
               @for (key of socialMediaKeys; track key) {
-                <div class="flex mb-7 items-center">
+                <div class="mb-7 flex items-center">
                   <label [for]="key" class="w-1/3 font-bold">{{
                     socialMediaInputs[key].label
                   }}</label>
@@ -120,7 +120,7 @@ import { SOCIAL_MEDIA_INPUTS } from './profile.model';
                 profileForm.invalid ? 'Fix the validation errors' : undefined
               "
               [disabled]="profileForm.invalid"
-              class="text-white bg-blue-500 py-1 px-4 rounded text-lg enabled:hover:bg-blue-600 disabled:bg-blue-300"
+              class="rounded bg-blue-500 px-4 py-1 text-lg text-white enabled:hover:bg-blue-600 disabled:bg-blue-300"
             >
               Save
             </button>
