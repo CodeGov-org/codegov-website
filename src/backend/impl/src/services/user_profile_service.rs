@@ -1,16 +1,27 @@
 use crate::{
-    mappings::{map_create_my_user_profile_response, map_get_my_user_profile_response},
+    mappings::{
+        map_create_my_user_profile_response, map_get_my_user_profile_history_response,
+        map_get_my_user_profile_response,
+    },
     repositories::{UserProfile, UserProfileRepository, UserProfileRepositoryImpl},
 };
-use backend_api::{ApiError, CreateMyUserProfileResponse, GetMyUserProfileResponse};
+use backend_api::{
+    ApiError, CreateMyUserProfileResponse, GetMyUserProfileHistoryResponse,
+    GetMyUserProfileResponse,
+};
 use candid::Principal;
 
 #[cfg_attr(test, mockall::automock)]
 pub trait UserProfileService {
-    async fn get_my_user_profile(
+    fn get_my_user_profile(
         &self,
         calling_principal: Principal,
     ) -> Result<GetMyUserProfileResponse, ApiError>;
+
+    fn get_my_user_profile_history(
+        &self,
+        calling_principal: Principal,
+    ) -> Result<GetMyUserProfileHistoryResponse, ApiError>;
 
     async fn create_my_user_profile(
         &self,
@@ -29,7 +40,7 @@ impl Default for UserProfileServiceImpl<UserProfileRepositoryImpl> {
 }
 
 impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> {
-    async fn get_my_user_profile(
+    fn get_my_user_profile(
         &self,
         calling_principal: Principal,
     ) -> Result<GetMyUserProfileResponse, ApiError> {
@@ -44,6 +55,23 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
             })?;
 
         Ok(map_get_my_user_profile_response(id, profile))
+    }
+
+    fn get_my_user_profile_history(
+        &self,
+        calling_principal: Principal,
+    ) -> Result<GetMyUserProfileHistoryResponse, ApiError> {
+        let history = self
+            .user_profile_repository
+            .get_user_profile_history_by_principal(&calling_principal)?
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "User profile history for principal {} not found",
+                    &calling_principal.to_text()
+                ))
+            })?;
+
+        Ok(map_get_my_user_profile_history_response(history))
     }
 
     async fn create_my_user_profile(
@@ -72,6 +100,7 @@ impl<T: UserProfileRepository> UserProfileServiceImpl<T> {
 mod tests {
     use super::*;
     use crate::{fixtures, repositories::MockUserProfileRepository};
+    use backend_api::{HistoryAction, HistoryEntry, UserProfileHistoryEntry};
     use mockall::predicate::*;
     use rstest::*;
 
@@ -84,15 +113,13 @@ mod tests {
         let mut repository_mock = MockUserProfileRepository::new();
         repository_mock
             .expect_get_user_profile_by_principal()
+            .once()
             .with(eq(calling_principal))
             .return_const(Some((fixtures::user_id(), profile.clone())));
 
         let service = UserProfileServiceImpl::new(repository_mock);
 
-        let res = service
-            .get_my_user_profile(calling_principal)
-            .await
-            .unwrap();
+        let res = service.get_my_user_profile(calling_principal).unwrap();
 
         assert_eq!(
             res,
@@ -111,15 +138,13 @@ mod tests {
         let mut repository_mock = MockUserProfileRepository::new();
         repository_mock
             .expect_get_user_profile_by_principal()
+            .once()
             .with(eq(calling_principal))
             .return_const(None);
 
         let service = UserProfileServiceImpl::new(repository_mock);
 
-        let res = service
-            .get_my_user_profile(calling_principal)
-            .await
-            .unwrap_err();
+        let res = service.get_my_user_profile(calling_principal).unwrap_err();
 
         assert_eq!(
             res,
@@ -131,6 +156,66 @@ mod tests {
     }
 
     #[rstest]
+    fn get_my_user_profile_history() {
+        let calling_principal = fixtures::principal();
+        let history = fixtures::user_profile_history();
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_profile_history_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Ok(Some(history.clone())));
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let res = service
+            .get_my_user_profile_history(calling_principal)
+            .unwrap();
+
+        assert_eq!(
+            res,
+            GetMyUserProfileHistoryResponse {
+                history: vec![HistoryEntry {
+                    action: HistoryAction::Create,
+                    date_time: history[0].clone().date_time.to_string(),
+                    user: history[0].clone().principal,
+                    data: UserProfileHistoryEntry {
+                        username: history[0].clone().data.username,
+                        config: history[0].clone().data.config.into(),
+                    }
+                }]
+            }
+        )
+    }
+
+    #[rstest]
+    fn get_my_user_profile_history_no_history() {
+        let calling_principal = fixtures::principal();
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_profile_history_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Ok(None));
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let res = service
+            .get_my_user_profile_history(calling_principal)
+            .unwrap_err();
+
+        assert_eq!(
+            res,
+            ApiError::not_found(&format!(
+                "User profile history for principal {} not found",
+                &calling_principal.to_text()
+            ))
+        )
+    }
+
+    #[rstest]
     async fn create_my_user_profile() {
         let calling_principal = fixtures::principal();
         let id = fixtures::user_id();
@@ -139,6 +224,7 @@ mod tests {
         let mut repository_mock = MockUserProfileRepository::new();
         repository_mock
             .expect_create_user_profile()
+            .once()
             .with(eq(calling_principal), eq(profile.clone()))
             .return_const(Ok(id));
 
