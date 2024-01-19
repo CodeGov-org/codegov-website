@@ -1,12 +1,18 @@
 use super::{
-    Memory, MEMORY_MANAGER, USER_PROFILES_MEMORY_ID, USER_PROFILE_PRINCIPAL_INDEX_MEMORY_ID,
+    memory_manager::USER_PROFILE_HISTORY_MEMORY_ID, Memory, MEMORY_MANAGER,
+    USER_PROFILES_MEMORY_ID, USER_PROFILE_PRINCIPAL_INDEX_MEMORY_ID,
 };
-use crate::repositories::types::{UserId, UserProfile};
+use crate::repositories::{
+    types::{UserId, UserProfile},
+    UserProfileHistoryEntry, UserProfileHistoryKey,
+};
 use candid::Principal;
 use ic_stable_structures::BTreeMap;
 
 pub type UserProfileMemory = BTreeMap<UserId, UserProfile, Memory>;
 pub type UserProfilePrincipalIndexMemory = BTreeMap<Principal, UserId, Memory>;
+pub type UserProfileHistoryMemory =
+    BTreeMap<UserProfileHistoryKey, UserProfileHistoryEntry, Memory>;
 
 pub fn init_user_profiles() -> UserProfileMemory {
     UserProfileMemory::init(get_user_profiles_memory())
@@ -16,10 +22,18 @@ pub fn init_user_profile_principal_index() -> UserProfilePrincipalIndexMemory {
     UserProfilePrincipalIndexMemory::init(get_user_profile_principal_index_memory())
 }
 
+pub fn init_user_profiles_history() -> UserProfileHistoryMemory {
+    UserProfileHistoryMemory::init(get_user_profiles_history_memory())
+}
+
 fn get_user_profiles_memory() -> Memory {
     MEMORY_MANAGER.with(|m| m.borrow().get(USER_PROFILES_MEMORY_ID))
 }
 
 fn get_user_profile_principal_index_memory() -> Memory {
     MEMORY_MANAGER.with(|m| m.borrow().get(USER_PROFILE_PRINCIPAL_INDEX_MEMORY_ID))
+}
+
+fn get_user_profiles_history_memory() -> Memory {
+    MEMORY_MANAGER.with(|m| m.borrow().get(USER_PROFILE_HISTORY_MEMORY_ID))
 }
