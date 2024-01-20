@@ -93,7 +93,7 @@
   }
 
   .dropdown-item {
-    @apply block px-4 py-2 hover:bg-cyan-800 hover:text-white hover:dark:bg-slate-200 hover:dark:text-slate-900;
+    @apply block px-4 py-2.5 hover:bg-cyan-800 hover:text-white hover:dark:bg-slate-200 hover:dark:text-slate-900;
   }
 
   /* Collapsible */
