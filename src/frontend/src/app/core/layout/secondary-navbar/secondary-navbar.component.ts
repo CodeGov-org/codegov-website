@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { IcAuthService } from '@hadronous/ic-angular';
 import { Observable } from 'rxjs';
 
 import {
   DropdownComponent,
+  EditIconComponent,
   LoginIconComponent,
   LogoutIconComponent,
   ProfileIconComponent,
@@ -15,9 +17,11 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     LoginIconComponent,
     LogoutIconComponent,
     ProfileIconComponent,
+    EditIconComponent,
     DropdownComponent,
   ],
   template: `<nav
@@ -35,6 +39,13 @@ import {
           </ng-container>
 
           <ng-container ngProjectAs="[menu]">
+            <a
+              routerLink="/profile/edit"
+              class="dropdown-item flex flex-row items-center"
+            >
+              <app-edit-icon class="mr-2" />Edit Profile</a
+            >
+
             <button
               (click)="onLogoutButtonClicked()"
               class="dropdown-item flex flex-row items-center"
@@ -67,5 +78,6 @@ export class SecondaryNavbarComponent {
 
   public async onLogoutButtonClicked(): Promise<void> {
     await this.authService.logout();
+    window.location.reload();
   }
 }

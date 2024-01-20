@@ -189,8 +189,8 @@ importers:
         specifier: workspace:*
         version: link:../../lib/tailwind
       '@hadronous/ic-angular':
-        specifier: ^0.1.1
-        version: 0.1.1(@angular/core@17.1.0)(@dfinity/agent@0.20.2)(@dfinity/auth-client@0.20.2)(@dfinity/candid@0.20.2)(@dfinity/principal@0.20.2)(rxjs@7.8.1)
+        specifier: ^0.2.0
+        version: 0.2.0(@angular/core@17.1.0)(@angular/router@17.1.0)(@dfinity/agent@0.20.2)(@dfinity/auth-client@0.20.2)(@dfinity/candid@0.20.2)(@dfinity/principal@0.20.2)(rxjs@7.8.1)
       rxjs:
         specifier: ~7.8.1
         version: 7.8.1
@@ -4876,10 +4876,11 @@ packages:
     engines: {node: '>=14'}
     dev: true
 
-  /@hadronous/ic-angular@0.1.1(@angular/core@17.1.0)(@dfinity/agent@0.20.2)(@dfinity/auth-client@0.20.2)(@dfinity/candid@0.20.2)(@dfinity/principal@0.20.2)(rxjs@7.8.1):
-    resolution: {integrity: sha512-P0CxfVH67ACw9GB4lcnU0ZWmyydMrtglBx6dy2zLOM3SA/gDY00tYtmmbbIOCNLLVqB7IcCTFcbRTQPfpMdDAg==}
+  /@hadronous/ic-angular@0.2.0(@angular/core@17.1.0)(@angular/router@17.1.0)(@dfinity/agent@0.20.2)(@dfinity/auth-client@0.20.2)(@dfinity/candid@0.20.2)(@dfinity/principal@0.20.2)(rxjs@7.8.1):
+    resolution: {integrity: sha512-OfIuYSr4I6IA+8XDFuw/St2CnanLTAggNKnFYgyX3WsG27zCyniIsZV3sOluua6OKlN+nY1zkIJ3iiwVtTLAxA==}
     peerDependencies:
       '@angular/core': ^17.0.0
+      '@angular/router': ^17.0.6
       '@dfinity/agent': ~0.20.2
       '@dfinity/auth-client': ~0.20.2
       '@dfinity/candid': ~0.20.2
@@ -4887,6 +4888,7 @@ packages:
       rxjs: ^7.8.1
     dependencies:
       '@angular/core': 17.1.0(rxjs@7.8.1)(zone.js@0.14.2)
+      '@angular/router': 17.1.0(@angular/common@17.1.0)(@angular/core@17.1.0)(@angular/platform-browser@17.1.0)(rxjs@7.8.1)
       '@dfinity/agent': 0.20.2(@dfinity/candid@0.20.2)(@dfinity/principal@0.20.2)
       '@dfinity/auth-client': 0.20.2(@dfinity/agent@0.20.2)(@dfinity/identity@0.20.2)(@dfinity/principal@0.20.2)
       '@dfinity/candid': 0.20.2(@dfinity/principal@0.20.2)
