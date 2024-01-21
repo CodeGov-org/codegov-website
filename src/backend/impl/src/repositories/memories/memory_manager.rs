@@ -15,3 +15,4 @@ pub(super) const USER_PROFILES_MEMORY_ID: MemoryId = MemoryId::new(0);
 pub(super) const USER_PROFILE_PRINCIPAL_INDEX_MEMORY_ID: MemoryId = MemoryId::new(1);
 pub(super) const USER_PROFILE_HISTORY_MEMORY_ID: MemoryId = MemoryId::new(2);
 pub(super) const USER_PROFILE_HISTORY_ID_MEMORY_ID: MemoryId = MemoryId::new(3);
+pub(super) const PROPOSALS_MEMORY_ID: MemoryId = MemoryId::new(4);
