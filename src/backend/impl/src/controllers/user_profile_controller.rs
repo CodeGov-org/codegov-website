@@ -44,7 +44,7 @@ fn update_my_user_profile(request: UpdateMyUserProfileRequest) -> ApiResult<()> 
     let calling_principal = caller();
 
     UserProfileController::default()
-        .update_my_user_profile(calling_principal, request.into())
+        .update_my_user_profile(calling_principal, request)
         .into()
 }
 
@@ -493,6 +493,9 @@ mod tests {
             .once()
             .with(eq(calling_principal))
             .return_const(Err(ApiError::unauthenticated()));
+        access_control_service_mock
+            .expect_assert_principal_is_admin()
+            .never();
 
         let mut service_mock = MockUserProfileService::new();
         service_mock.expect_update_user_profile().never();

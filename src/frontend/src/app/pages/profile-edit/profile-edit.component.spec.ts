@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
-import { ProfileService } from '@core/state';
+
+import { ProfileService } from '~core/state';
 import {
   ProfileServiceMock,
   profileServiceMockFactory,
-} from '@core/state/profile/profile.service.mock';
+} from '~core/state/profile/profile.service.mock';
 import { ProfileEditComponent } from './profile-edit.component';
 
 describe('ProfileViewComponent', () => {

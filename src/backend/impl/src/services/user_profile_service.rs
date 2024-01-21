@@ -215,7 +215,7 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
                     });
 
                     let neuron_id =
-                        neuron_id.unwrap_or_else(|| match current_user_profile.config {
+                        neuron_id.unwrap_or(match current_user_profile.config {
                             UserConfig::Reviewer { neuron_id, .. } => neuron_id,
                             _ => 0,
                         });

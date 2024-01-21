@@ -1,7 +1,7 @@
 ---
 import type { MarkdownLayoutProps } from 'astro';
-import PrimaryNavbar from '../components/PrimaryNavbar.astro';
-import PrimaryFooter from '../components/PrimaryFooter.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
 import '../styles.css';
 
 type Props = MarkdownLayoutProps<{
@@ -27,18 +27,16 @@ const { frontmatter } = Astro.props;
     <title>{frontmatter.title} | CodeGov</title>
     <meta name="description" content={frontmatter.description} />
   </head>
-  <body>
-    <header>
-      <PrimaryNavbar />
-    </header>
+  <body class="flex flex-col">
+    <Navbar />
 
-    <article class="container main-content markdown-content">
+    <article class="flex-1">
       <h1>{frontmatter.title}</h1>
       <slot />
     </article>
 
     <footer>
-      <PrimaryFooter />
+      <Footer />
     </footer>
   </body>
 </html>
