@@ -1,6 +1,6 @@
 use super::{
     memories::{init_proposals, ProposalMemory},
-    Proposal, ProposalId, ReviewPeriodState,
+    Proposal, ProposalId,
 };
 use backend_api::ApiError;
 use std::cell::RefCell;
@@ -98,7 +98,7 @@ thread_local! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::fixtures;
+    use crate::{fixtures, repositories::ReviewPeriodState};
     use rstest::*;
 
     #[rstest]

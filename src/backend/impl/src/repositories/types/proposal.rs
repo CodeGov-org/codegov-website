@@ -9,11 +9,14 @@ pub type NeuronId = u64;
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub enum NervousSystem {
-    Network { id: NervousSystemProposalId },
+    Network {
+        id: NervousSystemProposalId,
+        topic: NnsProposalTopic,
+    },
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
-pub enum ProposalTopic {
+pub enum NnsProposalTopic {
     ReplicaVersionManagement,
     SystemCanisterManagement,
 }
@@ -27,7 +30,6 @@ pub enum ReviewPeriodState {
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub struct Proposal {
     pub title: String,
-    pub topic: ProposalTopic,
     pub nervous_system: NervousSystem,
     pub state: ReviewPeriodState,
     pub proposed_at: DateTime,
