@@ -7,6 +7,9 @@ import {
   ElementRef,
   HostListener,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationSkipped, NavigationStart, Router } from '@angular/router';
+import { filter } from 'rxjs';
 
 import { ChevronIconComponent } from '../chevron-icon';
 
@@ -53,7 +56,24 @@ export class DropdownComponent {
   @Input()
   public menuTriggerClassName?: string = '';
 
-  constructor(private readonly hostElem: ElementRef<HTMLElement>) {}
+  constructor(
+    private readonly hostElem: ElementRef<HTMLElement>,
+    router: Router,
+  ) {
+    router.events
+      .pipe(
+        takeUntilDestroyed(),
+        filter(() => this.isOpen),
+        filter(
+          event =>
+            event instanceof NavigationStart ||
+            event instanceof NavigationSkipped,
+        ),
+      )
+      .subscribe(() => {
+        this.isOpen = false;
+      });
+  }
 
   public onTriggerClicked(): void {
     this.isOpen = !this.isOpen;
