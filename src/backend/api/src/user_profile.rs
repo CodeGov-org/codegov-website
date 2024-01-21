@@ -41,3 +41,26 @@ pub struct UserProfileHistoryEntry {
 pub struct GetMyUserProfileHistoryResponse {
     pub history: Vec<HistoryEntry<UserProfileHistoryEntry>>,
 }
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub enum UserConfigUpdate {
+    #[serde(rename = "admin")]
+    Admin { bio: Option<String> },
+
+    #[serde(rename = "reviewer")]
+    Reviewer {
+        bio: Option<String>,
+        neuron_id: Option<u64>,
+        wallet_address: Option<String>,
+    },
+
+    #[serde(rename = "anonymous")]
+    Anonymous,
+}
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub struct UpdateUserProfileRequest {
+    pub user_id: String,
+    pub username: Option<String>,
+    pub config: Option<UserConfigUpdate>,
+}

@@ -7,8 +7,7 @@ pub trait AccessControlService {
     fn assert_principal_not_anonymous(&self, calling_principal: &Principal)
         -> Result<(), ApiError>;
 
-    async fn assert_principal_is_admin(&self, calling_principal: Principal)
-        -> Result<(), ApiError>;
+    fn assert_principal_is_admin(&self, calling_principal: Principal) -> Result<(), ApiError>;
 }
 
 pub struct AccessControlServiceImpl<T: UserProfileRepository> {
@@ -33,10 +32,7 @@ impl<T: UserProfileRepository> AccessControlService for AccessControlServiceImpl
         Ok(())
     }
 
-    async fn assert_principal_is_admin(
-        &self,
-        calling_principal: Principal,
-    ) -> Result<(), ApiError> {
+    fn assert_principal_is_admin(&self, calling_principal: Principal) -> Result<(), ApiError> {
         let (_id, profile) = self
             .user_profile_repository
             .get_user_profile_by_principal(&calling_principal)
@@ -116,7 +112,6 @@ mod tests {
 
         service
             .assert_principal_is_admin(calling_principal)
-            .await
             .unwrap();
     }
 
@@ -135,7 +130,6 @@ mod tests {
 
         let result = service
             .assert_principal_is_admin(calling_principal)
-            .await
             .unwrap_err();
 
         assert_eq!(
@@ -164,7 +158,6 @@ mod tests {
 
         let result = service
             .assert_principal_is_admin(calling_principal)
-            .await
             .unwrap_err();
 
         assert_eq!(
@@ -193,7 +186,6 @@ mod tests {
 
         let result = service
             .assert_principal_is_admin(calling_principal)
-            .await
             .unwrap_err();
 
         assert_eq!(
