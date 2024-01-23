@@ -16,15 +16,28 @@ import {
   SocialLink,
   UpdatableProfile,
 } from '~core/state';
-import { InfoIconComponent } from '~core/ui';
+import {
+  FormFieldComponent,
+  InfoIconComponent,
+  InputDirective,
+  LabelComponent,
+} from '~core/ui';
 import { keysOf } from '~core/utils';
 import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from './profile.model';
 
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule, InfoIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    ReactiveFormsModule,
+    CommonModule,
+    RouterModule,
+    InfoIconComponent,
+    FormFieldComponent,
+    LabelComponent,
+    InputDirective,
+  ],
   template: `
     <div
       class="container mx-auto my-8 rounded-md bg-slate-200 px-8 py-8 shadow-md dark:bg-slate-700 dark:text-slate-200"
@@ -56,67 +69,60 @@ import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from './profile.model';
         </div>
 
         <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-          <div class="flex flex-col md:flex-row">
-            <label for="username" class="font-bold md:w-1/3">Username</label>
+          <app-form-field>
+            <app-label>Username</app-label>
+            <input
+              appInput
+              id="username"
+              type="text"
+              formControlName="username"
+              [ngClass]="{
+                'border-red-700': isControlInvalid('username')
+              }"
+            />
 
-            <div class="mb-3 flex flex-col md:w-2/3">
-              <input
-                id="username"
-                type="text"
-                formControlName="username"
-                class="mb-1 dark:bg-slate-800"
-                [ngClass]="{
-                  'border-red-700': isControlInvalid('username')
-                }"
-              />
-
-              <div class="mb-1 ml-1 h-4 text-xs text-red-700 dark:text-red-400">
-                @if (isControlInvalid('username')) {
-                  {{ getErrorMessage('username') }}
-                }
-              </div>
+            <div class="mb-1 ml-1 h-4 text-xs text-red-700 dark:text-red-400">
+              @if (isControlInvalid('username')) {
+                {{ getErrorMessage('username') }}
+              }
             </div>
-          </div>
+          </app-form-field>
 
-          <div class="flex flex-col md:flex-row">
-            <label for="bio" class="font-bold md:w-1/3">Bio</label>
-            <div class="mb-3 flex flex-col md:w-2/3">
-              <textarea
-                id="bio"
-                type="text"
-                formControlName="bio"
-                class="leading-24 mb-1 h-24 resize-y dark:bg-slate-800"
-                [ngClass]="{
-                  'border-red-700 ': isControlInvalid('bio')
-                }"
-              ></textarea>
-              <div class="mb-1 ml-1 h-4 text-xs text-red-700 dark:text-red-400">
-                @if (isControlInvalid('bio')) {
-                  {{ getErrorMessage('bio') }}
-                }
-              </div>
+          <app-form-field>
+            <app-label>Bio</app-label>
+            <textarea
+              appInput
+              id="bio"
+              type="text"
+              formControlName="bio"
+              [ngClass]="{
+                'border-red-700 ': isControlInvalid('bio')
+              }"
+            ></textarea>
+            <div class="mb-1 ml-1 h-4 text-xs text-red-700 dark:text-red-400">
+              @if (isControlInvalid('bio')) {
+                {{ getErrorMessage('bio') }}
+              }
             </div>
-          </div>
+          </app-form-field>
 
-          <div class="flex flex-col md:flex-row">
-            <label for="walletAddress" class="font-bold md:w-1/3">Wallet</label>
-            <div class="mb-3 flex flex-col md:w-2/3">
-              <input
-                id="walletAddress"
-                type="text"
-                formControlName="walletAddress"
-                class="mb-1 dark:bg-slate-800"
-                [ngClass]="{
-                  'border-red-700': isControlInvalid('walletAddress')
-                }"
-              />
-              <div class="mb-1 ml-1 h-4 text-xs text-red-700 dark:text-red-400">
-                @if (isControlInvalid('walletAddress')) {
-                  {{ getErrorMessage('walletAddress') }}
-                }
-              </div>
+          <app-form-field>
+            <app-label>Wallet Address</app-label>
+            <input
+              appInput
+              id="walletAddress"
+              type="text"
+              formControlName="walletAddress"
+              [ngClass]="{
+                'border-red-700': isControlInvalid('walletAddress')
+              }"
+            />
+            <div class="mb-1 ml-1 h-4 text-xs text-red-700 dark:text-red-400">
+              @if (isControlInvalid('walletAddress')) {
+                {{ getErrorMessage('walletAddress') }}
+              }
             </div>
-          </div>
+          </app-form-field>
 
           <div class="py-6">
             <h2 class="mb-4 text-left text-lg font-normal sm:text-xl">
@@ -124,32 +130,27 @@ import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from './profile.model';
             </h2>
             <div formGroupName="socialMedia">
               @for (key of socialMediaKeys; track key) {
-                <div class="flex flex-col md:flex-row">
-                  <label [for]="key" class="font-bold md:w-1/3">{{
-                    socialMediaInputs[key].label
-                  }}</label>
-                  <div class="mb-3 flex flex-col md:w-2/3">
-                    <input
-                      [id]="key"
-                      type="text"
-                      [formControlName]="key"
-                      class="mb-1 dark:bg-slate-800"
-                    />
-                    <div
-                      class="mb-1 h-4 text-xs text-cyan-950 dark:text-slate-200"
-                    >
-                      @if (controlHasValue('socialMedia.' + key)) {
-                        <a
-                          href="{{ getSocialMediaUrl(key) }}"
-                          class="ml-3 text-blue-900 underline dark:text-blue-400"
-                          target="_blank"
-                          rel="nofollow noreferrer"
-                          >{{ getSocialMediaUrl(key) }}</a
-                        >
-                      }
-                    </div>
+                <app-form-field>
+                  <app-label>{{ socialMediaInputs[key].label }}</app-label>
+
+                  <input
+                    appInput
+                    [id]="key"
+                    type="text"
+                    [formControlName]="key"
+                  />
+                  <div class="mb-1 ml-3 h-4 text-xs">
+                    @if (controlHasValue('socialMedia.' + key)) {
+                      <a
+                        href="{{ getSocialMediaUrl(key) }}"
+                        class=" text-blue-900 underline dark:text-blue-400"
+                        target="_blank"
+                        rel="nofollow noreferrer"
+                        >{{ getSocialMediaUrl(key) }}</a
+                      >
+                    }
                   </div>
-                </div>
+                </app-form-field>
               }
             </div>
           </div>
@@ -265,7 +266,7 @@ export class ProfileEditComponent implements OnInit {
   }
 
   public getSocialMediaUrl(controlName: keyof SocialMediaInputs): string {
-    const control = this.getControl(controlName);
+    const control = this.getControl('socialMedia.' + controlName);
 
     const baseUrl = this.socialMediaInputs[controlName].baseUrl;
 
