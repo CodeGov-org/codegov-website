@@ -5,7 +5,6 @@ import {
   ContentChild,
   TemplateRef,
 } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
 
 import { InputDirective } from '../input';
 import { LabelComponent } from '../label';
@@ -13,7 +12,7 @@ import { LabelComponent } from '../label';
 @Component({
   selector: 'app-form-field',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col md:flex-row">
