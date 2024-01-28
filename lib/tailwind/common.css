@@ -4,14 +4,72 @@
 
 @layer base {
   body {
-    @apply min-h-[100vh] bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-200;
+    @apply min-h-[100vh] bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-300;
+  }
+
+  h1 {
+    @apply mb-3 text-3xl font-semibold sm:text-4xl;
+  }
+
+  h2 {
+    @apply mb-3 text-2xl font-semibold sm:text-3xl;
+  }
+
+  h3 {
+    @apply mb-3 text-xl font-semibold sm:text-2xl;
+  }
+
+  h4 {
+    @apply mb-3 text-lg font-semibold sm:text-xl;
+  }
+
+  h5 {
+    @apply mb-3 text-base font-semibold sm:text-lg;
+  }
+
+  h6 {
+    @apply mb-3 text-sm font-semibold sm:text-base;
+  }
+
+  p {
+    @apply mb-3;
+  }
+
+  ul {
+    @apply mb-3 ml-2 max-w-md list-inside list-disc space-y-1;
+  }
+
+  ol {
+    @apply mb-3 ml-2 max-w-md list-inside list-decimal space-y-1;
+  }
+
+  li > p {
+    @apply mb-0 inline-block;
+  }
+
+  blockquote {
+    @apply my-4 border-s-4 border-slate-500 bg-slate-200 p-4 dark:bg-slate-900 dark:text-slate-300;
+  }
+
+  hr {
+    @apply my-8 h-0.5 border-0 bg-slate-200 dark:bg-slate-900;
+  }
+
+  code {
+    @apply block w-full overflow-x-auto rounded-lg bg-slate-900 p-4;
+  }
+}
+
+@layer utilities {
+  .primary-colors {
+    @apply bg-cyan-900 text-white dark:bg-slate-900 dark:text-slate-300;
   }
 }
 
 @layer components {
   /* Navbar */
   .navbar {
-    @apply bg-cyan-900 px-4 py-3 text-white shadow-lg dark:bg-slate-900 dark:text-slate-200;
+    @apply primary-colors px-4 py-3 shadow-lg;
   }
 
   .navbar-nav {
@@ -48,7 +106,7 @@
 
   /* Sidenav */
   .sidenav {
-    @apply fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-cyan-900 px-4 py-3 text-white sm:max-w-sm dark:bg-slate-900 dark:text-slate-200;
+    @apply primary-colors fixed inset-y-0 right-0 z-10 w-full overflow-y-auto px-4 py-3 sm:max-w-sm;
   }
 
   .sidenav-header {
@@ -103,5 +161,10 @@
 
   .collapsible-content {
     @apply pl-3;
+  }
+
+  /* Buttons */
+  .icon-btn {
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-full bg-cyan-800 text-white shadow-lg dark:bg-slate-700 dark:text-slate-200;
   }
 }

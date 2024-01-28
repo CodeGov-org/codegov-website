@@ -1,0 +1,14 @@
+---
+import { renderRichText } from '@storyblok/astro';
+import type { RichTextBlock } from './types';
+
+interface Props {
+  blok: RichTextBlock;
+}
+
+const { blok } = Astro.props;
+
+const renderedRichText = renderRichText(blok.text);
+---
+
+<div set:html={renderedRichText} />

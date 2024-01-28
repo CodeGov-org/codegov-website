@@ -2,9 +2,11 @@
 import codegovLogo from '../assets/codegov-logo.png';
 import MenuCloseIcon from './icons/MenuCloseIcon.astro';
 import HamburgerMenuIcon from './icons/HamburgerMenuIcon.astro';
-import navbarItems from './navbar-items';
 import Collapsible from './ui/Collapsible.astro';
 import Dropdown from './ui/Dropdown.astro';
+import { getStoryBlokLinks, isLinkFolder } from '../storyblok/api';
+
+const links = await getStoryBlokLinks();
 ---
 
 <header class="navbar">
@@ -17,8 +19,8 @@ import Dropdown from './ui/Dropdown.astro';
 
     <div class="navbar-desktop-nav">
       {
-        navbarItems.map(item =>
-          'children' in item ? (
+        links.map(item =>
+          isLinkFolder(item) ? (
             <Dropdown menuTriggerClassName={['navbar-nav-item']}>
               <Fragment slot="menuTrigger">{item.title}</Fragment>
 
@@ -71,8 +73,8 @@ import Dropdown from './ui/Dropdown.astro';
 
       <nav class="sidebar-nav">
         {
-          navbarItems.map(item =>
-            'children' in item ? (
+          links.map(item =>
+            isLinkFolder(item) ? (
               <div>
                 <Collapsible>
                   <Fragment slot="header">{item.title}</Fragment>
