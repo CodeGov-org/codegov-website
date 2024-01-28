@@ -86,7 +86,7 @@ type NnsProposalTopic = variant {
 };
 
 type NervousSystem = variant {
-  Network : {
+  Network : record {
     id : nat64;
     topic : NnsProposalTopic;
   };
