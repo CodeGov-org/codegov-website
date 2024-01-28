@@ -1,0 +1,24 @@
+---
+import StoryblokComponent from '@storyblok/astro/StoryblokComponent.astro';
+import Layout from '../layouts/Layout.astro';
+import { editable } from '../storyblok/types';
+import { getPageStoryBySlug, getAllPageStorySlugs } from '../storyblok/api';
+
+export async function getStaticPaths(): Promise<{ params: Props }[]> {
+  const slugs = await getAllPageStorySlugs();
+
+  return slugs.map(slug => ({ params: { slug } }));
+}
+
+interface Props {
+  slug: string | undefined;
+}
+
+const { slug } = Astro.params;
+
+const story = await getPageStoryBySlug(slug);
+---
+
+<Layout seo_metadata={story.content.seo_metadata}>
+  <StoryblokComponent blok={editable(story.content)} />
+</Layout>

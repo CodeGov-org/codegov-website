@@ -24,6 +24,11 @@ jobs:
 
       - uses: ./.github/actions/setup-dfx
 
+      - name: Create marketing env file
+        run: |
+          touch ./src/marketing/.env
+          echo STORYBLOK_TOKEN=${{ secrets.STAGING_STORYBLOK_TOKEN }} >> ./src/marketing/.env
+
       - name: Start DFX
         run: dfx start --background
 

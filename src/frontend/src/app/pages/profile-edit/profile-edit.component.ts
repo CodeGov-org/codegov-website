@@ -42,9 +42,7 @@ import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from './profile.model';
     <div
       class="container mx-auto my-8 rounded-md bg-slate-200 px-8 py-8 shadow-md dark:bg-slate-700 dark:text-slate-200"
     >
-      <h1 class="mb-16 mt-4 text-center text-2xl font-medium sm:text-3xl">
-        Edit Profile
-      </h1>
+      <h1 class="mb-16 mt-4 text-center">Edit Profile</h1>
       <div class="mx-auto md:w-2/3">
         <div>
           @if (userProfile$ | async; as userProfile) {
@@ -125,9 +123,7 @@ import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from './profile.model';
           </app-form-field>
 
           <div class="py-6">
-            <h2 class="mb-4 text-left text-lg font-normal sm:text-xl">
-              Social Media
-            </h2>
+            <h2 class="mb-4">Social Media</h2>
             <div formGroupName="socialMedia">
               @for (key of socialMediaKeys; track key) {
                 <app-form-field>

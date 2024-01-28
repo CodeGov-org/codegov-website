@@ -92,6 +92,12 @@ Install NPM dependencies:
 pnpm i
 ```
 
+Create a `src/marketing/.env` file with the following contents:
+
+```bash
+STORYBLOK_TOKEN=YOUR_PREVIEW_TOKEN
+```
+
 ### WSL
 
 #### Google Chrome
