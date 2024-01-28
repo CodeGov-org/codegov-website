@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { UserAuthService } from '~core/services';
 import {
   UserAuthServiceMock,
   userAuthServiceMockFactory,
-  UserAuthService,
-} from '~core/services';
+} from '~core/services/user-auth-service-mock';
 import { SecondaryNavbarComponent } from './secondary-navbar.component';
 
 describe('SecondaryNavbarComponent', () => {
