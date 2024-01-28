@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { IcAuthService } from '@hadronous/ic-angular';
 import { Observable } from 'rxjs';
 
+import { UserAuthService } from '~core/services';
 import {
   DropdownComponent,
   EditIconComponent,
@@ -68,7 +68,7 @@ import {
 export class SecondaryNavbarComponent {
   public readonly isAuthenticated$: Observable<boolean>;
 
-  constructor(private readonly authService: IcAuthService) {
+  constructor(private readonly authService: UserAuthService) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
   }
 
@@ -78,6 +78,5 @@ export class SecondaryNavbarComponent {
 
   public async onLogoutButtonClicked(): Promise<void> {
     await this.authService.logout();
-    window.location.reload();
   }
 }
