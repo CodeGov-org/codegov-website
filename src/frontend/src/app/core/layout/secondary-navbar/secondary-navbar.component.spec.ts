@@ -1,23 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IcAuthService } from '@hadronous/ic-angular';
 
-import { IcAuthServiceMock, icAuthServiceMockFactory } from '~testing';
+import {
+  UserAuthServiceMock,
+  userAuthServiceMockFactory,
+  UserAuthService,
+} from '~core/services';
 import { SecondaryNavbarComponent } from './secondary-navbar.component';
 
 describe('SecondaryNavbarComponent', () => {
   let component: SecondaryNavbarComponent;
   let fixture: ComponentFixture<SecondaryNavbarComponent>;
-  let icAuthServiceMock: IcAuthServiceMock;
+  let userAuthServiceMock: UserAuthServiceMock;
 
   beforeEach(async () => {
-    icAuthServiceMock = icAuthServiceMockFactory();
+    userAuthServiceMock = userAuthServiceMockFactory();
 
     await TestBed.configureTestingModule({
       imports: [SecondaryNavbarComponent],
       providers: [
         {
-          provide: IcAuthService,
-          useValue: icAuthServiceMock,
+          provide: UserAuthService,
+          useValue: userAuthServiceMock,
         },
       ],
     }).compileComponents();
