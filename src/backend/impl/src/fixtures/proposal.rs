@@ -22,3 +22,17 @@ pub fn nns_replica_version_management_proposal() -> Proposal {
         proposed_by: nns_proposer(),
     }
 }
+
+#[fixture]
+pub fn nns_replica_version_management_proposal_completed() -> Proposal {
+    Proposal {
+        title: "Elect new IC/Replica revision".to_string(),
+        nervous_system: NervousSystem::Network {
+            id: 127094,
+            topic: NnsProposalTopic::ReplicaVersionManagement,
+        },
+        state: ReviewPeriodState::Completed,
+        proposed_at: date_time_a(),
+        proposed_by: nns_proposer(),
+    }
+}

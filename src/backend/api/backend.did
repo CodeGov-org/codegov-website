@@ -80,6 +80,39 @@ type UpdateUserProfileResponse = variant {
   err : Err;
 };
 
+type NnsProposalTopic = variant {
+  ReplicaVersionManagement;
+  SystemCanisterManagement;
+};
+
+type NervousSystem = variant {
+  Network : {
+    id : nat64;
+    topic : NnsProposalTopic;
+  };
+};
+
+type ReviewPeriodState = variant {
+  InProgress;
+  Completed;
+};
+
+type Proposal = record {
+  title : text;
+  nervous_system : NervousSystem;
+  state : ReviewPeriodState;
+  proposed_at : text;
+  proposed_by : nat64;
+};
+
+type GetProposalResponse = variant {
+  ok : record {
+    id : text;
+    proposal : Proposal;
+  };
+  err : Err;
+};
+
 service : {
   get_my_user_profile : () -> (GetMyUserProfileResponse) query;
   get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;

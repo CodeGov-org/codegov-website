@@ -50,21 +50,6 @@ impl ProposalRepository for ProposalRepositoryImpl {
             ))
         })?;
 
-        // match (proposal.state, state.clone()) {
-        //     (ReviewPeriodState::InProgress, ReviewPeriodState::Completed) => {
-        //         proposal.state = state;
-
-        //         STATE.with_borrow_mut(|s| {
-        //             s.proposals.insert(proposal_id.clone(), proposal);
-
-        //             Ok(())
-        //         })
-        //     }
-        //     _ => Err(ApiError::invalid_argument(
-        //         "Invalid proposal state transition",
-        //     )),
-        // }
-
         STATE.with_borrow_mut(|s| {
             s.proposals.insert(proposal_id.clone(), proposal);
 
