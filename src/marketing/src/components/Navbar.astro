@@ -4,9 +4,11 @@ import MenuCloseIcon from './icons/MenuCloseIcon.astro';
 import HamburgerMenuIcon from './icons/HamburgerMenuIcon.astro';
 import Collapsible from './ui/Collapsible.astro';
 import Dropdown from './ui/Dropdown.astro';
-import { getStoryBlokLinks, isLinkFolder } from '../storyblok/api';
+import { getGlobalConfigStory, isLinkCategory } from '../storyblok/api';
 
-const links = await getStoryBlokLinks();
+const {
+  content: { header_links },
+} = await getGlobalConfigStory();
 ---
 
 <header class="navbar">
@@ -19,21 +21,21 @@ const links = await getStoryBlokLinks();
 
     <div class="navbar-desktop-nav">
       {
-        links.map(item =>
-          isLinkFolder(item) ? (
+        header_links.map(item =>
+          isLinkCategory(item) ? (
             <Dropdown menuTriggerClassName={['navbar-nav-item']}>
               <Fragment slot="menuTrigger">{item.title}</Fragment>
 
               <Fragment slot="menu">
                 {item.children.map(subItem => (
-                  <a href={subItem.href} class="dropdown-item">
+                  <a href={subItem.content.cached_url} class="dropdown-item">
                     {subItem.title}
                   </a>
                 ))}
               </Fragment>
             </Dropdown>
           ) : (
-            <a href={item.href} class="navbar-nav-item">
+            <a href={item.content.cached_url} class="navbar-nav-item">
               {item.title}
             </a>
           ),
@@ -73,15 +75,15 @@ const links = await getStoryBlokLinks();
 
       <nav class="sidebar-nav">
         {
-          links.map(item =>
-            isLinkFolder(item) ? (
+          header_links.map(item =>
+            isLinkCategory(item) ? (
               <div>
                 <Collapsible>
                   <Fragment slot="header">{item.title}</Fragment>
 
                   <Fragment slot="body">
                     {item.children.map(subItem => (
-                      <a href={subItem.href} class="sidenav-item">
+                      <a href={subItem.content.cached_url} class="sidenav-item">
                         {subItem.title}
                       </a>
                     ))}
@@ -89,7 +91,7 @@ const links = await getStoryBlokLinks();
                 </Collapsible>
               </div>
             ) : (
-              <a href={item.href} class="sidenav-item">
+              <a href={item.content.cached_url} class="sidenav-item">
                 {item.title}
               </a>
             ),

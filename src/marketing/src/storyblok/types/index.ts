@@ -1,4 +1,4 @@
 export * from './bloks';
 export * from './editable';
-export * from './page-story';
+export * from './stories';
 export * from './seo-metadata';
