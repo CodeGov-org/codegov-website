@@ -8,6 +8,7 @@
     "build": "astro check && astro build && node ./generate-alt-origins.mjs"
   },
   "dependencies": {
+    "@astrojs/netlify": "^5.0.0",
     "@astrojs/tailwind": "^5.1.0",
     "@cg/tailwind": "workspace:*",
     "@storyblok/astro": "^4.0.1",
