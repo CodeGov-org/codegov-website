@@ -6,20 +6,17 @@ const {
 } = await getGlobalConfigStory();
 ---
 
-<footer class="bg-white dark:bg-slate-900">
-  <div
-    class="container mx-auto flex flex-col justify-between px-4 py-6 md:flex-row lg:max-w-screen-lg"
-  >
+<footer class="footer">
+  <div class="footer-main">
     {
       footer_links.map(linkCategory => (
-        <div class="py-3 md:py-5">
-          <h2 class="mb-6 text-sm font-semibold uppercase text-slate-900 dark:text-white">
-            {linkCategory.title}
-          </h2>
-          <ul class="list-none font-medium text-gray-500 dark:text-gray-400">
+        <div class="footer-link-category-container">
+          <h2 class="footer-link-category-title">{linkCategory.title}</h2>
+
+          <ul class="footer-link-category">
             {linkCategory.children.map(link => (
               <li>
-                <a href={link.content.cached_url} class="hover:underline">
+                <a href={link.content.cached_url} class="footer-link">
                   {link.title}
                 </a>
               </li>
@@ -30,9 +27,9 @@ const {
     }
   </div>
 
-  <div class="bg-slate-100 dark:bg-slate-800">
-    <div class="container mx-auto px-4 py-6 md:flex md:justify-center">
-      <span class="text-sm dark:text-slate-300">
+  <div class="footer-copyright">
+    <div class="footer-copyright-content">
+      <span class="footer-copyright-text">
         © {new Date().getFullYear()} CodeGov™. All Rights Reserved.
       </span>
     </div>

@@ -36,6 +36,11 @@ export async function getGlobalConfigStory(): Promise<GlobalConfigStory> {
     return normalizeLink(link);
   });
 
+  story.content.footer_links = story.content.footer_links.map(link => ({
+    ...link,
+    children: link.children.map(normalizeLink),
+  }));
+
   return data.story;
 }
 

@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
 
+import { GLOBAL_CONFIG, isLinkCategory } from '../../../../global-config';
 import {
   CollapsibleComponent,
   DropdownComponent,
   MenuCloseIconComponent,
 } from '~core/ui';
 import { HamburgerMenuIconComponent } from '~core/ui';
-import NAVBAR_ITEMS, { NavbarDropdown, NavbarItem } from './navbar-items';
 
 @Component({
   selector: 'app-primary-navbar',
@@ -15,6 +16,7 @@ import NAVBAR_ITEMS, { NavbarDropdown, NavbarItem } from './navbar-items';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
+    RouterModule,
     DropdownComponent,
     CollapsibleComponent,
     HamburgerMenuIconComponent,
@@ -24,7 +26,7 @@ import NAVBAR_ITEMS, { NavbarDropdown, NavbarItem } from './navbar-items';
     <header class="navbar">
       <div class="container mx-auto">
         <nav class="navbar-nav">
-          <a href="/" class="navbar-brand">
+          <a routerLink="/" class="navbar-brand">
             <img
               class="navbar-logo"
               src="assets/codegov-logo.png"
@@ -35,8 +37,8 @@ import NAVBAR_ITEMS, { NavbarDropdown, NavbarItem } from './navbar-items';
           </a>
 
           <div class="navbar-desktop-nav">
-            @for (item of navbarItems; track item.title) {
-              @if (isParentItem(item)) {
+            @for (item of globalConfig.headerLinks; track item.title) {
+              @if (isLinkCategory(item)) {
                 <app-dropdown menuTriggerClassName="navbar-nav-item">
                   <ng-container ngProjectAs="[menuTrigger]">
                     {{ item.title }}
@@ -44,14 +46,14 @@ import NAVBAR_ITEMS, { NavbarDropdown, NavbarItem } from './navbar-items';
 
                   <ng-container ngProjectAs="[menu]">
                     @for (subItem of item.children; track subItem.title) {
-                      <a [href]="subItem.href" class="dropdown-item">
+                      <a [href]="subItem.url" class="dropdown-item">
                         {{ subItem.title }}
                       </a>
                     }
                   </ng-container>
                 </app-dropdown>
               } @else {
-                <a [href]="item.href" class="navbar-nav-item">
+                <a [href]="item.url" class="navbar-nav-item">
                   {{ item.title }}
                 </a>
               }
@@ -93,8 +95,8 @@ import NAVBAR_ITEMS, { NavbarDropdown, NavbarItem } from './navbar-items';
             </div>
 
             <nav class="sidebar-nav">
-              @for (item of navbarItems; track item.title) {
-                @if (isParentItem(item)) {
+              @for (item of globalConfig.headerLinks; track item.title) {
+                @if (isLinkCategory(item)) {
                   <app-collapsible>
                     <ng-container ngProjectAs="[header]">
                       {{ item.title }}
@@ -102,14 +104,14 @@ import NAVBAR_ITEMS, { NavbarDropdown, NavbarItem } from './navbar-items';
 
                     <ng-container ngProjectAs="[body]">
                       @for (subItem of item.children; track subItem.title) {
-                        <a [href]="subItem.href" class="sidenav-item">
+                        <a [href]="subItem.url" class="sidenav-item">
                           {{ subItem.title }}
                         </a>
                       }
                     </ng-container>
                   </app-collapsible>
                 } @else {
-                  <a [href]="item.href" class="sidenav-item">
+                  <a [href]="item.url" class="sidenav-item">
                     {{ item.title }}
                   </a>
                 }
@@ -122,13 +124,11 @@ import NAVBAR_ITEMS, { NavbarDropdown, NavbarItem } from './navbar-items';
   `,
 })
 export class PrimaryNavbarComponent {
-  public navbarItems = NAVBAR_ITEMS;
+  public globalConfig = GLOBAL_CONFIG;
 
   public isSidenavOpen = false;
 
-  public isParentItem(navbarItem: NavbarItem): navbarItem is NavbarDropdown {
-    return 'children' in navbarItem;
-  }
+  public isLinkCategory = isLinkCategory;
 
   public onSidenavOpenClicked(): void {
     this.isSidenavOpen = true;
