@@ -27,6 +27,7 @@ export default defineConfig({
         customParent: 'https://app.storyblok.com',
       },
       components: {
+        global_config: 'storyblok/GlobalConfig',
         page: 'storyblok/Page',
         grid: 'storyblok/Grid',
         rich_text: 'storyblok/RichText',

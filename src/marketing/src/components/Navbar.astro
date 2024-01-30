@@ -4,98 +4,109 @@ import MenuCloseIcon from './icons/MenuCloseIcon.astro';
 import HamburgerMenuIcon from './icons/HamburgerMenuIcon.astro';
 import Collapsible from './ui/Collapsible.astro';
 import Dropdown from './ui/Dropdown.astro';
-import { getStoryBlokLinks, isLinkFolder } from '../storyblok/api';
+import { getGlobalConfigStory, isLinkCategory } from '../storyblok/api';
 
-const links = await getStoryBlokLinks();
+const {
+  content: { header_links },
+} = await getGlobalConfigStory();
 ---
 
 <header class="navbar">
-  <nav class="navbar-nav">
-    <a href="/" class="navbar-brand">
-      <img class="navbar-logo" src={codegovLogo.src} alt="CodeGov Logo" />
+  <div class="container mx-auto">
+    <nav class="navbar-nav">
+      <a href="/" class="navbar-brand">
+        <img class="navbar-logo" src={codegovLogo.src} alt="CodeGov Logo" />
 
-      <span class="navbar-company">codegov.org</span>
-    </a>
+        <span class="navbar-company">codegov.org</span>
+      </a>
 
-    <div class="navbar-desktop-nav">
-      {
-        links.map(item =>
-          isLinkFolder(item) ? (
-            <Dropdown menuTriggerClassName={['navbar-nav-item']}>
-              <Fragment slot="menuTrigger">{item.title}</Fragment>
-
-              <Fragment slot="menu">
-                {item.children.map(subItem => (
-                  <a href={subItem.href} class="dropdown-item">
-                    {subItem.title}
-                  </a>
-                ))}
-              </Fragment>
-            </Dropdown>
-          ) : (
-            <a href={item.href} class="navbar-nav-item">
-              {item.title}
-            </a>
-          ),
-        )
-      }
-    </div>
-
-    <div class="navbar-mobile-nav-trigger">
-      <button type="button" data-menu-open>
-        <span class="sr-only">Open main menu</span>
-        <HamburgerMenuIcon />
-      </button>
-    </div>
-  </nav>
-
-  <div
-    data-menu
-    class="navbar-mobile-nav hidden"
-    role="dialog"
-    aria-modal="true"
-  >
-    <div class="sidenav-backdrop" data-sidenav-backdrop></div>
-
-    <div class="sidenav">
-      <div class="sidenav-header">
-        <a href="/" class="sidenav-brand">
-          <img class="sidenav-logo" src={codegovLogo.src} alt="CodeGov Logo" />
-
-          <span class="sidenav-company">codegov.org</span>
-        </a>
-
-        <button type="button" data-menu-close>
-          <span class="sr-only">Close menu</span>
-          <MenuCloseIcon />
-        </button>
-      </div>
-
-      <nav class="sidebar-nav">
+      <div class="navbar-desktop-nav">
         {
-          links.map(item =>
-            isLinkFolder(item) ? (
-              <div>
-                <Collapsible>
-                  <Fragment slot="header">{item.title}</Fragment>
+          header_links.map(item =>
+            isLinkCategory(item) ? (
+              <Dropdown menuTriggerClassName={['navbar-nav-item']}>
+                <Fragment slot="menuTrigger">{item.title}</Fragment>
 
-                  <Fragment slot="body">
-                    {item.children.map(subItem => (
-                      <a href={subItem.href} class="sidenav-item">
-                        {subItem.title}
-                      </a>
-                    ))}
-                  </Fragment>
-                </Collapsible>
-              </div>
+                <Fragment slot="menu">
+                  {item.children.map(subItem => (
+                    <a href={subItem.content.cached_url} class="dropdown-item">
+                      {subItem.title}
+                    </a>
+                  ))}
+                </Fragment>
+              </Dropdown>
             ) : (
-              <a href={item.href} class="sidenav-item">
+              <a href={item.content.cached_url} class="navbar-nav-item">
                 {item.title}
               </a>
             ),
           )
         }
-      </nav>
+      </div>
+
+      <div class="navbar-mobile-nav-trigger">
+        <button type="button" data-menu-open>
+          <span class="sr-only">Open main menu</span>
+          <HamburgerMenuIcon />
+        </button>
+      </div>
+    </nav>
+
+    <div
+      data-menu
+      class="navbar-mobile-nav hidden"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="sidenav-backdrop" data-sidenav-backdrop></div>
+
+      <div class="sidenav">
+        <div class="sidenav-header">
+          <a href="/" class="sidenav-brand">
+            <img
+              class="sidenav-logo"
+              src={codegovLogo.src}
+              alt="CodeGov Logo"
+            />
+
+            <span class="sidenav-company">codegov.org</span>
+          </a>
+
+          <button type="button" data-menu-close>
+            <span class="sr-only">Close menu</span>
+            <MenuCloseIcon />
+          </button>
+        </div>
+
+        <nav class="sidebar-nav">
+          {
+            header_links.map(item =>
+              isLinkCategory(item) ? (
+                <div>
+                  <Collapsible>
+                    <Fragment slot="header">{item.title}</Fragment>
+
+                    <Fragment slot="body">
+                      {item.children.map(subItem => (
+                        <a
+                          href={subItem.content.cached_url}
+                          class="sidenav-item"
+                        >
+                          {subItem.title}
+                        </a>
+                      ))}
+                    </Fragment>
+                  </Collapsible>
+                </div>
+              ) : (
+                <a href={item.content.cached_url} class="sidenav-item">
+                  {item.title}
+                </a>
+              ),
+            )
+          }
+        </nav>
+      </div>
     </div>
   </div>
 </header>
