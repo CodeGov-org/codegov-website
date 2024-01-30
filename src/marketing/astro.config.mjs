@@ -1,13 +1,26 @@
+import dotenv from 'dotenv';
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
 import storyblok from '@storyblok/astro';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 import { loadEnv } from 'vite';
+import netlify from '@astrojs/netlify';
 
 const env = loadEnv('', process.cwd(), 'STORYBLOK_TOKEN');
 
+dotenv.config({
+  debug: true,
+  path: '../../.env',
+});
+
+const dfxNetwork = process.env.DFX_NETWORK ?? 'local';
+const isMainnet = dfxNetwork === 'ic';
+const isStaging = dfxNetwork === 'staging';
+
 export default defineConfig({
   devToolbar: { enabled: false },
+  output: isStaging ? 'server' : 'static',
+  adapter: isStaging ? netlify() : undefined,
   vite: {
     plugins: [basicSsl()],
     server: {
@@ -23,9 +36,7 @@ export default defineConfig({
       apiOptions: {
         region: 'us',
       },
-      bridge: {
-        customParent: 'https://app.storyblok.com',
-      },
+      bridge: !isMainnet,
       components: {
         global_config: 'storyblok/GlobalConfig',
         page: 'storyblok/Page',

@@ -1,6 +1,7 @@
 import { useStoryblokApi } from '@storyblok/astro';
 import type { GlobalConfigStory } from '../types/stories/global-config-story';
 import type { LinkBlok, LinkCategoryBlok } from '../types/bloks/navigation';
+import { env } from '../../env';
 
 function slugToHref(slug: string): string {
   return slug.startsWith('/') ? slug : `/${slug}`;
@@ -20,7 +21,7 @@ export async function getGlobalConfigStory(): Promise<GlobalConfigStory> {
   const storyblokApi = useStoryblokApi();
 
   const { data } = await storyblokApi.get('cdn/stories/global-config', {
-    version: 'draft',
+    version: env.contentVersion,
   });
 
   const story: GlobalConfigStory = data.story;

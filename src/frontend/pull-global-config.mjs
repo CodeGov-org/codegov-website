@@ -33,7 +33,7 @@ const storyblok = new StoryblokClient({
 const {
   data: { story },
 } = await storyblok.get('cdn/stories/global-config', {
-  version: 'draft',
+  version: isMainnet ? 'published' : 'draft',
 });
 
 const globalConfig = {
