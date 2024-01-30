@@ -3,4 +3,5 @@ import type { LinkBlok, LinkCategoryBlok } from '../bloks';
 
 export type GlobalConfigStory = ISbStoryData<{
   header_links: Array<LinkCategoryBlok | LinkBlok>;
+  footer_links: LinkCategoryBlok[];
 }>;

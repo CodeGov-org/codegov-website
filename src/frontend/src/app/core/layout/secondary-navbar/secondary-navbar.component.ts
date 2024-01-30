@@ -25,42 +25,44 @@ import {
     DropdownComponent,
   ],
   template: `<nav
-    class="flex flex-row items-center justify-between bg-cyan-950 px-4 py-3 text-white shadow-lg dark:bg-slate-950 dark:text-slate-200"
+    class="bg-cyan-950 px-4 py-3 text-white shadow-lg dark:bg-slate-950 dark:text-slate-200"
   >
-    <div class="flex flex-1 flex-row">
-      <!-- left aligned items -->
-    </div>
+    <div class="container mx-auto flex flex-row items-center justify-between">
+      <div class="flex flex-1 flex-row">
+        <!-- left aligned items -->
+      </div>
 
-    <div class="flex flex-row">
-      @if (isAuthenticated$ | async) {
-        <app-dropdown [showChevron]="false" menuTriggerClassName="icon-btn">
-          <ng-container ngProjectAs="[menuTrigger]">
-            <app-profile-icon />
-          </ng-container>
+      <div class="flex flex-row">
+        @if (isAuthenticated$ | async) {
+          <app-dropdown [showChevron]="false" menuTriggerClassName="icon-btn">
+            <ng-container ngProjectAs="[menuTrigger]">
+              <app-profile-icon />
+            </ng-container>
 
-          <ng-container ngProjectAs="[menu]">
-            <a
-              routerLink="/profile/edit"
-              class="dropdown-item flex flex-row items-center"
-            >
-              <app-edit-icon class="mr-2" />Edit Profile</a
-            >
+            <ng-container ngProjectAs="[menu]">
+              <a
+                routerLink="/profile/edit"
+                class="dropdown-item flex flex-row items-center"
+              >
+                <app-edit-icon class="mr-2" />Edit Profile</a
+              >
 
-            <button
-              (click)="onLogoutButtonClicked()"
-              class="dropdown-item flex flex-row items-center"
-            >
-              <app-logout-icon class="mr-2" />
-              Logout
-            </button>
-          </ng-container>
-        </app-dropdown>
-      } @else {
-        <button (click)="onLoginButtonClicked()" class="icon-btn">
-          <span class="sr-only">Login</span>
-          <app-login-icon />
-        </button>
-      }
+              <button
+                (click)="onLogoutButtonClicked()"
+                class="dropdown-item flex flex-row items-center"
+              >
+                <app-logout-icon class="mr-2" />
+                Logout
+              </button>
+            </ng-container>
+          </app-dropdown>
+        } @else {
+          <button (click)="onLoginButtonClicked()" class="icon-btn">
+            <span class="sr-only">Login</span>
+            <app-login-icon />
+          </button>
+        }
+      </div>
     </div>
   </nav>`,
   changeDetection: ChangeDetectionStrategy.OnPush,

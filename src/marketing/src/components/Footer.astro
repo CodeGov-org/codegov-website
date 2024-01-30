@@ -1,44 +1,40 @@
 ---
-import twitterLogo from '../assets/twitter-logo.png';
-import dscvrLogo from '../assets/dscvr-logo.png';
+import { getGlobalConfigStory } from '../storyblok/api';
+
+const {
+  content: { footer_links },
+} = await getGlobalConfigStory();
 ---
 
-<div class="flex flex-row justify-between px-2 py-3">
-  <div class="flex flex-row">
-    <a
-      href="https://dscvr.one/p/codegov"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="ml-4"
-      title="CodeGov Portal on DSCVR"
-      aria-label="CodeGov Portal on DSCVR"
-    >
-      <img class="h-7" src={dscvrLogo.src} alt="DSCVR Logo" />
-    </a>
-
-    <a
-      href="https://twitter.com/codegovorg"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="ml-4"
-      title="Follow CodeGov on Twitter"
-      aria-label="Follow CodeGov on Twitter"
-    >
-      <img class="h-7" src={twitterLogo.src} alt="Twitter Logo" />
-    </a>
+<footer class="bg-white dark:bg-slate-900">
+  <div
+    class="container mx-auto flex flex-col justify-between px-4 py-6 md:flex-row lg:max-w-screen-lg"
+  >
+    {
+      footer_links.map(linkCategory => (
+        <div class="py-3 md:py-5">
+          <h2 class="mb-6 text-sm font-semibold uppercase text-slate-900 dark:text-white">
+            {linkCategory.title}
+          </h2>
+          <ul class="list-none font-medium text-gray-500 dark:text-gray-400">
+            {linkCategory.children.map(link => (
+              <li>
+                <a href={link.content.cached_url} class="hover:underline">
+                  {link.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
   </div>
 
-  <div>
-    <div>
-      CodeGov Neuron ID: <a
-        href="https://dashboard.internetcomputer.org/neuron/2649066124191664356"
-        target="_blank"
-        rel="noopener noreferrer">2649066124191664356</a
-      >
+  <div class="bg-slate-100 dark:bg-slate-800">
+    <div class="container mx-auto px-4 py-6 md:flex md:justify-center">
+      <span class="text-sm dark:text-slate-300">
+        © {new Date().getFullYear()} CodeGov™. All Rights Reserved.
+      </span>
     </div>
   </div>
-
-  <div>
-    <a href="/apply">Apply</a>
-  </div>
-</div>
+</footer>
