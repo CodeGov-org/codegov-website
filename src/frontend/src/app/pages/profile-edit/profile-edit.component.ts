@@ -40,7 +40,7 @@ import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from './profile.model';
   ],
   template: `
     <div
-      class="container mx-auto my-8 rounded-md bg-slate-200 px-8 py-8 shadow-md dark:bg-slate-700 dark:text-slate-200"
+      class="rounded-md bg-slate-200 px-8 py-8 shadow-md dark:bg-slate-700 dark:text-slate-200"
     >
       <h1 class="mb-16 mt-4 text-center">Edit Profile</h1>
       <div class="mx-auto md:w-2/3">

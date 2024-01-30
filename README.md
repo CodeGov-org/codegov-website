@@ -98,6 +98,12 @@ Create a `src/marketing/.env` file with the following contents:
 STORYBLOK_TOKEN=YOUR_PREVIEW_TOKEN
 ```
 
+Create a `src/frontend/.env` file with the following contents:
+
+```bash
+STORYBLOK_TOKEN=YOUR_PREVIEW_TOKEN
+```
+
 ### WSL
 
 #### Google Chrome

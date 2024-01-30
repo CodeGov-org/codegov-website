@@ -2,7 +2,11 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
-import { PrimaryNavbarComponent, SecondaryNavbarComponent } from '~core/layout';
+import {
+  FooterComponent,
+  PrimaryNavbarComponent,
+  SecondaryNavbarComponent,
+} from '~core/layout';
 
 @Component({
   standalone: true,
@@ -12,14 +16,20 @@ import { PrimaryNavbarComponent, SecondaryNavbarComponent } from '~core/layout';
     RouterOutlet,
     PrimaryNavbarComponent,
     SecondaryNavbarComponent,
+    FooterComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-primary-navbar />
-    <app-secondary-navbar />
-    <main>
-      <router-outlet />
-    </main>
+    <div class="flex h-full min-h-[100vh] flex-col">
+      <app-primary-navbar />
+      <app-secondary-navbar />
+
+      <main class="container mx-auto flex-1 px-4 py-5">
+        <router-outlet />
+      </main>
+
+      <app-footer />
+    </div>
   `,
 })
 export class AppComponent {}

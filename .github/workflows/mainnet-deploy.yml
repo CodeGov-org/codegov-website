@@ -30,5 +30,10 @@ jobs:
           touch ./src/marketing/.env
           echo STORYBLOK_TOKEN=${{ secrets.PRODUCTION_STORYBLOK_TOKEN }} >> ./src/marketing/.env
 
+      - name: Create frontend env file
+        run: |
+          touch ./src/frontend/.env
+          echo STORYBLOK_TOKEN=${{ secrets.PRODUCTION_STORYBLOK_TOKEN }} >> ./src/frontend/.env
+
       - name: Deploy to mainnet
         run: dfx deploy --ic

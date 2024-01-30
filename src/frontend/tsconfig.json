@@ -12,6 +12,7 @@
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
     "baseUrl": ".",
+    "resolveJsonModule": true,
     "paths": {
       "~env": ["./src/environments/environment.ts"],
       "~testing": ["./src/app/testing/index.ts"],
