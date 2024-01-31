@@ -10,6 +10,8 @@ export interface ApiErrResponse {
 
 export type ApiResponse<T> = ApiOkResponse<T> | ApiErrResponse;
 
+export type Ok<T> = T extends ApiOkResponse<infer U> ? U : never;
+
 export function isOk<T>(res: ApiResponse<T>): res is ApiOkResponse<T> {
   return 'ok' in res;
 }
