@@ -58,10 +58,10 @@ mod jobs {
 
     /// Starts all cron jobs.
     pub fn start_jobs() {
-        fetch_and_save_nns_proposals::start();
+        nns_proposals::start();
     }
 
-    mod fetch_and_save_nns_proposals {
+    mod nns_proposals {
         use super::*;
 
         pub fn start() {
@@ -74,6 +74,8 @@ mod jobs {
             ProposalServiceImpl::default()
                 .fetch_and_save_nns_proposals()
                 .await;
+
+            // TODO: close proposals that have passed the review period
         }
     }
 }
