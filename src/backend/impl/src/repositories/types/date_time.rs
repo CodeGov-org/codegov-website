@@ -3,7 +3,7 @@ use candid::{
     types::{Type, TypeInner},
     CandidType, Deserialize,
 };
-use chrono::{Datelike, Timelike};
+use chrono::{Datelike, NaiveDateTime, TimeZone, Timelike, Utc};
 use ic_stable_structures::{storable::Bound, Storable};
 use std::{borrow::Cow, str::FromStr};
 
@@ -17,6 +17,11 @@ impl DateTime {
         Ok(Self(date_time.with_nanosecond(0).ok_or(
             ApiError::internal(&format!("Failed to convert date time {:?}", date_time)),
         )?))
+    }
+
+    pub fn from_timestamp_micros(micros: u64) -> Result<Self, ApiError> {
+        let created_at = NaiveDateTime::from_timestamp_micros(micros.try_into().unwrap()).unwrap();
+        Self::new(Utc.from_utc_datetime(&created_at))
     }
 
     pub fn min() -> Self {

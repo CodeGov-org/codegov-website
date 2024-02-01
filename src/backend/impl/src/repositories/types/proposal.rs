@@ -1,5 +1,7 @@
 use super::{DateTime, Uuid};
+use backend_api::ApiError;
 use candid::{CandidType, Decode, Deserialize, Encode};
+use ic_nns_governance::pb::v1::{ProposalInfo, ProposalStatus, Topic};
 use ic_stable_structures::{storable::Bound, Storable};
 use std::borrow::Cow;
 
@@ -15,16 +17,43 @@ pub enum NervousSystem {
     },
 }
 
+impl NervousSystem {
+    pub fn new_network(id: NervousSystemProposalId, topic: NnsProposalTopic) -> Self {
+        Self::Network { id, topic }
+    }
+}
+
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub enum NnsProposalTopic {
     ReplicaVersionManagement,
     SystemCanisterManagement,
 }
 
+impl TryFrom<Topic> for NnsProposalTopic {
+    type Error = ApiError;
+
+    fn try_from(topic: Topic) -> Result<Self, Self::Error> {
+        match topic {
+            Topic::ReplicaVersionManagement => Ok(NnsProposalTopic::ReplicaVersionManagement),
+            Topic::NetworkCanisterManagement => Ok(NnsProposalTopic::SystemCanisterManagement),
+            _ => Err(ApiError::internal(&format!("Invalid topic: {:?}", topic))),
+        }
+    }
+}
+
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub enum ReviewPeriodState {
     InProgress,
     Completed,
+}
+
+impl From<ProposalStatus> for ReviewPeriodState {
+    fn from(status: ProposalStatus) -> Self {
+        match status {
+            ProposalStatus::Open => ReviewPeriodState::InProgress,
+            _ => ReviewPeriodState::Completed,
+        }
+    }
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
@@ -46,6 +75,47 @@ impl Storable for Proposal {
     }
 
     const BOUND: Bound = Bound::Unbounded;
+}
+
+impl TryFrom<ProposalInfo> for Proposal {
+    type Error = ApiError;
+
+    fn try_from(nns_proposal: ProposalInfo) -> Result<Self, Self::Error> {
+        let proposal_id = nns_proposal
+            .id
+            .ok_or(ApiError::internal("Proposal id is None"))?
+            .id;
+
+        let inner_proposal = nns_proposal
+            .clone()
+            .proposal
+            .ok_or(ApiError::internal("Inner proposal is None"))?;
+
+        let title = inner_proposal
+            .title
+            .unwrap_or_else(|| String::from("Title not available"));
+
+        let topic = nns_proposal.topic().try_into()?;
+        let nervous_system = NervousSystem::new_network(proposal_id, topic);
+
+        let state = nns_proposal.status().into();
+
+        let proposed_at =
+            DateTime::from_timestamp_micros(nns_proposal.proposal_timestamp_seconds * 1_000_000)?;
+
+        let proposed_by = nns_proposal
+            .proposer
+            .ok_or(ApiError::internal("Proposer is None"))?
+            .id;
+
+        Ok(Proposal {
+            title,
+            nervous_system,
+            state,
+            proposed_at,
+            proposed_by,
+        })
+    }
 }
 
 #[cfg(test)]

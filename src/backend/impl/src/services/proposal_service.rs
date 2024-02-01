@@ -1,8 +1,19 @@
+use std::str::FromStr;
+
 use crate::{
     mappings::map_get_proposal_response,
-    repositories::{ProposalId, ProposalRepository, ProposalRepositoryImpl, ReviewPeriodState},
+    repositories::{
+        Proposal, ProposalId, ProposalRepository, ProposalRepositoryImpl, ReviewPeriodState,
+    },
 };
 use backend_api::{ApiError, GetProposalResponse};
+use candid::Principal;
+use external_canisters::nns::GovernanceCanisterService;
+use ic_nns_governance::pb::v1::{
+    ListProposalInfo, ListProposalInfoResponse, ProposalStatus, Topic,
+};
+
+const NNS_GOVERNANCE_CANISTER_ID: &str = "rrkah-fqaaa-aaaaa-aaaaq-cai";
 
 #[cfg_attr(test, mockall::automock)]
 pub trait ProposalService {
@@ -64,7 +75,49 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
     }
 
     async fn fetch_and_save_nns_proposals(&self) -> () {
-        todo!()
+        let nns_governance_canister =
+            GovernanceCanisterService(Principal::from_str(NNS_GOVERNANCE_CANISTER_ID).unwrap());
+
+        let ListProposalInfoResponse {
+            proposal_info: proposals,
+        } = match nns_governance_canister
+            .list_proposals(ListProposalInfo {
+                include_reward_status: vec![],
+                omit_large_fields: Some(true),
+                before_proposal: None,
+                limit: 10,
+                exclude_topic: vec![
+                    Topic::Unspecified.into(),
+                    Topic::NeuronManagement.into(),
+                    Topic::ExchangeRate.into(),
+                    Topic::NetworkEconomics.into(),
+                    Topic::Governance.into(),
+                    Topic::NodeAdmin.into(),
+                    Topic::ParticipantManagement.into(),
+                    Topic::SubnetManagement.into(),
+                    Topic::Kyc.into(),
+                    Topic::NodeProviderRewards.into(),
+                    Topic::SnsDecentralizationSale.into(),
+                    Topic::SubnetReplicaVersionManagement.into(),
+                    Topic::SnsAndCommunityFund.into(),
+                    Topic::ApiBoundaryNodeManagement.into(),
+                ],
+                include_all_manage_neuron_proposals: Some(false),
+                include_status: vec![ProposalStatus::Open.into()],
+            })
+            .await
+        {
+            Ok(response) => response.0,
+            Err(_) => todo!("Log error and return"),
+        };
+
+        for nns_proposal in proposals {
+            let proposal = match Proposal::try_from(nns_proposal) {
+                Ok(proposal) => proposal,
+                Err(_) => todo!("Log error and continue loop"),
+            };
+            self.proposal_repository.create_proposal(proposal);
+        }
     }
 }
 
