@@ -9,7 +9,7 @@ use std::cell::RefCell;
 pub trait ProposalRepository {
     fn get_proposal_by_id(&self, proposal_id: &ProposalId) -> Option<Proposal>;
 
-    async fn create_proposal(&self, user_profile: Proposal) -> Result<ProposalId, ApiError>;
+    async fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError>;
 
     fn update_proposal(&self, proposal_id: &ProposalId, proposal: Proposal)
         -> Result<(), ApiError>;
