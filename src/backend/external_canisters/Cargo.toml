@@ -1,12 +1,11 @@
 [package]
-name = "backend_generated"
+name = "external_canisters"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-
 ic-cdk.workspace = true
-ic-cdk-macros.workspace = true
+ic-nns-governance.workspace = true
 
 candid.workspace = true
 serde.workspace = true
