@@ -1,0 +1,13 @@
+[package]
+name = "backend_generated"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+ic-cdk.workspace = true
+ic-cdk-macros.workspace = true
+
+candid.workspace = true
+serde.workspace = true
+serde_bytes = "0.11"

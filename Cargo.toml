@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["src/backend/api", "src/backend/impl"]
+members = ["src/backend/api", "src/backend/impl", "src/backend/generated"]
 
 [profile.release]
 lto = true
