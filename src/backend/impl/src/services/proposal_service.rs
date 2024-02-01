@@ -13,6 +13,8 @@ pub trait ProposalService {
         id: ProposalId,
         state: ReviewPeriodState,
     ) -> Result<(), ApiError>;
+
+    async fn fetch_and_save_nns_proposals(&self) -> ();
 }
 
 pub struct ProposalServiceImpl<T: ProposalRepository> {
@@ -60,12 +62,16 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
             )),
         }
     }
+
+    async fn fetch_and_save_nns_proposals(&self) -> () {
+        todo!()
+    }
 }
 
 impl<T: ProposalRepository> ProposalServiceImpl<T> {
     fn new(proposal_repository: T) -> Self {
         Self {
-            proposal_repository: proposal_repository,
+            proposal_repository,
         }
     }
 }
