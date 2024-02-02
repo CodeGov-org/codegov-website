@@ -6,6 +6,8 @@ export * from './form-field';
 export * from './hamburger-menu-icon';
 export * from './info-icon';
 export * from './input';
+export * from './input-error';
+export * from './input-hint';
 export * from './label';
 export * from './login-icon';
 export * from './logout-icon';
