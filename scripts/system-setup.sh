@@ -33,7 +33,7 @@ curl -fsSL https://bun.sh/install | bash
 # Set up DFX
 echo "****** SYSTEM SETUP: Installing DFX ******"
 $HOME/.cache/dfinity/uninstall.sh
-DFX_VERION=$(jq -r '.dfx' ./dfx.json) sh -ci "$(curl -sSL https://internetcomputer.org/install.sh)"
+DFX_VERSION=$(jq -r '.dfx' ./dfx.json) sh -ci "$(curl -sSL https://internetcomputer.org/install.sh)"
 dfx cache install
 
 echo "****** SYSTEM SETUP: DFX version ******"

@@ -66,12 +66,6 @@ export PATH="~/.fnm:$PATH"
 eval "$(fnm env --use-on-cd)"
 ```
 
-Enable `.bashrc` changes in your current shell:
-
-```bash
-source ~/.bashrc
-```
-
 Install system dependencies (Linux):
 
 ```bash
@@ -84,6 +78,12 @@ _WARNING!_ This script will install software on your system, please review it be
 
 ```bash
 ./scripts/system-setup.sh
+```
+
+Enable `.bashrc` changes in your current shell:
+
+```bash
+source ~/.bashrc
 ```
 
 Install NPM dependencies:

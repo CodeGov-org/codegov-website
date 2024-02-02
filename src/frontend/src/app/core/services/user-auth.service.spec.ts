@@ -1,21 +1,14 @@
-import { routerMockFactory } from 'src/app/testing/router-mock';
-
+import { profileServiceMockFactory } from '~core/state/profile/profile.service.mock';
 import { icAuthServiceMockFactory } from '~testing';
-import { backendActorServiceMockFactory } from './backend-actor-service-mock';
 import { UserAuthService } from './user-auth.service';
 
 describe('UserAuthService', () => {
   let service: UserAuthService;
   const icAuthServiceMock = icAuthServiceMockFactory();
-  const backendActorServiceMock = backendActorServiceMockFactory();
-  const routerMock = routerMockFactory();
+  const profileServiceMock = profileServiceMockFactory();
 
   beforeEach(() => {
-    service = new UserAuthService(
-      icAuthServiceMock,
-      backendActorServiceMock,
-      routerMock,
-    );
+    service = new UserAuthService(icAuthServiceMock, profileServiceMock);
   });
 
   it('should be created', () => {
