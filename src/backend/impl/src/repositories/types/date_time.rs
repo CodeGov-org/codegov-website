@@ -20,8 +20,8 @@ impl DateTime {
     }
 
     pub fn from_timestamp_micros(micros: u64) -> Result<Self, ApiError> {
-        let created_at = NaiveDateTime::from_timestamp_micros(micros.try_into().unwrap()).unwrap();
-        Self::new(Utc.from_utc_datetime(&created_at))
+        let dt = NaiveDateTime::from_timestamp_micros(micros.try_into().unwrap()).unwrap();
+        Self::new(Utc.from_utc_datetime(&dt))
     }
 
     pub fn min() -> Self {
@@ -34,6 +34,10 @@ impl DateTime {
                 .with_year(9999)
                 .ok_or_else(|| ApiError::internal("Failed to create max date time."))?,
         ))
+    }
+
+    pub fn timestamp_micros(&self) -> u64 {
+        self.0.timestamp_micros().try_into().unwrap()
     }
 }
 
@@ -100,5 +104,19 @@ mod tests {
         let deserialized_date_time = DateTime::from_bytes(serialized_date_time);
 
         assert_eq!(date_time, deserialized_date_time);
+    }
+
+    #[rstest]
+    fn date_time_timestamp() {
+        let (timestamp, date_string) = timestamp_micros();
+        let date_time = DateTime::from_timestamp_micros(timestamp).unwrap();
+
+        assert_eq!(date_time.to_string(), date_string);
+        assert_eq!(date_time.timestamp_micros(), timestamp);
+    }
+
+    #[fixture]
+    fn timestamp_micros() -> (u64, String) {
+        (1706899350_000_000, "2024-02-02T18:42:30+00:00".to_string())
     }
 }

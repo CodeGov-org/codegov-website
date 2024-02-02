@@ -113,9 +113,28 @@ type GetProposalResponse = variant {
   err : Err;
 };
 
+type LogsFilterRequest = record {
+  before_timestamp_ms : opt nat64;
+  after_timestamp_ms : opt nat64;
+  context_contains_any : opt vec text;
+  message_contains_any : opt vec text;
+};
+
+type LogEntry = record {
+  date_time : text;
+  context : opt text;
+  message : text;
+};
+
+type GetLogsResponse = variant {
+  ok : vec LogEntry;
+  err : Err;
+};
+
 service : {
   get_my_user_profile : () -> (GetMyUserProfileResponse) query;
   get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;
   create_my_user_profile : () -> (CreateMyUserProfileResponse);
   update_user_profile : (UpdateUserProfileRequest) -> (UpdateUserProfileResponse);
+  get_logs : (LogsFilterRequest) -> (GetLogsResponse) query;
 };
