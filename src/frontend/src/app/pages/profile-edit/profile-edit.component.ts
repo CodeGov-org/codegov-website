@@ -11,9 +11,9 @@ import {
   InputDirective,
   LabelComponent,
 } from '~core/ui';
-import { AdminProfileFormComponent } from './admin-profile-form.component';
-import { AnonymousProfileFormComponent } from './anonymous-profile-form.component';
-import { ReviewerProfileFormComponent } from './reviewer-profile-form.component';
+import { AdminProfileFormComponent } from './admin-profile-form';
+import { AnonymousProfileFormComponent } from './anonymous-profile-form';
+import { ReviewerProfileFormComponent } from './reviewer-profile-form';
 
 @Component({
   selector: 'app-profile-edit',
@@ -46,9 +46,13 @@ import { ReviewerProfileFormComponent } from './reviewer-profile-form.component'
             <div class="mb-4 flex flex-row items-center">
               <span class="w-1/3 font-bold">Role</span>
               <span>{{ userProfile.role }}</span>
-              @if (userProfile.role !== UserRole.Admin) {
-                <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
-              }
+              <app-info-icon
+                [infoText]="
+                  userProfile.role === UserRole.Admin
+                    ? adminInfo
+                    : nonEditableInfo
+                "
+              ></app-info-icon>
             </div>
 
             @if (userProfile.role === UserRole.Reviewer) {
@@ -88,6 +92,8 @@ export class ProfileEditComponent implements OnInit {
 
   public readonly nonEditableInfo: string =
     'To change this property, contact a CodeGov admin.';
+  public readonly adminInfo: string =
+    'Use DFX command to change this property.';
 
   constructor(private readonly profileService: ProfileService) {
     this.userProfile$ = profileService.userProfile$;

@@ -3,7 +3,7 @@ import {
   GetMyUserProfileResponse,
   UpdateMyUserProfileRequest,
 } from '@cg/backend';
-import { Ok } from '~core/utils';
+import { Ok, optional } from '~core/utils';
 import { Profile, ProfileUpdate, UserRole } from './profile.model';
 
 export function mapProfileResponse(
@@ -122,8 +122,4 @@ export function mergeProfileUpdate(
   }
 
   return profile;
-}
-
-export function optional<T>(value: T | undefined | null): [] | [T] {
-  return value ? [value] : [];
 }

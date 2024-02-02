@@ -23,17 +23,6 @@ export class ProfileService {
     private readonly router: Router,
   ) {}
 
-  private async createProfile(): Promise<void> {
-    const createResponse = await this.actorService.create_my_user_profile();
-    if (isErr(createResponse)) {
-      throw new Error(
-        `${createResponse.err.code}: ${createResponse.err.message}`,
-      );
-    }
-
-    this.userProfileSubject.next(mapProfileResponse(createResponse.ok));
-  }
-
   public async loadProfile(): Promise<void> {
     const getResponse = await this.actorService.get_my_user_profile();
 
@@ -70,5 +59,16 @@ export class ProfileService {
     this.userProfileSubject.next(
       mergeProfileUpdate(currentProfile, profileUpdate),
     );
+  }
+
+  private async createProfile(): Promise<void> {
+    const createResponse = await this.actorService.create_my_user_profile();
+    if (isErr(createResponse)) {
+      throw new Error(
+        `${createResponse.err.code}: ${createResponse.err.message}`,
+      );
+    }
+
+    this.userProfileSubject.next(mapProfileResponse(createResponse.ok));
   }
 }

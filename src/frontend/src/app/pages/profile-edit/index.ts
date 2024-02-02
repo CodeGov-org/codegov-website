@@ -1,4 +1,4 @@
-export * from './admin-profile-form.component';
-export * from './anonymous-profile-form.component';
+export * from './admin-profile-form';
+export * from './anonymous-profile-form';
 export * from './profile-edit.component';
-export * from './reviewer-profile-form.component';
+export * from './reviewer-profile-form';

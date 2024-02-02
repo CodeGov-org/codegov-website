@@ -8,19 +8,31 @@ import {
   FormControl,
 } from '@angular/forms';
 
+import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from '../profile.model';
 import {
-  AdminProfile,
-  AdminProfileUpdate,
   ProfileService,
+  ReviewerProfile,
+  ReviewerProfileUpdate,
+  SocialLink,
+  SocialMediaType,
   UserRole,
 } from '~core/state';
-import { FormFieldComponent, InputDirective, LabelComponent } from '~core/ui';
-import { Form } from '~core/utils';
+import { FormFieldComponent, LabelComponent, InputDirective } from '~core/ui';
+import { keysOf } from '~core/utils';
 
-export type AdminProfileForm = Form<Omit<AdminProfileUpdate, 'role'>>;
+export interface ReviewerProfileForm {
+  username: FormControl<string>;
+  bio: FormControl<string>;
+  walletAddress: FormControl<string>;
+  socialMedia: FormGroup<SocialMediaForm>;
+}
+
+export type SocialMediaForm = {
+  [K in SocialMediaType]: FormControl<string>;
+};
 
 @Component({
-  selector: 'app-admin-profile-form',
+  selector: 'app-reviewer-profile-form',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -68,6 +80,48 @@ export type AdminProfileForm = Form<Omit<AdminProfileUpdate, 'role'>>;
         </div>
       </app-form-field>
 
+      <app-form-field>
+        <app-label>Wallet Address</app-label>
+        <input
+          appInput
+          id="walletAddress"
+          type="text"
+          formControlName="walletAddress"
+          [ngClass]="{
+            'border-red-700': isControlInvalid('walletAddress')
+          }"
+        />
+        <div class="mb-1 ml-1 h-4 text-xs text-red-700 dark:text-red-400">
+          @if (isControlInvalid('walletAddress')) {
+            {{ getErrorMessage('walletAddress') }}
+          }
+        </div>
+      </app-form-field>
+
+      <div class="py-6">
+        <h2 class="mb-4">Social Media</h2>
+        <div formGroupName="socialMedia">
+          @for (key of socialMediaKeys; track key) {
+            <app-form-field>
+              <app-label>{{ socialMediaInputs[key].label }}</app-label>
+
+              <input appInput [id]="key" type="text" [formControlName]="key" />
+              <div class="mb-1 ml-3 h-4 text-xs">
+                @if (controlHasValue('socialMedia.' + key)) {
+                  <a
+                    href="{{ getSocialMediaUrl(key) }}"
+                    class=" text-blue-900 underline dark:text-blue-400"
+                    target="_blank"
+                    rel="nofollow noreferrer"
+                    >{{ getSocialMediaUrl(key) }}</a
+                  >
+                }
+              </div>
+            </app-form-field>
+          }
+        </div>
+      </div>
+
       <div class="flex items-center">
         <a title="Cancel your edits" routerLink="/" class="ml-auto mr-4">
           Cancel
@@ -87,16 +141,27 @@ export type AdminProfileForm = Form<Omit<AdminProfileUpdate, 'role'>>;
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminProfileFormComponent {
+export class ReviewerProfileFormComponent {
   @Input({ required: true })
-  public set userProfile(userProfile: AdminProfile) {
+  public set userProfile(userProfile: ReviewerProfile) {
     this.profileForm.patchValue({
       username: userProfile.username,
       bio: userProfile.bio,
+      walletAddress: userProfile.walletAddress,
+      socialMedia: userProfile.socialMedia.reduce(
+        (accum, value) => ({ ...accum, [value.type]: value.link }),
+        {},
+      ),
     });
   }
 
-  public readonly profileForm: FormGroup<AdminProfileForm>;
+  public readonly profileForm: FormGroup<ReviewerProfileForm>;
+
+  public readonly nonEditableInfo: string =
+    'To change this property, contact a CodeGov admin.';
+
+  public readonly socialMediaKeys = keysOf(SOCIAL_MEDIA_INPUTS);
+  public readonly socialMediaInputs = SOCIAL_MEDIA_INPUTS;
 
   private validationMessages: Record<string, Record<string, string>> = {
     username: {
@@ -106,10 +171,13 @@ export class AdminProfileFormComponent {
     bio: {
       required: 'Bio cannot be empty',
     },
+    walletAddress: {
+      required: 'Wallet address cannot be empty',
+    },
   };
 
   constructor(private readonly profileService: ProfileService) {
-    this.profileForm = new FormGroup<AdminProfileForm>({
+    this.profileForm = new FormGroup<ReviewerProfileForm>({
       username: new FormControl('', {
         nonNullable: true,
         validators: [Validators.required, Validators.minLength(3)],
@@ -118,16 +186,30 @@ export class AdminProfileFormComponent {
         nonNullable: true,
         validators: [Validators.required],
       }),
+      walletAddress: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      socialMedia: new FormGroup<SocialMediaForm>(this.generateSocialMedia()),
     });
   }
 
   public onSubmit(): void {
     const formValues = this.profileForm.value;
 
-    const profileUpdate: AdminProfileUpdate = {
-      role: UserRole.Admin,
+    const socialMediaFormValues = Object.entries(
+      formValues.socialMedia ?? {},
+    ).map<SocialLink>(([key, value]) => ({
+      type: key as SocialMediaType,
+      link: value,
+    }));
+
+    const profileUpdate: ReviewerProfileUpdate = {
+      role: UserRole.Reviewer,
       username: formValues.username,
       bio: formValues.bio,
+      walletAddress: formValues.walletAddress,
+      socialMedia: socialMediaFormValues,
     };
 
     this.profileService.saveProfile(profileUpdate);
@@ -146,6 +228,14 @@ export class AdminProfileFormComponent {
     const control = this.getControl(controlName);
 
     return control.value;
+  }
+
+  public getSocialMediaUrl(controlName: keyof SocialMediaInputs): string {
+    const control = this.getControl('socialMedia.' + controlName);
+
+    const baseUrl = this.socialMediaInputs[controlName].baseUrl;
+
+    return baseUrl + control.value;
   }
 
   public getErrorMessage(controlName: string): string {
@@ -168,5 +258,17 @@ export class AdminProfileFormComponent {
       throw new Error(`Control "${controlName} not found."`);
     }
     return control;
+  }
+
+  private generateSocialMedia(): SocialMediaForm {
+    return this.socialMediaKeys.reduce(
+      (accum, value) => ({
+        ...accum,
+        [value]: new FormControl('', {
+          nonNullable: true,
+        }),
+      }),
+      {},
+    ) as SocialMediaForm;
   }
 }

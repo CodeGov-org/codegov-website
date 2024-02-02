@@ -15,9 +15,10 @@ import {
   UserRole,
 } from '~core/state';
 import { FormFieldComponent, InputDirective, LabelComponent } from '~core/ui';
-import { Form } from '~core/utils';
 
-export type AnonymousProfileForm = Form<Omit<AnonymousProfileUpdate, 'role'>>;
+export interface AnonymousProfileForm {
+  username: FormControl<string>;
+}
 
 @Component({
   selector: 'app-anonymous-profile-form',

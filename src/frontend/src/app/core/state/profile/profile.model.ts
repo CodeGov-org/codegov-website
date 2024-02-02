@@ -51,7 +51,7 @@ export type ProfileUpdate =
 
 export interface SocialLink {
   type: SocialMediaType;
-  link: string | undefined;
+  link: string;
 }
 
 export enum SocialMediaType {
