@@ -208,6 +208,13 @@ mod tests {
 
         let service = ProposalServiceImpl::new(repository_mock);
 
-        let _ = service.update_proposal_state(proposal_id, state);
+        let result = service
+            .update_proposal_state(proposal_id, state)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::invalid_argument("Invalid proposal state transition",)
+        )
     }
 }
