@@ -51,7 +51,6 @@ impl<T: InitService> InitController<T> {
 }
 
 mod jobs {
-    use crate::services::{ProposalService, ProposalServiceImpl};
     use ic_cdk::spawn;
     use ic_cdk_timers::set_timer_interval;
     use std::time::Duration;
@@ -62,6 +61,8 @@ mod jobs {
     }
 
     mod nns_proposals {
+        use crate::controllers::proposal_controller::ProposalController;
+
         use super::*;
 
         pub fn start() {
@@ -71,9 +72,7 @@ mod jobs {
         }
 
         async fn run() {
-            ProposalServiceImpl::default()
-                .fetch_and_save_nns_proposals()
-                .await;
+            ProposalController::default().sync_proposals_job().await;
 
             // TODO: close proposals that have passed the review period
         }

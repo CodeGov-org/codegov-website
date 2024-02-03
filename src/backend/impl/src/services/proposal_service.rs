@@ -25,7 +25,7 @@ pub trait ProposalService {
         state: ReviewPeriodState,
     ) -> Result<(), ApiError>;
 
-    async fn fetch_and_save_nns_proposals(&self) -> ();
+    async fn fetch_and_save_nns_proposals(&self) -> Result<(), ApiError>;
 }
 
 pub struct ProposalServiceImpl<T: ProposalRepository> {
@@ -74,7 +74,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
         }
     }
 
-    async fn fetch_and_save_nns_proposals(&self) -> () {
+    async fn fetch_and_save_nns_proposals(&self) -> Result<(), ApiError> {
         let nns_governance_canister =
             GovernanceCanisterService(Principal::from_str(NNS_GOVERNANCE_CANISTER_ID).unwrap());
 
@@ -108,16 +108,28 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
             .await
         {
             Ok(response) => response.0,
-            Err(_) => todo!("Log error and return"),
+            Err(err) => {
+                return Err(ApiError::internal(&format!(
+                    "Failed to fetch proposals: {:?}",
+                    err
+                )))
+            }
         };
 
         for nns_proposal in proposals {
             let proposal = match Proposal::try_from(nns_proposal) {
                 Ok(proposal) => proposal,
-                Err(_) => todo!("Log error and continue loop"),
+                Err(err) => {
+                    return Err(ApiError::internal(&format!(
+                        "Failed to map NNS proposal: {:?}",
+                        err
+                    )))
+                }
             };
-            self.proposal_repository.create_proposal(proposal);
+            self.proposal_repository.create_proposal(proposal).await?;
         }
+
+        Ok(())
     }
 }
 
