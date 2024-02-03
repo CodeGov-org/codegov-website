@@ -105,10 +105,19 @@ type Proposal = record {
   proposed_by : nat64;
 };
 
+type ProposalResponse = record {
+  id : text;
+  proposal : Proposal;
+};
+
 type GetProposalResponse = variant {
+  ok : ProposalResponse;
+  err : Err;
+};
+
+type GetProposalsResponse = variant {
   ok : record {
-    id : text;
-    proposal : Proposal;
+    proposals : vec ProposalResponse;
   };
   err : Err;
 };
@@ -144,5 +153,6 @@ service : {
   get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;
   create_my_user_profile : () -> (CreateMyUserProfileResponse);
   update_user_profile : (UpdateUserProfileRequest) -> (UpdateUserProfileResponse);
+  get_proposals : () -> (GetProposalsResponse) query;
   get_logs : (LogsFilterRequest) -> (GetLogsResponse) query;
 };

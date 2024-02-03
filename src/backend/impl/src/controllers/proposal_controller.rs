@@ -5,7 +5,7 @@ use crate::{
         ProposalService, ProposalServiceImpl,
     },
 };
-use backend_api::{ApiError, ApiResult};
+use backend_api::{ApiError, ApiResult, GetProposalsResponse};
 use candid::Principal;
 use ic_cdk::*;
 
@@ -17,6 +17,11 @@ async fn sync_proposals() -> ApiResult<()> {
         .sync_proposals(calling_principal)
         .await
         .into()
+}
+
+#[query]
+fn get_proposals() -> ApiResult<GetProposalsResponse> {
+    ProposalController::default().get_proposals().into()
 }
 
 pub(super) struct ProposalController<A: AccessControlService, L: LogService, P: ProposalService> {
@@ -72,6 +77,10 @@ impl<A: AccessControlService, L: LogService, P: ProposalService> ProposalControl
             }
         }
     }
+
+    fn get_proposals(&self) -> Result<GetProposalsResponse, ApiError> {
+        self.proposal_service.get_proposals()
+    }
 }
 
 #[cfg(test)]
@@ -79,6 +88,7 @@ mod tests {
     use super::*;
     use crate::{
         fixtures,
+        mappings::map_get_proposal_response,
         services::{MockAccessControlService, MockLogService, MockProposalService},
     };
     use mockall::predicate::*;
@@ -147,5 +157,33 @@ mod tests {
         let result = controller.sync_proposals(calling_principal).await;
 
         assert!(result.is_ok());
+    }
+
+    #[rstest]
+    fn get_proposals() {
+        let proposals: Vec<_> = fixtures::nns_proposals_with_ids()
+            .into_iter()
+            .map(|(id, proposal)| map_get_proposal_response(id, proposal))
+            .collect();
+
+        let access_control_service_mock = MockAccessControlService::new();
+        let log_service_mock = MockLogService::new();
+        let mut proposal_service_mock = MockProposalService::new();
+        proposal_service_mock
+            .expect_get_proposals()
+            .once()
+            .return_const(Ok(GetProposalsResponse {
+                proposals: proposals.clone(),
+            }));
+
+        let controller = ProposalController::new(
+            access_control_service_mock,
+            log_service_mock,
+            proposal_service_mock,
+        );
+
+        let result = controller.get_proposals().unwrap();
+
+        assert_eq!(result, GetProposalsResponse { proposals });
     }
 }

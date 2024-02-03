@@ -9,6 +9,8 @@ use std::cell::RefCell;
 pub trait ProposalRepository {
     fn get_proposal_by_id(&self, proposal_id: &ProposalId) -> Option<Proposal>;
 
+    fn get_proposals(&self) -> Vec<(ProposalId, Proposal)>;
+
     async fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError>;
 
     fn update_proposal(&self, proposal_id: &ProposalId, proposal: Proposal)
@@ -26,6 +28,10 @@ impl Default for ProposalRepositoryImpl {
 impl ProposalRepository for ProposalRepositoryImpl {
     fn get_proposal_by_id(&self, proposal_id: &ProposalId) -> Option<Proposal> {
         STATE.with_borrow(|s| s.proposals.get(proposal_id))
+    }
+
+    fn get_proposals(&self) -> Vec<(ProposalId, Proposal)> {
+        STATE.with_borrow(|s| s.proposals.iter().collect())
     }
 
     async fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError> {
@@ -97,6 +103,24 @@ mod tests {
         let result = repository.get_proposal_by_id(&proposal_id);
 
         assert_eq!(result, Some(proposal));
+    }
+
+    #[rstest]
+    async fn get_proposals() {
+        STATE.set(ProposalState::default());
+
+        let repository = ProposalRepositoryImpl::default();
+
+        let mut expected: Vec<(ProposalId, Proposal)> = vec![];
+        for proposal in fixtures::nns_proposals() {
+            let id = repository.create_proposal(proposal.clone()).await.unwrap();
+
+            expected.push((id, proposal));
+        }
+
+        let result = repository.get_proposals();
+
+        assert_eq!(result, expected);
     }
 
     #[rstest]

@@ -6,7 +6,7 @@ use crate::{
         Proposal, ProposalId, ProposalRepository, ProposalRepositoryImpl, ReviewPeriodState,
     },
 };
-use backend_api::{ApiError, GetProposalResponse};
+use backend_api::{ApiError, GetProposalResponse, GetProposalsResponse};
 use candid::Principal;
 use external_canisters::nns::GovernanceCanisterService;
 use ic_nns_governance::pb::v1::{
@@ -18,6 +18,8 @@ const NNS_GOVERNANCE_CANISTER_ID: &str = "rrkah-fqaaa-aaaaa-aaaaq-cai";
 #[cfg_attr(test, mockall::automock)]
 pub trait ProposalService {
     fn get_proposal(&self, id: ProposalId) -> Result<GetProposalResponse, ApiError>;
+
+    fn get_proposals(&self) -> Result<GetProposalsResponse, ApiError>;
 
     fn update_proposal_state(
         &self,
@@ -48,6 +50,17 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
             })?;
 
         Ok(map_get_proposal_response(id, proposal))
+    }
+
+    fn get_proposals(&self) -> Result<GetProposalsResponse, ApiError> {
+        let proposals = self
+            .proposal_repository
+            .get_proposals()
+            .into_iter()
+            .map(|(id, proposal)| map_get_proposal_response(id, proposal))
+            .collect();
+
+        Ok(GetProposalsResponse { proposals })
     }
 
     fn update_proposal_state(
@@ -174,6 +187,31 @@ mod tests {
                 proposal: proposal.into(),
             },
         )
+    }
+
+    #[rstest]
+    fn get_proposals() {
+        let mut repository_mock = MockProposalRepository::new();
+        repository_mock
+            .expect_get_proposals()
+            .once()
+            .return_const(fixtures::nns_proposals_with_ids());
+
+        let service = ProposalServiceImpl::new(repository_mock);
+
+        let expected: Vec<_> = fixtures::nns_proposals_with_ids()
+            .into_iter()
+            .map(|(id, proposal)| map_get_proposal_response(id, proposal))
+            .collect();
+
+        let result = service.get_proposals().unwrap();
+
+        assert_eq!(
+            result,
+            GetProposalsResponse {
+                proposals: expected
+            }
+        );
     }
 
     #[rstest]
