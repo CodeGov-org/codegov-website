@@ -21,6 +21,12 @@ impl NervousSystem {
     pub fn new_network(id: NervousSystemProposalId, topic: NnsProposalTopic) -> Self {
         Self::Network { id, topic }
     }
+
+    pub fn id(&self) -> NervousSystemProposalId {
+        match self {
+            Self::Network { id, .. } => *id,
+        }
+    }
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]

@@ -98,7 +98,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
                 include_reward_status: vec![],
                 omit_large_fields: Some(true),
                 before_proposal: None,
-                limit: 10,
+                limit: 20,
                 exclude_topic: vec![
                     Topic::Unspecified.into(),
                     Topic::NeuronManagement.into(),
@@ -139,7 +139,21 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
                     )))
                 }
             };
-            self.proposal_repository.create_proposal(proposal).await?;
+
+            match self
+                .proposal_repository
+                .get_proposals()
+                .iter()
+                .find(|(_, p)| p.nervous_system.id() == proposal.nervous_system.id())
+            {
+                Some(_) => {
+                    // TODO: decide what to do if the proposal already exists
+                    // right now, we just ignore it
+                }
+                None => {
+                    self.proposal_repository.create_proposal(proposal).await?;
+                }
+            }
         }
 
         Ok(())
