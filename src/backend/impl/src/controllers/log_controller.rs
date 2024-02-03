@@ -70,10 +70,11 @@ mod tests {
     #[rstest]
     #[case::anonymous_principal(Principal::anonymous())]
     #[case::non_admin_principal(fixtures::principal())]
-    fn get_logs_anonymous_principal(#[case] calling_principal: Principal) {
+    fn get_logs_unauthorized(#[case] calling_principal: Principal) {
         let request = LogsFilterRequest {
             before_timestamp_ms: None,
             after_timestamp_ms: None,
+            level: None,
             context_contains_any: None,
             message_contains_any: None,
         };
@@ -89,9 +90,6 @@ mod tests {
             .once()
             .with(eq(calling_principal))
             .return_const(Err(error.clone()));
-        access_control_service_mock
-            .expect_assert_principal_is_admin()
-            .never();
 
         let mut service_mock = MockLogService::new();
         service_mock.expect_get_logs().never();
@@ -109,11 +107,12 @@ mod tests {
         let request = LogsFilterRequest {
             before_timestamp_ms: None,
             after_timestamp_ms: None,
+            level: None,
             context_contains_any: None,
             message_contains_any: None,
         };
 
-        let logs = map_get_logs_response(vec![fixtures::log_entry()]);
+        let logs = map_get_logs_response(vec![fixtures::log_entry_info()]);
 
         let mut access_control_service_mock = MockAccessControlService::new();
         access_control_service_mock

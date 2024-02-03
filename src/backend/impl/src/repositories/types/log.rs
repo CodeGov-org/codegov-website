@@ -9,6 +9,7 @@ pub type LogId = u64;
 pub struct LogsFilter {
     pub before: Option<DateTime>,
     pub after: Option<DateTime>,
+    pub level: Option<LogLevel>,
     pub context_contains_any: Option<Vec<String>>,
     pub message_contains_any: Option<Vec<String>>,
 }
@@ -23,6 +24,12 @@ impl LogsFilter {
 
         if let Some(after) = &self.after {
             if log_entry.date_time < after.to_owned() {
+                return false;
+            }
+        }
+
+        if let Some(level) = &self.level {
+            if log_entry.level != level.to_owned() {
                 return false;
             }
         }
@@ -49,8 +56,16 @@ impl LogsFilter {
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+pub enum LogLevel {
+    Info,
+    Warn,
+    Error,
+}
+
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub struct LogEntry {
     pub date_time: DateTime,
+    pub level: LogLevel,
     pub context: Option<String>,
     pub message: String,
 }
@@ -75,7 +90,7 @@ mod tests {
 
     #[rstest]
     fn storable_impl() {
-        let log_entry = fixtures::log_entry();
+        let log_entry = fixtures::log_entry_info();
         let serialized_log = log_entry.to_bytes();
         let deserialized_log = LogEntry::from_bytes(serialized_log);
 
@@ -90,6 +105,8 @@ mod tests {
     #[case::after_filter_not_matching(fixtures::filters::after_filter_not_matching())]
     #[case::time_range_filter_matching(fixtures::filters::time_range_filter_matching())]
     #[case::time_range_filter_not_matching(fixtures::filters::time_range_filter_not_matching())]
+    #[case::level_filter_matching(fixtures::filters::level_filter_matching())]
+    #[case::level_filter_not_matching(fixtures::filters::level_filter_not_matching())]
     #[case::context_filter_matching(fixtures::filters::context_filter_matching())]
     #[case::context_filter_not_matching(fixtures::filters::context_filter_not_matching())]
     #[case::message_filter_matching(fixtures::filters::message_filter_matching())]

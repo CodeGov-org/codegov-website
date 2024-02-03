@@ -75,7 +75,7 @@ mod tests {
     async fn append_log() {
         STATE.set(LogState::default());
 
-        let log_entry = fixtures::log_entry();
+        let log_entry = fixtures::log_entry_info();
         let repository = LogRepositoryImpl::default();
         let log_id = repository.append_log(log_entry.clone()).unwrap();
 
