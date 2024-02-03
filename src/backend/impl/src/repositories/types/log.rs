@@ -17,19 +17,19 @@ pub struct LogsFilter {
 impl LogsFilter {
     pub fn matches(&self, log_entry: &LogEntry) -> bool {
         if let Some(before) = &self.before {
-            if log_entry.date_time > before.to_owned() {
+            if log_entry.date_time > *before {
                 return false;
             }
         }
 
         if let Some(after) = &self.after {
-            if log_entry.date_time < after.to_owned() {
+            if log_entry.date_time < *after {
                 return false;
             }
         }
 
         if let Some(level) = &self.level {
-            if log_entry.level != level.to_owned() {
+            if log_entry.level != *level {
                 return false;
             }
         }

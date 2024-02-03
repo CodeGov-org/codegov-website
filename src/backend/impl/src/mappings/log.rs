@@ -2,30 +2,30 @@ use crate::repositories::{DateTime, LogEntry, LogLevel, LogsFilter};
 
 use backend_api::GetLogsResponse;
 
-impl Into<LogsFilter> for backend_api::LogsFilterRequest {
-    fn into(self) -> LogsFilter {
-        LogsFilter {
-            before: self
+impl From<backend_api::LogsFilterRequest> for LogsFilter {
+    fn from(value: backend_api::LogsFilterRequest) -> Self {
+        Self {
+            before: value
                 .before_timestamp_ms
                 .map(|t| DateTime::from_timestamp_micros(t * 1000).unwrap()),
-            after: self
+            after: value
                 .after_timestamp_ms
                 .map(|t| DateTime::from_timestamp_micros(t * 1000).unwrap()),
-            level: self.level.map(|l| l.into()),
-            context_contains_any: self.context_contains_any,
-            message_contains_any: self.message_contains_any,
+            level: value.level.map(|l| l.into()),
+            context_contains_any: value.context_contains_any,
+            message_contains_any: value.message_contains_any,
         }
     }
 }
 
-impl Into<backend_api::LogsFilterRequest> for LogsFilter {
-    fn into(self) -> backend_api::LogsFilterRequest {
-        backend_api::LogsFilterRequest {
-            before_timestamp_ms: self.before.map(|t| t.timestamp_micros() / 1000),
-            after_timestamp_ms: self.after.map(|t| t.timestamp_micros() / 1000),
-            level: self.level.map(|l| l.into()),
-            context_contains_any: self.context_contains_any,
-            message_contains_any: self.message_contains_any,
+impl From<LogsFilter> for backend_api::LogsFilterRequest {
+    fn from(value: LogsFilter) -> Self {
+        Self {
+            before_timestamp_ms: value.before.map(|t| t.timestamp_micros() / 1000),
+            after_timestamp_ms: value.after.map(|t| t.timestamp_micros() / 1000),
+            level: value.level.map(|l| l.into()),
+            context_contains_any: value.context_contains_any,
+            message_contains_any: value.message_contains_any,
         }
     }
 }
@@ -41,12 +41,12 @@ impl From<LogEntry> for backend_api::LogEntry {
     }
 }
 
-impl Into<LogLevel> for backend_api::LogLevel {
-    fn into(self) -> LogLevel {
-        match self {
-            backend_api::LogLevel::Info => LogLevel::Info,
-            backend_api::LogLevel::Warn => LogLevel::Warn,
-            backend_api::LogLevel::Error => LogLevel::Error,
+impl From<backend_api::LogLevel> for LogLevel {
+    fn from(value: backend_api::LogLevel) -> Self {
+        match value {
+            backend_api::LogLevel::Info => Self::Info,
+            backend_api::LogLevel::Warn => Self::Warn,
+            backend_api::LogLevel::Error => Self::Error,
         }
     }
 }

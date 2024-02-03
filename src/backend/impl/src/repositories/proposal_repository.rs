@@ -51,7 +51,7 @@ impl ProposalRepository for ProposalRepositoryImpl {
         })?;
 
         STATE.with_borrow_mut(|s| {
-            s.proposals.insert(proposal_id.clone(), proposal);
+            s.proposals.insert(*proposal_id, proposal);
 
             Ok(())
         })
