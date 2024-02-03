@@ -15,9 +15,9 @@ fn get_logs(request: LogsFilterRequest) -> ApiResult<GetLogsResponse> {
         .into()
 }
 
-struct LogController<A: AccessControlService, U: LogService> {
+struct LogController<A: AccessControlService, L: LogService> {
     access_control_service: A,
-    log_service: U,
+    log_service: L,
 }
 
 impl Default
@@ -34,8 +34,8 @@ impl Default
     }
 }
 
-impl<A: AccessControlService, U: LogService> LogController<A, U> {
-    fn new(access_control_service: A, log_service: U) -> Self {
+impl<A: AccessControlService, L: LogService> LogController<A, L> {
+    fn new(access_control_service: A, log_service: L) -> Self {
         Self {
             access_control_service,
             log_service,
