@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import {
   Validators,
-  AbstractControl,
   FormGroup,
   ReactiveFormsModule,
   FormControl,
@@ -14,7 +13,12 @@ import {
   ProfileService,
   UserRole,
 } from '~core/state';
-import { FormFieldComponent, InputDirective, LabelComponent } from '~core/ui';
+import {
+  FormFieldComponent,
+  InputDirective,
+  InputErrorComponent,
+  LabelComponent,
+} from '~core/ui';
 
 export interface AnonymousProfileForm {
   username: FormControl<string>;
@@ -29,26 +33,20 @@ export interface AnonymousProfileForm {
     LabelComponent,
     CommonModule,
     InputDirective,
+    InputErrorComponent,
   ],
   template: `
     <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
       <app-form-field>
         <app-label>Username</app-label>
-        <input
-          appInput
-          id="username"
-          type="text"
-          formControlName="username"
-          [ngClass]="{
-            'border-red-700': isControlInvalid('username')
-          }"
-        />
+        <input appInput id="username" type="text" formControlName="username" />
 
-        <div class="mb-1 ml-1 h-4 text-xs text-red-700 dark:text-red-400">
-          @if (isControlInvalid('username')) {
-            {{ getErrorMessage('username') }}
-          }
-        </div>
+        <app-input-error key="required">
+          Username cannot be empty
+        </app-input-error>
+        <app-input-error key="minlength">
+          Username must have at least 3 characters
+        </app-input-error>
       </app-form-field>
 
       <div class="flex items-center">
@@ -82,13 +80,6 @@ export class AnonymousProfileFormComponent {
   public readonly nonEditableInfo: string =
     'To change this property, contact a CodeGov admin.';
 
-  private validationMessages: Record<string, Record<string, string>> = {
-    username: {
-      required: 'Username cannot be empty',
-      minlength: 'Username must have at least 3 characters',
-    },
-  };
-
   constructor(private readonly profileService: ProfileService) {
     this.profileForm = new FormGroup<AnonymousProfileForm>({
       username: new FormControl('', {
@@ -107,42 +98,5 @@ export class AnonymousProfileFormComponent {
     };
 
     this.profileService.saveProfile(profileUpdate);
-  }
-
-  public isControlInvalid(controlName: string): boolean {
-    const control = this.profileForm.get(controlName);
-    if (control === null) {
-      throw new Error(`Control "${controlName} not found."`);
-    }
-
-    return control.invalid;
-  }
-
-  public controlHasValue(controlName: string): boolean {
-    const control = this.getControl(controlName);
-
-    return control.value;
-  }
-
-  public getErrorMessage(controlName: string): string {
-    const control = this.getControl(controlName);
-
-    if (control.errors) {
-      for (const err in control.errors) {
-        if (this.validationMessages[controlName][err]) {
-          return this.validationMessages[controlName][err];
-        }
-      }
-    }
-
-    return 'This field is invalid';
-  }
-
-  private getControl(controlName: string): AbstractControl {
-    const control = this.profileForm.get(controlName);
-    if (control === null) {
-      throw new Error(`Control "${controlName} not found."`);
-    }
-    return control;
   }
 }

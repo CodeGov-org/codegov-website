@@ -17,7 +17,13 @@ import {
   SocialMediaType,
   UserRole,
 } from '~core/state';
-import { FormFieldComponent, LabelComponent, InputDirective } from '~core/ui';
+import {
+  FormFieldComponent,
+  LabelComponent,
+  InputDirective,
+  InputErrorComponent,
+  InputHintComponent,
+} from '~core/ui';
 import { keysOf } from '~core/utils';
 
 export interface ReviewerProfileForm {
@@ -40,62 +46,50 @@ export type SocialMediaForm = {
     LabelComponent,
     CommonModule,
     InputDirective,
+    InputErrorComponent,
+    InputHintComponent,
   ],
   template: `
     <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
       <app-form-field>
         <app-label>Username</app-label>
-        <input
-          appInput
-          id="username"
-          type="text"
-          formControlName="username"
-          [ngClass]="{
-            'border-red-700': isControlInvalid('username')
-          }"
-        />
 
-        <div class="mb-1 ml-1 h-4 text-xs text-red-700 dark:text-red-400">
-          @if (isControlInvalid('username')) {
-            {{ getErrorMessage('username') }}
-          }
-        </div>
+        <input appInput id="username" type="text" formControlName="username" />
+
+        <app-input-error key="required">
+          Username cannot be empty
+        </app-input-error>
+        <app-input-error key="minlength">
+          Username must have at least 3 characters
+        </app-input-error>
       </app-form-field>
 
       <app-form-field>
         <app-label>Bio</app-label>
+
         <textarea
           appInput
           id="bio"
           type="text"
           formControlName="bio"
-          [ngClass]="{
-            'border-red-700 ': isControlInvalid('bio')
-          }"
         ></textarea>
-        <div class="mb-1 ml-1 h-4 text-xs text-red-700 dark:text-red-400">
-          @if (isControlInvalid('bio')) {
-            {{ getErrorMessage('bio') }}
-          }
-        </div>
+
+        <app-input-error key="required">Bio cannot be empty</app-input-error>
       </app-form-field>
 
       <app-form-field>
         <app-label>Wallet Address</app-label>
+
         <input
           appInput
           id="walletAddress"
           type="text"
           formControlName="walletAddress"
-          [ngClass]="{
-            'border-red-700': isControlInvalid('walletAddress')
-          }"
         />
-        <div class="mb-1 ml-1 h-4 text-xs text-red-700 dark:text-red-400">
-          @if (isControlInvalid('walletAddress')) {
-            {{ getErrorMessage('walletAddress') }}
-          }
-        </div>
+
+        <app-input-error key="required">
+          Wallet address cannot be empty
+        </app-input-error>
       </app-form-field>
 
       <div class="py-6">
@@ -106,7 +100,8 @@ export type SocialMediaForm = {
               <app-label>{{ socialMediaInputs[key].label }}</app-label>
 
               <input appInput [id]="key" type="text" [formControlName]="key" />
-              <div class="mb-1 ml-3 h-4 text-xs">
+
+              <app-input-hint>
                 @if (controlHasValue('socialMedia.' + key)) {
                   <a
                     href="{{ getSocialMediaUrl(key) }}"
@@ -116,7 +111,7 @@ export type SocialMediaForm = {
                     >{{ getSocialMediaUrl(key) }}</a
                   >
                 }
-              </div>
+              </app-input-hint>
             </app-form-field>
           }
         </div>
@@ -163,19 +158,6 @@ export class ReviewerProfileFormComponent {
   public readonly socialMediaKeys = keysOf(SOCIAL_MEDIA_INPUTS);
   public readonly socialMediaInputs = SOCIAL_MEDIA_INPUTS;
 
-  private validationMessages: Record<string, Record<string, string>> = {
-    username: {
-      required: 'Username cannot be empty',
-      minlength: 'Username must have at least 3 characters',
-    },
-    bio: {
-      required: 'Bio cannot be empty',
-    },
-    walletAddress: {
-      required: 'Wallet address cannot be empty',
-    },
-  };
-
   constructor(private readonly profileService: ProfileService) {
     this.profileForm = new FormGroup<ReviewerProfileForm>({
       username: new FormControl('', {
@@ -215,15 +197,6 @@ export class ReviewerProfileFormComponent {
     this.profileService.saveProfile(profileUpdate);
   }
 
-  public isControlInvalid(controlName: string): boolean {
-    const control = this.profileForm.get(controlName);
-    if (control === null) {
-      throw new Error(`Control "${controlName} not found."`);
-    }
-
-    return control.invalid;
-  }
-
   public controlHasValue(controlName: string): boolean {
     const control = this.getControl(controlName);
 
@@ -236,20 +209,6 @@ export class ReviewerProfileFormComponent {
     const baseUrl = this.socialMediaInputs[controlName].baseUrl;
 
     return baseUrl + control.value;
-  }
-
-  public getErrorMessage(controlName: string): string {
-    const control = this.getControl(controlName);
-
-    if (control.errors) {
-      for (const err in control.errors) {
-        if (this.validationMessages[controlName][err]) {
-          return this.validationMessages[controlName][err];
-        }
-      }
-    }
-
-    return 'This field is invalid';
   }
 
   private getControl(controlName: string): AbstractControl {
