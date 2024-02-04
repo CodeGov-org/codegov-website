@@ -31,10 +31,9 @@ echo "****** SYSTEM SETUP: Installing Bun ******"
 curl -fsSL https://bun.sh/install | bash
 
 # Set up DFX
-echo "****** SYSTEM SETUP: Installing DFX ******"
-$HOME/.cache/dfinity/uninstall.sh
+echo "****** SYSTEM SETUP: Installing DFXVM ******"
 DFX_VERSION=$(jq -r '.dfx' ./dfx.json) sh -ci "$(curl -sSL https://internetcomputer.org/install.sh)"
-dfx cache install
+DFX_VERSION=$DFX_VERSION sh -ci "$(curl -fsSL https://raw.githubusercontent.com/dfinity/sdk/dfxvm-install-script/install.sh)"
 
 echo "****** SYSTEM SETUP: DFX version ******"
 dfx --version
@@ -42,20 +41,6 @@ dfx --version
 # Set up local replica
 echo "****** SYSTEM SETUP: Setting up NNS canisters ******"
 dfx extension install nns
-mkdir -p ~/.config/dfx
-cat <<EOF >~/.config/dfx/networks.json
-{
-  "local": {
-    "bind": "127.0.0.1:8080",
-    "type": "ephemeral",
-    "replica": {
-      "subnet_type": "system"
-    }
-  }
-}
-EOF
-
-dfx stop
 dfx start --clean --background
-dfx nns install
+dfx extension run nns install
 dfx stop

@@ -1,7 +1,16 @@
 {
-  "dfx": "0.15.2",
+  "dfx": "0.16.1",
   "output_env_file": ".env",
   "version": 1,
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8080",
+      "type": "ephemeral",
+      "replica": {
+        "subnet_type": "system"
+      }
+    }
+  },
   "canisters": {
     "backend": {
       "type": "rust",

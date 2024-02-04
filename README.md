@@ -72,9 +72,17 @@ Install system dependencies (Linux):
 sudo apt install -y unzip jq
 ```
 
-Run the system setup script.
+_WARNING!_ The following setup script will install software on your system, please review it before running it. Most notably, it will reinstall DFX and wipe out any local state that you have. Follow the steps manually if you don't want to lose state or if you prefer to install the software manually. This will not affect any global or other project-specific networks. Running this script multiple times will not cause any issues and can be used to update the software it installs or to clean up the local project state.
 
-_WARNING!_ This script will install software on your system, please review it before running it. Most notably, it will reinstall DFX and wipe out any local state that you have. Follow the steps manually if you don't want to lose state or if you prefer to install the software manually:
+The system setup script installs `dfxvm` to manage versions of DFX. If `dfxvm` is already installed, it will be updated to the latest version.
+
+If `dfx` is installed, but `dfxvm` is not, it's recommended to uninstall `dfx` first. This can be done by running the following (this will affect any global or other project-specific networks):
+
+```bash
+~/.cache/dfinity/uninstall.sh
+```
+
+Run the system setup script:
 
 ```bash
 ./scripts/system-setup.sh
