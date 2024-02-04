@@ -3,14 +3,14 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 
-import { UserAuthService } from '~core/services';
 import {
-  DropdownComponent,
-  EditIconComponent,
   LoginIconComponent,
   LogoutIconComponent,
   ProfileIconComponent,
-} from '~core/ui';
+  EditIconComponent,
+} from '~core/icons';
+import { UserAuthService } from '~core/services';
+import { DropdownComponent } from '~core/ui';
 
 @Component({
   selector: 'app-secondary-navbar',

@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+} from '@angular/core';
 import {
   FormGroup,
   Validators,
@@ -9,6 +14,7 @@ import {
 } from '@angular/forms';
 
 import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from '../profile.model';
+import { InfoIconComponent } from '~core/icons';
 import {
   ProfileService,
   ReviewerProfile,
@@ -24,7 +30,7 @@ import {
   InputErrorComponent,
   InputHintComponent,
 } from '~core/ui';
-import { keysOf } from '~core/utils';
+import { ComponentChanges, keysOf } from '~core/utils';
 
 export interface ReviewerProfileForm {
   username: FormControl<string>;
@@ -38,7 +44,7 @@ export type SocialMediaForm = {
 };
 
 @Component({
-  selector: 'app-reviewer-profile-form',
+  selector: 'app-reviewer-profile',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -48,8 +54,32 @@ export type SocialMediaForm = {
     InputDirective,
     InputErrorComponent,
     InputHintComponent,
+    InfoIconComponent,
   ],
   template: `
+    <div>
+      <div class="mb-4 flex flex-row items-center">
+        <span class="w-1/3 font-bold">ID</span>
+        <span>{{ userProfile.id }}</span>
+      </div>
+      <div class="mb-4 flex flex-row items-center">
+        <span class="w-1/3 font-bold">Role</span>
+        <span>{{ userProfile.role }}</span>
+        <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
+      </div>
+      <div class="mb-4 flex flex-row items-center">
+        <span class="w-1/3 font-bold">Proposal Types</span>
+        <span>{{ userProfile.proposalTypes.join(', ') }}</span>
+        <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
+      </div>
+
+      <div class="mb-4 flex flex-row items-center">
+        <span class="h-6 w-1/3 font-bold">Neuron ID</span>
+        <span>{{ userProfile.neuronId }}</span>
+        <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
+      </div>
+    </div>
+
     <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
       <app-form-field>
         <app-label>Username</app-label>
@@ -136,19 +166,9 @@ export type SocialMediaForm = {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReviewerProfileFormComponent {
+export class ReviewerProfileComponent implements OnChanges {
   @Input({ required: true })
-  public set userProfile(userProfile: ReviewerProfile) {
-    this.profileForm.patchValue({
-      username: userProfile.username,
-      bio: userProfile.bio,
-      walletAddress: userProfile.walletAddress,
-      socialMedia: userProfile.socialMedia.reduce(
-        (accum, value) => ({ ...accum, [value.type]: value.link }),
-        {},
-      ),
-    });
-  }
+  public userProfile!: ReviewerProfile;
 
   public readonly profileForm: FormGroup<ReviewerProfileForm>;
 
@@ -174,6 +194,22 @@ export class ReviewerProfileFormComponent {
       }),
       socialMedia: new FormGroup<SocialMediaForm>(this.generateSocialMedia()),
     });
+  }
+
+  public ngOnChanges(
+    changes: ComponentChanges<ReviewerProfileComponent>,
+  ): void {
+    if (changes.userProfile) {
+      this.profileForm.patchValue({
+        username: this.userProfile.username,
+        bio: this.userProfile.bio,
+        walletAddress: this.userProfile.walletAddress,
+        socialMedia: this.userProfile.socialMedia.reduce(
+          (accum, value) => ({ ...accum, [value.type]: value.link }),
+          {},
+        ),
+      });
+    }
   }
 
   public onSubmit(): void {

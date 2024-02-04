@@ -1,27 +1,33 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProfileService } from '~core/state';
+import { ProfileService, UserRole } from '~core/state';
 import {
   ProfileServiceMock,
   profileServiceMockFactory,
 } from '~core/state/profile/profile.service.mock';
-import { AnonymousProfileFormComponent } from './anonymous-profile-form.component';
+import { AdminProfileComponent } from './admin-profile.component';
 
-describe('AnonymousProfileFormComponent', () => {
-  let component: AnonymousProfileFormComponent;
-  let fixture: ComponentFixture<AnonymousProfileFormComponent>;
+describe('AdminProfileComponent', () => {
+  let component: AdminProfileComponent;
+  let fixture: ComponentFixture<AdminProfileComponent>;
   let profileServiceMock: ProfileServiceMock;
 
   beforeEach(async () => {
     profileServiceMock = profileServiceMockFactory();
 
     await TestBed.configureTestingModule({
-      imports: [AnonymousProfileFormComponent],
+      imports: [AdminProfileComponent],
       providers: [{ provide: ProfileService, useValue: profileServiceMock }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(AnonymousProfileFormComponent);
+    fixture = TestBed.createComponent(AdminProfileComponent);
     component = fixture.componentInstance;
+    component.userProfile = {
+      id: '1',
+      role: UserRole.Admin,
+      username: 'TestAdmin',
+      bio: 'bio',
+    };
     fixture.detectChanges();
   });
 
