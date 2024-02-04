@@ -4,16 +4,12 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 
+import { InfoIconComponent } from '~core/icons';
 import { Profile, ProfileService, UserRole } from '~core/state';
-import {
-  FormFieldComponent,
-  InfoIconComponent,
-  InputDirective,
-  LabelComponent,
-} from '~core/ui';
-import { AdminProfileFormComponent } from './admin-profile-form';
-import { AnonymousProfileFormComponent } from './anonymous-profile-form';
-import { ReviewerProfileFormComponent } from './reviewer-profile-form';
+import { FormFieldComponent, InputDirective, LabelComponent } from '~core/ui';
+import { AdminProfileComponent } from './admin-profile';
+import { AnonymousProfileComponent } from './anonymous-profile';
+import { ReviewerProfileComponent } from './reviewer-profile';
 
 @Component({
   selector: 'app-profile-edit',
@@ -27,9 +23,9 @@ import { ReviewerProfileFormComponent } from './reviewer-profile-form';
     FormFieldComponent,
     LabelComponent,
     InputDirective,
-    AnonymousProfileFormComponent,
-    ReviewerProfileFormComponent,
-    AdminProfileFormComponent,
+    AnonymousProfileComponent,
+    ReviewerProfileComponent,
+    AdminProfileComponent,
   ],
   template: `
     <div
@@ -38,47 +34,19 @@ import { ReviewerProfileFormComponent } from './reviewer-profile-form';
       <h1 class="mb-16 mt-4 text-center">Edit Profile</h1>
       <div class="mx-auto md:w-2/3">
         @if (userProfile$ | async; as userProfile) {
-          <div>
-            <div class="mb-4 flex flex-row items-center">
-              <span class="w-1/3 font-bold">Id</span>
-              <span>{{ userProfile.id }}</span>
-            </div>
-            <div class="mb-4 flex flex-row items-center">
-              <span class="w-1/3 font-bold">Role</span>
-              <span>{{ userProfile.role }}</span>
-              <app-info-icon
-                [infoText]="
-                  userProfile.role === UserRole.Admin
-                    ? adminInfo
-                    : nonEditableInfo
-                "
-              ></app-info-icon>
-            </div>
-
-            @if (userProfile.role === UserRole.Reviewer) {
-              <div class="mb-4 flex flex-row items-center">
-                <span class="w-1/3 font-bold">Proposal Types</span>
-                <span>{{ userProfile.proposalTypes.join(', ') }}</span>
-                <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
-              </div>
-
-              <div class="mb-4 flex flex-row items-center">
-                <span class="h-6 w-1/3 font-bold">Neuron ID</span>
-                <span>{{ userProfile.neuronId }}</span>
-                <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
-              </div>
-            }
-          </div>
-
           @switch (userProfile.role) {
             @case (UserRole.Anonymous) {
-              <app-anonymous-profile-form [userProfile]="userProfile" />
+              <app-anonymous-profile [userId]="userProfile.id" />
             }
             @case (UserRole.Reviewer) {
-              <app-reviewer-profile-form [userProfile]="userProfile" />
+              <div class="mx-auto md:w-2/3">
+                <app-reviewer-profile [userProfile]="userProfile" />
+              </div>
             }
             @case (UserRole.Admin) {
-              <app-admin-profile-form [userProfile]="userProfile" />
+              <div class="mx-auto md:w-2/3">
+                <app-admin-profile [userProfile]="userProfile" />
+              </div>
             }
           }
         }

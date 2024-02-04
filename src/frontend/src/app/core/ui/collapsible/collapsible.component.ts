@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostBinding } from '@angular/core';
 
-import { ChevronIconComponent } from '../chevron-icon';
+import { ChevronIconComponent } from '~core/icons';
 
 @Component({
   selector: 'app-collapsible',

@@ -5,22 +5,22 @@ import {
   ProfileServiceMock,
   profileServiceMockFactory,
 } from '~core/state/profile/profile.service.mock';
-import { ReviewerProfileFormComponent } from './reviewer-profile-form.component';
+import { AdminProfileComponent } from './admin-profile.component';
 
-describe('ReviewerProfileFormComponent', () => {
-  let component: ReviewerProfileFormComponent;
-  let fixture: ComponentFixture<ReviewerProfileFormComponent>;
+describe('AdminProfileComponent', () => {
+  let component: AdminProfileComponent;
+  let fixture: ComponentFixture<AdminProfileComponent>;
   let profileServiceMock: ProfileServiceMock;
 
   beforeEach(async () => {
     profileServiceMock = profileServiceMockFactory();
 
     await TestBed.configureTestingModule({
-      imports: [ReviewerProfileFormComponent],
+      imports: [AdminProfileComponent],
       providers: [{ provide: ProfileService, useValue: profileServiceMock }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ReviewerProfileFormComponent);
+    fixture = TestBed.createComponent(AdminProfileComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
