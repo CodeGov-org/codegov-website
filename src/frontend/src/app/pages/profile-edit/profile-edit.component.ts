@@ -36,7 +36,7 @@ import { ReviewerProfileComponent } from './reviewer-profile';
         @if (userProfile$ | async; as userProfile) {
           @switch (userProfile.role) {
             @case (UserRole.Anonymous) {
-              <app-anonymous-profile [userId]="userProfile.id" />
+              <app-anonymous-profile [userProfile]="userProfile" />
             }
             @case (UserRole.Reviewer) {
               <div class="mx-auto md:w-2/3">

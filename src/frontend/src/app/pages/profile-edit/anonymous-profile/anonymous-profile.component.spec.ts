@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { UserRole } from '~core/state';
 import { AnonymousProfileComponent } from './anonymous-profile.component';
 
 describe('AnonymousProfileComponent', () => {
@@ -13,6 +14,11 @@ describe('AnonymousProfileComponent', () => {
 
     fixture = TestBed.createComponent(AnonymousProfileComponent);
     component = fixture.componentInstance;
+    component.userProfile = {
+      id: '1',
+      role: UserRole.Anonymous,
+      username: 'TestAnon',
+    };
     fixture.detectChanges();
   });
 

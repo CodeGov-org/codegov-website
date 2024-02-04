@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
+import { AnonymousProfile } from '~core/state';
+
 @Component({
   selector: 'app-anonymous-profile',
   standalone: true,
-  imports: [],
   template: `
     <div
       class="mx-auto mb-10 rounded-md bg-cyan-700 px-2 py-6 text-white md:w-2/3 dark:bg-slate-600"
@@ -18,7 +19,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
             >.
           </p>
           <p>When requested, provide this ID to a CodeGov admin:</p>
-          <p class="mb-8 font-bold">{{ userId }}</p>
+          <p class="mb-8 font-bold">{{ userProfile.id }}</p>
           <p>
             If you're just here to look around, you don't need to do anything
             else.
@@ -31,5 +32,5 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 })
 export class AnonymousProfileComponent {
   @Input({ required: true })
-  public userId!: string;
+  public userProfile!: AnonymousProfile;
 }

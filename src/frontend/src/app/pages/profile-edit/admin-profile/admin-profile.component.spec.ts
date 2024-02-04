@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProfileService } from '~core/state';
+import { ProfileService, UserRole } from '~core/state';
 import {
   ProfileServiceMock,
   profileServiceMockFactory,
@@ -22,6 +22,12 @@ describe('AdminProfileComponent', () => {
 
     fixture = TestBed.createComponent(AdminProfileComponent);
     component = fixture.componentInstance;
+    component.userProfile = {
+      id: '1',
+      role: UserRole.Admin,
+      username: 'TestAdmin',
+      bio: 'bio',
+    };
     fixture.detectChanges();
   });
 
