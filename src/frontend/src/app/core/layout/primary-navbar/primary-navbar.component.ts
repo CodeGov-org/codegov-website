@@ -4,11 +4,10 @@ import { RouterModule } from '@angular/router';
 
 import { GLOBAL_CONFIG, isLinkCategory } from '../../../../global-config';
 import {
-  CollapsibleComponent,
-  DropdownComponent,
+  HamburgerMenuIconComponent,
   MenuCloseIconComponent,
-} from '~core/ui';
-import { HamburgerMenuIconComponent } from '~core/ui';
+} from '~core/icons';
+import { CollapsibleComponent, DropdownComponent } from '~core/ui';
 
 @Component({
   selector: 'app-primary-navbar',
