@@ -1,4 +1,6 @@
-NEURON_ID=$(grep -oP 'NEURON_ID=\K\d+' ./data/info.txt)
+NEURON_ID=$( \
+  sed -n 's/^NEURON_ID=\([0-9]*\)$/\1/p' ./data/info.txt \
+)
 
 NNS_FUNCTION_ARG=$(didc encode -d ./scripts/canisters/registry.did -m update_elected_replica_versions '(
   record {

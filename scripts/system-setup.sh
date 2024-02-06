@@ -41,7 +41,13 @@ curl -fsSL https://bun.sh/install | bash
 echo "****** SYSTEM SETUP: Installing DFXVM ******"
 DFX_VERSION=$(jq -r '.dfx' ./dfx.json) sh -ci "$(curl -sSL https://internetcomputer.org/install.sh)"
 DFX_VERSION=$DFX_VERSION sh -ci "$(curl -fsSL https://raw.githubusercontent.com/dfinity/sdk/dfxvm-install-script/install.sh)"
-source "$HOME/.local/share/dfx/env"
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  source "$HOME/Library/Application Support/org.dfinity.dfx/env"
+else
+  source "$HOME/.local/share/dfx/env"
+fi
+
 
 echo "****** SYSTEM SETUP: DFX version ******"
 dfx --version

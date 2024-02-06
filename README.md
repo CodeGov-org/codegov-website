@@ -58,15 +58,37 @@ The primary backend canister for CodeGov proposal review management.
 
 ## System Setup
 
-Add the following to the `~/.bashrc` file:
+Add the following to the `~/.bashrc` (or `.zprofile` on Mac) file:
 
 ```bash
-# fnm
-export PATH="~/.fnm:$PATH"
-eval "$(fnm env --use-on-cd)"
-
 # bin
 export PATH="~/bin:$PATH"
+```
+
+Additionally add the following to `.zprofile` (Mac only):
+
+```bash
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+```
+
+Enable `.bashrc` (or `.zprofile` on Mac) changes in your current shell:
+
+```bash
+source ~/.bashrc
+```
+
+Install Homebrew (Mac only):
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Install system dependencies (Mac only):
+
+```bash
+brew install jq wget
 ```
 
 Install system dependencies (Linux only):
@@ -85,16 +107,36 @@ If `dfx` is installed, but `dfxvm` is not, it's recommended to uninstall `dfx` f
 ~/.cache/dfinity/uninstall.sh
 ```
 
-Run the system setup script. `dfxvm` will pause execution to ask for confirmation, choosing `default` is fine here:
+Run the system setup script.
+
+Note:
+
+- `fnm` will warn about missing environment variables, this is fine.
+- `dfxvm` will pause execution to ask for confirmation, choosing `default` is fine here.
+- The script may also pause execution to prompt for an administrator password.
 
 ```bash
 ./scripts/system-setup.sh
 ```
 
-Enable `.bashrc` changes in your current shell:
+Add the following to the `~/.bashrc` (or `.zprofile` on Mac) file:
+
+```bash
+# fnm
+export PATH="~/.fnm:$PATH"
+eval "$(fnm env --use-on-cd)"
+```
+
+Enable `.bashrc` (or `.zprofile` on Mac) changes in your current shell:
 
 ```bash
 source ~/.bashrc
+```
+
+Additionaly, on Mac, run:
+
+```bash
+source "$HOME/Library/Application Support/org.dfinity.dfx/env"
 ```
 
 Install NPM dependencies:
