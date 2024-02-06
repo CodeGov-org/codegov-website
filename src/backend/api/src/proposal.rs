@@ -2,18 +2,23 @@ use candid::{CandidType, Deserialize};
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub enum NervousSystem {
+    #[serde(rename = "network")]
     Network { id: u64, topic: NnsProposalTopic },
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub enum NnsProposalTopic {
+    #[serde(rename = "replica_version_management")]
     ReplicaVersionManagement,
+    #[serde(rename = "system_canister_management")]
     SystemCanisterManagement,
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub enum ReviewPeriodState {
+    #[serde(rename = "in_progress")]
     InProgress,
+    #[serde(rename = "completed")]
     Completed,
 }
 

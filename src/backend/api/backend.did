@@ -81,20 +81,20 @@ type UpdateUserProfileResponse = variant {
 };
 
 type NnsProposalTopic = variant {
-  ReplicaVersionManagement;
-  SystemCanisterManagement;
+  replica_version_management;
+  system_canister_management;
 };
 
 type NervousSystem = variant {
-  Network : record {
+  network : record {
     id : nat64;
     topic : NnsProposalTopic;
   };
 };
 
 type ReviewPeriodState = variant {
-  InProgress;
-  Completed;
+  in_progress;
+  completed;
 };
 
 type Proposal = record {
