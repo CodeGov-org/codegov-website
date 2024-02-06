@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 import { ProfileService, UserRole } from '~core/state';
 import {
@@ -16,7 +17,7 @@ describe('ReviewerProfileComponent', () => {
     profileServiceMock = profileServiceMockFactory();
 
     await TestBed.configureTestingModule({
-      imports: [ReviewerProfileComponent],
+      imports: [ReviewerProfileComponent, RouterTestingModule],
       providers: [{ provide: ProfileService, useValue: profileServiceMock }],
     }).compileComponents();
 

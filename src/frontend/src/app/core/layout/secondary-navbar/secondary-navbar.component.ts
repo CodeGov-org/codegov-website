@@ -41,7 +41,7 @@ import { DropdownComponent } from '~core/ui';
 
             <ng-container ngProjectAs="[menu]">
               <a
-                routerLink="/profile/edit"
+                [routerLink]="'/profile/edit'"
                 class="dropdown-item flex flex-row items-center"
               >
                 <app-edit-icon class="mr-2" />Edit Profile</a

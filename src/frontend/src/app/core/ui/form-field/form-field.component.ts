@@ -27,7 +27,7 @@ import { LabelComponent } from '../label';
   template: `
     <div class="flex flex-col md:flex-row">
       @if (hasLabel()) {
-        <label [for]="getFormControlId()" class="font-bold md:w-1/3">
+        <label [for]="getFormControlId()" class="font-bold md:w-1/3 md:pr-8">
           <ng-container *ngTemplateOutlet="getLabelTemplate()" />
         </label>
       }

@@ -11,6 +11,7 @@ import {
   ReactiveFormsModule,
   FormControl,
 } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 import { InfoIconComponent } from '~core/icons';
 import {
@@ -43,19 +44,20 @@ export interface AdminProfileForm {
     InputDirective,
     InputErrorComponent,
     InfoIconComponent,
+    RouterModule,
   ],
   template: `
-    <div>
-      <div class="mb-4 flex flex-row items-center">
-        <span class="w-1/3 font-bold">ID</span>
-        <span>{{ userProfile.id }}</span>
-      </div>
-      <div class="mb-4 flex flex-row items-center">
-        <span class="w-1/3 font-bold">Role</span>
-        <span>{{ userProfile.role }}</span>
-        <app-info-icon [infoText]="adminInfo"></app-info-icon>
-      </div>
+    <div class="mb-4 flex flex-row items-center">
+      <span class="w-1/3 font-bold">ID</span>
+      <span>{{ userProfile.id }}</span>
     </div>
+
+    <div class="mb-4 flex flex-row items-center">
+      <span class="w-1/3 font-bold">Role</span>
+      <span>{{ userProfile.role }}</span>
+      <app-info-icon [infoText]="adminInfo"></app-info-icon>
+    </div>
+
     <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
       <app-form-field>
         <app-label>Username</app-label>
@@ -84,7 +86,7 @@ export interface AdminProfileForm {
       </app-form-field>
 
       <div class="flex items-center">
-        <a title="Cancel your edits" routerLink="/" class="ml-auto mr-4">
+        <a title="Cancel your edits" [routerLink]="'/'" class="ml-auto mr-4">
           Cancel
         </a>
         <button

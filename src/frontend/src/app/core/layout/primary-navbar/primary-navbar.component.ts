@@ -25,7 +25,7 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
     <header class="navbar">
       <div class="container mx-auto">
         <nav class="navbar-nav">
-          <a routerLink="/" class="navbar-brand">
+          <a [routerLink]="'/'" class="navbar-brand">
             <img
               class="navbar-logo"
               src="assets/codegov-logo.png"

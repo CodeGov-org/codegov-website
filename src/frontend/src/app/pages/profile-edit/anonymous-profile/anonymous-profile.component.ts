@@ -7,7 +7,7 @@ import { AnonymousProfile } from '~core/state';
   standalone: true,
   template: `
     <div
-      class="mx-auto mb-10 rounded-md bg-cyan-700 px-2 py-6 text-white md:w-2/3 dark:bg-slate-600"
+      class="mx-auto mb-10 rounded-md bg-cyan-700 px-2 py-6 text-white xl:w-2/3 dark:bg-slate-600"
     >
       <div class="mx-auto flex flex-col md:flex-row">
         <div class="flex flex-col px-4 md:mx-auto">
