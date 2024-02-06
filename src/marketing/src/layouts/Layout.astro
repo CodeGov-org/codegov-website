@@ -1,15 +1,14 @@
 ---
-import type { MarkdownLayoutProps } from 'astro';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import '../styles.css';
+import type { SeoMetadata } from '../storyblok/types';
 
-type Props = MarkdownLayoutProps<{
-  title: string;
-  description: string;
-}>;
+interface Props {
+  seo_metadata?: SeoMetadata | undefined;
+}
 
-const { frontmatter } = Astro.props;
+const { seo_metadata } = Astro.props;
 ---
 
 <!doctype html>
@@ -24,16 +23,15 @@ const { frontmatter } = Astro.props;
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 
-    <title>{frontmatter.title} | CodeGov</title>
-    <meta name="description" content={frontmatter.description} />
+    <title>{seo_metadata?.title} | CodeGov</title>
+    <meta name="description" content={seo_metadata?.description} />
   </head>
   <body class="flex flex-col">
     <Navbar />
 
-    <article class="flex-1">
-      <h1>{frontmatter.title}</h1>
+    <main class="container mx-auto flex-1 px-4 py-5">
       <slot />
-    </article>
+    </main>
 
     <footer>
       <Footer />

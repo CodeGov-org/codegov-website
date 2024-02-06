@@ -26,7 +26,7 @@ export async function setupBackendCanister(
     idlFactory,
     BACKEND_WASM_PATH,
     {},
-    new Uint8Array(),
+    new Uint8Array().buffer,
     controllerIdentity.getPrincipal(),
   );
 

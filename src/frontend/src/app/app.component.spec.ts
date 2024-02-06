@@ -1,24 +1,27 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { IcAuthService } from '@hadronous/ic-angular';
 
-import { IcAuthServiceMock, icAuthServiceMockFactory } from '~testing';
+import { UserAuthService } from '~core/services';
+import {
+  UserAuthServiceMock,
+  userAuthServiceMockFactory,
+} from '~core/services/user-auth-service-mock';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
   let component: AppComponent;
-  let icAuthServiceMock: IcAuthServiceMock;
+  let userAuthServiceMock: UserAuthServiceMock;
 
   beforeEach(async () => {
-    icAuthServiceMock = icAuthServiceMockFactory();
+    userAuthServiceMock = userAuthServiceMockFactory();
 
     await TestBed.configureTestingModule({
       imports: [AppComponent, RouterTestingModule],
       providers: [
         {
-          provide: IcAuthService,
-          useValue: icAuthServiceMock,
+          provide: UserAuthService,
+          useValue: userAuthServiceMock,
         },
       ],
     }).compileComponents();

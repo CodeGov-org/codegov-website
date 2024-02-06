@@ -1,0 +1,12 @@
+---
+import { storyblokEditable } from '@storyblok/astro';
+import { type HeadingOneBlok, editable } from '../types';
+
+interface Props {
+  blok: HeadingOneBlok;
+}
+
+const { blok } = Astro.props;
+---
+
+<h1 {...storyblokEditable(editable(blok))}>{blok.text}</h1>

@@ -9,9 +9,6 @@
 # dfx temporary files
 .dfx/
 
-# generated files
-src/declarations/
-
 # rust
 target/
 
@@ -22,3 +19,5 @@ dist/
 
 # environment variables
 .env
+
+/data/

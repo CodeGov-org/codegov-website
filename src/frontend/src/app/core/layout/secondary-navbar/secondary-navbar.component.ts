@@ -1,16 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { IcAuthService } from '@hadronous/ic-angular';
 import { Observable } from 'rxjs';
 
 import {
-  DropdownComponent,
-  EditIconComponent,
   LoginIconComponent,
   LogoutIconComponent,
   ProfileIconComponent,
-} from '~core/ui';
+  EditIconComponent,
+} from '~core/icons';
+import { UserAuthService } from '~core/services';
+import { DropdownComponent } from '~core/ui';
 
 @Component({
   selector: 'app-secondary-navbar',
@@ -25,42 +25,44 @@ import {
     DropdownComponent,
   ],
   template: `<nav
-    class="flex flex-row items-center justify-between bg-cyan-950 px-4 py-3 text-white shadow-lg dark:bg-slate-950 dark:text-slate-200"
+    class="bg-cyan-950 px-4 py-3 text-white shadow-lg dark:bg-slate-950 dark:text-slate-200"
   >
-    <div class="flex flex-1 flex-row">
-      <!-- left aligned items -->
-    </div>
+    <div class="container mx-auto flex flex-row items-center justify-between">
+      <div class="flex flex-1 flex-row">
+        <!-- left aligned items -->
+      </div>
 
-    <div class="flex flex-row">
-      @if (isAuthenticated$ | async) {
-        <app-dropdown [showChevron]="false" menuTriggerClassName="icon-btn">
-          <ng-container ngProjectAs="[menuTrigger]">
-            <app-profile-icon />
-          </ng-container>
+      <div class="flex flex-row">
+        @if (isAuthenticated$ | async) {
+          <app-dropdown [showChevron]="false" menuTriggerClassName="icon-btn">
+            <ng-container ngProjectAs="[menuTrigger]">
+              <app-profile-icon />
+            </ng-container>
 
-          <ng-container ngProjectAs="[menu]">
-            <a
-              routerLink="/profile/edit"
-              class="dropdown-item flex flex-row items-center"
-            >
-              <app-edit-icon class="mr-2" />Edit Profile</a
-            >
+            <ng-container ngProjectAs="[menu]">
+              <a
+                routerLink="/profile/edit"
+                class="dropdown-item flex flex-row items-center"
+              >
+                <app-edit-icon class="mr-2" />Edit Profile</a
+              >
 
-            <button
-              (click)="onLogoutButtonClicked()"
-              class="dropdown-item flex flex-row items-center"
-            >
-              <app-logout-icon class="mr-2" />
-              Logout
-            </button>
-          </ng-container>
-        </app-dropdown>
-      } @else {
-        <button (click)="onLoginButtonClicked()" class="icon-btn">
-          <span class="sr-only">Login</span>
-          <app-login-icon />
-        </button>
-      }
+              <button
+                (click)="onLogoutButtonClicked()"
+                class="dropdown-item flex flex-row items-center"
+              >
+                <app-logout-icon class="mr-2" />
+                Logout
+              </button>
+            </ng-container>
+          </app-dropdown>
+        } @else {
+          <button (click)="onLoginButtonClicked()" class="icon-btn">
+            <span class="sr-only">Login</span>
+            <app-login-icon />
+          </button>
+        }
+      </div>
     </div>
   </nav>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -68,7 +70,7 @@ import {
 export class SecondaryNavbarComponent {
   public readonly isAuthenticated$: Observable<boolean>;
 
-  constructor(private readonly authService: IcAuthService) {
+  constructor(private readonly authService: UserAuthService) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
   }
 
@@ -78,6 +80,5 @@ export class SecondaryNavbarComponent {
 
   public async onLogoutButtonClicked(): Promise<void> {
     await this.authService.logout();
-    window.location.reload();
   }
 }

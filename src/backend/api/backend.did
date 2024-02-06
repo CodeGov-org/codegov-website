@@ -57,6 +57,27 @@ type CreateMyUserProfileResponse = variant {
   err : Err;
 };
 
+type MyUserConfigUpdate = variant {
+  admin : record {
+    bio : opt text;
+  };
+  reviewer : record {
+    bio : opt text;
+    wallet_address : opt text;
+  };
+  anonymous;
+};
+
+type UpdateMyUserProfileRequest = record {
+  username : opt text;
+  config : opt MyUserConfigUpdate;
+};
+
+type UpdateMyUserProfileResponse = variant {
+  ok;
+  err : Err;
+};
+
 type UserConfigUpdate = variant {
   admin : record {
     bio : opt text;
@@ -154,6 +175,7 @@ service : {
   get_my_user_profile : () -> (GetMyUserProfileResponse) query;
   get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;
   create_my_user_profile : () -> (CreateMyUserProfileResponse);
+  update_my_user_profile : (UpdateMyUserProfileRequest) -> (UpdateMyUserProfileResponse);
   update_user_profile : (UpdateUserProfileRequest) -> (UpdateUserProfileResponse);
   list_proposals : () -> (ListProposalsResponse) query;
   list_logs : (LogsFilterRequest) -> (ListLogsResponse) query;

@@ -2,11 +2,11 @@
   "name": "frontend",
   "private": true,
   "scripts": {
-    "start": "ng serve frontend -c development",
-    "build": "ng build frontend -c production",
-    "build:dev": "ng build frontend -c development",
-    "test": "ng test frontend",
-    "test:ci": "ng test frontend --no-watch --no-progress --browsers=ChromeHeadless"
+    "start": "node ./pull-global-config.mjs && ng serve frontend -c development",
+    "build": "node ./pull-global-config.mjs && ng build frontend -c production",
+    "build:dev": "node ./pull-global-config.mjs && ng build frontend -c development",
+    "test": "node ./pull-global-config.mjs && ng test frontend",
+    "test:ci": "node ./pull-global-config.mjs && ng test frontend --no-watch --no-progress --browsers=ChromeHeadless"
   },
   "dependencies": {
     "@angular/animations": "^17.0.8",
@@ -17,7 +17,7 @@
     "@angular/platform-browser": "^17.0.8",
     "@angular/platform-browser-dynamic": "^17.0.8",
     "@angular/router": "^17.0.8",
-    "@hadronous/ic-angular": "^0.2.0",
+    "@hadronous/ic-angular": "^0.2.1",
     "rxjs": "~7.8.1",
     "@cg/tailwind": "workspace:*",
     "@cg/backend": "workspace:*"

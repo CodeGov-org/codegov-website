@@ -11,7 +11,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationSkipped, NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs';
 
-import { ChevronIconComponent } from '../chevron-icon';
+import { ChevronIconComponent } from '~core/icons';
 
 @Component({
   selector: 'app-dropdown',

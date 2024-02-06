@@ -21,6 +21,8 @@ pub trait UserProfileRepository {
         principal: &Principal,
     ) -> Result<Option<Vec<UserProfileHistoryEntry>>, ApiError>;
 
+    fn get_user_id_by_principal(&self, principal: &Principal) -> Option<UserId>;
+
     async fn create_user_profile(
         &self,
         calling_principal: Principal,
@@ -66,6 +68,10 @@ impl UserProfileRepository for UserProfileRepositoryImpl {
         self.get_user_id_by_principal(principal)
             .map(|user_id| self.get_user_profile_history_by_user_id(user_id))
             .transpose()
+    }
+
+    fn get_user_id_by_principal(&self, principal: &Principal) -> Option<UserId> {
+        STATE.with_borrow(|s| s.principal_index.get(principal))
     }
 
     async fn create_user_profile(
@@ -134,10 +140,6 @@ impl UserProfileRepository for UserProfileRepositoryImpl {
 impl UserProfileRepositoryImpl {
     pub fn new() -> Self {
         Self {}
-    }
-
-    fn get_user_id_by_principal(&self, principal: &Principal) -> Option<UserId> {
-        STATE.with_borrow(|s| s.principal_index.get(principal))
     }
 
     fn get_user_profile_history_by_user_id(
