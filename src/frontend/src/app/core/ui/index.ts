@@ -5,3 +5,4 @@ export * from './input';
 export * from './input-error';
 export * from './input-hint';
 export * from './label';
+export * from './loading-dialog';

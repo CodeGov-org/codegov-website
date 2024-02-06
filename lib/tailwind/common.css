@@ -170,8 +170,13 @@
     @apply block rounded-lg px-3 py-2 font-semibold hover:bg-white hover:text-cyan-900 hover:dark:bg-slate-200 hover:dark:text-slate-900;
   }
 
-  .sidenav-backdrop {
+  /* Overlays */
+  .backdrop {
     @apply fixed inset-0 z-10 bg-slate-800/80;
+  }
+
+  .dialog-panel {
+    @apply !fixed left-[50vw] top-[50vh] z-50 -translate-x-1/2 -translate-y-1/2;
   }
 
   /* Dropdown */

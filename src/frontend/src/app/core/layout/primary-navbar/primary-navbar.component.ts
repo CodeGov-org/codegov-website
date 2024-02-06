@@ -73,7 +73,7 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
           role="dialog"
           aria-modal="true"
         >
-          <div class="sidenav-backdrop" (click)="onSidenavCloseClicked()"></div>
+          <div class="backdrop" (click)="onSidenavCloseClicked()"></div>
 
           <div class="sidenav">
             <div class="sidenav-header">
