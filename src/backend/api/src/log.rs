@@ -27,4 +27,7 @@ pub struct LogEntry {
     pub message: String,
 }
 
-pub type GetLogsResponse = Vec<LogEntry>;
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+pub struct ListLogsResponse {
+    pub logs: Vec<LogEntry>,
+}

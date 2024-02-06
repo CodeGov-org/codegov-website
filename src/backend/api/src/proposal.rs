@@ -33,6 +33,6 @@ pub struct GetProposalResponse {
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
-pub struct GetProposalsResponse {
+pub struct ListProposalsResponse {
     pub proposals: Vec<GetProposalResponse>,
 }

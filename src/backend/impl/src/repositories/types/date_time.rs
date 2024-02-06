@@ -20,7 +20,15 @@ impl DateTime {
     }
 
     pub fn from_timestamp_micros(micros: u64) -> Result<Self, ApiError> {
-        let dt = NaiveDateTime::from_timestamp_micros(micros.try_into().unwrap()).unwrap();
+        let micros = micros.try_into().map_err(|err| {
+            ApiError::internal(&format!(
+                "Failed to convert timestamp {} to micros: {}",
+                micros, err
+            ))
+        })?;
+        let dt = NaiveDateTime::from_timestamp_micros(micros).ok_or(ApiError::internal(
+            &format!("Failed to convert timestamp {} to date time", micros),
+        ))?;
         Self::new(Utc.from_utc_datetime(&dt))
     }
 

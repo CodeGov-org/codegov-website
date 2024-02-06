@@ -10,7 +10,9 @@ impl GovernanceCanisterService {
     pub async fn list_proposals(
         &self,
         arg0: ListProposalInfo,
-    ) -> CanisterResult<(ListProposalInfoResponse,)> {
-        call(self.0, "list_proposals", (arg0,)).await
+    ) -> CanisterResult<ListProposalInfoResponse> {
+        let (res,) = call(self.0, "list_proposals", (arg0,)).await?;
+
+        Ok(res)
     }
 }

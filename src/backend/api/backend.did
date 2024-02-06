@@ -115,7 +115,7 @@ type GetProposalResponse = variant {
   err : Err;
 };
 
-type GetProposalsResponse = variant {
+type ListProposalsResponse = variant {
   ok : record {
     proposals : vec ProposalResponse;
   };
@@ -143,8 +143,10 @@ type LogEntry = record {
   message : text;
 };
 
-type GetLogsResponse = variant {
-  ok : vec LogEntry;
+type ListLogsResponse = variant {
+  ok : record {
+    logs : vec LogEntry;
+  };
   err : Err;
 };
 
@@ -153,6 +155,6 @@ service : {
   get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;
   create_my_user_profile : () -> (CreateMyUserProfileResponse);
   update_user_profile : (UpdateUserProfileRequest) -> (UpdateUserProfileResponse);
-  get_proposals : () -> (GetProposalsResponse) query;
-  get_logs : (LogsFilterRequest) -> (GetLogsResponse) query;
+  list_proposals : () -> (ListProposalsResponse) query;
+  list_logs : (LogsFilterRequest) -> (ListLogsResponse) query;
 };

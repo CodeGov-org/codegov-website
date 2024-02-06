@@ -5,7 +5,7 @@ use crate::{
         ProposalService, ProposalServiceImpl,
     },
 };
-use backend_api::{ApiError, ApiResult, GetProposalsResponse};
+use backend_api::{ApiError, ApiResult, ListProposalsResponse};
 use candid::Principal;
 use ic_cdk::*;
 
@@ -20,8 +20,8 @@ async fn sync_proposals() -> ApiResult<()> {
 }
 
 #[query]
-fn get_proposals() -> ApiResult<GetProposalsResponse> {
-    ProposalController::default().get_proposals().into()
+fn list_proposals() -> ApiResult<ListProposalsResponse> {
+    ProposalController::default().list_proposals().into()
 }
 
 pub(super) struct ProposalController<A: AccessControlService, L: LogService, P: ProposalService> {
@@ -78,8 +78,8 @@ impl<A: AccessControlService, L: LogService, P: ProposalService> ProposalControl
         }
     }
 
-    fn get_proposals(&self) -> Result<GetProposalsResponse, ApiError> {
-        self.proposal_service.get_proposals()
+    fn list_proposals(&self) -> Result<ListProposalsResponse, ApiError> {
+        self.proposal_service.list_proposals()
     }
 }
 
@@ -160,7 +160,7 @@ mod tests {
     }
 
     #[rstest]
-    fn get_proposals() {
+    fn list_proposals() {
         let proposals: Vec<_> = fixtures::nns_proposals_with_ids()
             .into_iter()
             .map(|(id, proposal)| map_get_proposal_response(id, proposal))
@@ -170,9 +170,9 @@ mod tests {
         let log_service_mock = MockLogService::new();
         let mut proposal_service_mock = MockProposalService::new();
         proposal_service_mock
-            .expect_get_proposals()
+            .expect_list_proposals()
             .once()
-            .return_const(Ok(GetProposalsResponse {
+            .return_const(Ok(ListProposalsResponse {
                 proposals: proposals.clone(),
             }));
 
@@ -182,8 +182,8 @@ mod tests {
             proposal_service_mock,
         );
 
-        let result = controller.get_proposals().unwrap();
+        let result = controller.list_proposals().unwrap();
 
-        assert_eq!(result, GetProposalsResponse { proposals });
+        assert_eq!(result, ListProposalsResponse { proposals });
     }
 }

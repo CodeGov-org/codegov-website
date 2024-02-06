@@ -6,7 +6,7 @@ use crate::{
         Proposal, ProposalId, ProposalRepository, ProposalRepositoryImpl, ReviewPeriodState,
     },
 };
-use backend_api::{ApiError, GetProposalResponse, GetProposalsResponse};
+use backend_api::{ApiError, GetProposalResponse, ListProposalsResponse};
 use candid::Principal;
 use external_canisters::nns::GovernanceCanisterService;
 use ic_nns_governance::pb::v1::{
@@ -19,7 +19,7 @@ const NNS_GOVERNANCE_CANISTER_ID: &str = "rrkah-fqaaa-aaaaa-aaaaq-cai";
 pub trait ProposalService {
     fn get_proposal(&self, id: ProposalId) -> Result<GetProposalResponse, ApiError>;
 
-    fn get_proposals(&self) -> Result<GetProposalsResponse, ApiError>;
+    fn list_proposals(&self) -> Result<ListProposalsResponse, ApiError>;
 
     fn update_proposal_state(
         &self,
@@ -52,7 +52,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
         Ok(map_get_proposal_response(id, proposal))
     }
 
-    fn get_proposals(&self) -> Result<GetProposalsResponse, ApiError> {
+    fn list_proposals(&self) -> Result<ListProposalsResponse, ApiError> {
         let proposals = self
             .proposal_repository
             .get_proposals()
@@ -60,7 +60,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
             .map(|(id, proposal)| map_get_proposal_response(id, proposal))
             .collect();
 
-        Ok(GetProposalsResponse { proposals })
+        Ok(ListProposalsResponse { proposals })
     }
 
     fn update_proposal_state(
@@ -98,7 +98,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
                 include_reward_status: vec![],
                 omit_large_fields: Some(true),
                 before_proposal: None,
-                limit: 20,
+                limit: 50,
                 exclude_topic: vec![
                     Topic::Unspecified.into(),
                     Topic::NeuronManagement.into(),
@@ -120,7 +120,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
             })
             .await
         {
-            Ok(response) => response.0,
+            Ok(res) => res,
             Err(err) => {
                 return Err(ApiError::internal(&format!(
                     "Failed to fetch proposals: {:?}",
@@ -140,19 +140,13 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
                 }
             };
 
-            match self
+            if !self
                 .proposal_repository
                 .get_proposals()
                 .iter()
-                .find(|(_, p)| p.nervous_system.id() == proposal.nervous_system.id())
+                .any(|(_, p)| p.nervous_system.id() == proposal.nervous_system.id())
             {
-                Some(_) => {
-                    // TODO: decide what to do if the proposal already exists
-                    // right now, we just ignore it
-                }
-                None => {
-                    self.proposal_repository.create_proposal(proposal).await?;
-                }
+                self.proposal_repository.create_proposal(proposal).await?;
             }
         }
 
@@ -204,7 +198,7 @@ mod tests {
     }
 
     #[rstest]
-    fn get_proposals() {
+    fn list_proposals() {
         let mut repository_mock = MockProposalRepository::new();
         repository_mock
             .expect_get_proposals()
@@ -218,11 +212,11 @@ mod tests {
             .map(|(id, proposal)| map_get_proposal_response(id, proposal))
             .collect();
 
-        let result = service.get_proposals().unwrap();
+        let result = service.list_proposals().unwrap();
 
         assert_eq!(
             result,
-            GetProposalsResponse {
+            ListProposalsResponse {
                 proposals: expected
             }
         );

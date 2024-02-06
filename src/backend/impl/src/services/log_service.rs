@@ -1,13 +1,13 @@
 use crate::{
-    mappings::{map_get_logs_response, map_logs_filter_request},
+    mappings::{map_list_logs_response, map_logs_filter_request},
     repositories::{DateTime, LogEntry, LogLevel, LogRepository, LogRepositoryImpl},
     system_api::get_date_time,
 };
-use backend_api::{ApiError, GetLogsResponse, LogsFilterRequest};
+use backend_api::{ApiError, ListLogsResponse, LogsFilterRequest};
 
 #[cfg_attr(test, mockall::automock)]
 pub trait LogService {
-    fn get_logs(&self, filter: LogsFilterRequest) -> GetLogsResponse;
+    fn list_logs(&self, filter: LogsFilterRequest) -> ListLogsResponse;
 
     fn append_log(
         &self,
@@ -34,7 +34,7 @@ impl Default for LogServiceImpl<LogRepositoryImpl> {
 }
 
 impl<T: LogRepository> LogService for LogServiceImpl<T> {
-    fn get_logs(&self, request: LogsFilterRequest) -> GetLogsResponse {
+    fn list_logs(&self, request: LogsFilterRequest) -> ListLogsResponse {
         let filter = map_logs_filter_request(request);
 
         let logs = self
@@ -45,7 +45,7 @@ impl<T: LogRepository> LogService for LogServiceImpl<T> {
             .cloned()
             .collect::<Vec<_>>();
 
-        map_get_logs_response(logs)
+        map_list_logs_response(logs)
     }
 
     fn append_log(
@@ -96,7 +96,7 @@ mod tests {
     use rstest::*;
 
     #[rstest]
-    fn get_logs_empty_filter() {
+    fn list_logs_empty_filter() {
         let (log_entry, filter, _) = fixtures::filters::empty_filter();
 
         let mut repository_mock = MockLogRepository::new();
@@ -107,11 +107,11 @@ mod tests {
 
         let service = LogServiceImpl::new(repository_mock);
 
-        let result = service.get_logs(filter.into());
+        let result = service.list_logs(filter.into());
 
         assert_eq!(
             result,
-            map_get_logs_response(vec![log_entry.clone(), log_entry])
+            map_list_logs_response(vec![log_entry.clone(), log_entry])
         );
     }
 
@@ -130,7 +130,7 @@ mod tests {
     #[case::message_filter_not_matchingd(fixtures::filters::message_filter_not_matching())]
     #[case::all_matching(fixtures::filters::all_matching())]
     #[case::all_not_matching(fixtures::filters::all_not_matching())]
-    fn get_logs(#[case] fixture: (LogEntry, LogsFilter, bool)) {
+    fn list_logs(#[case] fixture: (LogEntry, LogsFilter, bool)) {
         let (log_entry, filter, expected) = fixture;
 
         let mut repository_mock = MockLogRepository::new();
@@ -141,14 +141,14 @@ mod tests {
 
         let service = LogServiceImpl::new(repository_mock);
 
-        let result = service.get_logs(filter.into());
+        let result = service.list_logs(filter.into());
 
         assert_eq!(
             result,
             if expected {
-                map_get_logs_response(vec![log_entry])
+                map_list_logs_response(vec![log_entry])
             } else {
-                vec![]
+                ListLogsResponse { logs: vec![] }
             }
         );
     }

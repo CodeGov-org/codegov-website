@@ -2,16 +2,16 @@ use crate::{
     repositories::{LogRepositoryImpl, UserProfileRepositoryImpl},
     services::{AccessControlService, AccessControlServiceImpl, LogService, LogServiceImpl},
 };
-use backend_api::{ApiError, ApiResult, GetLogsResponse, LogsFilterRequest};
+use backend_api::{ApiError, ApiResult, ListLogsResponse, LogsFilterRequest};
 use candid::Principal;
 use ic_cdk::*;
 
 #[query]
-fn get_logs(request: LogsFilterRequest) -> ApiResult<GetLogsResponse> {
+fn list_logs(request: LogsFilterRequest) -> ApiResult<ListLogsResponse> {
     let calling_principal = caller();
 
     LogController::default()
-        .get_logs(calling_principal, request)
+        .list_logs(calling_principal, request)
         .into()
 }
 
@@ -42,15 +42,15 @@ impl<A: AccessControlService, L: LogService> LogController<A, L> {
         }
     }
 
-    fn get_logs(
+    fn list_logs(
         &self,
         calling_principal: Principal,
         request: LogsFilterRequest,
-    ) -> Result<GetLogsResponse, ApiError> {
+    ) -> Result<ListLogsResponse, ApiError> {
         self.access_control_service
             .assert_principal_is_admin(calling_principal)?;
 
-        let logs = self.log_service.get_logs(request);
+        let logs = self.log_service.list_logs(request);
 
         Ok(logs)
     }
@@ -61,7 +61,7 @@ mod tests {
     use super::*;
     use crate::{
         fixtures,
-        mappings::map_get_logs_response,
+        mappings::map_list_logs_response,
         services::{MockAccessControlService, MockLogService},
     };
     use mockall::predicate::*;
@@ -70,7 +70,7 @@ mod tests {
     #[rstest]
     #[case::anonymous_principal(Principal::anonymous())]
     #[case::non_admin_principal(fixtures::principal())]
-    fn get_logs_unauthorized(#[case] calling_principal: Principal) {
+    fn list_logs_unauthorized(#[case] calling_principal: Principal) {
         let request = LogsFilterRequest {
             before_timestamp_ms: None,
             after_timestamp_ms: None,
@@ -92,17 +92,19 @@ mod tests {
             .return_const(Err(error.clone()));
 
         let mut service_mock = MockLogService::new();
-        service_mock.expect_get_logs().never();
+        service_mock.expect_list_logs().never();
 
         let controller = LogController::new(access_control_service_mock, service_mock);
 
-        let result = controller.get_logs(calling_principal, request).unwrap_err();
+        let result = controller
+            .list_logs(calling_principal, request)
+            .unwrap_err();
 
         assert_eq!(result, error);
     }
 
     #[rstest]
-    fn get_logs() {
+    fn list_logs() {
         let calling_principal = fixtures::principal();
         let request = LogsFilterRequest {
             before_timestamp_ms: None,
@@ -112,7 +114,7 @@ mod tests {
             message_contains_any: None,
         };
 
-        let logs = map_get_logs_response(vec![fixtures::log_entry_info()]);
+        let logs = map_list_logs_response(vec![fixtures::log_entry_info()]);
 
         let mut access_control_service_mock = MockAccessControlService::new();
         access_control_service_mock
@@ -123,14 +125,14 @@ mod tests {
 
         let mut service_mock = MockLogService::new();
         service_mock
-            .expect_get_logs()
+            .expect_list_logs()
             .once()
             .with(eq(request.clone()))
             .return_const(logs.clone());
 
         let controller = LogController::new(access_control_service_mock, service_mock);
 
-        let result = controller.get_logs(calling_principal, request).unwrap();
+        let result = controller.list_logs(calling_principal, request).unwrap();
 
         assert_eq!(result, logs);
     }
