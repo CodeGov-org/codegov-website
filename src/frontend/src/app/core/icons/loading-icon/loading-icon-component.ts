@@ -14,7 +14,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       preserveAspectRatio="xMidYMid"
     >
       <circle
-        class="fill-none stroke-cyan-500 stroke-[10px] "
+        class="stroke-primary fill-none stroke-[10px] "
         cx="50"
         cy="50"
         r="32"

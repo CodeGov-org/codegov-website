@@ -137,7 +137,6 @@ export type SocialMediaForm = {
                 @if (controlHasValue('socialMedia.' + key)) {
                   <a
                     href="{{ getSocialMediaUrl(key) }}"
-                    class=" text-blue-900 underline dark:text-blue-400"
                     target="_blank"
                     rel="nofollow noreferrer"
                     >{{ getSocialMediaUrl(key) }}</a
@@ -155,11 +154,11 @@ export type SocialMediaForm = {
         </a>
         <button
           type="submit"
-          [title]="
-            profileForm.invalid ? 'Fix the validation errors' : undefined
+          [attr.title]="
+            profileForm.invalid ? 'Fix the validation errors' : null
           "
           [disabled]="profileForm.invalid"
-          class="rounded bg-blue-500 px-4 py-1 text-lg text-white enabled:hover:bg-blue-600 disabled:bg-blue-300"
+          class="btn"
         >
           Save
         </button>

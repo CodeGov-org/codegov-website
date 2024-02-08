@@ -9,7 +9,7 @@ import { LoadingIconComponent } from '~core/icons';
   imports: [LoadingIconComponent],
   template: `
     <div
-      class="flex w-auto flex-row items-center rounded-lg bg-cyan-800 px-4 py-4 text-white dark:bg-slate-700 dark:text-slate-200"
+      class="bg-primary-800 flex w-auto flex-row items-center rounded-lg px-4 py-4 text-white dark:bg-slate-700 dark:text-slate-200"
     >
       <app-loading-icon />
       <h3 class="mx-4 mb-0">{{ infoText }}</h3>
