@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply min-h-[100vh] bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-300;
+    @apply min-h-[100vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-300;
   }
 
   h1 {
@@ -36,7 +36,7 @@
   }
 
   a {
-    @apply font-medium text-cyan-600 hover:underline;
+    @apply text-primary font-medium underline-offset-4 outline-none hover:underline focus:underline;
   }
 
   p a {
@@ -69,15 +69,34 @@
 }
 
 @layer utilities {
-  .primary-colors {
-    @apply bg-cyan-900 text-white dark:bg-slate-900 dark:text-slate-300;
+  .layer {
+    @apply relative;
+  }
+
+  .layer-10 {
+    @apply layer z-10 shadow-sm;
+  }
+  .layer-20 {
+    @apply layer z-20 shadow-md;
+  }
+
+  .layer-30 {
+    @apply layer z-30 shadow-lg;
+  }
+
+  .layer-40 {
+    @apply layer z-40 shadow-xl;
+  }
+
+  .layer-50 {
+    @apply layer z-50 shadow-2xl;
   }
 }
 
 @layer components {
   /* Navbar */
   .navbar {
-    @apply primary-colors px-4 py-3 shadow-lg;
+    @apply bg-primary-900 layer-30 px-4 py-3 text-white dark:bg-slate-800 dark:text-slate-300;
   }
 
   .navbar-nav {
@@ -130,7 +149,7 @@
   }
 
   .footer-link-category {
-    @apply list-none font-medium text-gray-500 dark:text-gray-400;
+    @apply list-none font-medium text-slate-500 dark:text-slate-400;
   }
 
   .footer-link {
@@ -151,7 +170,7 @@
 
   /* Sidenav */
   .sidenav {
-    @apply primary-colors fixed inset-y-0 right-0 z-10 w-full overflow-y-auto px-4 py-3 sm:max-w-sm;
+    @apply bg-primary-900 layer-50 !fixed inset-y-0 right-0 w-full overflow-y-auto px-4 py-3 text-white sm:max-w-sm dark:bg-slate-900 dark:text-slate-300;
   }
 
   .sidenav-header {
@@ -175,16 +194,16 @@
   }
 
   .sidenav-item {
-    @apply block rounded-lg px-3 py-2 font-semibold text-white hover:bg-white hover:text-cyan-900 dark:text-slate-300 hover:dark:bg-slate-200 hover:dark:text-slate-900;
+    @apply hover:text-primary-900 block rounded-lg px-3 py-2 font-semibold text-white hover:bg-white dark:text-slate-300 hover:dark:bg-slate-200 hover:dark:text-slate-900;
   }
 
   /* Overlays */
   .backdrop {
-    @apply fixed inset-0 z-10 bg-slate-800/80;
+    @apply layer-40 fixed inset-0 bg-slate-800/80;
   }
 
   .dialog-panel {
-    @apply !fixed left-[50vw] top-[50vh] z-50 -translate-x-1/2 -translate-y-1/2;
+    @apply layer-50 !fixed left-[50vw] top-[50vh] -translate-x-1/2 -translate-y-1/2;
   }
 
   /* Dropdown */
@@ -197,16 +216,16 @@
   }
 
   .dropdown-menu {
-    @apply absolute right-0 z-10 mt-2 flex w-36 flex-col overflow-hidden rounded-md bg-white text-slate-900 ring-1 ring-black ring-opacity-20 drop-shadow-xl dark:bg-slate-700 dark:text-slate-200;
+    @apply layer-40 !absolute right-0 mt-2 flex w-36 flex-col overflow-hidden rounded-md bg-white text-slate-900 dark:bg-slate-700 dark:text-slate-200;
   }
 
   .dropdown-item {
-    @apply block px-4 py-2.5 font-normal text-slate-900 hover:bg-cyan-800 hover:text-white hover:no-underline dark:text-slate-300 hover:dark:bg-slate-200 hover:dark:text-slate-900;
+    @apply hover:bg-primary-800 block px-4 py-2.5 font-normal text-slate-900 hover:text-white hover:no-underline dark:text-slate-300 hover:dark:bg-slate-200 hover:dark:text-slate-900;
   }
 
   /* Collapsible */
   .collapsible-trigger {
-    @apply flex w-full items-center justify-between rounded-lg px-3 py-2 font-semibold hover:bg-white hover:text-cyan-900 hover:dark:bg-slate-200 hover:dark:text-slate-900;
+    @apply hover:text-primary-900 flex w-full items-center justify-between rounded-lg px-3 py-2 font-semibold hover:bg-white hover:dark:bg-slate-200 hover:dark:text-slate-900;
   }
 
   .collapsible-content {
@@ -214,17 +233,21 @@
   }
 
   /* Buttons */
-  .icon-btn {
-    @apply inline-flex h-9 w-9 items-center justify-center rounded-full bg-cyan-800 text-white shadow-lg dark:bg-slate-700 dark:text-slate-200;
+  .btn {
+    @apply layer-10 bg-primary enabled:hover:bg-primary-600 focus:ring-primary-800 rounded-md px-4 py-1 text-lg text-white outline-none focus:ring-4 focus:ring-opacity-50 disabled:bg-opacity-45 dark:focus:ring-opacity-100;
+  }
+
+  .btn-icon {
+    @apply layer-20 inline-flex h-9 w-9 items-center justify-center rounded-full text-white shadow-lg;
   }
 
   /* Forms */
   .input {
-    @apply block w-full rounded-md border border-slate-400 bg-slate-50 p-2.5 text-sm text-slate-900 outline-none focus:border-cyan-700 focus:ring-1 focus:ring-cyan-700 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-200 dark:focus:border-cyan-700 dark:focus:ring-cyan-700;
+    @apply focus:border-primary ring-primary-800 block w-full rounded-md border border-slate-400 bg-slate-50 p-2.5 text-sm text-slate-900 outline-none focus:ring-4 focus:ring-opacity-50 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-opacity-100;
   }
 
   .input-invalid {
-    @apply border-red-700 focus:border-red-700 focus:ring-red-700 dark:border-red-800 dark:focus:border-red-800 dark:focus:ring-red-800;
+    @apply border-error focus:border-error focus:ring-error focus:ring-opacity-30;
   }
 
   .input-textarea {

@@ -91,11 +91,11 @@ export interface AdminProfileForm {
         </a>
         <button
           type="submit"
-          [title]="
-            profileForm.invalid ? 'Fix the validation errors' : undefined
+          [attr.title]="
+            profileForm.invalid ? 'Fix the validation errors' : null
           "
           [disabled]="profileForm.invalid"
-          class="rounded bg-blue-500 px-4 py-1 text-lg text-white enabled:hover:bg-blue-600 disabled:bg-blue-300"
+          class="btn"
         >
           Save
         </button>

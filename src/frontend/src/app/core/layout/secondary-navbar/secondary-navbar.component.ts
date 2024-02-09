@@ -25,7 +25,7 @@ import { DropdownComponent } from '~core/ui';
     DropdownComponent,
   ],
   template: `<nav
-    class="bg-cyan-950 px-4 py-3 text-white shadow-lg dark:bg-slate-950 dark:text-slate-200"
+    class="bg-primary-950 layer-20 px-4 py-3 text-white dark:bg-slate-900 dark:text-slate-200"
   >
     <div class="container mx-auto flex flex-row items-center justify-between">
       <div class="flex flex-1 flex-row">
@@ -34,7 +34,10 @@ import { DropdownComponent } from '~core/ui';
 
       <div class="flex flex-row">
         @if (isAuthenticated$ | async) {
-          <app-dropdown [showChevron]="false" menuTriggerClassName="icon-btn">
+          <app-dropdown
+            [showChevron]="false"
+            menuTriggerClassName="btn btn-icon"
+          >
             <ng-container ngProjectAs="[menuTrigger]">
               <app-profile-icon />
             </ng-container>
@@ -57,7 +60,7 @@ import { DropdownComponent } from '~core/ui';
             </ng-container>
           </app-dropdown>
         } @else {
-          <button (click)="onLoginButtonClicked()" class="icon-btn">
+          <button (click)="onLoginButtonClicked()" class="btn btn-icon">
             <span class="sr-only">Login</span>
             <app-login-icon />
           </button>
