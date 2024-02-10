@@ -42,3 +42,14 @@ pub fn date_time_c() -> DateTime {
 
     DateTime::new(date_time).unwrap()
 }
+
+#[fixture]
+pub fn date_time_future() -> DateTime {
+    let date_time = NaiveDate::from_ymd_opt(2100, 8, 22)
+        .unwrap()
+        .and_hms_opt(21, 49, 36)
+        .unwrap()
+        .and_utc();
+
+    DateTime::new(date_time).unwrap()
+}

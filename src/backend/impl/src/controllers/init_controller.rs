@@ -15,6 +15,13 @@ fn init() {
     set_timer(Duration::from_secs(0), move || {
         spawn(init_admin(calling_principal))
     });
+
+    jobs::start_jobs();
+}
+
+#[post_upgrade]
+fn post_upgrade() {
+    jobs::start_jobs();
 }
 
 async fn init_admin(calling_principal: Principal) {
@@ -40,5 +47,34 @@ impl<T: InitService> InitController<T> {
 
     async fn init(&self, calling_principal: Principal) -> Result<(), ApiError> {
         self.init_service.init(calling_principal).await
+    }
+}
+
+mod jobs {
+    use ic_cdk::spawn;
+    use ic_cdk_timers::set_timer_interval;
+    use std::time::Duration;
+
+    /// Starts all cron jobs.
+    pub fn start_jobs() {
+        nns_proposals::start();
+    }
+
+    mod nns_proposals {
+        use crate::controllers::proposal_controller::ProposalController;
+
+        use super::*;
+
+        pub fn start() {
+            set_timer_interval(Duration::from_millis(300_000), || {
+                spawn(run());
+            });
+        }
+
+        async fn run() {
+            ProposalController::default().sync_proposals_job().await;
+
+            // TODO: close proposals that have passed the review period
+        }
     }
 }

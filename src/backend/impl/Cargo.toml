@@ -8,11 +8,13 @@ crate-type = ["cdylib"]
 
 [dependencies]
 backend_api = { path = "../api" }
+external_canisters = { path = "../external_canisters" }
 
 ic-cdk.workspace = true
 ic-cdk-macros.workspace = true
 ic-cdk-timers.workspace = true
 ic-stable-structures.workspace = true
+ic-nns-governance.workspace = true
 
 candid.workspace = true
 candid_parser.workspace = true

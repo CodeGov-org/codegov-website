@@ -1,4 +1,4 @@
-use super::Uuid;
+use super::{NeuronId, Uuid};
 use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_stable_structures::{storable::Bound, Storable};
 use std::borrow::Cow;
@@ -12,7 +12,7 @@ pub enum UserConfig {
     },
     Reviewer {
         bio: String,
-        neuron_id: u64,
+        neuron_id: NeuronId,
         wallet_address: String,
     },
     Anonymous,
