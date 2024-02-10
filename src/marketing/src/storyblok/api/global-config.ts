@@ -1,7 +1,7 @@
 import { useStoryblokApi } from '@storyblok/astro';
 import type { GlobalConfigStory } from '../types/stories/global-config-story';
 import type { LinkBlok, LinkCategoryBlok } from '../types/bloks/navigation';
-import { env } from '../../env';
+import { env } from '../../environment';
 
 function slugToHref(slug: string): string {
   return slug.startsWith('/') ? slug : `/${slug}`;

@@ -1,8 +1,14 @@
+import { Dialog } from '@angular/cdk/dialog';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
 import { BackendActorService } from '~core/services';
+import {
+  LoadingDialogComponent,
+  LoadingDialogInput,
+  getLoadingDialogConfig,
+} from '~core/ui';
 import { isErr, isOk } from '~core/utils';
 import {
   mapProfileResponse,
@@ -18,9 +24,14 @@ export class ProfileService {
   private userProfileSubject = new BehaviorSubject<Profile | null>(null);
   public userProfile$ = this.userProfileSubject.asObservable();
 
+  private createProfileMessage: LoadingDialogInput = {
+    message: 'Creating new profile...',
+  };
+
   constructor(
     private readonly actorService: BackendActorService,
     private readonly router: Router,
+    private readonly dialog: Dialog,
   ) {}
 
   public async loadProfile(): Promise<void> {
@@ -35,7 +46,16 @@ export class ProfileService {
       throw new Error(`${getResponse.err.code}: ${getResponse.err.message}`);
     }
 
-    await this.createProfile();
+    const loadingDialog = this.dialog.open(
+      LoadingDialogComponent,
+      getLoadingDialogConfig(this.createProfileMessage),
+    );
+
+    try {
+      await this.createProfile();
+    } finally {
+      loadingDialog.close();
+    }
 
     this.router.navigate(['profile/edit']);
   }

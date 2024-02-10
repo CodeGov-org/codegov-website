@@ -2,7 +2,7 @@ import { useStoryblokApi } from '@storyblok/astro';
 import type { ISbLinks, ISbLink } from 'storyblok-js-client';
 import type { PageStory } from '../types';
 import type { ApiResponse } from './api-response';
-import { env } from '../../env';
+import { env } from '../../environment';
 
 type ApiLinksResponse = ApiResponse<ISbLinks>;
 

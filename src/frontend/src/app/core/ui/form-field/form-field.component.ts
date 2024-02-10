@@ -27,7 +27,7 @@ import { LabelComponent } from '../label';
   template: `
     <div class="flex flex-col md:flex-row">
       @if (hasLabel()) {
-        <label [for]="getFormControlId()" class="font-bold md:w-1/3">
+        <label [for]="getFormControlId()" class="font-bold md:w-1/3 md:pr-8">
           <ng-container *ngTemplateOutlet="getLabelTemplate()" />
         </label>
       }
@@ -35,9 +35,9 @@ import { LabelComponent } from '../label';
       <div class="mb-3 flex flex-col md:w-2/3">
         <ng-content></ng-content>
 
-        <div class="mb-1 ml-1 h-4 text-xs">
+        <div class="mb-1 ml-1 h-4 pt-1 text-xs">
           @if (hasError()) {
-            <span class="text-red-700 dark:text-red-400">
+            <span class="text-error">
               <ng-container *ngTemplateOutlet="getErrorTemplate()" />
             </span>
           } @else if (hasHint()) {

@@ -16,16 +16,16 @@ import { AbstractControl, ControlContainer } from '@angular/forms';
 export class InputDirective implements OnInit {
   @HostBinding('class')
   public get class(): string {
-    const classes = 'mb-1 dark:bg-slate-800';
+    const classes = 'input';
 
     if (this.elementRef.nativeElement.tagName.toLowerCase() === 'textarea') {
-      return classes + ' leading-24 h-24 resize-y';
+      return classes + ' input-textarea';
     }
 
     return classes;
   }
 
-  @HostBinding('class.border-red-700')
+  @HostBinding('class.input-invalid')
   public get hasError(): boolean {
     return this.formControl?.invalid ?? false;
   }
