@@ -12,6 +12,7 @@ import {
   ReactiveFormsModule,
   FormControl,
 } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from '../profile.model';
 import { InfoIconComponent } from '~core/icons';
@@ -55,29 +56,30 @@ export type SocialMediaForm = {
     InputErrorComponent,
     InputHintComponent,
     InfoIconComponent,
+    RouterModule,
   ],
   template: `
-    <div>
-      <div class="mb-4 flex flex-row items-center">
-        <span class="w-1/3 font-bold">ID</span>
-        <span>{{ userProfile.id }}</span>
-      </div>
-      <div class="mb-4 flex flex-row items-center">
-        <span class="w-1/3 font-bold">Role</span>
-        <span>{{ userProfile.role }}</span>
-        <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
-      </div>
-      <div class="mb-4 flex flex-row items-center">
-        <span class="w-1/3 font-bold">Proposal Types</span>
-        <span>{{ userProfile.proposalTypes.join(', ') }}</span>
-        <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
-      </div>
+    <div class="mb-4 flex flex-row items-center">
+      <span class="w-1/3 font-bold">ID</span>
+      <span>{{ userProfile.id }}</span>
+    </div>
 
-      <div class="mb-4 flex flex-row items-center">
-        <span class="h-6 w-1/3 font-bold">Neuron ID</span>
-        <span>{{ userProfile.neuronId }}</span>
-        <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
-      </div>
+    <div class="mb-4 flex flex-row items-center">
+      <span class="w-1/3 font-bold">Role</span>
+      <span>{{ userProfile.role }}</span>
+      <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
+    </div>
+
+    <div class="mb-4 flex flex-row items-center">
+      <span class="w-1/3 font-bold">Proposal Types</span>
+      <span>{{ userProfile.proposalTypes.join(', ') }}</span>
+      <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
+    </div>
+
+    <div class="mb-4 flex flex-row items-center">
+      <span class="h-6 w-1/3 font-bold">Neuron ID</span>
+      <span>{{ userProfile.neuronId }}</span>
+      <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
     </div>
 
     <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
@@ -135,7 +137,6 @@ export type SocialMediaForm = {
                 @if (controlHasValue('socialMedia.' + key)) {
                   <a
                     href="{{ getSocialMediaUrl(key) }}"
-                    class=" text-blue-900 underline dark:text-blue-400"
                     target="_blank"
                     rel="nofollow noreferrer"
                     >{{ getSocialMediaUrl(key) }}</a
@@ -148,16 +149,16 @@ export type SocialMediaForm = {
       </div>
 
       <div class="flex items-center">
-        <a title="Cancel your edits" routerLink="/" class="ml-auto mr-4">
+        <a title="Cancel your edits" [routerLink]="'/'" class="ml-auto mr-4">
           Cancel
         </a>
         <button
           type="submit"
-          [title]="
-            profileForm.invalid ? 'Fix the validation errors' : undefined
+          [attr.title]="
+            profileForm.invalid ? 'Fix the validation errors' : null
           "
           [disabled]="profileForm.invalid"
-          class="rounded bg-blue-500 px-4 py-1 text-lg text-white enabled:hover:bg-blue-600 disabled:bg-blue-300"
+          class="btn"
         >
           Save
         </button>

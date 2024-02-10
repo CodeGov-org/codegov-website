@@ -25,7 +25,7 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
     <header class="navbar">
       <div class="container mx-auto">
         <nav class="navbar-nav">
-          <a routerLink="/" class="navbar-brand">
+          <a [routerLink]="'/'" class="navbar-brand">
             <img
               class="navbar-logo"
               src="assets/codegov-logo.png"
@@ -73,7 +73,7 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
           role="dialog"
           aria-modal="true"
         >
-          <div class="sidenav-backdrop" (click)="onSidenavCloseClicked()"></div>
+          <div class="backdrop" (click)="onSidenavCloseClicked()"></div>
 
           <div class="sidenav">
             <div class="sidenav-header">

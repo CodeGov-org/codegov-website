@@ -39,7 +39,7 @@ curl -fsSL https://bun.sh/install | bash
 
 # Set up DFX
 echo "****** SYSTEM SETUP: Installing DFXVM ******"
-DFX_VERSION=$(jq -r '.dfx' ./dfx.json) sh -ci "$(curl -sSL https://internetcomputer.org/install.sh)"
+DFX_VERSION=$(jq -r '.dfx' ./dfx.json)
 DFX_VERSION=$DFX_VERSION sh -ci "$(curl -fsSL https://raw.githubusercontent.com/dfinity/sdk/dfxvm-install-script/install.sh)"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
