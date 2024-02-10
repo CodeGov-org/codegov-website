@@ -1,11 +1,11 @@
 use crate::{
     fixtures::{date_time_a, principal},
-    repositories::{HistoryAction, UserConfig, UserProfile, UserProfileHistoryEntry},
+    repositories::{HistoryAction, NeuronId, UserConfig, UserProfile, UserProfileHistoryEntry},
 };
 use rstest::*;
 
 #[fixture]
-pub fn neuron_id() -> u64 {
+pub fn neuron_id() -> NeuronId {
     7862326246190316138
 }
 

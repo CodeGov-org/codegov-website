@@ -1,4 +1,4 @@
-use crate::repositories::{UserId, Uuid};
+use crate::repositories::{ProposalId, UserId, Uuid};
 use candid::Principal;
 use rstest::*;
 
@@ -14,5 +14,10 @@ pub fn uuid() -> Uuid {
 
 #[fixture]
 pub fn user_id() -> UserId {
+    uuid()
+}
+
+#[fixture]
+pub fn proposal_id() -> ProposalId {
     uuid()
 }
