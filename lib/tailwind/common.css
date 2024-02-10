@@ -202,10 +202,6 @@
     @apply layer-40 fixed inset-0 bg-slate-800/80;
   }
 
-  .dialog-panel {
-    @apply layer-50 !fixed left-[50vw] top-[50vh] -translate-x-1/2 -translate-y-1/2;
-  }
-
   /* Dropdown */
   .dropdown {
     @apply relative;

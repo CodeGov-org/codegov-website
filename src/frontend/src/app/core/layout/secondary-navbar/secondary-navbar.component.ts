@@ -10,7 +10,7 @@ import {
   EditIconComponent,
 } from '~core/icons';
 import { UserAuthService } from '~core/services';
-import { DropdownComponent } from '~core/ui';
+import { DropdownComponent, TooltipDirective } from '~core/ui';
 
 @Component({
   selector: 'app-secondary-navbar',
@@ -23,6 +23,7 @@ import { DropdownComponent } from '~core/ui';
     ProfileIconComponent,
     EditIconComponent,
     DropdownComponent,
+    TooltipDirective,
   ],
   template: `<nav
     class="bg-primary-950 layer-20 px-4 py-3 text-white dark:bg-slate-900 dark:text-slate-200"
@@ -60,7 +61,11 @@ import { DropdownComponent } from '~core/ui';
             </ng-container>
           </app-dropdown>
         } @else {
-          <button (click)="onLoginButtonClicked()" class="btn btn-icon">
+          <button
+            (click)="onLoginButtonClicked()"
+            class="btn btn-icon"
+            [appTooltip]="tooltipText"
+          >
             <span class="sr-only">Login</span>
             <app-login-icon />
           </button>
@@ -72,6 +77,7 @@ import { DropdownComponent } from '~core/ui';
 })
 export class SecondaryNavbarComponent {
   public readonly isAuthenticated$: Observable<boolean>;
+  public readonly tooltipText = 'Log in to CodeGov';
 
   constructor(private readonly authService: UserAuthService) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
