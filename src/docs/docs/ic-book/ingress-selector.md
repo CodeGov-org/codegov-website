@@ -29,13 +29,13 @@ Once condition 2 is met, instead, the canister shall not include more messages i
 
 Before starting a new round-robin, the [quota is updated](https://github.com/dfinity/ic/blob/67730a29e2c5272bcf7c3ad23e9ffa7309e1aede/rs/ingress_manager/src/ingress_selector.rs#L237C17-L243C19) by dividing the remaining bytes in the payload by the number of canisters with a yet non-empty queue. This continues until the payload is full or all canister queues are empty. Once this happens, the payload is serialized and returned to the caller.
 
-### Considerations
+### Consideration 1
 
 Due to condition 2.b, at least one message per canister queue is [always included](https://github.com/dfinity/ic/blob/67730a29e2c5272bcf7c3ad23e9ffa7309e1aede/rs/ingress_manager/src/ingress_selector.rs#L217C21-L221C1). This way, each canister can make guaranteed progress.
 
 However, one single message may significantly exceed the canister quota, thus the total bytes included in the payload are [tracked for each canister](https://github.com/dfinity/ic/blob/67730a29e2c5272bcf7c3ad23e9ffa7309e1aede/rs/ingress_manager/src/ingress_selector.rs#L216C21-L216C58) and compared against a [cumulative quota](https://github.com/dfinity/ic/blob/67730a29e2c5272bcf7c3ad23e9ffa7309e1aede/rs/ingress_manager/src/ingress_selector.rs#L241C25-L241C98) so that a canister that exceededs its quota in a previous round would not be able to insert more messages until its total bytes to be included are less than the current cumulative quota. Thus, a canister that exceeds its quota significantly with a single message will have less (sometimes no) additional space in later round-robin iterations.
 
-### Example
+## Example
 
 To clarify the previous point, consider the following example:
 
@@ -67,3 +67,11 @@ Since canister 2 and 3 included exactly 20KB in earlier
 rounds, they get a chance to include 6.6KB more (until they hit 26.6KB). Canister
 1 however has already crossed the 26.6KB mark, so it will not be able to include anything, as the [total bytes included are compared to the cumulative quota](https://github.com/dfinity/ic/blob/67730a29e2c5272bcf7c3ad23e9ffa7309e1aede/rs/ingress_manager/src/ingress_selector.rs#L208C28-L208C73).
 Therefore, canister 1 which crossed the quota in the first round gets punished during message selection of the second roound, making this implementation more fair.
+
+### Consideration 2
+
+Condition 2.b is [weakened](https://github.com/dfinity/ic/blob/67730a29e2c5272bcf7c3ad23e9ffa7309e1aede/rs/ingress_manager/src/ingress_selector.rs#L33C1-L45C11) once the number of [round robin iterations](https://github.com/dfinity/ic/blob/67730a29e2c5272bcf7c3ad23e9ffa7309e1aede/rs/ingress_manager/src/ingress_selector.rs#L154C9-L154C43) reaches a [threshold](https://github.com/dfinity/ic/blob/67730a29e2c5272bcf7c3ad23e9ffa7309e1aede/rs/ingress_manager/src/ingress_selector.rs#L46).
+
+Initially, the quota is a hard limit with the only exception being the first canister's message. After the threshold is reached, this limit weakens as the quota is used to stop including messages for a canister only if the messages included is greather than the [difference between the current round robin iteration and the threshold](https://github.com/dfinity/ic/blob/67730a29e2c5272bcf7c3ad23e9ffa7309e1aede/rs/ingress_manager/src/ingress_selector.rs#L206C29-L206C99). This is needed to make sure that the payload builder does not get stuck.
+
+## Example
