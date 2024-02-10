@@ -11,17 +11,19 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationSkipped, NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs';
 
+import { TooltipDirective } from '../tooltip';
 import { ChevronIconComponent } from '~core/icons';
 
 @Component({
   selector: 'app-dropdown',
   standalone: true,
-  imports: [CommonModule, ChevronIconComponent],
+  imports: [CommonModule, ChevronIconComponent, TooltipDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button
       (click)="onTriggerClicked()"
       [ngClass]="[menuTriggerClassName, 'dropdown-trigger']"
+      [appTooltip]="tooltip"
     >
       <div>
         <ng-content select="[menuTrigger]" />
@@ -40,6 +42,9 @@ import { ChevronIconComponent } from '~core/icons';
 export class DropdownComponent {
   @HostBinding('class.dropdown')
   public hostCssClass = true;
+
+  @Input()
+  public tooltip: string | null = null;
 
   @Input()
   public showChevron = true;
