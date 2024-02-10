@@ -2,10 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { Observable } from 'rxjs';
 
 import { InfoIconComponent } from '~core/icons';
-import { Profile, ProfileService, UserRole } from '~core/state';
+import { ProfileService, UserRole } from '~core/state';
 import { FormFieldComponent, InputDirective, LabelComponent } from '~core/ui';
 import { AdminProfileComponent } from './admin-profile';
 import { AnonymousProfileComponent } from './anonymous-profile';
@@ -52,7 +51,7 @@ import { ReviewerProfileComponent } from './reviewer-profile';
   `,
 })
 export class ProfileEditComponent implements OnInit {
-  public readonly userProfile$: Observable<Profile | null>;
+  public readonly userProfile$ = this.profileService.userProfile$;
   public readonly UserRole = UserRole;
 
   public readonly nonEditableInfo: string =
@@ -60,9 +59,7 @@ export class ProfileEditComponent implements OnInit {
   public readonly adminInfo: string =
     'Use DFX command to change this property.';
 
-  constructor(private readonly profileService: ProfileService) {
-    this.userProfile$ = profileService.userProfile$;
-  }
+  constructor(private readonly profileService: ProfileService) {}
 
   public ngOnInit(): void {
     this.profileService.loadProfile();

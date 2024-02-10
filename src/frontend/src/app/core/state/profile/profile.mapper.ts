@@ -87,6 +87,9 @@ export function mergeProfileUpdate(
   profile: Profile,
   profileUpdate: ProfileUpdate,
 ): Profile {
+  // create a new object reference so Angular will detect the changes
+  profile = { ...profile };
+
   if (
     profile.role === UserRole.Anonymous &&
     profileUpdate.role === UserRole.Anonymous

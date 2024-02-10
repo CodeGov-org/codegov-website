@@ -38,7 +38,6 @@ export interface ReviewerProfileForm {
   username: FormControl<string>;
   bio: FormControl<string>;
   walletAddress: FormControl<string>;
-  socialMedia: FormGroup<SocialMediaForm>;
 }
 
 export type SocialMediaForm = {
@@ -48,6 +47,7 @@ export type SocialMediaForm = {
 @Component({
   selector: 'app-reviewer-profile',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     FormFieldComponent,
@@ -84,51 +84,105 @@ export type SocialMediaForm = {
       <app-info-icon [appTooltip]="nonEditableInfo"></app-info-icon>
     </div>
 
-    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-      <app-form-field>
-        <app-label>Username</app-label>
+    <form [formGroup]="profileForm" (ngSubmit)="onProfileFormSubmit()">
+      @if (isProfileEditable) {
+        <app-form-field>
+          <app-label>Username</app-label>
 
-        <input appInput id="username" type="text" formControlName="username" />
+          <input
+            appInput
+            id="username"
+            type="text"
+            formControlName="username"
+          />
 
-        <app-input-error key="required">
-          Username cannot be empty
-        </app-input-error>
-        <app-input-error key="minlength">
-          Username must have at least 3 characters
-        </app-input-error>
-      </app-form-field>
+          <app-input-error key="required">
+            Username cannot be empty
+          </app-input-error>
+          <app-input-error key="minlength">
+            Username must have at least 3 characters
+          </app-input-error>
+        </app-form-field>
 
-      <app-form-field>
-        <app-label>Bio</app-label>
+        <app-form-field>
+          <app-label>Bio</app-label>
 
-        <textarea
-          appInput
-          id="bio"
-          type="text"
-          formControlName="bio"
-        ></textarea>
+          <textarea
+            appInput
+            id="bio"
+            type="text"
+            formControlName="bio"
+          ></textarea>
 
-        <app-input-error key="required">Bio cannot be empty</app-input-error>
-      </app-form-field>
+          <app-input-error key="required">Bio cannot be empty</app-input-error>
+        </app-form-field>
 
-      <app-form-field>
-        <app-label>Wallet Address</app-label>
+        <app-form-field>
+          <app-label>Wallet Address</app-label>
 
-        <input
-          appInput
-          id="walletAddress"
-          type="text"
-          formControlName="walletAddress"
-        />
+          <input
+            appInput
+            id="walletAddress"
+            type="text"
+            formControlName="walletAddress"
+          />
 
-        <app-input-error key="required">
-          Wallet address cannot be empty
-        </app-input-error>
-      </app-form-field>
+          <app-input-error key="required">
+            Wallet address cannot be empty
+          </app-input-error>
+        </app-form-field>
+      } @else {
+        <div class="mb-4 flex flex-row items-center">
+          <span class="w-1/3 font-bold">Username</span>
+          <span>{{ userProfile.username }}</span>
+        </div>
 
-      <div class="py-6">
-        <h2 class="mb-4">Social Media</h2>
-        <div formGroupName="socialMedia">
+        <div class="mb-4 flex flex-row items-center">
+          <span class="w-1/3 font-bold">Bio</span>
+          <span>{{ userProfile.bio }}</span>
+        </div>
+
+        <div class="mb-4 flex flex-row items-center">
+          <span class="w-1/3 font-bold">Wallet Address</span>
+          <span class="w-2/3 break-all">{{ userProfile.walletAddress }}</span>
+        </div>
+      }
+
+      <div class="flex items-center">
+        @if (isProfileEditable) {
+          <a title="Cancel your edits" [routerLink]="'/'" class="ml-auto mr-4">
+            Cancel
+          </a>
+
+          <button
+            type="submit"
+            [appTooltip]="
+              profileForm.invalid ? 'Fix the validation errors' : null
+            "
+            [disabled]="profileForm.invalid"
+            class="btn"
+          >
+            Save
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="btn ml-auto "
+            (click)="editProfileForm()"
+          >
+            Edit
+          </button>
+        }
+      </div>
+    </form>
+
+    <div class="py-6">
+      <h2 class="mb-4">Social Media</h2>
+      @if (isSocialMediaEditable) {
+        <form
+          [formGroup]="socialMediaForm"
+          (ngSubmit)="onSocialMediaFormSubmit()"
+        >
           @for (key of socialMediaKeys; track key) {
             <app-form-field>
               <app-label>{{ socialMediaInputs[key].label }}</app-label>
@@ -136,7 +190,7 @@ export type SocialMediaForm = {
               <input appInput [id]="key" type="text" [formControlName]="key" />
 
               <app-input-hint>
-                @if (controlHasValue('socialMedia.' + key)) {
+                @if (socialMediaControlHasValue(key)) {
                   <a
                     href="{{ getSocialMediaUrl(key) }}"
                     target="_blank"
@@ -147,33 +201,48 @@ export type SocialMediaForm = {
               </app-input-hint>
             </app-form-field>
           }
-        </div>
-      </div>
+          <div class="flex items-center">
+            <a
+              title="Cancel your edits"
+              [routerLink]="'/'"
+              class="ml-auto mr-4"
+            >
+              Cancel
+            </a>
+            <button type="submit" class="btn">Save</button>
+          </div>
+        </form>
+      } @else {
+        @for (key of socialMediaKeys; track key) {
+          <div class="mb-4 flex flex-row items-center">
+            <span class="w-1/3 font-bold">{{
+              socialMediaInputs[key].label
+            }}</span>
+            <span>{{ getSocialMediaValue(key) }}</span>
+          </div>
+        }
 
-      <div class="flex items-center">
-        <a title="Cancel your edits" [routerLink]="'/'" class="ml-auto mr-4">
-          Cancel
-        </a>
-        <button
-          type="submit"
-          [appTooltip]="
-            profileForm.invalid ? 'Fix the validation errors' : null
-          "
-          [disabled]="profileForm.invalid"
-          class="btn"
-        >
-          Save
-        </button>
-      </div>
-    </form>
+        <div class="flex items-center">
+          <button
+            type="button"
+            class="btn ml-auto "
+            (click)="editSocialMediaForm()"
+          >
+            Edit
+          </button>
+        </div>
+      }
+    </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReviewerProfileComponent implements OnChanges {
   @Input({ required: true })
   public userProfile!: ReviewerProfile;
 
   public readonly profileForm: FormGroup<ReviewerProfileForm>;
+  public readonly socialMediaForm: FormGroup<SocialMediaForm>;
+  public isProfileEditable = false;
+  public isSocialMediaEditable = false;
 
   public readonly nonEditableInfo: string =
     'To change this property, contact a CodeGov admin.';
@@ -195,8 +264,11 @@ export class ReviewerProfileComponent implements OnChanges {
         nonNullable: true,
         validators: [Validators.required],
       }),
-      socialMedia: new FormGroup<SocialMediaForm>(this.generateSocialMedia()),
     });
+
+    this.socialMediaForm = new FormGroup<SocialMediaForm>(
+      this.generateSocialMedia(),
+    );
   }
 
   public ngOnChanges(
@@ -207,19 +279,36 @@ export class ReviewerProfileComponent implements OnChanges {
         username: this.userProfile.username,
         bio: this.userProfile.bio,
         walletAddress: this.userProfile.walletAddress,
-        socialMedia: this.userProfile.socialMedia.reduce(
+      });
+
+      this.socialMediaForm.patchValue(
+        this.userProfile.socialMedia.reduce(
           (accum, value) => ({ ...accum, [value.type]: value.link }),
           {},
         ),
-      });
+      );
     }
   }
 
-  public onSubmit(): void {
-    const formValues = this.profileForm.value;
+  public onProfileFormSubmit(): void {
+    const profileFormValues = this.profileForm.value;
 
-    const socialMediaFormValues = Object.entries(
-      formValues.socialMedia ?? {},
+    const profileUpdate: ReviewerProfileUpdate = {
+      role: UserRole.Reviewer,
+      username: profileFormValues.username,
+      bio: profileFormValues.bio,
+      walletAddress: profileFormValues.walletAddress,
+    };
+
+    this.profileService.saveProfile(profileUpdate);
+    this.isProfileEditable = false;
+  }
+
+  public onSocialMediaFormSubmit(): void {
+    const socialMediaFormValues = this.socialMediaForm.value;
+
+    const socialMedia = Object.entries(
+      socialMediaFormValues ?? {},
     ).map<SocialLink>(([key, value]) => ({
       type: key as SocialMediaType,
       link: value,
@@ -227,31 +316,44 @@ export class ReviewerProfileComponent implements OnChanges {
 
     const profileUpdate: ReviewerProfileUpdate = {
       role: UserRole.Reviewer,
-      username: formValues.username,
-      bio: formValues.bio,
-      walletAddress: formValues.walletAddress,
-      socialMedia: socialMediaFormValues,
+      socialMedia: socialMedia,
     };
 
     this.profileService.saveProfile(profileUpdate);
+    this.isSocialMediaEditable = false;
   }
 
-  public controlHasValue(controlName: string): boolean {
-    const control = this.getControl(controlName);
+  public editProfileForm(): void {
+    this.isProfileEditable = true;
+  }
+
+  public editSocialMediaForm(): void {
+    this.isSocialMediaEditable = true;
+  }
+
+  public socialMediaControlHasValue(controlName: string): boolean {
+    const control = this.getSocialMediaControl(controlName);
 
     return control.value;
   }
 
   public getSocialMediaUrl(controlName: keyof SocialMediaInputs): string {
-    const control = this.getControl('socialMedia.' + controlName);
+    const control = this.getSocialMediaControl(controlName);
 
     const baseUrl = this.socialMediaInputs[controlName].baseUrl;
 
     return baseUrl + control.value;
   }
 
-  private getControl(controlName: string): AbstractControl {
-    const control = this.profileForm.get(controlName);
+  public getSocialMediaValue(lookupKey: string): string {
+    return (
+      this.userProfile.socialMedia.find(element => element.type === lookupKey)
+        ?.link ?? ''
+    );
+  }
+
+  private getSocialMediaControl(controlName: string): AbstractControl {
+    const control = this.socialMediaForm.get(controlName);
     if (control === null) {
       throw new Error(`Control "${controlName} not found."`);
     }
