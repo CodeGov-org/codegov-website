@@ -1,3 +1,5 @@
+use crate::system_api::get_date_time;
+
 use super::{DateTime, Uuid};
 use backend_api::ApiError;
 use candid::{CandidType, Decode, Deserialize, Encode};
@@ -70,6 +72,8 @@ pub struct Proposal {
     pub state: ReviewPeriodState,
     pub proposed_at: DateTime,
     pub proposed_by: NeuronId,
+    pub synced_at: DateTime,
+    pub review_completed_at: Option<DateTime>,
 }
 
 impl Storable for Proposal {
@@ -115,12 +119,18 @@ impl TryFrom<ProposalInfo> for Proposal {
             .ok_or(ApiError::internal("Proposer is None"))?
             .id;
 
+        // the NNS proposal is casted to our proposal when it is fetched
+        // from the NNS, so here it's fine to set the synced_at time to now
+        let date_time = get_date_time()?;
+
         Ok(Proposal {
             title,
             nervous_system,
             state,
             proposed_at,
             proposed_by,
+            synced_at: DateTime::new(date_time)?,
+            review_completed_at: None,
         })
     }
 }
