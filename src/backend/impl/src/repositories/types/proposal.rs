@@ -1,3 +1,5 @@
+use crate::system_api::get_date_time;
+
 use super::{DateTime, Uuid};
 use backend_api::ApiError;
 use candid::{CandidType, Decode, Deserialize, Encode};
@@ -6,6 +8,7 @@ use ic_stable_structures::{storable::Bound, Storable};
 use std::borrow::Cow;
 
 pub type ProposalId = Uuid;
+pub type ProposalIndex = (DateTime, ProposalId);
 pub type NervousSystemProposalId = u64;
 pub type NeuronId = u64;
 
@@ -64,11 +67,21 @@ impl From<ProposalStatus> for ReviewPeriodState {
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub struct Proposal {
+    /// The title of the proposal in the Nervous System.
     pub title: String,
+    /// The Nervous System that the proposal belongs to.
     pub nervous_system: NervousSystem,
+    /// The internal state of the proposal's review period.
     pub state: ReviewPeriodState,
+    /// The timestamp of when the proposal was proposed
+    /// in the Nervous System.
     pub proposed_at: DateTime,
+    /// The neuron id of the proposer in the Nervous System.
     pub proposed_by: NeuronId,
+    /// The timestamp of when the proposal was fetched from the Nervous System.
+    pub synced_at: DateTime,
+    /// The timestamp of when the proposal's review period is completed.
+    pub review_completed_at: Option<DateTime>,
 }
 
 impl Storable for Proposal {
@@ -114,12 +127,18 @@ impl TryFrom<ProposalInfo> for Proposal {
             .ok_or(ApiError::internal("Proposer is None"))?
             .id;
 
+        // the NNS proposal is casted to our proposal when it is fetched
+        // from the NNS, so here it's fine to set the synced_at time to now
+        let date_time = get_date_time()?;
+
         Ok(Proposal {
             title,
             nervous_system,
             state,
             proposed_at,
             proposed_by,
+            synced_at: DateTime::new(date_time)?,
+            review_completed_at: None,
         })
     }
 }

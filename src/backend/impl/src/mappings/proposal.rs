@@ -44,6 +44,8 @@ impl From<Proposal> for backend_api::Proposal {
             state: value.state.into(),
             proposed_at: value.proposed_at.to_string(),
             proposed_by: value.proposed_by,
+            synced_at: value.synced_at.to_string(),
+            review_completed_at: value.review_completed_at.map(|dt| dt.to_string()),
         }
     }
 }

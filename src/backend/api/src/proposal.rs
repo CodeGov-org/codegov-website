@@ -29,6 +29,8 @@ pub struct Proposal {
     pub state: ReviewPeriodState,
     pub proposed_at: String,
     pub proposed_by: u64,
+    pub synced_at: String,
+    pub review_completed_at: Option<String>,
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
