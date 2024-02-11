@@ -55,9 +55,15 @@ mod jobs {
     use ic_cdk_timers::set_timer_interval;
     use std::time::Duration;
 
+    use crate::services::{LogService, LogServiceImpl};
+
     /// Starts all cron jobs.
     pub fn start_jobs() {
         nns_proposals::start();
+
+        LogServiceImpl::default()
+            .log_info("Jobs started.".to_string(), Some("start_jobs".to_string()))
+            .unwrap();
     }
 
     mod nns_proposals {

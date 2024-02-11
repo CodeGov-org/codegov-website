@@ -124,6 +124,8 @@ type Proposal = record {
   state : ReviewPeriodState;
   proposed_at : text;
   proposed_by : nat64;
+  synced_at : text;
+  review_completed_at : opt text;
 };
 
 type ProposalResponse = record {
@@ -171,6 +173,11 @@ type ListLogsResponse = variant {
   err : Err;
 };
 
+type SyncProposalsResponse = variant {
+  ok;
+  err : Err;
+};
+
 service : {
   get_my_user_profile : () -> (GetMyUserProfileResponse) query;
   get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;
@@ -179,4 +186,5 @@ service : {
   update_user_profile : (UpdateUserProfileRequest) -> (UpdateUserProfileResponse);
   list_proposals : () -> (ListProposalsResponse) query;
   list_logs : (LogsFilterRequest) -> (ListLogsResponse) query;
+  sync_proposals : () -> (SyncProposalsResponse);
 };

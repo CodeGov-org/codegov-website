@@ -309,3 +309,13 @@ To list open replica version management proposals:
   - `nns_function` is a number corresponding to the NNS function to execute. The mapping between numbers and NNS functions can be found in the [`NnsFunction`](https://github.com/dfinity/ic/blob/master/rs/nns/governance/src/gen/ic_nns_governance.pb.v1.rs#L3440-L3612) enum.
   - `payload` is the Candid encoded argument for the corresponding NNS function. The types for this argument can be found in the appropriate canister's declaration. A mapping between NNS functions and their corresponding canisters can be found in the [`NnsFunction::canister_and_function`](https://github.com/dfinity/ic/blob/master/rs/nns/governance/src/governance.rs#L527-L631) function definition.
   - For example, the `UpdateElectedReplicaVersions` uses number `38` and its payload is the [`UpdateElectedReplicaVersionsPayload`](https://github.com/dfinity/ic/blob/master/rs/registry/canister/canister/registry.did#L217-L223) record.
+
+### Manually syncing proposals
+
+To manually trigger the proposals synchronization from the Nervous Systems, run the following command:
+
+```bash
+dfx canister call backend sync_proposals
+```
+
+This method can be called at any time, since if the proposals were already synced in the cron job, they won't be synced again.

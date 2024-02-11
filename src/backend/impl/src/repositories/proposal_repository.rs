@@ -1,6 +1,7 @@
 use super::{
+    init_proposals_sorted_index,
     memories::{init_proposals, ProposalMemory},
-    Proposal, ProposalId,
+    Proposal, ProposalId, ProposalIndex, ProposalSortedIndexMemory,
 };
 use backend_api::ApiError;
 use std::cell::RefCell;
@@ -31,14 +32,21 @@ impl ProposalRepository for ProposalRepositoryImpl {
     }
 
     fn get_proposals(&self) -> Vec<(ProposalId, Proposal)> {
-        STATE.with_borrow(|s| s.proposals.iter().collect())
+        STATE.with_borrow(|s| {
+            s.proposals_sorted_index
+                .iter()
+                .map(|((_, id), _)| (id, s.proposals.get(&id).unwrap()))
+                .collect()
+        })
     }
 
     async fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError> {
         let proposal_id = ProposalId::new().await?;
+        let proposal_index: ProposalIndex = (proposal.clone().proposed_at, proposal_id);
 
         STATE.with_borrow_mut(|s| {
             s.proposals.insert(proposal_id, proposal);
+            s.proposals_sorted_index.insert(proposal_index, ());
         });
 
         Ok(proposal_id)
@@ -72,12 +80,14 @@ impl ProposalRepositoryImpl {
 
 struct ProposalState {
     proposals: ProposalMemory,
+    proposals_sorted_index: ProposalSortedIndexMemory,
 }
 
 impl Default for ProposalState {
     fn default() -> Self {
         Self {
             proposals: init_proposals(),
+            proposals_sorted_index: init_proposals_sorted_index(),
         }
     }
 }
@@ -89,7 +99,10 @@ thread_local! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{fixtures, repositories::ReviewPeriodState};
+    use crate::{
+        fixtures::{self, date_time_a, date_time_b, date_time_c},
+        repositories::ReviewPeriodState,
+    };
     use rstest::*;
 
     #[rstest]
@@ -106,21 +119,21 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_proposals() {
+    #[case::sorted_proposals(sorted_proposals())]
+    #[case::unsorted_proposals(unsorted_proposals())]
+    async fn get_proposals(#[case] fixtures: Vec<Proposal>) {
         STATE.set(ProposalState::default());
 
         let repository = ProposalRepositoryImpl::default();
 
-        let mut expected: Vec<(ProposalId, Proposal)> = vec![];
-        for proposal in fixtures::nns_proposals() {
-            let id = repository.create_proposal(proposal.clone()).await.unwrap();
-
-            expected.push((id, proposal));
+        for proposal in fixtures {
+            repository.create_proposal(proposal.clone()).await.unwrap();
         }
 
         let result = repository.get_proposals();
+        let proposals = result.into_iter().map(|(_, p)| p).collect::<Vec<_>>();
 
-        assert_eq!(result, expected);
+        assert_eq!(proposals, sorted_proposals());
     }
 
     #[rstest]
@@ -155,5 +168,28 @@ mod tests {
             state: ReviewPeriodState::Completed,
             ..fixtures::nns_replica_version_management_proposal()
         }
+    }
+
+    #[fixture]
+    fn sorted_proposals() -> Vec<Proposal> {
+        vec![
+            Proposal {
+                proposed_at: date_time_c(),
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                proposed_at: date_time_b(),
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                proposed_at: date_time_a(),
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+        ]
+    }
+
+    #[fixture]
+    fn unsorted_proposals() -> Vec<Proposal> {
+        sorted_proposals().into_iter().rev().collect()
     }
 }
