@@ -62,16 +62,18 @@ export class TooltipDirective implements OnInit, OnChanges {
       .flexibleConnectedTo(this.elementRef)
       .withPositions([
         {
-          originX: 'end',
+          originX: 'center',
           originY: 'bottom',
-          overlayX: 'start',
-          overlayY: 'bottom',
+          overlayX: 'center',
+          overlayY: 'top',
+          offsetY: 6,
         },
         {
           originX: 'start',
-          originY: 'bottom',
+          originY: 'center',
           overlayX: 'end',
-          overlayY: 'bottom',
+          overlayY: 'center',
+          offsetX: -6,
         },
       ]);
     this.overlayRef = this.overlay.create({ positionStrategy });

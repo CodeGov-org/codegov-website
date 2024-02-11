@@ -38,6 +38,7 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
           <app-dropdown
             [showChevron]="false"
             menuTriggerClassName="btn btn-icon"
+            [tooltip]="'Open profile menu'"
           >
             <ng-container ngProjectAs="[menuTrigger]">
               <app-profile-icon />
@@ -64,7 +65,7 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
           <button
             (click)="onLoginButtonClicked()"
             class="btn btn-icon"
-            [appTooltip]="tooltipText"
+            [appTooltip]="'Log in'"
           >
             <span class="sr-only">Login</span>
             <app-login-icon />
@@ -77,7 +78,6 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
 })
 export class SecondaryNavbarComponent {
   public readonly isAuthenticated$: Observable<boolean>;
-  public readonly tooltipText = 'Log in to CodeGov';
 
   constructor(private readonly authService: UserAuthService) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
