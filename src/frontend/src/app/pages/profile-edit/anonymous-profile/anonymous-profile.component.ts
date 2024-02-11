@@ -21,7 +21,11 @@ import { CopyButtonComponent } from '~core/ui';
           </p>
           <p>When requested, provide this ID to a CodeGov admin:</p>
           <div class="mb-8 flex flex-row items-center">
-            <p class="mb-0 mr-2 font-bold">{{ userProfile.id }}</p>
+            <div
+              class="mr-3 overflow-x-auto whitespace-nowrap rounded-md bg-slate-700 px-3 py-2"
+            >
+              {{ userProfile.id }}
+            </div>
             <app-copy-button [input]="userProfile.id"></app-copy-button>
           </div>
           <p>
