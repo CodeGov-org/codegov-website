@@ -4,30 +4,36 @@
 
 @layer base {
   body {
-    @apply min-h-[100vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-300;
+    @apply min-h-[100vh] bg-white tracking-tight text-slate-900 dark:bg-slate-950 dark:text-slate-300;
   }
 
-  h1 {
+  h1,
+  .h1 {
     @apply mb-3 text-3xl font-semibold sm:text-4xl;
   }
 
-  h2 {
+  h2,
+  .h2 {
     @apply mb-3 text-2xl font-semibold sm:text-3xl;
   }
 
-  h3 {
+  h3,
+  .h3 {
     @apply mb-3 text-xl font-semibold sm:text-2xl;
   }
 
-  h4 {
+  h4,
+  .h4 {
     @apply mb-3 text-lg font-semibold sm:text-xl;
   }
 
-  h5 {
+  h5,
+  .h5 {
     @apply mb-3 text-base font-semibold sm:text-lg;
   }
 
-  h6 {
+  h6,
+  .h6 {
     @apply mb-3 text-sm font-semibold sm:text-base;
   }
 
@@ -233,13 +239,21 @@
     @apply layer-10 bg-primary enabled:hover:bg-primary-600 focus:ring-primary-800 rounded-md px-4 py-1 text-lg text-white outline-none focus:ring-4 focus:ring-opacity-50 disabled:bg-opacity-45 dark:focus:ring-opacity-100;
   }
 
+  .btn-outline {
+    @apply border-primary text-primary border bg-transparent hover:text-white hover:dark:text-slate-300;
+  }
+
   .btn-icon {
     @apply layer-20 inline-flex h-9 w-9 items-center justify-center rounded-full text-white shadow-lg;
   }
 
   /* Forms */
+  .form-field {
+    @apply flex w-full flex-col;
+  }
+
   .input {
-    @apply focus:border-primary ring-primary-800 block w-full rounded-md border border-slate-400 bg-slate-50 p-2.5 text-sm text-slate-900 outline-none focus:ring-4 focus:ring-opacity-50 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-opacity-100;
+    @apply focus:border-primary ring-primary-800 block w-full rounded-md border border-slate-400 bg-white p-2.5 text-sm text-slate-900 outline-none focus:ring-4 focus:ring-opacity-50 dark:border-slate-500 dark:bg-slate-950 dark:text-slate-200 dark:focus:ring-opacity-100;
   }
 
   .input-invalid {
@@ -248,5 +262,26 @@
 
   .input-textarea {
     @apply h-24 resize-y;
+  }
+
+  .label {
+    @apply text-black dark:text-white;
+  }
+
+  /* Layout */
+  .card {
+    @apply layer-10 block rounded-md border border-slate-300 bg-slate-100 p-4 dark:border-slate-700 dark:bg-slate-800;
+  }
+
+  .key-value-grid {
+    @apply grid grid-cols-3 gap-x-8 gap-y-1 md:gap-y-6;
+  }
+
+  .key-col {
+    @apply col-span-3 text-black md:col-span-1 dark:text-white;
+  }
+
+  .value-col {
+    @apply col-span-3 mb-8 flex flex-row items-center md:col-span-2 md:mb-0;
   }
 }

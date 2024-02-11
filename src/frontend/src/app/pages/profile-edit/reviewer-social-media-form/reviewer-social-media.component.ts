@@ -27,7 +27,9 @@ import {
   FormFieldComponent,
   InputDirective,
   InputHintComponent,
-  LabelComponent,
+  KeyColComponent,
+  KeyValueGridComponent,
+  ValueColComponent,
 } from '~core/ui';
 import { ComponentChanges, keysOf } from '~core/utils';
 
@@ -42,37 +44,45 @@ export type SocialMediaForm = {
     ReactiveFormsModule,
     FormFieldComponent,
     InputHintComponent,
-    LabelComponent,
     InputDirective,
+    KeyValueGridComponent,
+    KeyColComponent,
+    ValueColComponent,
   ],
   template: `
     <form [formGroup]="socialMediaForm" (ngSubmit)="onSubmit()">
-      @for (key of socialMediaKeys; track key) {
-        <app-form-field>
-          <app-label>{{ socialMediaInputs[key].label }}</app-label>
+      <app-key-value-grid>
+        @for (key of socialMediaKeys; track key) {
+          <app-key-col>
+            <label appLabel for="username">
+              {{ socialMediaInputs[key].label }}
+            </label>
+          </app-key-col>
 
-          <input appInput [id]="key" type="text" [formControlName]="key" />
+          <app-value-col>
+            <app-form-field>
+              <input appInput [id]="key" type="text" [formControlName]="key" />
 
-          <app-input-hint>
-            @if (socialMediaControlHasValue(key)) {
-              <a
-                href="{{ getSocialMediaUrl(key) }}"
-                target="_blank"
-                rel="nofollow noreferrer"
-                >{{ getSocialMediaUrl(key) }}</a
-              >
-            }
-          </app-input-hint>
-        </app-form-field>
-      }
-      <div class="flex items-center">
-        <a
-          title="Cancel your edits"
-          class="ml-auto mr-4"
-          (click)="cancelEdits()"
-        >
+              <app-input-hint>
+                @if (socialMediaControlHasValue(key)) {
+                  <a
+                    href="{{ getSocialMediaUrl(key) }}"
+                    target="_blank"
+                    rel="nofollow noreferrer"
+                    >{{ getSocialMediaUrl(key) }}</a
+                  >
+                }
+              </app-input-hint>
+            </app-form-field>
+          </app-value-col>
+        }
+      </app-key-value-grid>
+
+      <div class="flex items-center justify-end">
+        <button class="btn btn-outline mr-4" (click)="cancelEdits()">
           Cancel
-        </a>
+        </button>
+
         <button type="submit" class="btn">Save</button>
       </div>
     </form>

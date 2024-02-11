@@ -8,18 +8,24 @@ import {
 
 import { SOCIAL_MEDIA_INPUTS } from '../profile.model';
 import { ReviewerProfile } from '~core/state';
+import {
+  KeyColComponent,
+  KeyValueGridComponent,
+  ValueColComponent,
+} from '~core/ui';
 import { keysOf } from '~core/utils';
 
 @Component({
   selector: 'app-reviewer-social-media',
+  imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
   standalone: true,
   template: `
-    @for (key of socialMediaKeys; track key) {
-      <div class="mb-4 flex flex-row items-center">
-        <span class="w-1/3 font-bold">{{ socialMediaInputs[key].label }}</span>
-        <span>{{ getSocialMediaValue(key) }}</span>
-      </div>
-    }
+    <app-key-value-grid class="mb-4">
+      @for (key of socialMediaKeys; track key) {
+        <app-key-col>{{ socialMediaInputs[key].label }}</app-key-col>
+        <app-value-col>{{ getSocialMediaValue(key) }}</app-value-col>
+      }
+    </app-key-value-grid>
 
     <div class="flex items-center">
       <button type="button" class="btn ml-auto" (click)="editForm()">

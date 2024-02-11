@@ -24,7 +24,7 @@ import {
       <app-primary-navbar />
       <app-secondary-navbar />
 
-      <main class="container mx-auto flex-1 px-4 py-5">
+      <main class="container mx-auto flex-1 px-3 pb-10 pt-6">
         <router-outlet />
       </main>
 

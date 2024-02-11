@@ -7,7 +7,13 @@ import { ReviewerSocialMediaComponent } from '../reviewer-social-media';
 import { ReviewerSocialMediaFormComponent } from '../reviewer-social-media-form';
 import { InfoIconComponent } from '~core/icons';
 import { ReviewerProfile } from '~core/state';
-import { TooltipDirective } from '~core/ui';
+import {
+  CardComponent,
+  KeyColComponent,
+  KeyValueGridComponent,
+  TooltipDirective,
+  ValueColComponent,
+} from '~core/ui';
 
 @Component({
   selector: 'app-reviewer-profile',
@@ -17,43 +23,49 @@ import { TooltipDirective } from '~core/ui';
     CommonModule,
     InfoIconComponent,
     TooltipDirective,
+    CardComponent,
+    KeyValueGridComponent,
+    KeyColComponent,
+    ValueColComponent,
     ReviewerPersonalInfoFormComponent,
     ReviewerPersonalInfoComponent,
     ReviewerSocialMediaFormComponent,
     ReviewerSocialMediaComponent,
   ],
   template: `
-    <div class="mb-4 flex flex-col md:flex-row md:items-center">
-      <span class="font-bold md:w-1/3">ID</span>
-      <span>{{ userProfile.id }}</span>
-    </div>
+    <app-card class="mb-6">
+      <h2 class="h3" cardTitle>Profile</h2>
 
-    <div class="mb-4 flex flex-col md:flex-row md:items-center">
-      <span class="font-bold md:w-1/3">Role</span>
-      <div class="flex flex-row items-center">
-        <span>{{ userProfile.role }}</span>
-        <app-info-icon [appTooltip]="nonEditableInfo"></app-info-icon>
-      </div>
-    </div>
+      <app-key-value-grid>
+        <app-key-col>ID</app-key-col>
+        <app-value-col>{{ userProfile.id }}</app-value-col>
 
-    <div class="mb-4 flex flex-col md:flex-row md:items-center">
-      <span class="font-bold md:w-1/3">Proposal Types</span>
-      <div class="flex flex-row items-center">
-        <span>{{ userProfile.proposalTypes.join(', ') }}</span>
-        <app-info-icon [appTooltip]="nonEditableInfo"></app-info-icon>
-      </div>
-    </div>
+        <app-key-col>Role</app-key-col>
+        <app-value-col>
+          {{ userProfile.role }}
 
-    <div class="mb-4 flex flex-col md:flex-row md:items-center">
-      <span class="h-6 font-bold md:w-1/3">Neuron ID</span>
-      <div class="flex flex-row items-center">
-        <span>{{ userProfile.neuronId }}</span>
-        <app-info-icon [appTooltip]="nonEditableInfo"></app-info-icon>
-      </div>
-    </div>
+          <app-info-icon [appTooltip]="nonEditableInfo"></app-info-icon>
+        </app-value-col>
 
-    <div class="py-6">
-      <h2 class="mb-4">Personal Info</h2>
+        <app-key-col>Proposal types</app-key-col>
+        <app-value-col>
+          {{ userProfile.proposalTypes.join(', ') }}
+
+          <app-info-icon [appTooltip]="nonEditableInfo"></app-info-icon>
+        </app-value-col>
+
+        <app-key-col>Neuron ID</app-key-col>
+        <app-value-col>
+          {{ userProfile.neuronId }}
+
+          <app-info-icon [appTooltip]="nonEditableInfo"></app-info-icon>
+        </app-value-col>
+      </app-key-value-grid>
+    </app-card>
+
+    <app-card class="mb-6">
+      <h2 class="h3" cardTitle>Personal info</h2>
+
       @if (isPersonalInfoEditable) {
         <app-reviewer-personal-info-form
           [userProfile]="userProfile"
@@ -65,10 +77,11 @@ import { TooltipDirective } from '~core/ui';
           (edit)="showPersonalInfoForm()"
         />
       }
-    </div>
+    </app-card>
 
-    <div class="py-6">
-      <h2 class="mb-4">Social Media</h2>
+    <app-card>
+      <h2 class="h3" cardTitle>Social media</h2>
+
       @if (isSocialMediaEditable) {
         <app-reviewer-social-media-form
           [userProfile]="userProfile"
@@ -80,7 +93,7 @@ import { TooltipDirective } from '~core/ui';
           (edit)="showSocialMediaForm()"
         />
       }
-    </div>
+    </app-card>
   `,
 })
 export class ReviewerProfileComponent {

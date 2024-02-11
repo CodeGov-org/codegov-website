@@ -196,7 +196,7 @@ dfx canister call --ic --identity ${identityName} backend update_user_profile '(
     user_id = "${userId}";
     config = opt variant {
       reviewer = record {
-        neuron_id = opt "${neuronId}"
+        neuron_id = opt ${neuronId}
       }
     }
   }
@@ -247,7 +247,7 @@ dfx canister call --ic --identity ${identityName} backend update_user_profile '(
     config = opt variant {
       reviewer = record {
         bio = opt "${bio}";
-        neuron_id = opt "${neuronId}";
+        neuron_id = opt ${neuronId};
         wallet_address = opt "${walletAddress}"
       }
     }
