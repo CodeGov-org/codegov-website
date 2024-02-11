@@ -2,20 +2,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProfileService, UserRole, SocialMediaType } from '~core/state';
 import { ProfileServiceMock } from '~core/state/profile/profile.service.mock';
-import { ReviewerPersonalInfoEditComponent } from './reviewer-personal-info-edit.component';
+import { ReviewerPersonalInfoFormComponent } from './reviewer-personal-info-form.component';
 
-describe('ReviewerPersonalInfoEditComponent', () => {
-  let component: ReviewerPersonalInfoEditComponent;
-  let fixture: ComponentFixture<ReviewerPersonalInfoEditComponent>;
+describe('ReviewerPersonalInfoFormComponent', () => {
+  let component: ReviewerPersonalInfoFormComponent;
+  let fixture: ComponentFixture<ReviewerPersonalInfoFormComponent>;
   let profileServiceMock: ProfileServiceMock;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ReviewerPersonalInfoEditComponent],
+      imports: [ReviewerPersonalInfoFormComponent],
       providers: [{ provide: ProfileService, useValue: profileServiceMock }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ReviewerPersonalInfoEditComponent);
+    fixture = TestBed.createComponent(ReviewerPersonalInfoFormComponent);
     component = fixture.componentInstance;
     component.userProfile = {
       id: '1',

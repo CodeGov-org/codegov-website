@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
-import { AdminPersonalInfoEditComponent } from '../admin-personal-info-edit';
-import { AdminPersonalInfoViewComponent } from '../admin-personal-info-view';
+import { AdminPersonalInfoComponent } from '../admin-personal-info';
+import { AdminPersonalInfoFormComponent } from '../admin-personal-info-form';
 import { InfoIconComponent } from '~core/icons';
 import { AdminProfile } from '~core/state';
 import { TooltipDirective } from '~core/ui';
@@ -14,8 +14,8 @@ import { TooltipDirective } from '~core/ui';
     CommonModule,
     InfoIconComponent,
     TooltipDirective,
-    AdminPersonalInfoEditComponent,
-    AdminPersonalInfoViewComponent,
+    AdminPersonalInfoFormComponent,
+    AdminPersonalInfoComponent,
   ],
   template: `
     <div class="mb-4 flex flex-row items-center">
@@ -30,14 +30,14 @@ import { TooltipDirective } from '~core/ui';
     </div>
 
     @if (isFormEditable) {
-      <app-admin-personal-info-edit
+      <app-admin-personal-info-form
         [userProfile]="userProfile"
-        (formSave)="stopEditing()"
+        (formClose)="hideForm()"
       />
     } @else {
-      <app-admin-personal-info-view
+      <app-admin-personal-info
         [userProfile]="userProfile"
-        (formEdit)="editForm()"
+        (edit)="showForm()"
       />
     }
   `,
@@ -52,11 +52,11 @@ export class AdminProfileComponent {
 
   public isFormEditable = false;
 
-  public editForm(): void {
+  public showForm(): void {
     this.isFormEditable = true;
   }
 
-  public stopEditing(): void {
+  public hideForm(): void {
     this.isFormEditable = false;
   }
 }

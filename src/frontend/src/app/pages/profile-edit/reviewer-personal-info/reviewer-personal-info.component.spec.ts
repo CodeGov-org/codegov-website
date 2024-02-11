@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SocialMediaType, UserRole } from '~core/state';
-import { ReviewerPersonalInfoViewComponent } from './reviewer-personal-info-view.component';
+import { ReviewerPersonalInfoComponent } from './reviewer-personal-info.component';
 
-describe('ReviewerPersonalInfoViewComponent', () => {
-  let component: ReviewerPersonalInfoViewComponent;
-  let fixture: ComponentFixture<ReviewerPersonalInfoViewComponent>;
+describe('ReviewerPersonalInfoComponent', () => {
+  let component: ReviewerPersonalInfoComponent;
+  let fixture: ComponentFixture<ReviewerPersonalInfoComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ReviewerPersonalInfoViewComponent],
+      imports: [ReviewerPersonalInfoComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ReviewerPersonalInfoViewComponent);
+    fixture = TestBed.createComponent(ReviewerPersonalInfoComponent);
     component = fixture.componentInstance;
     component.userProfile = {
       id: '1',

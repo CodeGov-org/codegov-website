@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
-import { ReviewerPersonalInfoEditComponent } from '../reviewer-personal-info-edit';
-import { ReviewerPersonalInfoViewComponent } from '../reviewer-personal-info-view';
-import { ReviewerSocialMediaEditComponent } from '../reviewer-social-media-edit';
-import { ReviewerSocialMediaViewComponent } from '../reviewer-social-media-view';
+import { ReviewerPersonalInfoComponent } from '../reviewer-personal-info';
+import { ReviewerPersonalInfoFormComponent } from '../reviewer-personal-info-form';
+import { ReviewerSocialMediaComponent } from '../reviewer-social-media';
+import { ReviewerSocialMediaFormComponent } from '../reviewer-social-media-form';
 import { InfoIconComponent } from '~core/icons';
 import { ReviewerProfile } from '~core/state';
 import { TooltipDirective } from '~core/ui';
@@ -17,10 +17,10 @@ import { TooltipDirective } from '~core/ui';
     CommonModule,
     InfoIconComponent,
     TooltipDirective,
-    ReviewerPersonalInfoEditComponent,
-    ReviewerPersonalInfoViewComponent,
-    ReviewerSocialMediaEditComponent,
-    ReviewerSocialMediaViewComponent,
+    ReviewerPersonalInfoFormComponent,
+    ReviewerPersonalInfoComponent,
+    ReviewerSocialMediaFormComponent,
+    ReviewerSocialMediaComponent,
   ],
   template: `
     <div class="mb-4 flex flex-col md:flex-row md:items-center">
@@ -55,14 +55,14 @@ import { TooltipDirective } from '~core/ui';
     <div class="py-6">
       <h2 class="mb-4">Personal Info</h2>
       @if (isPersonalInfoEditable) {
-        <app-reviewer-personal-info-edit
+        <app-reviewer-personal-info-form
           [userProfile]="userProfile"
-          (formSave)="stopEditingPersonalInfo()"
+          (formClose)="hidePersonalInfoForm()"
         />
       } @else {
-        <app-reviewer-personal-info-view
+        <app-reviewer-personal-info
           [userProfile]="userProfile"
-          (formEdit)="editPersonalInfo()"
+          (edit)="showPersonalInfoForm()"
         />
       }
     </div>
@@ -70,14 +70,14 @@ import { TooltipDirective } from '~core/ui';
     <div class="py-6">
       <h2 class="mb-4">Social Media</h2>
       @if (isSocialMediaEditable) {
-        <app-reviewer-social-media-edit
+        <app-reviewer-social-media-form
           [userProfile]="userProfile"
-          (formSave)="stopEditingSocialMedia()"
+          (formClose)="hideSocialMediaForm()"
         />
       } @else {
-        <app-reviewer-social-media-view
+        <app-reviewer-social-media
           [userProfile]="userProfile"
-          (formEdit)="editSocialMedia()"
+          (edit)="showSocialMediaForm()"
         />
       }
     </div>
@@ -93,19 +93,19 @@ export class ReviewerProfileComponent {
   public readonly nonEditableInfo: string =
     'To change this property, contact a CodeGov admin.';
 
-  public editPersonalInfo(): void {
+  public showPersonalInfoForm(): void {
     this.isPersonalInfoEditable = true;
   }
 
-  public stopEditingPersonalInfo(): void {
+  public hidePersonalInfoForm(): void {
     this.isPersonalInfoEditable = false;
   }
 
-  public editSocialMedia(): void {
+  public showSocialMediaForm(): void {
     this.isSocialMediaEditable = true;
   }
 
-  public stopEditingSocialMedia(): void {
+  public hideSocialMediaForm(): void {
     this.isSocialMediaEditable = false;
   }
 }

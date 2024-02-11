@@ -6,10 +6,10 @@ import {
   Output,
 } from '@angular/core';
 
-import { AdminProfile } from '~core/state';
+import { ReviewerProfile } from '~core/state';
 
 @Component({
-  selector: 'app-admin-personal-info-view',
+  selector: 'app-reviewer-personal-info',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -23,6 +23,11 @@ import { AdminProfile } from '~core/state';
       <span>{{ userProfile.bio }}</span>
     </div>
 
+    <div class="mb-4 flex flex-col md:flex-row md:items-center">
+      <span class="font-bold md:w-1/3">Wallet Address</span>
+      <span class="break-all md:w-2/3">{{ userProfile.walletAddress }}</span>
+    </div>
+
     <div class="flex items-center">
       <button type="button" class="btn ml-auto" (click)="editForm()">
         Edit
@@ -30,14 +35,14 @@ import { AdminProfile } from '~core/state';
     </div>
   `,
 })
-export class AdminPersonalInfoViewComponent {
+export class ReviewerPersonalInfoComponent {
   @Input({ required: true })
-  public userProfile!: AdminProfile;
+  public userProfile!: ReviewerProfile;
 
   @Output()
-  public formEdit = new EventEmitter<void>();
+  public edit = new EventEmitter<void>();
 
   public editForm(): void {
-    this.formEdit.emit();
+    this.edit.emit();
   }
 }

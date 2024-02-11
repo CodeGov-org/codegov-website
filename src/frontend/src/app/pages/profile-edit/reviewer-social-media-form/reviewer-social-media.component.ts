@@ -36,7 +36,7 @@ export type SocialMediaForm = {
 };
 
 @Component({
-  selector: 'app-reviewer-social-media-edit',
+  selector: 'app-reviewer-social-media-form',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -79,12 +79,12 @@ export type SocialMediaForm = {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReviewerSocialMediaEditComponent implements OnChanges {
+export class ReviewerSocialMediaFormComponent implements OnChanges {
   @Input({ required: true })
   public userProfile!: ReviewerProfile;
 
   @Output()
-  public formSave = new EventEmitter<void>();
+  public formClose = new EventEmitter<void>();
 
   public readonly socialMediaForm: FormGroup<SocialMediaForm>;
   public readonly socialMediaKeys = keysOf(SOCIAL_MEDIA_INPUTS);
@@ -125,11 +125,11 @@ export class ReviewerSocialMediaEditComponent implements OnChanges {
     };
 
     this.profileService.saveProfile(profileUpdate);
-    this.formSave.emit();
+    this.formClose.emit();
   }
 
   public cancelEdits(): void {
-    this.formSave.emit();
+    this.formClose.emit();
   }
 
   public socialMediaControlHasValue(controlName: string): boolean {

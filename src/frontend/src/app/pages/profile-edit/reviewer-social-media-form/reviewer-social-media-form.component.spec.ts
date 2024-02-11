@@ -2,20 +2,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProfileService, SocialMediaType, UserRole } from '~core/state';
 import { ProfileServiceMock } from '~core/state/profile/profile.service.mock';
-import { ReviewerSocialMediaEditComponent } from './reviewer-social-media-edit.component';
+import { ReviewerSocialMediaFormComponent } from './reviewer-social-media.component';
 
-describe('ReviewerSocialMediaEditComponent', () => {
-  let component: ReviewerSocialMediaEditComponent;
-  let fixture: ComponentFixture<ReviewerSocialMediaEditComponent>;
+describe('ReviewerSocialMediaFormComponent', () => {
+  let component: ReviewerSocialMediaFormComponent;
+  let fixture: ComponentFixture<ReviewerSocialMediaFormComponent>;
   let profileServiceMock: ProfileServiceMock;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ReviewerSocialMediaEditComponent],
+      imports: [ReviewerSocialMediaFormComponent],
       providers: [{ provide: ProfileService, useValue: profileServiceMock }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ReviewerSocialMediaEditComponent);
+    fixture = TestBed.createComponent(ReviewerSocialMediaFormComponent);
     component = fixture.componentInstance;
     component.userProfile = {
       id: '1',

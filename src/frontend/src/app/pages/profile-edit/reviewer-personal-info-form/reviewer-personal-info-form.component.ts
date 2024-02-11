@@ -12,12 +12,12 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
-import { AdminProfileComponent } from '../admin-profile';
 import {
-  AdminProfile,
-  AdminProfileUpdate,
   ProfileService,
+  ReviewerProfile,
+  ReviewerProfileUpdate,
   UserRole,
 } from '~core/state';
 import {
@@ -29,20 +29,22 @@ import {
 } from '~core/ui';
 import { ComponentChanges } from '~core/utils';
 
-export interface AdminProfileForm {
+export interface ReviewerProfileForm {
   username: FormControl<string>;
   bio: FormControl<string>;
+  walletAddress: FormControl<string>;
 }
 
 @Component({
-  selector: 'app-admin-personal-info-edit',
+  selector: 'app-reviewer-personal-info-form',
   standalone: true,
   imports: [
-    ReactiveFormsModule,
     FormFieldComponent,
     LabelComponent,
     InputErrorComponent,
     InputDirective,
+    ReactiveFormsModule,
+    RouterModule,
     TooltipDirective,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -74,14 +76,30 @@ export interface AdminProfileForm {
         <app-input-error key="required">Bio cannot be empty</app-input-error>
       </app-form-field>
 
+      <app-form-field>
+        <app-label>Wallet Address</app-label>
+
+        <input
+          appInput
+          id="walletAddress"
+          type="text"
+          formControlName="walletAddress"
+        />
+
+        <app-input-error key="required">
+          Wallet address cannot be empty
+        </app-input-error>
+      </app-form-field>
+
       <div class="flex items-center">
         <a
           title="Cancel your edits"
-          class="ml-auto mr-4"
           (click)="cancelEdits()"
+          class="ml-auto mr-4"
         >
           Cancel
         </a>
+
         <button
           type="submit"
           [appTooltip]="
@@ -96,17 +114,18 @@ export interface AdminProfileForm {
     </form>
   `,
 })
-export class AdminPersonalInfoEditComponent implements OnChanges {
+export class ReviewerPersonalInfoFormComponent implements OnChanges {
   @Input({ required: true })
-  public userProfile!: AdminProfile;
+  public userProfile!: ReviewerProfile;
 
   @Output()
-  public formSave = new EventEmitter<void>();
+  public formClose = new EventEmitter<void>();
 
-  public readonly profileForm: FormGroup<AdminProfileForm>;
+  public readonly profileForm: FormGroup<ReviewerProfileForm>;
+  public isEditable = false;
 
   constructor(private readonly profileService: ProfileService) {
-    this.profileForm = new FormGroup<AdminProfileForm>({
+    this.profileForm = new FormGroup<ReviewerProfileForm>({
       username: new FormControl('', {
         nonNullable: true,
         validators: [Validators.required, Validators.minLength(3)],
@@ -115,32 +134,40 @@ export class AdminPersonalInfoEditComponent implements OnChanges {
         nonNullable: true,
         validators: [Validators.required],
       }),
+      walletAddress: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
     });
   }
 
-  public ngOnChanges(changes: ComponentChanges<AdminProfileComponent>): void {
+  public ngOnChanges(
+    changes: ComponentChanges<ReviewerPersonalInfoFormComponent>,
+  ): void {
     if (changes.userProfile) {
       this.profileForm.patchValue({
         username: this.userProfile.username,
         bio: this.userProfile.bio,
+        walletAddress: this.userProfile.walletAddress,
       });
     }
   }
 
   public onSubmit(): void {
-    const formValues = this.profileForm.value;
+    const profileFormValues = this.profileForm.value;
 
-    const profileUpdate: AdminProfileUpdate = {
-      role: UserRole.Admin,
-      username: formValues.username,
-      bio: formValues.bio,
+    const profileUpdate: ReviewerProfileUpdate = {
+      role: UserRole.Reviewer,
+      username: profileFormValues.username,
+      bio: profileFormValues.bio,
+      walletAddress: profileFormValues.walletAddress,
     };
 
     this.profileService.saveProfile(profileUpdate);
-    this.formSave.emit();
+    this.formClose.emit();
   }
 
   public cancelEdits(): void {
-    this.formSave.emit();
+    this.formClose.emit();
   }
 }

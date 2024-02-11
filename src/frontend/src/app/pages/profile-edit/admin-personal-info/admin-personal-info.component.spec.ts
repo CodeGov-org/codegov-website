@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { UserRole } from '~core/state';
-import { AdminPersonalInfoViewComponent } from './admin-personal-info-view.component';
+import { AdminPersonalInfoComponent } from './admin-personal-info.component';
 
-describe('AdminPersonalInfoViewComponent', () => {
-  let component: AdminPersonalInfoViewComponent;
-  let fixture: ComponentFixture<AdminPersonalInfoViewComponent>;
+describe('AdminPersonalInfoComponent', () => {
+  let component: AdminPersonalInfoComponent;
+  let fixture: ComponentFixture<AdminPersonalInfoComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AdminPersonalInfoViewComponent],
+      imports: [AdminPersonalInfoComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(AdminPersonalInfoViewComponent);
+    fixture = TestBed.createComponent(AdminPersonalInfoComponent);
     component = fixture.componentInstance;
     component.userProfile = {
       id: '1',

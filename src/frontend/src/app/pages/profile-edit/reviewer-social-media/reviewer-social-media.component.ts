@@ -11,7 +11,7 @@ import { ReviewerProfile } from '~core/state';
 import { keysOf } from '~core/utils';
 
 @Component({
-  selector: 'app-reviewer-social-media-view',
+  selector: 'app-reviewer-social-media',
   standalone: true,
   template: `
     @for (key of socialMediaKeys; track key) {
@@ -29,18 +29,18 @@ import { keysOf } from '~core/utils';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReviewerSocialMediaViewComponent {
+export class ReviewerSocialMediaComponent {
   @Input({ required: true })
   public userProfile!: ReviewerProfile;
 
   @Output()
-  public formEdit = new EventEmitter<void>();
+  public edit = new EventEmitter<void>();
 
   public readonly socialMediaKeys = keysOf(SOCIAL_MEDIA_INPUTS);
   public readonly socialMediaInputs = SOCIAL_MEDIA_INPUTS;
 
   public editForm(): void {
-    this.formEdit.emit();
+    this.edit.emit();
   }
 
   public getSocialMediaValue(lookupKey: string): string {
