@@ -67,12 +67,20 @@ impl From<ProposalStatus> for ReviewPeriodState {
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub struct Proposal {
+    /// The title of the proposal in the Nervous System.
     pub title: String,
+    /// The Nervous System that the proposal belongs to.
     pub nervous_system: NervousSystem,
+    /// The internal state of the proposal's review period.
     pub state: ReviewPeriodState,
+    /// The timestamp of when the proposal was proposed
+    /// in the Nervous System.
     pub proposed_at: DateTime,
+    /// The neuron id of the proposer in the Nervous System.
     pub proposed_by: NeuronId,
+    /// The timestamp of when the proposal was fetched from the Nervous System.
     pub synced_at: DateTime,
+    /// The timestamp of when the proposal's review period is completed.
     pub review_completed_at: Option<DateTime>,
 }
 
