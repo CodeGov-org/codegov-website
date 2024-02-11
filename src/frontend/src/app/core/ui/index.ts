@@ -1,4 +1,5 @@
 export * from './collapsible';
+export * from './copy-button';
 export * from './dropdown';
 export * from './form-field';
 export * from './input';
@@ -6,3 +7,4 @@ export * from './input-error';
 export * from './input-hint';
 export * from './label';
 export * from './loading-dialog';
+export * from './tooltip';

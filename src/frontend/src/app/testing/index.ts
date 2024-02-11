@@ -4,5 +4,7 @@ export * from './dialog-mock';
 export * from './dialog-ref-mock';
 export * from './element-ref-mock';
 export * from './form-control-mock';
+export * from './overlay-mock';
+export * from './overlay-position-builder-mock';
 export * from './router-mock';
 export * from './test-utils';

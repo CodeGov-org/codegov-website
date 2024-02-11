@@ -1,10 +1,13 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { GLOBAL_CONFIG } from 'src/global-config';
 
 import { AnonymousProfile } from '~core/state';
+import { CopyButtonComponent } from '~core/ui';
 
 @Component({
   selector: 'app-anonymous-profile',
   standalone: true,
+  imports: [CopyButtonComponent],
   template: `
     <div
       class="bg-primary-700 mx-auto mb-10 rounded-md px-2 py-6 text-white xl:w-2/3 dark:bg-slate-600"
@@ -14,10 +17,17 @@ import { AnonymousProfile } from '~core/state';
           <h2 class="mb-8">Welcome to the CodeGov organisation</h2>
           <p>
             If you would like to become a reviewer,
-            <a href="/apply">apply now</a>.
+            <a [href]="applyLink">apply now</a>.
           </p>
           <p>When requested, provide this ID to a CodeGov admin:</p>
-          <p class="mb-8 font-bold">{{ userProfile.id }}</p>
+          <div class="mb-8 flex flex-row items-center">
+            <div
+              class="mr-3 overflow-x-auto whitespace-nowrap rounded-md bg-slate-700 px-3 py-2"
+            >
+              {{ userProfile.id }}
+            </div>
+            <app-copy-button [input]="userProfile.id"></app-copy-button>
+          </div>
           <p>
             If you're just here to look around, you don't need to do anything
             else.
@@ -31,4 +41,6 @@ import { AnonymousProfile } from '~core/state';
 export class AnonymousProfileComponent {
   @Input({ required: true })
   public userProfile!: AnonymousProfile;
+
+  public applyLink = GLOBAL_CONFIG.applyLink;
 }

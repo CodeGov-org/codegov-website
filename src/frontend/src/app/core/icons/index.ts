@@ -1,4 +1,5 @@
 export * from './chevron-icon';
+export * from './copy-icon';
 export * from './edit-icon';
 export * from './hamburger-menu-icon';
 export * from './info-icon';
