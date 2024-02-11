@@ -1,5 +1,8 @@
 use backend_api::ApiError;
-use candid::Deserialize;
+use candid::{
+    types::{Serializer, Type, TypeInner},
+    CandidType, Deserialize,
+};
 use ic_stable_structures::{storable::Bound, Storable};
 use std::borrow::Cow;
 use uuid::{Builder, Uuid as UuidImpl};
@@ -8,7 +11,7 @@ use crate::system_api::with_random_bytes;
 
 const UUID_SIZE: usize = 16;
 
-#[derive(Debug, Deserialize, Clone, Copy, Default, Ord, PartialOrd, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, Ord, PartialOrd, PartialEq, Eq)]
 pub struct Uuid(UuidImpl);
 
 impl Uuid {
@@ -36,6 +39,30 @@ impl TryFrom<&str> for Uuid {
 impl ToString for Uuid {
     fn to_string(&self) -> String {
         self.0.to_string()
+    }
+}
+
+impl CandidType for Uuid {
+    fn _ty() -> Type {
+        TypeInner::Text.into()
+    }
+
+    fn idl_serialize<S>(&self, serializer: S) -> Result<(), S::Error>
+    where
+        S: Serializer,
+    {
+        self.to_string().idl_serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for Uuid {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        String::deserialize(deserializer).and_then(|uuid| {
+            Uuid::try_from(uuid.as_str()).map_err(|_| serde::de::Error::custom("Invalid UUID."))
+        })
     }
 }
 
