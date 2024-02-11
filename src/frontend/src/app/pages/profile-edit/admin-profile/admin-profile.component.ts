@@ -50,13 +50,13 @@ export class AdminProfileComponent {
   public readonly adminInfo: string =
     'Use DFX command to change this property.';
 
-  public isEditable = false;
+  public isFormEditable = false;
 
   public editForm(): void {
-    this.isEditable = true;
+    this.isFormEditable = true;
   }
 
   public stopEditing(): void {
-    this.isEditable = false;
+    this.isFormEditable = false;
   }
 }
