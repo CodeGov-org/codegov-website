@@ -75,3 +75,13 @@ Condition 2.b is [weakened](https://github.com/dfinity/ic/blob/67730a29e2c5272bc
 Initially, the quota is a hard limit with the only exception being the first canister's message. After the threshold is reached, this limit weakens as the quota is used to stop including messages for a canister only if the messages included is greather than the [difference between the current round robin iteration and the threshold](https://github.com/dfinity/ic/blob/67730a29e2c5272bcf7c3ad23e9ffa7309e1aede/rs/ingress_manager/src/ingress_selector.rs#L206C29-L206C99). This is needed to make sure that the payload builder does not get stuck.
 
 ## Example
+
+Consider what would happen if the [first part of condition 2.b](https://github.com/dfinity/ic/blob/67730a29e2c5272bcf7c3ad23e9ffa7309e1aede/rs/ingress_manager/src/ingress_selector.rs#L203C24-L207C26) were simply `queue.msgs_included > 0` and assume a scenario in which only the first message of each canister has already been included and all canisters have more than two messages. Condition 2.b would simply reduce to `(queue.bytes_included + ingress_size) > quota`. Assume also that the second message of each canister results in the latter condition to be true. Therefore, canisters would not be able to insert their second message in the second round robin and so no canister would be empty and thus would not be removed. However, as no message is added and no canister is removed, the [quota](https://github.com/dfinity/ic/blob/67730a29e2c5272bcf7c3ad23e9ffa7309e1aede/rs/ingress_manager/src/ingress_selector.rs#L241C25-L241C98) does not increase at the end of the second round-robin. In the third round-robin the situation would be the same: the condition 2.b is satisfied and so no canister can include its second message. This keeps repeating for all subsequent iterations and the payload builder is stuck in a loop.
+
+The first part of condition 2.b:
+
+```
+queue.msgs_included >= std::cmp::max(1, round_robin_iter.saturating_sub(ITERATIONS_BEFORE_WEAKEN_INCLUDE_RULE))
+```
+
+prevents this from happening as, after `ITERATIONS_BEFORE_WEAKEN_INCLUDE_RULE` round-robins, it would no longer be true and thus each canister would be able to include other messages before condition 2.b would become true.
