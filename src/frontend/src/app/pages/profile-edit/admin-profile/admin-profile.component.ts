@@ -1,52 +1,21 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-} from '@angular/core';
-import {
-  FormGroup,
-  Validators,
-  ReactiveFormsModule,
-  FormControl,
-} from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
+import { AdminPersonalInfoEditComponent } from '../admin-personal-info-edit';
+import { AdminPersonalInfoViewComponent } from '../admin-personal-info-view';
 import { InfoIconComponent } from '~core/icons';
-import {
-  AdminProfile,
-  AdminProfileUpdate,
-  ProfileService,
-  UserRole,
-} from '~core/state';
-import {
-  FormFieldComponent,
-  InputDirective,
-  InputErrorComponent,
-  LabelComponent,
-  TooltipDirective,
-} from '~core/ui';
-import { ComponentChanges } from '~core/utils';
-
-export interface AdminProfileForm {
-  username: FormControl<string>;
-  bio: FormControl<string>;
-}
+import { AdminProfile } from '~core/state';
+import { TooltipDirective } from '~core/ui';
 
 @Component({
   selector: 'app-admin-profile',
   standalone: true,
   imports: [
-    ReactiveFormsModule,
-    FormFieldComponent,
-    LabelComponent,
     CommonModule,
-    InputDirective,
-    InputErrorComponent,
     InfoIconComponent,
-    RouterModule,
     TooltipDirective,
+    AdminPersonalInfoEditComponent,
+    AdminPersonalInfoViewComponent,
   ],
   template: `
     <div class="mb-4 flex flex-row items-center">
@@ -60,92 +29,34 @@ export interface AdminProfileForm {
       <app-info-icon [appTooltip]="adminInfo"></app-info-icon>
     </div>
 
-    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-      <app-form-field>
-        <app-label>Username</app-label>
-
-        <input appInput id="username" type="text" formControlName="username" />
-
-        <app-input-error key="required">
-          Username cannot be empty
-        </app-input-error>
-        <app-input-error key="minlength">
-          Username must have at least 3 characters
-        </app-input-error>
-      </app-form-field>
-
-      <app-form-field>
-        <app-label>Bio</app-label>
-
-        <textarea
-          appInput
-          id="bio"
-          type="text"
-          formControlName="bio"
-        ></textarea>
-
-        <app-input-error key="required">Bio cannot be empty</app-input-error>
-      </app-form-field>
-
-      <div class="flex items-center">
-        <a title="Cancel your edits" [routerLink]="'/'" class="ml-auto mr-4">
-          Cancel
-        </a>
-        <button
-          type="submit"
-          [attr.title]="
-            profileForm.invalid ? 'Fix the validation errors' : null
-          "
-          [disabled]="profileForm.invalid"
-          class="btn"
-        >
-          Save
-        </button>
-      </div>
-    </form>
+    @if (isEditable) {
+      <app-admin-personal-info-edit
+        [userProfile]="userProfile"
+        (formSave)="stopEditing()"
+      />
+    } @else {
+      <app-admin-personal-info-view
+        [userProfile]="userProfile"
+        (formEdit)="editForm()"
+      />
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminProfileComponent implements OnChanges {
+export class AdminProfileComponent {
   @Input({ required: true })
   public userProfile!: AdminProfile;
 
   public readonly adminInfo: string =
     'Use DFX command to change this property.';
 
-  public readonly profileForm: FormGroup<AdminProfileForm>;
+  public isEditable = false;
 
-  constructor(private readonly profileService: ProfileService) {
-    this.profileForm = new FormGroup<AdminProfileForm>({
-      username: new FormControl('', {
-        nonNullable: true,
-        validators: [Validators.required, Validators.minLength(3)],
-      }),
-      bio: new FormControl('', {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-    });
+  public editForm(): void {
+    this.isEditable = true;
   }
 
-  public ngOnChanges(changes: ComponentChanges<AdminProfileComponent>): void {
-    if (changes.userProfile) {
-      this.profileForm.patchValue({
-        username: this.userProfile.username,
-        bio: this.userProfile.bio,
-      });
-    }
-  }
-
-  public onSubmit(): void {
-    const formValues = this.profileForm.value;
-
-    const profileUpdate: AdminProfileUpdate = {
-      role: UserRole.Admin,
-      username: formValues.username,
-      bio: formValues.bio,
-    };
-
-    this.profileService.saveProfile(profileUpdate);
+  public stopEditing(): void {
+    this.isEditable = false;
   }
 }

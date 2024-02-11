@@ -1,19 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { UserRole } from '~core/state';
-import {} from '~core/state/profile/profile.service.mock';
-import { ReviewerProfileComponent } from './reviewer-profile.component';
+import { UserRole, SocialMediaType } from '~core/state';
+import { ReviewerSocialMediaViewComponent } from './reviewer-social-media-view.component';
 
-describe('ReviewerProfileComponent', () => {
-  let component: ReviewerProfileComponent;
-  let fixture: ComponentFixture<ReviewerProfileComponent>;
+describe('ReviewerSocialMediaViewComponent', () => {
+  let component: ReviewerSocialMediaViewComponent;
+  let fixture: ComponentFixture<ReviewerSocialMediaViewComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ReviewerProfileComponent],
+      imports: [ReviewerSocialMediaViewComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ReviewerProfileComponent);
+    fixture = TestBed.createComponent(ReviewerSocialMediaViewComponent);
     component = fixture.componentInstance;
     component.userProfile = {
       id: '1',
@@ -23,7 +22,7 @@ describe('ReviewerProfileComponent', () => {
       neuronId: 10685924793606457081n,
       walletAddress: '123213123sdfsdfs',
       bio: 'bio',
-      socialMedia: [],
+      socialMedia: [{ type: SocialMediaType.DSCVR, link: 'testLink' }],
     };
     fixture.detectChanges();
   });

@@ -72,7 +72,11 @@ export class FormFieldComponent implements AfterContentInit {
   ) {}
 
   public ngAfterContentInit(): void {
-    const formControlName = this.inputDirective?.formControlName;
+    if (!this.inputDirective) {
+      throw new Error('Form field must have an input directive as a child');
+    }
+    const formControlName = this.inputDirective.formControlName;
+
     if (!formControlName) {
       throw new Error('Form field could not find form control name');
     }
