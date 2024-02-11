@@ -22,6 +22,14 @@ impl Uuid {
     pub fn from_random_bytes(bytes: [u8; UUID_SIZE]) -> Self {
         Self(Builder::from_random_bytes(bytes).into_uuid())
     }
+
+    pub fn max() -> Self {
+        Self(UuidImpl::max())
+    }
+
+    pub fn min() -> Self {
+        Self(UuidImpl::nil())
+    }
 }
 
 impl TryFrom<&str> for Uuid {
