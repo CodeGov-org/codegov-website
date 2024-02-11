@@ -29,7 +29,7 @@ import { TooltipDirective } from '~core/ui';
       <app-info-icon [appTooltip]="adminInfo"></app-info-icon>
     </div>
 
-    @if (isEditable) {
+    @if (isFormEditable) {
       <app-admin-personal-info-edit
         [userProfile]="userProfile"
         (formSave)="stopEditing()"
