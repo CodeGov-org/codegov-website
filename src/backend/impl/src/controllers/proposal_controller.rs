@@ -63,6 +63,11 @@ impl<A: AccessControlService, L: LogService, P: ProposalService> ProposalControl
     }
 
     pub async fn sync_proposals_job(&self) {
+        let _ = self.log_service.log_info(
+            "Syncing proposals".to_string(),
+            Some("sync_proposals".to_string()),
+        );
+
         match self.proposal_service.fetch_and_save_nns_proposals().await {
             Ok(_) => {
                 let _ = self.log_service.log_info(
