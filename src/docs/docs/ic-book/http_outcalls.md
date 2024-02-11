@@ -13,6 +13,25 @@ The lifecycle of an HTTPS outcall within a replica is the following:
 
 ![HTTPS Outcalls](./https_outcalls.png)
 
+```mermeid
+flowchart TD
+    subgraph Replica
+    direction TB
+    pm -- process_change() --> ar(Artifact Pool)
+    rs(Replicated State) -- canister_http_request_context --> pm(CanisterHttpPoolManagerImpl)
+    pm -- send() --> ac(CanisterHttpAdapterClientImpl)
+    end
+    ac -- transformed HTTP response --> pm
+    direction TB
+    subgraph Adapter
+    ac --> ad(CanisterHttp)
+    end
+    ad -- canister_http_send() --> api(API)
+    subgraph Web2
+    api -- HTTP response --> ad
+    end
+```
+
 1. A canister makes an outgoing HTTP request by calling the management canister API using the `http_request` method. The request is stored temporarily in the replicated state of the subnet.
 2. Periodically, the pending HTTP outcalls are fetched from the replicated state.
    This is taken care of by the [processor](https://github.com/dfinity/ic/blob/7f6e7df37690a4256066a6bc0a55c8eb595f7755/rs/artifact_manager/src/lib.rs#L529C5-L535C7) of `CanisterHttpArtifact`s, which uses a [thread loop](https://github.com/dfinity/ic/blob/7f6e7df37690a4256066a6bc0a55c8eb595f7755/rs/artifact_manager/src/lib.rs#L262C1-L313C2) to [process the changes](https://github.com/dfinity/ic/blob/7f6e7df37690a4256066a6bc0a55c8eb595f7755/rs/artifact_manager/src/processors.rs#L45C5-L70C6) due to the arrival of new artifacts from other replicas. The requests in the replicated state are [obtained](https://github.com/dfinity/ic/blob/7f6e7df37690a4256066a6bc0a55c8eb595f7755/rs/https_outcalls/consensus/src/pool_manager.rs#L156C9-L163C22) from the `change_set_producer`, which in case of the HTTP processor is the [CanisterHttpPoolManagerImpl](https://github.com/dfinity/ic/blob/7f6e7df37690a4256066a6bc0a55c8eb595f7755/rs/https_outcalls/consensus/src/pool_manager.rs#L34C1-L52C2).**[](https://internetcomputer.org/docs/current/developer-docs/integrations/https-outcalls/https-outcalls-how-it-works#step-3-periodically-each-round-an-adapter-at-the-networking-layer-in-each-replica-fetches-the-pending-http-outcalls-from-replicated-state)**
