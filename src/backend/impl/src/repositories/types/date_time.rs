@@ -3,7 +3,7 @@ use candid::{
     types::{Type, TypeInner},
     CandidType, Deserialize,
 };
-use chrono::{Datelike, Timelike};
+use chrono::{Datelike, NaiveDateTime, TimeZone, Timelike, Utc};
 use ic_stable_structures::{storable::Bound, Storable};
 use std::{borrow::Cow, str::FromStr};
 
@@ -19,6 +19,19 @@ impl DateTime {
         )?))
     }
 
+    pub fn from_timestamp_micros(micros: u64) -> Result<Self, ApiError> {
+        let micros = micros.try_into().map_err(|err| {
+            ApiError::internal(&format!(
+                "Failed to convert timestamp {} to micros: {}",
+                micros, err
+            ))
+        })?;
+        let dt = NaiveDateTime::from_timestamp_micros(micros).ok_or(ApiError::internal(
+            &format!("Failed to convert timestamp {} to date time", micros),
+        ))?;
+        Self::new(Utc.from_utc_datetime(&dt))
+    }
+
     pub fn min() -> Self {
         Self(chrono::DateTime::<chrono::Utc>::UNIX_EPOCH)
     }
@@ -29,6 +42,10 @@ impl DateTime {
                 .with_year(9999)
                 .ok_or_else(|| ApiError::internal("Failed to create max date time."))?,
         ))
+    }
+
+    pub fn timestamp_micros(&self) -> u64 {
+        self.0.timestamp_micros().try_into().unwrap()
     }
 }
 
@@ -95,5 +112,19 @@ mod tests {
         let deserialized_date_time = DateTime::from_bytes(serialized_date_time);
 
         assert_eq!(date_time, deserialized_date_time);
+    }
+
+    #[rstest]
+    fn date_time_timestamp() {
+        let (timestamp, date_string) = timestamp_micros();
+        let date_time = DateTime::from_timestamp_micros(timestamp).unwrap();
+
+        assert_eq!(date_time.to_string(), date_string);
+        assert_eq!(date_time.timestamp_micros(), timestamp);
+    }
+
+    #[fixture]
+    fn timestamp_micros() -> (u64, String) {
+        (1706899350000000, "2024-02-02T18:42:30+00:00".to_string())
     }
 }
