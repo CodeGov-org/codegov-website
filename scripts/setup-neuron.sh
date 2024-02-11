@@ -33,8 +33,8 @@ local_quill send ./data/neuron-stake.json -y > ./data/neuron-state-output.txt
 
 # Get neuron ID
 NEURON_ID=$( \
-  grep -oP '(?<=id = )\d+(_\d+)*(?= : nat64)' ./data/neuron-state-output.txt \
-  | tr -d '_' \
+  grep -o 'id = [0-9_]*' ./data/neuron-state-output.txt \
+  | tr -d 'id =_' \
 )
 
 # Increase the dissolve delay
