@@ -6,6 +6,7 @@ use ic_stable_structures::{storable::Bound, Storable};
 use std::borrow::Cow;
 
 pub type ProposalId = Uuid;
+pub type ProposalIndex = (DateTime, ProposalId);
 pub type NervousSystemProposalId = u64;
 pub type NeuronId = u64;
 
