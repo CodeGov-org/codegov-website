@@ -17,7 +17,6 @@ export function getLoadingDialogConfig(
   config.disableClose = true;
   config.closeOnDestroy = true;
   config.backdropClass = 'backdrop';
-  config.panelClass = 'dialog-panel';
 
   return config;
 }

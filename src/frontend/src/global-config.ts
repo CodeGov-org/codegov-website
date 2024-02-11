@@ -9,6 +9,7 @@ export interface LinkCategory {
 }
 
 export interface GlobalConfig {
+  applyLink: string;
   headerLinks: Array<LinkCategory | Link>;
   footerLinks: LinkCategory[];
 }

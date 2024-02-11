@@ -30,6 +30,7 @@ import {
   InputDirective,
   InputErrorComponent,
   InputHintComponent,
+  TooltipDirective,
 } from '~core/ui';
 import { ComponentChanges, keysOf } from '~core/utils';
 
@@ -57,6 +58,7 @@ export type SocialMediaForm = {
     InputHintComponent,
     InfoIconComponent,
     RouterModule,
+    TooltipDirective,
   ],
   template: `
     <div class="mb-4 flex flex-row items-center">
@@ -67,19 +69,19 @@ export type SocialMediaForm = {
     <div class="mb-4 flex flex-row items-center">
       <span class="w-1/3 font-bold">Role</span>
       <span>{{ userProfile.role }}</span>
-      <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
+      <app-info-icon [appTooltip]="nonEditableInfo"></app-info-icon>
     </div>
 
     <div class="mb-4 flex flex-row items-center">
       <span class="w-1/3 font-bold">Proposal Types</span>
       <span>{{ userProfile.proposalTypes.join(', ') }}</span>
-      <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
+      <app-info-icon [appTooltip]="nonEditableInfo"></app-info-icon>
     </div>
 
     <div class="mb-4 flex flex-row items-center">
       <span class="h-6 w-1/3 font-bold">Neuron ID</span>
       <span>{{ userProfile.neuronId }}</span>
-      <app-info-icon [infoText]="nonEditableInfo"></app-info-icon>
+      <app-info-icon [appTooltip]="nonEditableInfo"></app-info-icon>
     </div>
 
     <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
@@ -154,7 +156,7 @@ export type SocialMediaForm = {
         </a>
         <button
           type="submit"
-          [attr.title]="
+          [appTooltip]="
             profileForm.invalid ? 'Fix the validation errors' : null
           "
           [disabled]="profileForm.invalid"

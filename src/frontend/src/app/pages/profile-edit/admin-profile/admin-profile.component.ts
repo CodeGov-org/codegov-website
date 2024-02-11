@@ -25,6 +25,7 @@ import {
   InputDirective,
   InputErrorComponent,
   LabelComponent,
+  TooltipDirective,
 } from '~core/ui';
 import { ComponentChanges } from '~core/utils';
 
@@ -45,6 +46,7 @@ export interface AdminProfileForm {
     InputErrorComponent,
     InfoIconComponent,
     RouterModule,
+    TooltipDirective,
   ],
   template: `
     <div class="mb-4 flex flex-row items-center">
@@ -55,7 +57,7 @@ export interface AdminProfileForm {
     <div class="mb-4 flex flex-row items-center">
       <span class="w-1/3 font-bold">Role</span>
       <span>{{ userProfile.role }}</span>
-      <app-info-icon [infoText]="adminInfo"></app-info-icon>
+      <app-info-icon [appTooltip]="adminInfo"></app-info-icon>
     </div>
 
     <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">

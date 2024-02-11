@@ -37,6 +37,9 @@ const {
 });
 
 const globalConfig = {
+  applyLink: `${marketingUrl}${slugToHref(
+    story.content.apply_link.cached_url,
+  )}`,
   headerLinks: story.content.header_links.map(link => {
     if (isLinkCategory(link)) {
       return {
