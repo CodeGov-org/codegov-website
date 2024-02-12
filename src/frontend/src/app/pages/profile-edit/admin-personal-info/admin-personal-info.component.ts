@@ -6,27 +6,29 @@ import {
   Output,
 } from '@angular/core';
 
+import {
+  KeyColComponent,
+  KeyValueGridComponent,
+  ValueColComponent,
+} from '../../../core/ui';
 import { AdminProfile } from '~core/state';
 
 @Component({
   selector: 'app-admin-personal-info',
   standalone: true,
+  imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mb-4 flex flex-col md:flex-row md:items-center">
-      <span class="font-bold md:w-1/3">Username</span>
-      <span>{{ userProfile.username }}</span>
-    </div>
+    <app-key-value-grid class="mb-4">
+      <app-key-col>Username</app-key-col>
+      <app-value-col>{{ userProfile.username }}</app-value-col>
 
-    <div class="mb-4 flex flex-col md:flex-row md:items-center">
-      <span class="font-bold md:w-1/3">Bio</span>
-      <span>{{ userProfile.bio }}</span>
-    </div>
+      <app-key-col>Bio</app-key-col>
+      <app-value-col>{{ userProfile.bio }}</app-value-col>
+    </app-key-value-grid>
 
-    <div class="flex items-center">
-      <button type="button" class="btn ml-auto" (click)="editForm()">
-        Edit
-      </button>
+    <div class="flex items-center justify-end">
+      <button type="button" class="btn" (click)="editForm()">Edit</button>
     </div>
   `,
 })

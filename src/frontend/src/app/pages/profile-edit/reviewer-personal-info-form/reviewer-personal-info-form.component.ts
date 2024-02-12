@@ -24,8 +24,10 @@ import {
   FormFieldComponent,
   InputDirective,
   InputErrorComponent,
-  LabelComponent,
+  KeyColComponent,
+  KeyValueGridComponent,
   TooltipDirective,
+  ValueColComponent,
 } from '~core/ui';
 import { ComponentChanges } from '~core/utils';
 
@@ -40,65 +42,81 @@ export interface ReviewerProfileForm {
   standalone: true,
   imports: [
     FormFieldComponent,
-    LabelComponent,
     InputErrorComponent,
     InputDirective,
     ReactiveFormsModule,
     RouterModule,
     TooltipDirective,
+    KeyValueGridComponent,
+    KeyColComponent,
+    ValueColComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-      <app-form-field>
-        <app-label>Username</app-label>
+      <app-key-value-grid>
+        <app-key-col>
+          <label appLabel for="username">Username</label>
+        </app-key-col>
+        <app-value-col>
+          <app-form-field>
+            <input
+              appInput
+              id="username"
+              type="text"
+              formControlName="username"
+            />
 
-        <input appInput id="username" type="text" formControlName="username" />
+            <app-input-error key="required">
+              Username cannot be empty
+            </app-input-error>
+            <app-input-error key="minlength">
+              Username must have at least 3 characters
+            </app-input-error>
+          </app-form-field>
+        </app-value-col>
 
-        <app-input-error key="required">
-          Username cannot be empty
-        </app-input-error>
-        <app-input-error key="minlength">
-          Username must have at least 3 characters
-        </app-input-error>
-      </app-form-field>
+        <app-key-col>
+          <label appLabel for="bio">Bio</label>
+        </app-key-col>
+        <app-value-col>
+          <app-form-field>
+            <textarea
+              appInput
+              id="bio"
+              type="text"
+              formControlName="bio"
+            ></textarea>
 
-      <app-form-field>
-        <app-label>Bio</app-label>
+            <app-input-error key="required">
+              Bio cannot be empty
+            </app-input-error>
+          </app-form-field>
+        </app-value-col>
 
-        <textarea
-          appInput
-          id="bio"
-          type="text"
-          formControlName="bio"
-        ></textarea>
+        <app-key-col>
+          <label appLabel for="walletAddress">Wallet address</label>
+        </app-key-col>
+        <app-value-col>
+          <app-form-field>
+            <input
+              appInput
+              id="walletAddress"
+              type="text"
+              formControlName="walletAddress"
+            />
 
-        <app-input-error key="required">Bio cannot be empty</app-input-error>
-      </app-form-field>
+            <app-input-error key="required">
+              Wallet address cannot be empty
+            </app-input-error>
+          </app-form-field>
+        </app-value-col>
+      </app-key-value-grid>
 
-      <app-form-field>
-        <app-label>Wallet Address</app-label>
-
-        <input
-          appInput
-          id="walletAddress"
-          type="text"
-          formControlName="walletAddress"
-        />
-
-        <app-input-error key="required">
-          Wallet address cannot be empty
-        </app-input-error>
-      </app-form-field>
-
-      <div class="flex items-center">
-        <a
-          title="Cancel your edits"
-          (click)="cancelEdits()"
-          class="ml-auto mr-4"
-        >
+      <div class="flex items-center justify-end">
+        <button class="btn btn-outline mr-4" (click)="cancelEdits()">
           Cancel
-        </a>
+        </button>
 
         <button
           type="submit"

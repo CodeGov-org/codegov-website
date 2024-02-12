@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LabelComponent } from './label.component';
+import { KeyColComponent } from './key-col.component';
 
-describe('LabelComponent', () => {
-  let component: LabelComponent;
-  let fixture: ComponentFixture<LabelComponent>;
+describe('KeyColComponent', () => {
+  let component: KeyColComponent;
+  let fixture: ComponentFixture<KeyColComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LabelComponent],
+      imports: [KeyColComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(LabelComponent);
+    fixture = TestBed.createComponent(KeyColComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
