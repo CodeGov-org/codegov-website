@@ -54,7 +54,7 @@ export type SocialMediaForm = {
       <app-key-value-grid>
         @for (key of socialMediaKeys; track key) {
           <app-key-col>
-            <label appLabel for="username">
+            <label appLabel [for]="key">
               {{ socialMediaInputs[key].label }}
             </label>
           </app-key-col>
