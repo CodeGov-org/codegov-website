@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
-import { type _SERVICE } from '@cg/backend';
+import { SocialLink, type _SERVICE } from '@cg/backend';
 import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
 import {
   anonymousIdentity,
@@ -238,6 +238,12 @@ describe('User Profile', () => {
       const bobUpdateNeuronId = 7862326246190316138n;
       const bobUpdateWalletAddress =
         'da01eead5eb00bb853b9c42e1637433c81348a8856f4cff1bb917e2cd04df2cb';
+      const bobUpdateSocialLinks: SocialLink[] = [
+        {
+          platform: 'X',
+          username: 'bob',
+        },
+      ];
       await actor.update_user_profile({
         user_id: bobCreate.id,
         username: [bobUpdateUsername],
@@ -247,6 +253,7 @@ describe('User Profile', () => {
               bio: [bobUpdateBio],
               neuron_id: [bobUpdateNeuronId],
               wallet_address: [bobUpdateWalletAddress],
+              social_links: [bobUpdateSocialLinks],
             },
           },
         ],
@@ -271,6 +278,12 @@ describe('User Profile', () => {
       const bobFinalUpdateBio = 'Bob is an infinitely good reviewer...';
       const bobFinalUpdateWalletAddress =
         '4dfa940def17f1427ae47378c440f10185867677109a02bc8374fc25b9dee8af';
+      const bobFinalUpdateSocialLinks: SocialLink[] = [
+        {
+          platform: 'X',
+          username: 'infinitebob',
+        },
+      ];
       await actor.update_my_user_profile({
         username: [bobFinalUpdateUsername],
         config: [
@@ -278,6 +291,7 @@ describe('User Profile', () => {
             reviewer: {
               bio: [bobFinalUpdateBio],
               wallet_address: [bobFinalUpdateWalletAddress],
+              social_links: [bobFinalUpdateSocialLinks],
             },
           },
         ],
@@ -356,6 +370,7 @@ describe('User Profile', () => {
             bio: bobFinalUpdateBio,
             neuron_id: bobUpdateNeuronId,
             wallet_address: bobFinalUpdateWalletAddress,
+            social_links: bobFinalUpdateSocialLinks,
           },
         },
       });
@@ -381,6 +396,7 @@ describe('User Profile', () => {
                 bio: bobUpdateBio,
                 neuron_id: bobUpdateNeuronId,
                 wallet_address: bobUpdateWalletAddress,
+                social_links: bobUpdateSocialLinks,
               },
             },
           },
@@ -396,6 +412,7 @@ describe('User Profile', () => {
                 bio: bobFinalUpdateBio,
                 neuron_id: bobUpdateNeuronId,
                 wallet_address: bobFinalUpdateWalletAddress,
+                social_links: bobFinalUpdateSocialLinks,
               },
             },
           },
@@ -543,6 +560,12 @@ describe('User Profile', () => {
       const bobUpdateNeuronId = 7862326246190316138n;
       const bobUpdateWalletAddress =
         'da01eead5eb00bb853b9c42e1637433c81348a8856f4cff1bb917e2cd04df2cb';
+      const bobUpdateSocialLinks: SocialLink[] = [
+        {
+          platform: 'X',
+          username: 'bob',
+        },
+      ];
       await actor.update_user_profile({
         user_id: bobCreate.id,
         username: [bobUpdateUsername],
@@ -552,6 +575,7 @@ describe('User Profile', () => {
               bio: [bobUpdateBio],
               neuron_id: [bobUpdateNeuronId],
               wallet_address: [bobUpdateWalletAddress],
+              social_links: [bobUpdateSocialLinks],
             },
           },
         ],
@@ -602,6 +626,7 @@ describe('User Profile', () => {
             bio: bobUpdateBio,
             neuron_id: bobUpdateNeuronId,
             wallet_address: bobUpdateWalletAddress,
+            social_links: bobUpdateSocialLinks,
           },
         },
       });
@@ -626,6 +651,7 @@ describe('User Profile', () => {
               bio: bobUpdateBio,
               neuron_id: bobUpdateNeuronId,
               wallet_address: bobUpdateWalletAddress,
+              social_links: bobUpdateSocialLinks,
             },
           },
         },

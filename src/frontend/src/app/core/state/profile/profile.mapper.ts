@@ -2,9 +2,16 @@ import {
   CreateMyUserProfileResponse,
   GetMyUserProfileResponse,
   UpdateMyUserProfileRequest,
+  SocialLink as ApiSocialLink,
 } from '@cg/backend';
 import { Ok, optional } from '~core/utils';
-import { Profile, ProfileUpdate, UserRole } from './profile.model';
+import {
+  Profile,
+  ProfileUpdate,
+  SocialLink,
+  SocialMediaType,
+  UserRole,
+} from './profile.model';
 
 export function mapProfileResponse(
   apiResponse: Ok<GetMyUserProfileResponse> | Ok<CreateMyUserProfileResponse>,
@@ -20,7 +27,7 @@ export function mapProfileResponse(
       neuronId: config.neuron_id,
       walletAddress: config.wallet_address,
       proposalTypes: [],
-      socialMedia: [],
+      socialMedia: mapSocialLinksResponse(config.social_links),
     };
   } else if ('admin' in apiResponse.config) {
     return {
@@ -35,6 +42,34 @@ export function mapProfileResponse(
       id: apiResponse.id,
       username: apiResponse.username,
     };
+  }
+}
+
+export function mapSocialLinksResponse(
+  apiResponse: ApiSocialLink[],
+): SocialLink[] {
+  return apiResponse.map(link => ({
+    type: mapSocialLinkPlatform(link.platform),
+    username: link.username,
+  }));
+}
+
+export function mapSocialLinkPlatform(platform: string): SocialMediaType {
+  switch (platform) {
+    case 'DSCVR':
+      return SocialMediaType.DSCVR;
+    case 'OpenChat':
+      return SocialMediaType.OpenChat;
+    case 'Taggr':
+      return SocialMediaType.Taggr;
+    case 'X':
+      return SocialMediaType.X;
+    case 'DfinityForum':
+      return SocialMediaType.DfinityForum;
+    case 'Discord':
+      return SocialMediaType.Discord;
+    default:
+      throw new Error(`Unknown social link platform: ${platform}`);
   }
 }
 
@@ -54,11 +89,14 @@ export function mapUpdateProfileRequest(
       return {
         username: optional(profile.username),
         config: optional(
-          profile.bio || profile.walletAddress
+          profile.bio || profile.walletAddress || profile.socialMedia
             ? {
                 reviewer: {
                   bio: optional(profile.bio),
                   wallet_address: optional(profile.walletAddress),
+                  social_links: optional(
+                    mapProfileUpdateSocialLinksRequest(profile.socialMedia),
+                  ),
                 },
               }
             : null,
@@ -80,6 +118,36 @@ export function mapUpdateProfileRequest(
         ),
       };
     }
+  }
+}
+
+export function mapProfileUpdateSocialLinksRequest(
+  socialLinks: SocialLink[] | undefined,
+): ApiSocialLink[] {
+  if (!socialLinks) {
+    return [];
+  }
+
+  return socialLinks.map(link => ({
+    platform: mapSocialLinkType(link.type),
+    username: link.username,
+  }));
+}
+
+export function mapSocialLinkType(type: SocialMediaType): string {
+  switch (type) {
+    case SocialMediaType.DSCVR:
+      return 'DSCVR';
+    case SocialMediaType.OpenChat:
+      return 'OpenChat';
+    case SocialMediaType.Taggr:
+      return 'Taggr';
+    case SocialMediaType.X:
+      return 'X';
+    case SocialMediaType.DfinityForum:
+      return 'DfinityForum';
+    case SocialMediaType.Discord:
+      return 'Discord';
   }
 }
 
@@ -109,6 +177,9 @@ export function mergeProfileUpdate(
     }
     if (profileUpdate.walletAddress) {
       profile.walletAddress = profileUpdate.walletAddress;
+    }
+    if (profileUpdate.socialMedia) {
+      profile.socialMedia = profileUpdate.socialMedia;
     }
   } else if (
     profile.role === UserRole.Admin &&

@@ -1,5 +1,5 @@
 use crate::repositories::{
-    HistoryAction, UserConfig, UserId, UserProfile, UserProfileHistoryEntry,
+    HistoryAction, SocialLink, UserConfig, UserId, UserProfile, UserProfileHistoryEntry,
 };
 use backend_api::{
     CreateMyUserProfileResponse, GetMyUserProfileHistoryResponse, GetMyUserProfileResponse,
@@ -14,12 +14,32 @@ impl From<UserConfig> for backend_api::UserConfig {
                 bio,
                 neuron_id,
                 wallet_address,
+                social_links,
             } => backend_api::UserConfig::Reviewer {
                 bio,
                 neuron_id,
                 wallet_address,
+                social_links: social_links.into_iter().map(|link| link.into()).collect(),
             },
             UserConfig::Anonymous => backend_api::UserConfig::Anonymous,
+        }
+    }
+}
+
+impl From<SocialLink> for backend_api::SocialLink {
+    fn from(value: SocialLink) -> Self {
+        backend_api::SocialLink {
+            platform: value.platform,
+            username: value.username,
+        }
+    }
+}
+
+impl From<backend_api::SocialLink> for SocialLink {
+    fn from(value: backend_api::SocialLink) -> Self {
+        SocialLink {
+            platform: value.platform,
+            username: value.username,
         }
     }
 }

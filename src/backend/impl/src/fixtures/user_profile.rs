@@ -1,6 +1,8 @@
 use crate::{
     fixtures::{date_time_a, principal},
-    repositories::{HistoryAction, NeuronId, UserConfig, UserProfile, UserProfileHistoryEntry},
+    repositories::{
+        HistoryAction, NeuronId, SocialLink, UserConfig, UserProfile, UserProfileHistoryEntry,
+    },
 };
 use rstest::*;
 
@@ -23,6 +25,30 @@ pub fn anonymous_user_profile() -> UserProfile {
 }
 
 #[fixture]
+pub fn dscvr_social_link() -> SocialLink {
+    SocialLink {
+        platform: "dscvr".to_string(),
+        username: "ZurichExplorer2023".to_string(),
+    }
+}
+
+#[fixture]
+pub fn open_chat_social_link() -> SocialLink {
+    SocialLink {
+        platform: "open_chat".to_string(),
+        username: "k3b7z-9jklm-abcde-fghij-yz12".to_string(),
+    }
+}
+
+#[fixture]
+pub fn taggr_social_link() -> SocialLink {
+    SocialLink {
+        platform: "taggr".to_string(),
+        username: "ZurichExplorer2023".to_string(),
+    }
+}
+
+#[fixture]
 pub fn reviewer_user_profile() -> UserProfile {
     UserProfile {
         username: "ZurichExplorer2023".to_string(),
@@ -30,6 +56,7 @@ pub fn reviewer_user_profile() -> UserProfile {
             bio: "Active in the ICP community and on the developer forum.".to_string(),
             neuron_id: neuron_id(),
             wallet_address: wallet_address(),
+            social_links: vec![dscvr_social_link(), open_chat_social_link()],
         },
     }
 }

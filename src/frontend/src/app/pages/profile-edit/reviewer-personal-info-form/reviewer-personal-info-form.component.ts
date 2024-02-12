@@ -161,6 +161,7 @@ export class ReviewerPersonalInfoFormComponent implements OnChanges {
       username: profileFormValues.username,
       bio: profileFormValues.bio,
       walletAddress: profileFormValues.walletAddress,
+      socialMedia: this.userProfile.socialMedia,
     };
 
     this.profileService.saveProfile(profileUpdate);

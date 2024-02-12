@@ -11,10 +11,17 @@ pub enum UserConfig {
         bio: String,
         neuron_id: u64,
         wallet_address: String,
+        social_links: Vec<SocialLink>,
     },
 
     #[serde(rename = "anonymous")]
     Anonymous,
+}
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub struct SocialLink {
+    pub platform: String,
+    pub username: String,
 }
 
 #[derive(Debug, Clone, CandidType, PartialEq, Eq)]
@@ -51,6 +58,7 @@ pub enum MyUserConfigUpdate {
     Reviewer {
         bio: Option<String>,
         wallet_address: Option<String>,
+        social_links: Option<Vec<SocialLink>>,
     },
 
     #[serde(rename = "anonymous")]
@@ -73,6 +81,7 @@ pub enum UserConfigUpdate {
         bio: Option<String>,
         neuron_id: Option<u64>,
         wallet_address: Option<String>,
+        social_links: Option<Vec<SocialLink>>,
     },
 
     #[serde(rename = "anonymous")]

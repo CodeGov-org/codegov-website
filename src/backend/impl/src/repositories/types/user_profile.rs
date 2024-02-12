@@ -14,6 +14,7 @@ pub enum UserConfig {
         bio: String,
         neuron_id: NeuronId,
         wallet_address: String,
+        social_links: Vec<SocialLink>,
     },
     Anonymous,
 }
@@ -22,6 +23,12 @@ pub enum UserConfig {
 pub struct UserProfile {
     pub username: String,
     pub config: UserConfig,
+}
+
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+pub struct SocialLink {
+    pub platform: String,
+    pub username: String,
 }
 
 impl UserProfile {

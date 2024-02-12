@@ -46,7 +46,7 @@ export class ReviewerSocialMediaComponent {
   public getSocialMediaValue(lookupKey: string): string {
     return (
       this.userProfile.socialMedia.find(element => element.type === lookupKey)
-        ?.link ?? ''
+        ?.username ?? ''
     );
   }
 }
