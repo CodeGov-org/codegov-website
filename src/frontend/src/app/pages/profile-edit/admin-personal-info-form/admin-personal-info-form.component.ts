@@ -77,7 +77,7 @@ export interface AdminProfileForm {
         </app-value-col>
 
         <app-key-col>
-          <label appLabel for="username">Bio</label>
+          <label appLabel for="bio">Bio</label>
         </app-key-col>
         <app-value-col>
           <app-form-field>
