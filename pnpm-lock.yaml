@@ -58,8 +58,8 @@ importers:
         specifier: ^17.0.8
         version: 17.1.0
       '@hadronous/pic':
-        specifier: 0.3.0-b0
-        version: 0.3.0-b0(@dfinity/agent@0.21.4)(@dfinity/candid@0.21.4)(@dfinity/identity@0.21.4)(@dfinity/principal@0.21.4)
+        specifier: 0.3.0
+        version: 0.3.0(@dfinity/agent@0.21.4)(@dfinity/candid@0.21.4)(@dfinity/identity@0.21.4)(@dfinity/principal@0.21.4)
       '@types/node':
         specifier: ^20.0.0
         version: 20.10.5
@@ -4956,8 +4956,8 @@ packages:
       rxjs: 7.8.1
     dev: true
 
-  /@hadronous/pic@0.3.0-b0(@dfinity/agent@0.21.4)(@dfinity/candid@0.21.4)(@dfinity/identity@0.21.4)(@dfinity/principal@0.21.4):
-    resolution: {integrity: sha512-KPiivseCIpIHtLAQ1sZr0p8R85pS5QNsCvovPzZDgdiBuJddz24Lt2K2YpEOOmSpikqNdYRelTl/HkCtFSb0kQ==}
+  /@hadronous/pic@0.3.0(@dfinity/agent@0.21.4)(@dfinity/candid@0.21.4)(@dfinity/identity@0.21.4)(@dfinity/principal@0.21.4):
+    resolution: {integrity: sha512-PeAJQWmxG3+Cjw9LYxeZwTKJSuOsIb9Tc10OVnDrEDWEQq2LjpKIrWLStyxfcfU3Sb8x6IP5CCMlJ+tUG9VfIw==}
     requiresBuild: true
     peerDependencies:
       '@dfinity/agent': ~0.21.4

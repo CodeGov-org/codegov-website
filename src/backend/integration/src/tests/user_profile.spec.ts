@@ -67,51 +67,50 @@ describe('User Profile', () => {
     });
   });
 
-  // [TODO]: we need support from PicJS to add additinal canister controllers
-  // before this test will work
-  it.todo(
-    'should auto create an admin profile for a new controller',
-    async () => {
-      const newController = generateRandomIdentity();
-      actor.setIdentity(newController);
+  it('should auto create an admin profile for a new controller', async () => {
+    const newControllerIdentity = generateRandomIdentity();
+    actor.setIdentity(newControllerIdentity);
 
-      pic.upgradeCanister(
-        canisterId,
-        BACKEND_WASM_PATH,
-        undefined,
-        newController.getPrincipal(),
-      );
-      // make sure init timers run
-      await pic.tick();
-      await pic.tick();
+    await pic.updateCanisterSettings({
+      canisterId,
+      controllers: [newControllerIdentity.getPrincipal()],
+      sender: controllerIdentity.getPrincipal(),
+    });
+    await pic.upgradeCanister({
+      canisterId,
+      wasm: BACKEND_WASM_PATH,
+      sender: newControllerIdentity.getPrincipal(),
+    });
+    // make sure init timers run
+    await pic.tick();
+    await pic.tick();
 
-      const res = await actor.get_my_user_profile();
-      const resOk = extractOkResponse(res);
+    const res = await actor.get_my_user_profile();
+    const resOk = extractOkResponse(res);
 
-      const historyRes = await actor.get_my_user_profile_history();
-      const historyOk = extractOkResponse(historyRes);
+    const historyRes = await actor.get_my_user_profile_history();
+    const historyOk = extractOkResponse(historyRes);
 
-      expect(resOk).toEqual({
-        id: expect.any(String),
-        username: 'Admin',
-        config: {
-          admin: {
-            bio: 'Default admin profile created for canister controllers',
-          },
+    expect(resOk).toEqual({
+      id: expect.any(String),
+      username: 'Admin',
+      config: {
+        admin: {
+          bio: 'Default admin profile created for canister controllers',
         },
-      });
-      expect(historyOk.history).toHaveLength(1);
-      expect(historyOk.history[0]).toEqual({
-        action: { create: null },
-        user: controllerIdentity.getPrincipal(),
-        date_time: dateToRfc3339(currentDate),
-        data: {
-          username: resOk.username,
-          config: resOk.config,
-        },
-      });
-    },
-  );
+      },
+    });
+    expect(historyOk.history).toHaveLength(1);
+    expect(historyOk.history[0]).toEqual({
+      action: { create: null },
+      user: newControllerIdentity.getPrincipal(),
+      date_time: dateToRfc3339(currentDate),
+      data: {
+        username: resOk.username,
+        config: resOk.config,
+      },
+    });
+  });
 
   it('should not return a profile that does not exist', async () => {
     const alice = generateRandomIdentity();
