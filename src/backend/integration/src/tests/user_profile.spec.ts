@@ -82,8 +82,7 @@ describe('User Profile', () => {
       sender: newControllerIdentity.getPrincipal(),
     });
     // make sure init timers run
-    await pic.tick();
-    await pic.tick();
+    await pic.tick(2);
 
     const res = await actor.get_my_user_profile();
     const resOk = extractOkResponse(res);

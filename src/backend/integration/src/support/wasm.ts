@@ -29,8 +29,7 @@ export async function setupBackendCanister(
   });
 
   // make sure init timers run
-  await pic.tick();
-  await pic.tick();
+  await pic.tick(2);
 
   return fixture;
 }

@@ -4,6 +4,6 @@
   "scripts": {
     "build": "dfx generate backend"
   },
-  "module": "src/shim.js",
-  "types": "src/shim.d.ts"
+  "module": "dist/backend.did.js",
+  "types": "dist/backend.did.d.ts"
 }
