@@ -22,7 +22,7 @@ import { keysOf } from '~core/utils';
   template: `
     <app-key-value-grid class="mb-4">
       @for (key of socialMediaKeys; track key) {
-        <app-key-col>{{ socialMediaInputs[key].label }}</app-key-col>
+        <app-key-col>{{ socialMediaInputs[key].formLabel }}</app-key-col>
         <app-value-col>{{ getSocialMediaValue(key) }}</app-value-col>
       }
     </app-key-value-grid>

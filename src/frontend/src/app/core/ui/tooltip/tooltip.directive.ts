@@ -34,7 +34,10 @@ export class TooltipDirective implements OnInit, OnChanges {
 
   @HostListener('mouseenter')
   public show(): void {
-    if (this.tooltipText !== null) {
+    if (
+      this.tooltipText !== null &&
+      !window.matchMedia('(pointer: coarse)').matches
+    ) {
       const tooltipPortal = new ComponentPortal(TooltipComponent);
       this.tooltipRef = this.overlayRef.attach(tooltipPortal);
 

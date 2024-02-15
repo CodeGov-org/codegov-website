@@ -1,10 +1,13 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
   Output,
+  ViewChild,
 } from '@angular/core';
 import {
   FormControl,
@@ -14,6 +17,7 @@ import {
 } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
+import { LoadingIconComponent } from '~core/icons';
 import {
   ProfileService,
   ReviewerProfile,
@@ -50,6 +54,8 @@ export interface ReviewerProfileForm {
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
+    CommonModule,
+    LoadingIconComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -119,13 +125,22 @@ export interface ReviewerProfileForm {
         </button>
 
         <button
+          #submitButton
           type="submit"
           [appTooltip]="
-            profileForm.invalid ? 'Fix the validation errors' : null
+            profileForm.invalid
+              ? 'Fix the validation errors'
+              : isSaving
+                ? 'Saving...'
+                : null
           "
-          [disabled]="profileForm.invalid"
+          [disabled]="profileForm.invalid || isSaving"
           class="btn"
+          [ngClass]="isSaving ? 'text-transparent' : ''"
         >
+          @if (isSaving) {
+            <app-loading-icon class="h-11 w-11" />
+          }
           Save
         </button>
       </div>
@@ -139,8 +154,14 @@ export class ReviewerPersonalInfoFormComponent implements OnChanges {
   @Output()
   public formClose = new EventEmitter<void>();
 
+  @Output()
+  public formSaving = new EventEmitter<void>();
+
+  @ViewChild('submitButton')
+  public submitButton: ElementRef | null = null;
+
   public readonly profileForm: FormGroup<ReviewerProfileForm>;
-  public isEditable = false;
+  public isSaving = false;
 
   constructor(private readonly profileService: ProfileService) {
     this.profileForm = new FormGroup<ReviewerProfileForm>({
@@ -171,7 +192,10 @@ export class ReviewerPersonalInfoFormComponent implements OnChanges {
     }
   }
 
-  public onSubmit(): void {
+  public async onSubmit(): Promise<void> {
+    this.profileForm.disable();
+    this.isSaving = true;
+
     const profileFormValues = this.profileForm.value;
 
     const profileUpdate: ReviewerProfileUpdate = {
@@ -181,8 +205,13 @@ export class ReviewerPersonalInfoFormComponent implements OnChanges {
       walletAddress: profileFormValues.walletAddress,
     };
 
-    this.profileService.saveProfile(profileUpdate);
-    this.formClose.emit();
+    try {
+      await this.profileService.saveProfile(profileUpdate);
+    } finally {
+      this.submitButton?.nativeElement.dispatchEvent(new Event('mouseleave'));
+      this.isSaving = false;
+      this.formClose.emit();
+    }
   }
 
   public cancelEdits(): void {

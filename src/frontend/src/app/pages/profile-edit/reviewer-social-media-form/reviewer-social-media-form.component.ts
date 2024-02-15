@@ -1,10 +1,13 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
   Output,
+  ViewChild,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -15,6 +18,7 @@ import {
 
 import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from '../profile.model';
 import { ReviewerProfileComponent } from '../reviewer-profile';
+import { LoadingIconComponent } from '~core/icons';
 import {
   ProfileService,
   ReviewerProfile,
@@ -29,6 +33,7 @@ import {
   InputHintComponent,
   KeyColComponent,
   KeyValueGridComponent,
+  TooltipDirective,
   ValueColComponent,
 } from '~core/ui';
 import { ComponentChanges, keysOf } from '~core/utils';
@@ -48,6 +53,9 @@ export type SocialMediaForm = {
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
+    TooltipDirective,
+    LoadingIconComponent,
+    CommonModule,
   ],
   template: `
     <form [formGroup]="socialMediaForm" (ngSubmit)="onSubmit()">
@@ -83,7 +91,19 @@ export type SocialMediaForm = {
           Cancel
         </button>
 
-        <button type="submit" class="btn">Save</button>
+        <button
+          #submitButton
+          type="submit"
+          [appTooltip]="isSaving ? 'Saving...' : null"
+          [disabled]="isSaving"
+          class="btn"
+          [ngClass]="isSaving ? 'text-transparent' : ''"
+        >
+          @if (isSaving) {
+            <app-loading-icon class="h-11 w-11" />
+          }
+          Save
+        </button>
       </div>
     </form>
   `,
@@ -95,6 +115,14 @@ export class ReviewerSocialMediaFormComponent implements OnChanges {
 
   @Output()
   public formClose = new EventEmitter<void>();
+
+  @Output()
+  public formSaving = new EventEmitter<void>();
+
+  @ViewChild('submitButton')
+  public submitButton: ElementRef | null = null;
+
+  public isSaving = false;
 
   public readonly socialMediaForm: FormGroup<SocialMediaForm>;
   public readonly socialMediaKeys = keysOf(SOCIAL_MEDIA_INPUTS);
@@ -119,7 +147,10 @@ export class ReviewerSocialMediaFormComponent implements OnChanges {
     }
   }
 
-  public onSubmit(): void {
+  public async onSubmit(): Promise<void> {
+    this.socialMediaForm.disable();
+    this.isSaving = true;
+
     const socialMediaFormValues = this.socialMediaForm.value;
 
     const socialMedia = Object.entries(
@@ -134,8 +165,13 @@ export class ReviewerSocialMediaFormComponent implements OnChanges {
       socialMedia: socialMedia,
     };
 
-    this.profileService.saveProfile(profileUpdate);
-    this.formClose.emit();
+    try {
+      await this.profileService.saveProfile(profileUpdate);
+    } finally {
+      this.submitButton?.nativeElement.dispatchEvent(new Event('mouseleave'));
+      this.isSaving = false;
+      this.formClose.emit();
+    }
   }
 
   public cancelEdits(): void {

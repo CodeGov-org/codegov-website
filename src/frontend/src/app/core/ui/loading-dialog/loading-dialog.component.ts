@@ -11,7 +11,7 @@ import { LoadingIconComponent } from '~core/icons';
     <div
       class="bg-primary-800 flex w-auto flex-row items-center rounded-lg px-4 py-4 text-white dark:bg-slate-700 dark:text-slate-200"
     >
-      <app-loading-icon />
+      <app-loading-icon class="h-11 w-11" />
       <h3 class="mx-4 mb-0">{{ infoText }}</h3>
     </div>
   `,
