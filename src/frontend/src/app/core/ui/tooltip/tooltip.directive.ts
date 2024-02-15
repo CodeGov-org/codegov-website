@@ -12,6 +12,7 @@ import {
   HostListener,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
 } from '@angular/core';
@@ -23,7 +24,7 @@ import { TooltipComponent } from './tooltip.component';
   selector: '[appTooltip]',
   standalone: true,
 })
-export class TooltipDirective implements OnInit, OnChanges {
+export class TooltipDirective implements OnInit, OnChanges, OnDestroy {
   @Input({ required: true, alias: 'appTooltip' })
   public tooltipText!: string | null;
 
@@ -37,6 +38,19 @@ export class TooltipDirective implements OnInit, OnChanges {
     if (
       this.tooltipText !== null &&
       !window.matchMedia('(pointer: coarse)').matches
+    ) {
+      const tooltipPortal = new ComponentPortal(TooltipComponent);
+      this.tooltipRef = this.overlayRef.attach(tooltipPortal);
+
+      this.tooltipRef.instance.tooltipText = this.tooltipText;
+    }
+  }
+
+  @HostListener('click')
+  public showOnMobileScreen(): void {
+    if (
+      this.tooltipText !== null &&
+      window.matchMedia('(pointer: coarse)').matches
     ) {
       const tooltipPortal = new ComponentPortal(TooltipComponent);
       this.tooltipRef = this.overlayRef.attach(tooltipPortal);
@@ -86,5 +100,9 @@ export class TooltipDirective implements OnInit, OnChanges {
     if (changes.tooltipText && this.tooltipRef !== null) {
       this.tooltipRef.setInput('tooltipText', this.tooltipText);
     }
+  }
+
+  public ngOnDestroy(): void {
+    this.hide();
   }
 }

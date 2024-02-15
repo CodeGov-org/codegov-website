@@ -2,12 +2,10 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
   Output,
-  ViewChild,
 } from '@angular/core';
 import {
   FormControl,
@@ -120,26 +118,26 @@ export interface ReviewerProfileForm {
       </app-key-value-grid>
 
       <div class="flex items-center justify-end">
+        @if (profileForm.invalid) {
+          <div class="text-error pr-5 text-sm md:pr-10">
+            Fix the validation errors
+          </div>
+        }
         <button class="btn btn-outline mr-4" (click)="cancelEdits()">
           Cancel
         </button>
 
         <button
-          #submitButton
           type="submit"
-          [appTooltip]="
-            profileForm.invalid
-              ? 'Fix the validation errors'
-              : isSaving
-                ? 'Saving...'
-                : null
-          "
+          [attr.aria-label]="isSaving ? 'Saving' : 'Save'"
           [disabled]="profileForm.invalid || isSaving"
-          class="btn"
+          class="btn relative"
           [ngClass]="isSaving ? 'text-transparent' : ''"
         >
           @if (isSaving) {
-            <app-loading-icon class="h-11 w-11" />
+            <app-loading-icon
+              class="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2"
+            />
           }
           Save
         </button>
@@ -156,9 +154,6 @@ export class ReviewerPersonalInfoFormComponent implements OnChanges {
 
   @Output()
   public formSaving = new EventEmitter<void>();
-
-  @ViewChild('submitButton')
-  public submitButton: ElementRef | null = null;
 
   public readonly profileForm: FormGroup<ReviewerProfileForm>;
   public isSaving = false;
@@ -208,7 +203,6 @@ export class ReviewerPersonalInfoFormComponent implements OnChanges {
     try {
       await this.profileService.saveProfile(profileUpdate);
     } finally {
-      this.submitButton?.nativeElement.dispatchEvent(new Event('mouseleave'));
       this.isSaving = false;
       this.formClose.emit();
     }

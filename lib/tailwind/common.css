@@ -236,7 +236,7 @@
 
   /* Buttons */
   .btn {
-    @apply layer-10 bg-primary enabled:hover:bg-primary-600 focus:ring-primary-800 h-9 rounded-md px-4 py-1 text-lg text-white outline-none focus:ring-4 focus:ring-opacity-50 disabled:bg-opacity-45 dark:focus:ring-opacity-100;
+    @apply layer-10 bg-primary enabled:hover:bg-primary-600 focus:ring-primary-800 rounded-md px-4 py-1 text-lg text-white outline-none focus:ring-4 focus:ring-opacity-50 disabled:bg-opacity-45 dark:focus:ring-opacity-100;
   }
 
   .btn-outline {

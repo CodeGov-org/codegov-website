@@ -2,12 +2,10 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
   Output,
-  ViewChild,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -92,15 +90,16 @@ export type SocialMediaForm = {
         </button>
 
         <button
-          #submitButton
           type="submit"
-          [appTooltip]="isSaving ? 'Saving...' : null"
+          [attr.aria-label]="isSaving ? 'Saving' : 'Save'"
           [disabled]="isSaving"
-          class="btn"
+          class="btn relative"
           [ngClass]="isSaving ? 'text-transparent' : ''"
         >
           @if (isSaving) {
-            <app-loading-icon class="h-11 w-11" />
+            <app-loading-icon
+              class="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2"
+            />
           }
           Save
         </button>
@@ -118,9 +117,6 @@ export class ReviewerSocialMediaFormComponent implements OnChanges {
 
   @Output()
   public formSaving = new EventEmitter<void>();
-
-  @ViewChild('submitButton')
-  public submitButton: ElementRef | null = null;
 
   public isSaving = false;
 
@@ -168,7 +164,6 @@ export class ReviewerSocialMediaFormComponent implements OnChanges {
     try {
       await this.profileService.saveProfile(profileUpdate);
     } finally {
-      this.submitButton?.nativeElement.dispatchEvent(new Event('mouseleave'));
       this.isSaving = false;
       this.formClose.emit();
     }

@@ -38,7 +38,7 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
           <app-dropdown
             [showChevron]="false"
             menuTriggerClassName="btn btn-icon"
-            [appTooltip]="isTouchScreen() ? null : 'Open profile menu'"
+            aria-label="Open profile menu"
           >
             <ng-container ngProjectAs="[menuTrigger]">
               <app-profile-icon />
@@ -64,8 +64,8 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
         } @else {
           <button
             (click)="onLoginButtonClicked()"
+            aria-label="Log in"
             class="btn btn-icon"
-            [appTooltip]="isTouchScreen() ? null : 'Log in'"
           >
             <span class="sr-only">Login</span>
             <app-login-icon />
@@ -89,9 +89,5 @@ export class SecondaryNavbarComponent {
 
   public async onLogoutButtonClicked(): Promise<void> {
     await this.authService.logout();
-  }
-
-  public isTouchScreen(): boolean {
-    return window.matchMedia('(pointer: coarse)').matches;
   }
 }
