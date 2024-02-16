@@ -139,7 +139,10 @@ export interface ReviewerProfileForm {
               aria-label="Saving"
             />
           }
-          <div [ngClass]="isSaving ? 'aria-hidden text-transparent' : ''">
+          <div
+            [ngClass]="isSaving ? 'text-transparent' : ''"
+            [attr.aria-hidden]="isSaving"
+          >
             Save
           </div>
         </button>
