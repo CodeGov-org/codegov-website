@@ -61,7 +61,7 @@ export type SocialMediaForm = {
         @for (key of socialMediaKeys; track key) {
           <app-key-col>
             <label appLabel [for]="key">
-              {{ socialMediaInputs[key].label }}
+              {{ socialMediaInputs[key].formLabel }}
             </label>
           </app-key-col>
 
