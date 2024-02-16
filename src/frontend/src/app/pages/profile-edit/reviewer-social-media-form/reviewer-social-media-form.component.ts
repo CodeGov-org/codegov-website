@@ -89,19 +89,16 @@ export type SocialMediaForm = {
           Cancel
         </button>
 
-        <button
-          type="submit"
-          [attr.aria-label]="isSaving ? 'Saving' : 'Save'"
-          [disabled]="isSaving"
-          class="btn relative"
-          [ngClass]="isSaving ? 'text-transparent' : ''"
-        >
+        <button type="submit" [disabled]="isSaving" class="btn relative">
           @if (isSaving) {
             <app-loading-icon
               class="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2"
+              aria-label="Saving"
             />
           }
-          Save
+          <div [ngClass]="isSaving ? 'aria-hidden text-transparent' : ''">
+            Save
+          </div>
         </button>
       </div>
     </form>

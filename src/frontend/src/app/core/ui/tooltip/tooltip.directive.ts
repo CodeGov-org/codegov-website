@@ -34,36 +34,27 @@ export class TooltipDirective implements OnInit, OnChanges, OnDestroy {
   private tooltipRef: ComponentRef<TooltipComponent> | null = null;
 
   @HostListener('mouseenter')
-  public show(): void {
-    if (
-      this.tooltipText !== null &&
-      !window.matchMedia('(pointer: coarse)').matches
-    ) {
-      const tooltipPortal = new ComponentPortal(TooltipComponent);
-      this.tooltipRef = this.overlayRef.attach(tooltipPortal);
-
-      this.tooltipRef.instance.tooltipText = this.tooltipText;
+  public onMouseEnter(): void {
+    if (!this.isTouchScreen()) {
+      this.show();
     }
   }
 
   @HostListener('click')
-  public showOnMobileScreen(): void {
-    if (
-      this.tooltipText !== null &&
-      window.matchMedia('(pointer: coarse)').matches
-    ) {
-      const tooltipPortal = new ComponentPortal(TooltipComponent);
-      this.tooltipRef = this.overlayRef.attach(tooltipPortal);
-
-      this.tooltipRef.instance.tooltipText = this.tooltipText;
+  public onClick(): void {
+    if (this.isTouchScreen()) {
+      this.show();
     }
   }
 
   @HostListener('mouseleave')
-  public hide(): void {
-    this.overlayRef.detach();
-    this.tooltipRef = null;
-    this.tooltipClose.emit();
+  public onMouseLeave(): void {
+    this.hide();
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  public onScroll(): void {
+    this.hide();
   }
 
   private overlayRef!: OverlayRef;
@@ -104,5 +95,24 @@ export class TooltipDirective implements OnInit, OnChanges, OnDestroy {
 
   public ngOnDestroy(): void {
     this.hide();
+  }
+
+  private isTouchScreen(): boolean {
+    return window.matchMedia('(pointer: coarse)').matches;
+  }
+
+  private hide(): void {
+    this.overlayRef.detach();
+    this.tooltipRef = null;
+    this.tooltipClose.emit();
+  }
+
+  private show(): void {
+    if (this.tooltipText !== null) {
+      const tooltipPortal = new ComponentPortal(TooltipComponent);
+      this.tooltipRef = this.overlayRef.attach(tooltipPortal);
+
+      this.tooltipRef.instance.tooltipText = this.tooltipText;
+    }
   }
 }

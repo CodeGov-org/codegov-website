@@ -120,7 +120,8 @@ export interface ReviewerProfileForm {
       <div class="flex items-center justify-end">
         @if (profileForm.invalid) {
           <div class="text-error pr-5 text-sm md:pr-10">
-            Fix the validation errors
+            Uh-oh! There are some errors in your form. Please fix them and try
+            again.
           </div>
         }
         <button class="btn btn-outline mr-4" (click)="cancelEdits()">
@@ -129,17 +130,18 @@ export interface ReviewerProfileForm {
 
         <button
           type="submit"
-          [attr.aria-label]="isSaving ? 'Saving' : 'Save'"
           [disabled]="profileForm.invalid || isSaving"
           class="btn relative"
-          [ngClass]="isSaving ? 'text-transparent' : ''"
         >
           @if (isSaving) {
             <app-loading-icon
               class="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2"
+              aria-label="Saving"
             />
           }
-          Save
+          <div [ngClass]="isSaving ? 'aria-hidden text-transparent' : ''">
+            Save
+          </div>
         </button>
       </div>
     </form>
