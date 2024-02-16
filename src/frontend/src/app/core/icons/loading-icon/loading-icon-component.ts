@@ -6,7 +6,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <svg
-      class="m-auto block h-11 w-11 bg-none"
+      class="m-auto block h-full w-full bg-none"
       xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink"
       style="shape-rendering: auto;"

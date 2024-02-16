@@ -1,1 +1,1 @@
-export * from './reviewer-social-media.component';
+export * from './reviewer-social-media-form.component';

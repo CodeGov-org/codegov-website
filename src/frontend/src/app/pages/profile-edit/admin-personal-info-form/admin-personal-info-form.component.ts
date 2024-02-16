@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,6 +15,7 @@ import {
 } from '@angular/forms';
 
 import { AdminProfileComponent } from '../admin-profile';
+import { LoadingIconComponent } from '~core/icons';
 import {
   AdminProfile,
   AdminProfileUpdate,
@@ -50,6 +52,8 @@ export interface AdminProfileForm {
     KeyColComponent,
     ValueColComponent,
     LabelDirective,
+    LoadingIconComponent,
+    CommonModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -96,19 +100,33 @@ export interface AdminProfileForm {
       </app-key-value-grid>
 
       <div class="flex items-center justify-end">
+        @if (profileForm.invalid) {
+          <div class="text-error pr-5 text-sm md:pr-10">
+            Uh-oh! There are some errors in your form. Please fix them and try
+            again.
+          </div>
+        }
         <button class="btn btn-outline mr-4" (click)="cancelEdits()">
           Cancel
         </button>
 
         <button
           type="submit"
-          [appTooltip]="
-            profileForm.invalid ? 'Fix the validation errors' : null
-          "
-          [disabled]="profileForm.invalid"
-          class="btn"
+          [disabled]="profileForm.invalid || isSaving"
+          class="btn relative"
         >
-          Save
+          @if (isSaving) {
+            <app-loading-icon
+              class="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2"
+              aria-label="Saving"
+            />
+          }
+          <div
+            [ngClass]="isSaving ? 'text-transparent' : ''"
+            [attr.aria-hidden]="isSaving"
+          >
+            Save
+          </div>
         </button>
       </div>
     </form>
@@ -121,7 +139,11 @@ export class AdminPersonalInfoFormComponent implements OnChanges {
   @Output()
   public formClose = new EventEmitter<void>();
 
+  @Output()
+  public formSaving = new EventEmitter<void>();
+
   public readonly profileForm: FormGroup<AdminProfileForm>;
+  public isSaving = false;
 
   constructor(private readonly profileService: ProfileService) {
     this.profileForm = new FormGroup<AdminProfileForm>({
@@ -145,7 +167,10 @@ export class AdminPersonalInfoFormComponent implements OnChanges {
     }
   }
 
-  public onSubmit(): void {
+  public async onSubmit(): Promise<void> {
+    this.profileForm.disable();
+    this.isSaving = true;
+
     const formValues = this.profileForm.value;
 
     const profileUpdate: AdminProfileUpdate = {
@@ -154,8 +179,12 @@ export class AdminPersonalInfoFormComponent implements OnChanges {
       bio: formValues.bio,
     };
 
-    this.profileService.saveProfile(profileUpdate);
-    this.formClose.emit();
+    try {
+      await this.profileService.saveProfile(profileUpdate);
+    } finally {
+      this.isSaving = false;
+      this.formClose.emit();
+    }
   }
 
   public cancelEdits(): void {
