@@ -1,0 +1,21 @@
+name: Setup ENV files
+description: Setup ENV files
+inputs:
+  storyblok-token:
+    description: 'The API token for Storyblok'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Create marketing env file
+      shell: bash
+      run: |
+        touch ./src/marketing/.env
+        echo STORYBLOK_TOKEN=${{ inputs.storyblok-token }} >> ./src/marketing/.env
+
+    - name: Create frontend env file
+      shell: bash
+      run: |
+        touch ./src/frontend/.env
+        echo STORYBLOK_TOKEN=${{ inputs.storyblok-token }} >> ./src/frontend/.env

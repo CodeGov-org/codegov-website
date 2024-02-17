@@ -17,6 +17,10 @@ jobs:
 
       - uses: ./.github/actions/setup-pnpm
 
+      - uses: ./.github/actions/setup-env-files
+        with:
+          storyblok-token: ${{ secrets.PRODUCTION_STORYBLOK_TOKEN }}
+
       - uses: ./.github/actions/setup-dfx
 
       - name: Import DFX identity
@@ -24,16 +28,6 @@ jobs:
           echo "${{ secrets.MAINNET_PEM }}" > ./mainnet.pem
           dfx identity import --ic --storage-mode plaintext mainnet ./mainnet.pem
           dfx identity use mainnet
-
-      - name: Create marketing env file
-        run: |
-          touch ./src/marketing/.env
-          echo STORYBLOK_TOKEN=${{ secrets.PRODUCTION_STORYBLOK_TOKEN }} >> ./src/marketing/.env
-
-      - name: Create frontend env file
-        run: |
-          touch ./src/frontend/.env
-          echo STORYBLOK_TOKEN=${{ secrets.PRODUCTION_STORYBLOK_TOKEN }} >> ./src/frontend/.env
 
       - name: Deploy to mainnet
         run: dfx deploy --ic

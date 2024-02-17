@@ -1,0 +1,30 @@
+name: Rust tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  rust_tests:
+    name: Rust tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - uses: ./.github/actions/setup-rust
+        with:
+          cache-key: 'build-native'
+
+      - name: Cargo fmt
+        run: cargo fmt -- --check
+
+      - name: Cargo clippy
+        run: cargo clippy --all-targets --all-features
+
+      - name: Cargo test
+        run: cargo test
