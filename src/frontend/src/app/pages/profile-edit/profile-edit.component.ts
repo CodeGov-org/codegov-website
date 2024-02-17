@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 
 import { InfoIconComponent } from '~core/icons';
 import { ProfileService, UserRole } from '~core/state';
-import { FormFieldComponent, InputDirective, LabelComponent } from '~core/ui';
+import { FormFieldComponent, InputDirective } from '~core/ui';
 import { AdminProfileComponent } from './admin-profile';
 import { AnonymousProfileComponent } from './anonymous-profile';
 import { ReviewerProfileComponent } from './reviewer-profile';
@@ -13,41 +13,57 @@ import { ReviewerProfileComponent } from './reviewer-profile';
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     CommonModule,
     RouterModule,
     InfoIconComponent,
     FormFieldComponent,
-    LabelComponent,
     InputDirective,
     AnonymousProfileComponent,
     ReviewerProfileComponent,
     AdminProfileComponent,
   ],
-  template: `
-    <div
-      class="rounded-md bg-slate-200 px-8 py-8 shadow-md dark:bg-slate-700 dark:text-slate-200"
-    >
-      <h1 class="mb-16 mt-4 text-center">Edit Profile</h1>
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
 
-      <div class="mx-auto lg:w-3/4 xl:w-2/3">
-        @if (userProfile$ | async; as userProfile) {
-          @switch (userProfile.role) {
-            @case (UserRole.Anonymous) {
-              <app-anonymous-profile [userProfile]="userProfile" />
-            }
-            @case (UserRole.Reviewer) {
-              <app-reviewer-profile [userProfile]="userProfile" />
-            }
-            @case (UserRole.Admin) {
-              <app-admin-profile [userProfile]="userProfile" />
-            }
-          }
+      :host {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+
+        @include lg {
+          width: 75%;
         }
-      </div>
-    </div>
+
+        @include xl {
+          width: 66.66667%;
+        }
+      }
+
+      .profile-edit__title {
+        @include py(2);
+      }
+    `,
+  ],
+  template: `
+    <h1 class="h2 profile-edit__title">Edit profile</h1>
+
+    @if (userProfile$ | async; as userProfile) {
+      @switch (userProfile.role) {
+        @case (UserRole.Anonymous) {
+          <app-anonymous-profile [userProfile]="userProfile" />
+        }
+        @case (UserRole.Reviewer) {
+          <app-reviewer-profile [userProfile]="userProfile" />
+        }
+        @case (UserRole.Admin) {
+          <app-admin-profile [userProfile]="userProfile" />
+        }
+      }
+    }
   `,
 })
 export class ProfileEditComponent implements OnInit {

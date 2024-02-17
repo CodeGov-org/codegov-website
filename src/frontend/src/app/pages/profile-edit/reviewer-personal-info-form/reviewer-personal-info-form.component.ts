@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,6 +15,7 @@ import {
 } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
+import { LoadingIconComponent } from '~core/icons';
 import {
   ProfileService,
   ReviewerProfile,
@@ -24,8 +26,10 @@ import {
   FormFieldComponent,
   InputDirective,
   InputErrorComponent,
-  LabelComponent,
+  KeyColComponent,
+  KeyValueGridComponent,
   TooltipDirective,
+  ValueColComponent,
 } from '~core/ui';
 import { ComponentChanges } from '~core/utils';
 
@@ -40,75 +44,122 @@ export interface ReviewerProfileForm {
   standalone: true,
   imports: [
     FormFieldComponent,
-    LabelComponent,
     InputErrorComponent,
     InputDirective,
     ReactiveFormsModule,
     RouterModule,
     TooltipDirective,
+    KeyValueGridComponent,
+    KeyColComponent,
+    ValueColComponent,
+    CommonModule,
+    LoadingIconComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .validation-info {
+        color: $error;
+        padding-right: size(5);
+
+        @include text-sm;
+        @include md {
+          padding-right: size(10);
+        }
+      }
+
+      .transparent-label {
+        color: transparent;
+      }
+    `,
+  ],
   template: `
     <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-      <app-form-field>
-        <app-label>Username</app-label>
+      <app-key-value-grid>
+        <app-key-col>
+          <label appLabel for="username">Username</label>
+        </app-key-col>
+        <app-value-col>
+          <app-form-field>
+            <input
+              appInput
+              id="username"
+              type="text"
+              formControlName="username"
+            />
 
-        <input appInput id="username" type="text" formControlName="username" />
+            <app-input-error key="required">
+              Username cannot be empty
+            </app-input-error>
+            <app-input-error key="minlength">
+              Username must have at least 3 characters
+            </app-input-error>
+          </app-form-field>
+        </app-value-col>
 
-        <app-input-error key="required">
-          Username cannot be empty
-        </app-input-error>
-        <app-input-error key="minlength">
-          Username must have at least 3 characters
-        </app-input-error>
-      </app-form-field>
+        <app-key-col>
+          <label appLabel for="bio">Bio</label>
+        </app-key-col>
+        <app-value-col>
+          <app-form-field>
+            <textarea
+              appInput
+              id="bio"
+              type="text"
+              formControlName="bio"
+            ></textarea>
 
-      <app-form-field>
-        <app-label>Bio</app-label>
+            <app-input-error key="required">
+              Bio cannot be empty
+            </app-input-error>
+          </app-form-field>
+        </app-value-col>
 
-        <textarea
-          appInput
-          id="bio"
-          type="text"
-          formControlName="bio"
-        ></textarea>
+        <app-key-col>
+          <label appLabel for="walletAddress">Wallet address</label>
+        </app-key-col>
+        <app-value-col>
+          <app-form-field>
+            <input
+              appInput
+              id="walletAddress"
+              type="text"
+              formControlName="walletAddress"
+            />
 
-        <app-input-error key="required">Bio cannot be empty</app-input-error>
-      </app-form-field>
+            <app-input-error key="required">
+              Wallet address cannot be empty
+            </app-input-error>
+          </app-form-field>
+        </app-value-col>
+      </app-key-value-grid>
 
-      <app-form-field>
-        <app-label>Wallet Address</app-label>
+      <div class="btn-group">
+        @if (profileForm.invalid) {
+          <div class="validation-info">
+            Uh-oh! There are some errors in your form. Please fix them and try
+            again.
+          </div>
+        }
 
-        <input
-          appInput
-          id="walletAddress"
-          type="text"
-          formControlName="walletAddress"
-        />
-
-        <app-input-error key="required">
-          Wallet address cannot be empty
-        </app-input-error>
-      </app-form-field>
-
-      <div class="flex items-center">
-        <a
-          title="Cancel your edits"
-          (click)="cancelEdits()"
-          class="ml-auto mr-4"
-        >
-          Cancel
-        </a>
+        <button class="btn btn--outline" (click)="cancelEdits()">Cancel</button>
 
         <button
           type="submit"
-          [appTooltip]="
-            profileForm.invalid ? 'Fix the validation errors' : null
-          "
-          [disabled]="profileForm.invalid"
+          [disabled]="profileForm.invalid || isSaving"
           class="btn"
         >
-          Save
+          @if (isSaving) {
+            <app-loading-icon class="btn--loading" aria-label="Saving" />
+          }
+          <div
+            [ngClass]="isSaving ? 'transparent-label' : ''"
+            [attr.aria-hidden]="isSaving"
+          >
+            Save
+          </div>
         </button>
       </div>
     </form>
@@ -121,8 +172,11 @@ export class ReviewerPersonalInfoFormComponent implements OnChanges {
   @Output()
   public formClose = new EventEmitter<void>();
 
+  @Output()
+  public formSaving = new EventEmitter<void>();
+
   public readonly profileForm: FormGroup<ReviewerProfileForm>;
-  public isEditable = false;
+  public isSaving = false;
 
   constructor(private readonly profileService: ProfileService) {
     this.profileForm = new FormGroup<ReviewerProfileForm>({
@@ -153,7 +207,10 @@ export class ReviewerPersonalInfoFormComponent implements OnChanges {
     }
   }
 
-  public onSubmit(): void {
+  public async onSubmit(): Promise<void> {
+    this.profileForm.disable();
+    this.isSaving = true;
+
     const profileFormValues = this.profileForm.value;
 
     const profileUpdate: ReviewerProfileUpdate = {
@@ -163,8 +220,12 @@ export class ReviewerPersonalInfoFormComponent implements OnChanges {
       walletAddress: profileFormValues.walletAddress,
     };
 
-    this.profileService.saveProfile(profileUpdate);
-    this.formClose.emit();
+    try {
+      await this.profileService.saveProfile(profileUpdate);
+    } finally {
+      this.isSaving = false;
+      this.formClose.emit();
+    }
   }
 
   public cancelEdits(): void {

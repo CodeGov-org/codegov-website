@@ -1,0 +1,38 @@
+@use 'sass:map';
+
+$base-size: 0.25rem;
+$size-multipliers: 0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+  14, 15, 16, 17, 18, 19, 20;
+
+$sizes: ();
+@each $multiplier in $size-multipliers {
+  $sizes: map.set($sizes, $multiplier, $base-size * $multiplier);
+}
+
+@function size($multiplier) {
+  @return map.get($sizes, $multiplier);
+}
+
+$border-sm-size: 2px;
+$border-size: size(1);
+$border-radius: size(1);
+
+@mixin py($multiplier) {
+  padding-top: size($multiplier);
+  padding-bottom: size($multiplier);
+}
+
+@mixin px($multiplier) {
+  padding-left: size($multiplier);
+  padding-right: size($multiplier);
+}
+
+@mixin my($multiplier) {
+  margin-top: size($multiplier);
+  margin-bottom: size($multiplier);
+}
+
+@mixin mx($multiplier) {
+  margin-left: size($multiplier);
+  margin-right: size($multiplier);
+}

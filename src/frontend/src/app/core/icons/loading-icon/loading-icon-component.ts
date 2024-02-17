@@ -4,9 +4,28 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   selector: 'app-loading-icon',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .loading-icon {
+        width: 100%;
+        height: 100%;
+        margin: auto;
+        display: block;
+        background: none;
+      }
+
+      .loading-icon__svg {
+        stroke: $primary;
+        fill: none;
+        stroke-width: 10px;
+      }
+    `,
+  ],
   template: `
     <svg
-      class="m-auto block h-11 w-11 bg-none"
+      class="loading-icon"
       xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink"
       style="shape-rendering: auto;"
@@ -14,7 +33,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       preserveAspectRatio="xMidYMid"
     >
       <circle
-        class="stroke-primary fill-none stroke-[10px] "
+        class="loading-icon__svg"
         cx="50"
         cy="50"
         r="32"

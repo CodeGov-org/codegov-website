@@ -1,4 +1,4 @@
-name: Build & test
+name: Integration tests
 
 on:
   push:
@@ -9,30 +9,28 @@ on:
       - main
 
 jobs:
-  build_and_test:
-    name: Build & test
+  integration_tests:
+    name: Integration tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - uses: ./.github/actions/setup-rust
+        with:
+          cache-key: 'build-wasm'
+
       - uses: ./.github/actions/setup-node
 
       - uses: ./.github/actions/setup-pnpm
 
+      - uses: ./.github/actions/setup-env-files
+        with:
+          storyblok-token: ${{ secrets.STAGING_STORYBLOK_TOKEN }}
+
       - uses: ./.github/actions/setup-bun
 
       - uses: ./.github/actions/setup-dfx
-
-      - name: Create marketing env file
-        run: |
-          touch ./src/marketing/.env
-          echo STORYBLOK_TOKEN=${{ secrets.STAGING_STORYBLOK_TOKEN }} >> ./src/marketing/.env
-
-      - name: Create frontend env file
-        run: |
-          touch ./src/frontend/.env
-          echo STORYBLOK_TOKEN=${{ secrets.STAGING_STORYBLOK_TOKEN }} >> ./src/frontend/.env
 
       - name: Build
         run: dfx build --check
@@ -40,10 +38,7 @@ jobs:
       - name: Run frontend tests
         run: pnpm -F frontend test:ci
 
-      - name: Canister unit tests
-        run: cargo test
-
-      - name: Canister integration tests
+      - name: Run integration tests
         run: |
           pnpm -F @cg/backend build
           pnpm -F backend-integration test

@@ -17,41 +17,43 @@ import { AbstractControl, ControlContainer } from '@angular/forms';
 import { InputDirective } from '../input';
 import { InputErrorComponent } from '../input-error';
 import { InputHintComponent } from '../input-hint';
-import { LabelComponent } from '../label';
 
 @Component({
   selector: 'app-form-field',
   standalone: true,
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="flex flex-col md:flex-row">
-      @if (hasLabel()) {
-        <label [for]="getFormControlId()" class="font-bold md:w-1/3 md:pr-8">
-          <ng-container *ngTemplateOutlet="getLabelTemplate()" />
-        </label>
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      :host {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
       }
 
-      <div class="mb-3 flex flex-col md:w-2/3">
-        <ng-content></ng-content>
+      .form-field__feedback {
+        margin-left: size(1);
+        height: size(4);
+        padding-top: size(1);
+        @include text-xs;
+      }
+    `,
+  ],
+  template: `
+    <ng-content></ng-content>
 
-        <div class="mb-1 ml-1 h-4 pt-1 text-xs">
-          @if (hasError()) {
-            <span class="text-error">
-              <ng-container *ngTemplateOutlet="getErrorTemplate()" />
-            </span>
-          } @else if (hasHint()) {
-            <ng-container *ngTemplateOutlet="getHintTemplate()" />
-          }
-        </div>
-      </div>
+    <div class="form-field__feedback">
+      @if (hasError()) {
+        <ng-container *ngTemplateOutlet="getErrorTemplate()" />
+      } @else if (hasHint()) {
+        <ng-container *ngTemplateOutlet="getHintTemplate()" />
+      }
     </div>
   `,
 })
 export class FormFieldComponent implements AfterContentInit {
-  @ContentChild(LabelComponent, { descendants: true })
-  private labelComponent?: LabelComponent;
-
   @ContentChild(InputDirective, { descendants: true })
   private inputDirective?: InputDirective;
 
@@ -93,18 +95,6 @@ export class FormFieldComponent implements AfterContentInit {
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
-  }
-
-  public hasLabel(): boolean {
-    return !!this.labelComponent;
-  }
-
-  public getLabelTemplate(): TemplateRef<HTMLElement> {
-    if (!this.labelComponent) {
-      throw new Error('Label does not exist');
-    }
-
-    return this.labelComponent.getTemplateRef();
   }
 
   public hasError(): boolean {

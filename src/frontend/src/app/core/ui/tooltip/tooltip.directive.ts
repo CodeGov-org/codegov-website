@@ -12,6 +12,7 @@ import {
   HostListener,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
 } from '@angular/core';
@@ -23,7 +24,7 @@ import { TooltipComponent } from './tooltip.component';
   selector: '[appTooltip]',
   standalone: true,
 })
-export class TooltipDirective implements OnInit, OnChanges {
+export class TooltipDirective implements OnInit, OnChanges, OnDestroy {
   @Input({ required: true, alias: 'appTooltip' })
   public tooltipText!: string | null;
 
@@ -33,20 +34,27 @@ export class TooltipDirective implements OnInit, OnChanges {
   private tooltipRef: ComponentRef<TooltipComponent> | null = null;
 
   @HostListener('mouseenter')
-  public show(): void {
-    if (this.tooltipText !== null) {
-      const tooltipPortal = new ComponentPortal(TooltipComponent);
-      this.tooltipRef = this.overlayRef.attach(tooltipPortal);
+  public onMouseEnter(): void {
+    if (!this.isTouchScreen()) {
+      this.show();
+    }
+  }
 
-      this.tooltipRef.instance.tooltipText = this.tooltipText;
+  @HostListener('click')
+  public onClick(): void {
+    if (this.isTouchScreen()) {
+      this.show();
     }
   }
 
   @HostListener('mouseleave')
-  public hide(): void {
-    this.overlayRef.detach();
-    this.tooltipRef = null;
-    this.tooltipClose.emit();
+  public onMouseLeave(): void {
+    this.hide();
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  public onScroll(): void {
+    this.hide();
   }
 
   private overlayRef!: OverlayRef;
@@ -82,6 +90,29 @@ export class TooltipDirective implements OnInit, OnChanges {
   public ngOnChanges(changes: ComponentChanges<TooltipDirective>): void {
     if (changes.tooltipText && this.tooltipRef !== null) {
       this.tooltipRef.setInput('tooltipText', this.tooltipText);
+    }
+  }
+
+  public ngOnDestroy(): void {
+    this.hide();
+  }
+
+  private isTouchScreen(): boolean {
+    return window.matchMedia('(pointer: coarse)').matches;
+  }
+
+  private hide(): void {
+    this.overlayRef.detach();
+    this.tooltipRef = null;
+    this.tooltipClose.emit();
+  }
+
+  private show(): void {
+    if (this.tooltipText !== null) {
+      const tooltipPortal = new ComponentPortal(TooltipComponent);
+      this.tooltipRef = this.overlayRef.attach(tooltipPortal);
+
+      this.tooltipRef.instance.tooltipText = this.tooltipText;
     }
   }
 }

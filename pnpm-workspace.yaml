@@ -1,6 +1,6 @@
 packages:
   - lib/backend
-  - lib/tailwind
+  - lib/styles
   - src/backend/integration
   - src/docs
   - src/frontend
