@@ -22,17 +22,14 @@ export async function setupBackendCanister(
 ): Promise<CanisterFixture<_SERVICE>> {
   await pic.setTime(initialDate.getTime());
 
-  const fixture = await pic.setupCanister<_SERVICE>(
+  const fixture = await pic.setupCanister<_SERVICE>({
     idlFactory,
-    BACKEND_WASM_PATH,
-    {},
-    new Uint8Array().buffer,
-    controllerIdentity.getPrincipal(),
-  );
+    wasm: BACKEND_WASM_PATH,
+    sender: controllerIdentity.getPrincipal(),
+  });
 
   // make sure init timers run
-  await pic.tick();
-  await pic.tick();
+  await pic.tick(2);
 
   return fixture;
 }
