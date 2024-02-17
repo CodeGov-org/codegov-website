@@ -3,14 +3,30 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 @Component({
   selector: 'app-tooltip',
   standalone: true,
-  template: `
-    <div
-      class="bg-primary-900 border-primary-600 w-auto rounded-md border-[0.5px] px-2 py-1 text-xs text-white dark:border-slate-500 dark:bg-slate-900"
-    >
-      {{ tooltipText }}
-    </div>
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      :host {
+        background-color: $primary-900;
+        border-color: 0.5px solid $primary-600;
+        width: auto;
+        border-radius: $border-radius;
+        @include px(2);
+        @include py(1);
+
+        @include text-xs;
+        color: $white;
+
+        @include dark {
+          background-color: $slate-900;
+          border-color: $slate-500;
+        }
+      }
+    `,
+  ],
+  template: `{{ tooltipText }}`,
 })
 export class TooltipComponent {
   @Input({ required: true })

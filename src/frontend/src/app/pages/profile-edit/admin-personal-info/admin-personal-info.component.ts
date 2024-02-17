@@ -18,8 +18,17 @@ import { AdminProfile } from '~core/state';
   standalone: true,
   imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .personal-info {
+        margin-bottom: size(4);
+      }
+    `,
+  ],
   template: `
-    <app-key-value-grid class="mb-4">
+    <app-key-value-grid class="personal-info">
       <app-key-col>Username</app-key-col>
       <app-value-col>{{ userProfile.username }}</app-value-col>
 
@@ -27,7 +36,7 @@ import { AdminProfile } from '~core/state';
       <app-value-col>{{ userProfile.bio }}</app-value-col>
     </app-key-value-grid>
 
-    <div class="flex items-center justify-end">
+    <div class="btn-group">
       <button type="button" class="btn" (click)="editForm()">Edit</button>
     </div>
   `,

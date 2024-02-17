@@ -7,7 +7,6 @@ import {
   ContentChild,
   ContentChildren,
   DestroyRef,
-  HostBinding,
   Optional,
   SkipSelf,
   TemplateRef,
@@ -24,14 +23,30 @@ import { InputHintComponent } from '../input-hint';
   standalone: true,
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      :host {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .form-field__feedback {
+        margin-left: size(1);
+        height: size(4);
+        padding-top: size(1);
+        @include text-xs;
+      }
+    `,
+  ],
   template: `
     <ng-content></ng-content>
 
-    <div class="ml-1 h-4 pt-1 text-xs">
+    <div class="form-field__feedback">
       @if (hasError()) {
-        <span class="text-error">
-          <ng-container *ngTemplateOutlet="getErrorTemplate()" />
-        </span>
+        <ng-container *ngTemplateOutlet="getErrorTemplate()" />
       } @else if (hasHint()) {
         <ng-container *ngTemplateOutlet="getHintTemplate()" />
       }
@@ -39,9 +54,6 @@ import { InputHintComponent } from '../input-hint';
   `,
 })
 export class FormFieldComponent implements AfterContentInit {
-  @HostBinding('class')
-  public readonly class = 'form-field';
-
   @ContentChild(InputDirective, { descendants: true })
   private inputDirective?: InputDirective;
 

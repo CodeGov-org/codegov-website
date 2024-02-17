@@ -13,7 +13,6 @@ import { ReviewerProfileComponent } from './reviewer-profile';
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     CommonModule,
@@ -25,24 +24,46 @@ import { ReviewerProfileComponent } from './reviewer-profile';
     ReviewerProfileComponent,
     AdminProfileComponent,
   ],
-  template: `
-    <div class="mx-auto lg:w-3/4 xl:w-2/3">
-      <h1 class="mb-4 mt-4">Edit profile</h1>
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
 
-      @if (userProfile$ | async; as userProfile) {
-        @switch (userProfile.role) {
-          @case (UserRole.Anonymous) {
-            <app-anonymous-profile [userProfile]="userProfile" />
-          }
-          @case (UserRole.Reviewer) {
-            <app-reviewer-profile [userProfile]="userProfile" />
-          }
-          @case (UserRole.Admin) {
-            <app-admin-profile [userProfile]="userProfile" />
-          }
+      :host {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+
+        @include lg {
+          width: 75%;
+        }
+
+        @include xl {
+          width: 66.66667%;
         }
       }
-    </div>
+
+      .profile-edit__title {
+        @include py(2);
+      }
+    `,
+  ],
+  template: `
+    <h1 class="h2 profile-edit__title">Edit profile</h1>
+
+    @if (userProfile$ | async; as userProfile) {
+      @switch (userProfile.role) {
+        @case (UserRole.Anonymous) {
+          <app-anonymous-profile [userProfile]="userProfile" />
+        }
+        @case (UserRole.Reviewer) {
+          <app-reviewer-profile [userProfile]="userProfile" />
+        }
+        @case (UserRole.Admin) {
+          <app-admin-profile [userProfile]="userProfile" />
+        }
+      }
+    }
   `,
 })
 export class ProfileEditComponent implements OnInit {
