@@ -1,0 +1,83 @@
+.btn {
+  @include layer-10;
+  @include px(4);
+  @include py(1);
+
+  border: 1px solid $primary;
+  border-radius: $border-radius;
+  outline: none;
+
+  color: $white;
+  background-color: $primary;
+  position: relative;
+
+  &:hover {
+    border-color: $primary-600;
+    background-color: $primary-600;
+  }
+
+  &:disabled {
+    border-color: rgba($primary, 0.45);
+    background-color: rgba($primary, 0.45);
+
+    &:hover {
+      background-color: rgba($primary, 0.45);
+    }
+  }
+
+  &:focus {
+    @include ring($primary-800, 4, 0.5);
+  }
+
+  @include dark {
+    &:focus {
+      @include ring($primary-800, 4, 1);
+    }
+  }
+}
+
+.btn--outline {
+  color: $primary;
+  background-color: transparent;
+
+  &:hover {
+    color: $white;
+  }
+}
+
+.btn--icon {
+  @include layer-20;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: size(9);
+  width: size(9);
+
+  font-size: initial;
+  line-height: initial;
+
+  color: $white;
+  border-radius: 50%;
+  // border-radius: 9999px;
+}
+
+.btn-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  align-items: center;
+
+  > :not(:last-child) {
+    margin-right: size(2);
+  }
+}
+
+.btn--loading {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: size(9);
+  width: size(9);
+  transform: translate(-50%, -50%);
+}

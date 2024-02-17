@@ -3,11 +3,24 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 @Component({
   selector: 'app-copy-icon',
   standalone: true,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .copy-icon {
+        width: size(6);
+        height: size(6);
+      }
+    `,
+  ],
   template: `
     <svg
-      class="h-6 w-6 fill-none stroke-[currentColor] stroke-[1.5]"
+      class="copy-icon"
       xmlns="http://www.w3.org/2000/svg"
+      fill="none"
       viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
     >
       <path
         stroke-linecap="round"

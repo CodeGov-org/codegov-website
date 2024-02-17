@@ -8,15 +8,15 @@ import { GLOBAL_CONFIG } from '../../../../global-config';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <footer class="footer">
-      <div class="footer-main">
+      <div class="footer__main">
         @for (category of globalConfig.footerLinks; track category.title) {
-          <div class="footer-link-category-container">
-            <h2 class="footer-link-category-title">{{ category.title }}</h2>
+          <div class="footer__link-category-container">
+            <h2 class="footer__link-category-title">{{ category.title }}</h2>
 
-            <ul class="footer-link-category">
+            <ul class="footer__link-category">
               @for (link of category.children; track link.title) {
                 <li>
-                  <a href="{link.content.cached_url}" class="footer-link">
+                  <a href="{link.content.cached_url}" class="footer__link">
                     {{ link.title }}
                   </a>
                 </li>
@@ -26,9 +26,9 @@ import { GLOBAL_CONFIG } from '../../../../global-config';
         }
       </div>
 
-      <div class="footer-copyright">
-        <div class="footer-copyright-content">
-          <span class="footer-copyright-text">
+      <div class="footer__copyright">
+        <div class="footer__copyright-content">
+          <span class="footer__copyright-text">
             © {{ currentYear }} CodeGov™. All Rights Reserved.
           </span>
         </div>

@@ -19,12 +19,33 @@ import {
     FooterComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .app-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .content-container {
+        @include container;
+        margin-left: auto;
+        margin-right: auto;
+        flex: 1;
+        @include px(3);
+        padding-top: size(6);
+        padding-bottom: size(10);
+      }
+    `,
+  ],
   template: `
-    <div class="flex h-full min-h-[100vh] flex-col">
+    <div class="app-container">
       <app-primary-navbar />
       <app-secondary-navbar />
 
-      <main class="container mx-auto flex-1 px-3 pb-10 pt-6">
+      <main class="content-container">
         <router-outlet />
       </main>
 

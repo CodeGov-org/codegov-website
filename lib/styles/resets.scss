@@ -1,0 +1,30 @@
+@import 'sanitize.css';
+@import 'sanitize.css/forms.css';
+@import 'sanitize.css/typography.css';
+@import 'sanitize.css/assets.css';
+@import 'sanitize.css/reduce-motion.css';
+@import 'sanitize.css/system-ui.css';
+@import 'sanitize.css/ui-monospace.css';
+
+body {
+  min-height: 100vh;
+  margin: 0;
+
+  font-family: $font-family-base;
+
+  background-color: $white;
+  color: $slate-900;
+
+  @include dark {
+    background-color: $slate-950;
+    color: $slate-300;
+  }
+}
+
+button {
+  border: none;
+
+  &:hover {
+    cursor: pointer;
+  }
+}

@@ -11,7 +11,8 @@
     "lint": "eslint -c .eslintrc.js .",
     "lint:fix": "eslint -c .eslintrc.js --fix .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "cloc": "pnpx cloc --exclude-dir=node_modules,target,build,dist,.dfx,.docusaurus --exclude-ext=yaml,yml,md,toml,json ."
   },
   "dependencies": {
     "@dfinity/agent": "~0.21.4",
@@ -22,7 +23,7 @@
     "date-fns": "^3.2.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "tailwindcss": "^3.4.1",
+    "sanitize.css": "^13.0.0",
     "tslib": "^2.6.2",
     "zone.js": "~0.14.2"
   },
@@ -47,7 +48,6 @@
     "eslint-plugin-react": "^7.33.2",
     "prettier": "^3.1.1",
     "prettier-plugin-astro": "^0.12.3",
-    "prettier-plugin-tailwindcss": "^0.5.11",
     "typescript": "~5.2.2"
   }
 }
