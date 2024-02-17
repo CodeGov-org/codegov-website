@@ -9,6 +9,7 @@
 
   color: $white;
   background-color: $primary;
+  position: relative;
 
   &:hover {
     border-color: $primary-600;
@@ -65,8 +66,18 @@
   display: flex;
   flex-direction: row;
   justify-content: end;
+  align-items: center;
 
   > :not(:last-child) {
     margin-right: size(2);
   }
+}
+
+.btn--loading {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: size(9);
+  width: size(9);
+  transform: translate(-50%, -50%);
 }

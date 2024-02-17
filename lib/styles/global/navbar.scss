@@ -28,7 +28,9 @@
 .navbar__brand {
   display: flex;
   align-items: center;
-  @include mx(3);
+  font-weight: 600;
+
+  @include text-lg;
 
   @include no-underline;
 
@@ -84,4 +86,8 @@
 
 .navbar__mobile-nav--closed {
   display: none;
+}
+
+.navbar__mobile-nav-button {
+  padding: 0px;
 }

@@ -55,6 +55,26 @@ export type SocialMediaForm = {
     LoadingIconComponent,
     CommonModule,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .validation-info {
+        color: $error;
+        padding-right: size(5);
+
+        @include text-sm;
+        @include md {
+          padding-right: size(10);
+        }
+      }
+
+      .transparent-label {
+        color: transparent;
+      }
+    `,
+  ],
   template: `
     <form [formGroup]="socialMediaForm" (ngSubmit)="onSubmit()">
       <app-key-value-grid>
@@ -87,15 +107,12 @@ export type SocialMediaForm = {
       <div class="btn-group">
         <button class="btn btn--outline" (click)="cancelEdits()">Cancel</button>
 
-        <button type="submit" [disabled]="isSaving" class="btn relative">
+        <button type="submit" [disabled]="isSaving" class="btn">
           @if (isSaving) {
-            <app-loading-icon
-              class="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2"
-              aria-label="Saving"
-            />
+            <app-loading-icon class="btn--loading" aria-label="Saving" />
           }
           <div
-            [ngClass]="isSaving ? 'text-transparent' : ''"
+            [ngClass]="isSaving ? 'transparent-label' : ''"
             [attr.aria-hidden]="isSaving"
           >
             Save
@@ -104,7 +121,6 @@ export type SocialMediaForm = {
       </div>
     </form>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReviewerSocialMediaFormComponent implements OnChanges {
   @Input({ required: true })

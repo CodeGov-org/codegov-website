@@ -44,12 +44,12 @@ import { ReviewerProfileComponent } from './reviewer-profile';
       }
 
       .profile-edit__title {
-        @include py(4);
+        @include py(2);
       }
     `,
   ],
   template: `
-    <h1 class="profile-edit__title">Edit profile</h1>
+    <h1 class="h2 profile-edit__title">Edit profile</h1>
 
     @if (userProfile$ | async; as userProfile) {
       @switch (userProfile.role) {

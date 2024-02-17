@@ -113,7 +113,7 @@ $ambient-opacity: 0.12;
   @extend %layer;
 
   z-index: 10;
-  @include box-shadow(4);
+  @include box-shadow(2);
 }
 
 @mixin layer-20 {

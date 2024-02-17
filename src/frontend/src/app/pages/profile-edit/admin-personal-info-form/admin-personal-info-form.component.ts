@@ -56,6 +56,25 @@ export interface AdminProfileForm {
     CommonModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .validation-info {
+        color: $error;
+        padding-right: size(5);
+
+        @include text-sm;
+        @include md {
+          padding-right: size(10);
+        }
+      }
+
+      .transparent-label {
+        color: transparent;
+      }
+    `,
+  ],
   template: `
     <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
       <app-key-value-grid>
@@ -101,7 +120,7 @@ export interface AdminProfileForm {
 
       <div class="btn-group">
         @if (profileForm.invalid) {
-          <div class="text-error pr-5 text-sm md:pr-10">
+          <div class="validation-info">
             Uh-oh! There are some errors in your form. Please fix them and try
             again.
           </div>
@@ -112,16 +131,13 @@ export interface AdminProfileForm {
         <button
           type="submit"
           [disabled]="profileForm.invalid || isSaving"
-          class="btn relative"
+          class="btn"
         >
           @if (isSaving) {
-            <app-loading-icon
-              class="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2"
-              aria-label="Saving"
-            />
+            <app-loading-icon class="btn--loading" aria-label="Saving" />
           }
           <div
-            [ngClass]="isSaving ? 'text-transparent' : ''"
+            [ngClass]="isSaving ? 'transparent-label' : ''"
             [attr.aria-hidden]="isSaving"
           >
             Save

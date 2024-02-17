@@ -86,7 +86,7 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
           @if (isAuthenticated$ | async) {
             <app-dropdown
               [showChevron]="false"
-              menuTriggerClassName="btn btn-icon"
+              menuTriggerClassName="btn btn--icon"
               aria-label="Open profile menu"
             >
               <ng-container ngProjectAs="[menuTrigger]">
@@ -114,7 +114,7 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
           } @else {
             <button
               (click)="onLoginButtonClicked()"
-              class="btn btn-icon"
+              class="btn btn--icon"
               aria-label="Log in"
             >
               <span class="sr-only">Login</span>

@@ -27,13 +27,13 @@ $font-weight-bold: 700;
 $font-weight-bolder: 800;
 
 @mixin text-xs {
-  font-size: $font-size-base * 0.7;
-  line-height: $line-height-base * 0.7;
+  font-size: $font-size-base * 0.8;
+  line-height: $line-height-base * 0.8;
 }
 
 @mixin text-sm {
-  font-size: $font-size-base * 0.8;
-  line-height: $line-height-base * 0.8;
+  font-size: $font-size-base * 0.9;
+  line-height: $line-height-base * 0.9;
 }
 
 @mixin text-md {
@@ -51,11 +51,11 @@ $font-weight-bolder: 800;
 }
 
 @mixin text-xl {
-  line-height: $line-height-base * 1.5;
+  line-height: $line-height-base * 1.4;
 
-  font-size: $font-size-base * 1.5;
+  font-size: $font-size-base * 1.4;
   @include sm {
-    font-size: $font-size-base * 1.75;
+    font-size: $font-size-base * 1.5;
   }
 }
 

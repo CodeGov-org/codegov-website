@@ -30,6 +30,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
+      @import '@cg/styles/common';
+
       .admin-profile-card {
         margin-bottom: size(6);
       }
@@ -37,7 +39,7 @@ import {
   ],
   template: `
     <app-card class="admin-profile-card">
-      <h2 class="h3" cardTitle>Profile</h2>
+      <h2 class="h4" cardTitle>Profile</h2>
 
       <app-key-value-grid>
         <app-key-col>ID</app-key-col>
@@ -53,7 +55,7 @@ import {
     </app-card>
 
     <app-card>
-      <h2 class="h3" cardTitle>Personal Info</h2>
+      <h2 class="h4" cardTitle>Personal Info</h2>
 
       @if (isFormEditable) {
         <app-admin-personal-info-form

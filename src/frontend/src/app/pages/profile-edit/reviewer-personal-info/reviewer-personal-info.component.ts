@@ -25,6 +25,10 @@ import {
       .reviewer-personal-info {
         margin-bottom: size(4);
       }
+
+      .wallet-address {
+        word-break: break-all;
+      }
     `,
   ],
   template: `
@@ -36,7 +40,7 @@ import {
       <app-value-col>{{ userProfile.bio }}</app-value-col>
 
       <app-key-col>Wallet address</app-key-col>
-      <app-value-col class="break-all">
+      <app-value-col class="wallet-address">
         {{ userProfile.walletAddress }}
       </app-value-col>
     </app-key-value-grid>
