@@ -60,7 +60,11 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
           </div>
 
           <div class="navbar__mobile-nav-trigger">
-            <button type="button" (click)="onSidenavOpenClicked()">
+            <button
+              type="button"
+              class="navbar__mobile-nav-button"
+              (click)="onSidenavOpenClicked()"
+            >
               <span class="sr-only">Open main menu</span>
               <app-hamburger-menu-icon />
             </button>
