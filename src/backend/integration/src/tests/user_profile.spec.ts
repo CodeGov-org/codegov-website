@@ -10,6 +10,13 @@ import {
   setupBackendCanister,
 } from '../support';
 
+function usernameRegex(prefix: string): RegExp {
+  return new RegExp(`^${prefix}_[a-zA-Z0-9]{8}$`);
+}
+
+const adminUsernameRegex = usernameRegex('Admin');
+const anonymousUsernameRegex = usernameRegex('Anonymous');
+
 describe('User Profile', () => {
   let actor: Actor<_SERVICE>;
   let pic: PocketIc;
@@ -44,7 +51,7 @@ describe('User Profile', () => {
 
     expect(resOk).toEqual({
       id: expect.any(String),
-      username: 'Admin',
+      username: expect.stringMatching(adminUsernameRegex),
       config: {
         admin: {
           bio: 'Default admin profile created for canister controllers',
@@ -102,7 +109,7 @@ describe('User Profile', () => {
     const bobGetHistory = extractOkResponse(bobGetHistoryRes);
 
     expect(aliceCreate.id).toBeString();
-    expect(aliceCreate.username).toBe('Anonymous');
+    expect(aliceCreate.username).toMatch(anonymousUsernameRegex);
     expect(aliceCreate.config).toEqual({ anonymous: null });
     expect(aliceGetHistory.history).toHaveLength(1);
     expect(aliceGetHistory.history[0]).toEqual({
@@ -116,7 +123,7 @@ describe('User Profile', () => {
     });
 
     expect(bobCreate.id).toBeString();
-    expect(bobCreate.username).toBe('Anonymous');
+    expect(bobCreate.username).toMatch(anonymousUsernameRegex);
     expect(bobCreate.config).toEqual({ anonymous: null });
     expect(bobGetHistory.history).toHaveLength(1);
     expect(bobGetHistory.history[0]).toEqual({
@@ -202,6 +209,31 @@ describe('User Profile', () => {
       expect(resErr).toEqual({
         code: 403,
         message: 'Users are not allowed to change their own role',
+      });
+    });
+
+    it('should now allow choosing a username that already exists', async () => {
+      const alice = generateRandomIdentity();
+      const bob = generateRandomIdentity();
+
+      actor.setIdentity(alice);
+      await actor.create_my_user_profile();
+      await actor.update_my_user_profile({
+        username: ['Alice'],
+        config: [],
+      });
+
+      actor.setIdentity(bob);
+      await actor.create_my_user_profile();
+      const bobCreateRes = await actor.update_my_user_profile({
+        username: ['Alice'],
+        config: [],
+      });
+      const bobCreateErr = extractErrResponse(bobCreateRes);
+
+      expect(bobCreateErr).toEqual({
+        code: 409,
+        message: 'Username Alice already exists',
       });
     });
 
@@ -414,7 +446,7 @@ describe('User Profile', () => {
           user: controllerIdentity.getPrincipal(),
           date_time: dateToRfc3339(currentDate),
           data: {
-            username: 'Admin',
+            username: expect.stringMatching(adminUsernameRegex),
             config: {
               admin: {
                 bio: 'Default admin profile created for canister controllers',
@@ -507,6 +539,39 @@ describe('User Profile', () => {
       expect(resErr).toEqual({
         code: 404,
         message: `User profile for user with id ${unknown_user_id} not found`,
+      });
+    });
+
+    it('should now allow choosing a username that already exists', async () => {
+      const alice = generateRandomIdentity();
+      const bob = generateRandomIdentity();
+
+      actor.setIdentity(alice);
+      await actor.create_my_user_profile();
+      await actor.update_my_user_profile({
+        username: ['Alice'],
+        config: [],
+      });
+
+      actor.setIdentity(bob);
+      const bobCreateRes = await actor.create_my_user_profile();
+      const bobCreate = extractOkResponse(bobCreateRes);
+      await actor.update_my_user_profile({
+        username: ['Bob'],
+        config: [],
+      });
+
+      actor.setIdentity(controllerIdentity);
+      const bobUpdateRes = await actor.update_user_profile({
+        user_id: bobCreate.id,
+        username: ['Alice'],
+        config: [],
+      });
+      const bobUpdateErr = extractErrResponse(bobUpdateRes);
+
+      expect(bobUpdateErr).toEqual({
+        code: 409,
+        message: 'Username Alice already exists',
       });
     });
 

@@ -92,7 +92,22 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
         &self,
         calling_principal: Principal,
     ) -> Result<CreateMyUserProfileResponse, ApiError> {
-        let profile = UserProfile::new_anonymous();
+        let profile = UserProfile::new_anonymous().await?;
+
+        if self
+            .user_profile_repository
+            .get_user_id_by_username(&profile.username)
+            .is_some()
+        {
+            // This should be extremely rare, but it's possible that the randomly generated
+            // username is already taken, so we to make sure we don't override the existing
+            // username/principal map with a new principal.
+            return Err(ApiError::internal(&format!(
+                "Failed to generate unique username for principal {}",
+                calling_principal
+            )));
+        }
+
         let id = self
             .user_profile_repository
             .create_user_profile(calling_principal, profile.clone())
@@ -127,6 +142,17 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
             })?;
 
         if let Some(username) = request.username {
+            if self
+                .user_profile_repository
+                .get_user_id_by_username(&username)
+                .is_some()
+            {
+                return Err(ApiError::conflict(&format!(
+                    "Username {} already exists",
+                    username
+                )));
+            }
+
             current_user_profile.username = username;
         }
 
@@ -189,6 +215,17 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
             })?;
 
         if let Some(username) = request.username {
+            if self
+                .user_profile_repository
+                .get_user_id_by_username(&username)
+                .is_some()
+            {
+                return Err(ApiError::conflict(&format!(
+                    "Username {} already exists",
+                    username
+                )));
+            }
+
             current_user_profile.username = username;
         }
 
@@ -214,11 +251,10 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
                         _ => "".to_string(),
                     });
 
-                    let neuron_id =
-                        neuron_id.unwrap_or(match current_user_profile.config {
-                            UserConfig::Reviewer { neuron_id, .. } => neuron_id,
-                            _ => 0,
-                        });
+                    let neuron_id = neuron_id.unwrap_or(match current_user_profile.config {
+                        UserConfig::Reviewer { neuron_id, .. } => neuron_id,
+                        _ => 0,
+                    });
 
                     let wallet_address =
                         wallet_address.unwrap_or_else(|| match current_user_profile.config {
@@ -384,13 +420,23 @@ mod tests {
     async fn create_my_user_profile() {
         let calling_principal = fixtures::principal();
         let id = fixtures::user_id();
-        let profile = UserProfile::new_anonymous();
+        let profile = UserProfile::new_anonymous().await.unwrap();
+        let expected_profile = profile.clone();
 
         let mut repository_mock = MockUserProfileRepository::new();
         repository_mock
+            .expect_get_user_id_by_username()
+            .once()
+            .withf(|username_arg| username_arg.starts_with("Anonymous"))
+            .return_const(None);
+        repository_mock
             .expect_create_user_profile()
             .once()
-            .with(eq(calling_principal), eq(profile.clone()))
+            .withf(move |principal_arg, profile_arg| {
+                principal_arg == &calling_principal
+                    && profile_arg.username.starts_with("Anonymous")
+                    && profile_arg.config == profile.config
+            })
             .return_const(Ok(id));
 
         let service = UserProfileServiceImpl::new(repository_mock);
@@ -400,13 +446,39 @@ mod tests {
             .await
             .unwrap();
 
+        assert!(
+            result.id == id.to_string()
+                && result.username.starts_with("Anonymous")
+                && result.config == expected_profile.config.into()
+        )
+    }
+
+    #[rstest]
+    async fn create_my_user_profile_username_conflict() {
+        let calling_principal = fixtures::principal();
+        let id = fixtures::user_id();
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_id_by_username()
+            .once()
+            .withf(|username_arg| username_arg.starts_with("Anonymous"))
+            .return_const(Some(id));
+        repository_mock.expect_create_user_profile().never();
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let result = service
+            .create_my_user_profile(calling_principal)
+            .await
+            .unwrap_err();
+
         assert_eq!(
             result,
-            CreateMyUserProfileResponse {
-                id: id.to_string(),
-                username: profile.username,
-                config: profile.config.into(),
-            }
+            ApiError::internal(&format!(
+                "Failed to generate unique username for principal {}",
+                calling_principal
+            ))
         )
     }
 
@@ -432,6 +504,13 @@ mod tests {
             .once()
             .with(eq(user_id))
             .return_const(Some(original_profile));
+        if profile_update_request.username.is_some() {
+            repository_mock
+                .expect_get_user_id_by_username()
+                .once()
+                .with(eq(profile_update_request.clone().username.unwrap()))
+                .return_const(None);
+        }
         repository_mock
             .expect_update_user_profile()
             .once()
@@ -511,6 +590,48 @@ mod tests {
     }
 
     #[rstest]
+    fn update_my_user_profile_username_clash() {
+        let original_profile = fixtures::anonymous_user_profile();
+        let calling_principal = fixtures::principal();
+        let user_id = fixtures::user_id();
+        let username = "new_username".to_string();
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(user_id));
+        repository_mock
+            .expect_get_user_profile_by_user_id()
+            .once()
+            .with(eq(user_id))
+            .return_const(Some(original_profile));
+        repository_mock
+            .expect_get_user_id_by_username()
+            .once()
+            .with(eq(username.clone()))
+            .return_const(Some(user_id));
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let result = service
+            .update_my_user_profile(
+                calling_principal,
+                UpdateMyUserProfileRequest {
+                    username: Some(username.clone()),
+                    config: None,
+                },
+            )
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::conflict(&format!("Username {} already exists", username))
+        );
+    }
+
+    #[rstest]
     #[case(anonymous_username_update())]
     #[case(anonymous_admin_update())]
     #[case(anonymous_reviewer_update())]
@@ -527,6 +648,13 @@ mod tests {
             .once()
             .with(eq(user_id))
             .return_const(Some(original_profile));
+        if profile_update_request.username.is_some() {
+            repository_mock
+                .expect_get_user_id_by_username()
+                .once()
+                .with(eq(profile_update_request.clone().username.unwrap()))
+                .return_const(None);
+        }
         repository_mock
             .expect_update_user_profile()
             .once()
@@ -665,5 +793,44 @@ mod tests {
                 ..original_profile
             },
         )
+    }
+
+    #[rstest]
+    fn update_user_profile_username_clash() {
+        let original_profile = fixtures::anonymous_user_profile();
+        let calling_principal = fixtures::principal();
+        let user_id = fixtures::user_id();
+        let username = "new_username".to_string();
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_profile_by_user_id()
+            .once()
+            .with(eq(user_id))
+            .return_const(Some(original_profile));
+        repository_mock
+            .expect_get_user_id_by_username()
+            .once()
+            .with(eq(username.clone()))
+            .return_const(Some(user_id));
+        repository_mock.expect_update_user_profile().never();
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let result = service
+            .update_user_profile(
+                calling_principal,
+                UpdateUserProfileRequest {
+                    user_id: user_id.to_string(),
+                    username: Some(username.clone()),
+                    config: None,
+                },
+            )
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::conflict(&format!("Username {} already exists", username))
+        );
     }
 }

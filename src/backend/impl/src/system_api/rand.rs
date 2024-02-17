@@ -1,5 +1,5 @@
 use backend_api::ApiError;
-use rand::prelude::*;
+use rand::{distributions::Alphanumeric, prelude::*};
 use rand_chacha::ChaCha20Rng;
 use std::cell::RefCell;
 
@@ -62,6 +62,16 @@ pub async fn with_random_bytes<const N: usize, T>(
         rng.fill_bytes(&mut bytes);
 
         cb(bytes)
+    })
+    .await
+}
+
+pub async fn get_random_string(len: usize) -> Result<String, ApiError> {
+    with_rng(|rng| {
+        rng.sample_iter(Alphanumeric)
+            .take(len)
+            .map(char::from)
+            .collect()
     })
     .await
 }

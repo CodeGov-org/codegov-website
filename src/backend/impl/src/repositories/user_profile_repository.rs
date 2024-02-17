@@ -1,9 +1,10 @@
 use super::{
-    init_user_profile_history_id, init_user_profile_principal_index, init_user_profiles,
+    init_user_profile_history_id, init_user_profile_principal_index,
+    init_user_profile_username_index, init_user_profiles,
     memories::{init_user_profiles_history, UserProfileHistoryMemory},
     UserId, UserProfile, UserProfileHistoryEntry, UserProfileHistoryIdMemory,
     UserProfileHistoryKey, UserProfileHistoryRange, UserProfileMemory,
-    UserProfilePrincipalIndexMemory,
+    UserProfilePrincipalIndexMemory, UserProfileUsernameIndexMemory,
 };
 use backend_api::ApiError;
 use candid::Principal;
@@ -22,6 +23,8 @@ pub trait UserProfileRepository {
     ) -> Result<Option<Vec<UserProfileHistoryEntry>>, ApiError>;
 
     fn get_user_id_by_principal(&self, principal: &Principal) -> Option<UserId>;
+
+    fn get_user_id_by_username(&self, username: &str) -> Option<UserId>;
 
     async fn create_user_profile(
         &self,
@@ -74,6 +77,10 @@ impl UserProfileRepository for UserProfileRepositoryImpl {
         STATE.with_borrow(|s| s.principal_index.get(principal))
     }
 
+    fn get_user_id_by_username(&self, username: &str) -> Option<UserId> {
+        STATE.with_borrow(|s| s.username_index.get(&username.to_string()))
+    }
+
     async fn create_user_profile(
         &self,
         calling_principal: Principal,
@@ -85,6 +92,8 @@ impl UserProfileRepository for UserProfileRepositoryImpl {
         STATE.with_borrow_mut(|s| {
             s.profiles.insert(user_id, user_profile.clone());
             s.principal_index.insert(calling_principal, user_id);
+            s.username_index
+                .insert(user_profile.username.clone(), user_id);
 
             let history_entry =
                 UserProfileHistoryEntry::create_action(calling_principal, user_profile)?;
@@ -120,6 +129,8 @@ impl UserProfileRepository for UserProfileRepositoryImpl {
 
         STATE.with_borrow_mut(|s| {
             s.profiles.insert(user_id, user_profile.clone());
+            s.username_index
+                .insert(user_profile.username.clone(), user_id);
 
             let history_entry =
                 UserProfileHistoryEntry::update_action(calling_principal, user_profile)?;
@@ -176,6 +187,7 @@ impl UserProfileRepositoryImpl {
 struct UserProfileState {
     profiles: UserProfileMemory,
     principal_index: UserProfilePrincipalIndexMemory,
+    username_index: UserProfileUsernameIndexMemory,
     profiles_history: UserProfileHistoryMemory,
     profiles_history_id: UserProfileHistoryIdMemory,
 }
@@ -185,6 +197,7 @@ impl Default for UserProfileState {
         Self {
             profiles: init_user_profiles(),
             principal_index: init_user_profile_principal_index(),
+            username_index: init_user_profile_username_index(),
             profiles_history: init_user_profiles_history(),
             profiles_history_id: init_user_profile_history_id(),
         }
@@ -221,12 +234,14 @@ mod tests {
             .unwrap();
 
         let result = repository.get_user_profile_by_principal(&principal);
+        let username_lookup_result = repository.get_user_id_by_username(&profile.username);
         let history_result = repository
             .get_user_profile_history_by_principal(&principal)
             .unwrap()
             .unwrap();
 
         assert_eq!(result, Some((user_id, profile.clone())));
+        assert_eq!(username_lookup_result, Some(user_id));
         assert_eq!(history_result.len(), 1);
         assert_eq!(
             history_result[0],
@@ -261,14 +276,16 @@ mod tests {
             .update_user_profile(principal, user_id, updated_profile.clone())
             .unwrap();
 
-        let result = repository.get_user_profile_by_user_id(&user_id);
+        let result = repository.get_user_profile_by_user_id(&user_id).unwrap();
+        let username_lookup_result = repository.get_user_id_by_username(&result.username);
         let history_result = repository
             .get_user_profile_history_by_principal(&principal)
             .unwrap()
             .unwrap();
 
-        assert_eq!(result, Some(updated_profile.clone()));
+        assert_eq!(result, updated_profile.clone());
         assert_eq!(history_result.len(), 2);
+        assert_eq!(username_lookup_result, Some(user_id));
         assert_eq!(
             history_result[0],
             UserProfileHistoryEntry {

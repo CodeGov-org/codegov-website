@@ -1,4 +1,6 @@
 use super::{NeuronId, Uuid};
+use crate::system_api::get_random_string;
+use backend_api::ApiError;
 use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_stable_structures::{storable::Bound, Storable};
 use std::borrow::Cow;
@@ -25,20 +27,30 @@ pub struct UserProfile {
 }
 
 impl UserProfile {
-    pub fn new_anonymous() -> Self {
-        Self {
-            username: "Anonymous".to_string(),
+    pub async fn new_anonymous() -> Result<Self, ApiError> {
+        let username = Self::random_username("Anonymous").await?;
+
+        Ok(Self {
+            username,
             config: UserConfig::Anonymous,
-        }
+        })
     }
 
-    pub fn new_admin() -> Self {
-        Self {
-            username: "Admin".to_string(),
+    pub async fn new_admin() -> Result<Self, ApiError> {
+        let username = Self::random_username("Admin").await?;
+
+        Ok(Self {
+            username,
             config: UserConfig::Admin {
                 bio: "Default admin profile created for canister controllers".to_string(),
             },
-        }
+        })
+    }
+
+    async fn random_username(prefix: &str) -> Result<String, ApiError> {
+        let postfix = get_random_string(8).await?;
+
+        Ok(format!("{}_{}", prefix, postfix))
     }
 }
 
@@ -69,5 +81,26 @@ mod tests {
         let deserialized_user_profile = UserProfile::from_bytes(serialized_user_profile);
 
         assert_eq!(profile, deserialized_user_profile);
+    }
+
+    #[rstest]
+    async fn new_anonymous() {
+        let profile = UserProfile::new_anonymous().await.unwrap();
+
+        assert_eq!(profile.config, UserConfig::Anonymous);
+        assert!(profile.username.starts_with("Anonymous_"));
+    }
+
+    #[rstest]
+    async fn new_admin() {
+        let profile = UserProfile::new_admin().await.unwrap();
+
+        assert_eq!(
+            profile.config,
+            UserConfig::Admin {
+                bio: "Default admin profile created for canister controllers".to_string()
+            }
+        );
+        assert!(profile.username.starts_with("Admin_"));
     }
 }
