@@ -12,31 +12,34 @@ const {
 ---
 
 <header class="navbar">
-  <div class="container mx-auto">
-    <nav class="navbar-nav">
-      <a href="/" class="navbar-brand">
-        <img class="navbar-logo" src={codegovLogo.src} alt="CodeGov Logo" />
+  <div class="navbar__inner">
+    <nav class="navbar__nav">
+      <a href="/" class="navbar__brand">
+        <img class="navbar__logo" src={codegovLogo.src} alt="CodeGov Logo" />
 
-        <span class="navbar-company">codegov.org</span>
+        codegov.org
       </a>
 
-      <div class="navbar-desktop-nav">
+      <div class="navbar__desktop-nav">
         {
           header_links.map(item =>
             isLinkCategory(item) ? (
-              <Dropdown menuTriggerClassName={['navbar-nav-item']}>
+              <Dropdown menuTriggerClassName={['navbar__nav-item']}>
                 <Fragment slot="menuTrigger">{item.title}</Fragment>
 
                 <Fragment slot="menu">
                   {item.children.map(subItem => (
-                    <a href={subItem.content.cached_url} class="dropdown-item">
+                    <a
+                      href={subItem.content.cached_url}
+                      class="dropdown__menu-item"
+                    >
                       {subItem.title}
                     </a>
                   ))}
                 </Fragment>
               </Dropdown>
             ) : (
-              <a href={item.content.cached_url} class="navbar-nav-item">
+              <a href={item.content.cached_url} class="navbar__nav-item">
                 {item.title}
               </a>
             ),
@@ -44,7 +47,7 @@ const {
         }
       </div>
 
-      <div class="navbar-mobile-nav-trigger">
+      <div class="navbar__mobile-nav-trigger">
         <button type="button" data-menu-open>
           <span class="sr-only">Open main menu</span>
           <HamburgerMenuIcon />
@@ -54,22 +57,22 @@ const {
 
     <div
       data-menu
-      class="navbar-mobile-nav hidden"
+      class="navbar__mobile-nav navbar__mobile-nav--closed"
       role="dialog"
       aria-modal="true"
     >
       <div class="backdrop" data-sidenav-backdrop></div>
 
       <div class="sidenav">
-        <div class="sidenav-header">
-          <a href="/" class="sidenav-brand">
+        <div class="sidenav__header">
+          <a href="/" class="sidenav__brand">
             <img
-              class="sidenav-logo"
+              class="sidenav__logo"
               src={codegovLogo.src}
               alt="CodeGov Logo"
             />
 
-            <span class="sidenav-company">codegov.org</span>
+            <span class="sidenav__company">codegov.org</span>
           </a>
 
           <button type="button" data-menu-close>
@@ -78,7 +81,7 @@ const {
           </button>
         </div>
 
-        <nav class="sidebar-nav">
+        <nav class="sidebar__nav">
           {
             header_links.map(item =>
               isLinkCategory(item) ? (
@@ -90,7 +93,7 @@ const {
                       {item.children.map(subItem => (
                         <a
                           href={subItem.content.cached_url}
-                          class="sidenav-item"
+                          class="sidenav__item"
                         >
                           {subItem.title}
                         </a>
@@ -99,7 +102,7 @@ const {
                   </Collapsible>
                 </div>
               ) : (
-                <a href={item.content.cached_url} class="sidenav-item">
+                <a href={item.content.cached_url} class="sidenav__item">
                   {item.title}
                 </a>
               ),
@@ -133,14 +136,14 @@ const {
   }
 
   menuOpenBtn.addEventListener('click', () => {
-    menu.classList.remove('hidden');
+    menu.classList.remove('navbar__mobile-nav--closed');
   });
 
   sidenavBackdrop.addEventListener('click', () => {
-    menu.classList.add('hidden');
+    menu.classList.add('navbar__mobile-nav--closed');
   });
 
   menuCloseBtn.addEventListener('click', () => {
-    menu.classList.add('hidden');
+    menu.classList.add('navbar__mobile-nav--closed');
   });
 </script>

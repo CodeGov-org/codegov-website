@@ -32,8 +32,18 @@ import {
     ReviewerSocialMediaFormComponent,
     ReviewerSocialMediaComponent,
   ],
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .reviewer-profile-card,
+      .reviewer-personal-info-card {
+        margin-bottom: size(6);
+      }
+    `,
+  ],
   template: `
-    <app-card class="mb-6">
+    <app-card class="reviewer-profile-card">
       <h2 class="h3" cardTitle>Profile</h2>
 
       <app-key-value-grid>
@@ -63,7 +73,7 @@ import {
       </app-key-value-grid>
     </app-card>
 
-    <app-card class="mb-6">
+    <app-card class="reviewer-personal-info-card">
       <h2 class="h3" cardTitle>Personal info</h2>
 
       @if (isPersonalInfoEditable) {

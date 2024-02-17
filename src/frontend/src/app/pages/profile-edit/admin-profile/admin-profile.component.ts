@@ -27,8 +27,16 @@ import {
     AdminPersonalInfoFormComponent,
     AdminPersonalInfoComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      .admin-profile-card {
+        margin-bottom: size(6);
+      }
+    `,
+  ],
   template: `
-    <app-card class="mb-6">
+    <app-card class="admin-profile-card">
       <h2 class="h3" cardTitle>Profile</h2>
 
       <app-key-value-grid>
@@ -60,7 +68,6 @@ import {
       }
     </app-card>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminProfileComponent {
   @Input({ required: true })

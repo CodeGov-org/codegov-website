@@ -84,10 +84,8 @@ export type SocialMediaForm = {
         }
       </app-key-value-grid>
 
-      <div class="flex items-center justify-end">
-        <button class="btn btn-outline mr-4" (click)="cancelEdits()">
-          Cancel
-        </button>
+      <div class="btn-group">
+        <button class="btn btn--outline" (click)="cancelEdits()">Cancel</button>
 
         <button type="submit" [disabled]="isSaving" class="btn relative">
           @if (isSaving) {

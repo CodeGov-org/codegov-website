@@ -1,5 +1,0 @@
-{
-  "name": "@cg/tailwind",
-  "private": true,
-  "main": "tailwind.config.js"
-}

@@ -4,9 +4,22 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   selector: 'app-loading-icon',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .loading-icon {
+        width: 100%;
+        height: 100%;
+        margin: auto;
+        display: block;
+        background: none;
+      }
+    `,
+  ],
   template: `
     <svg
-      class="m-auto block h-full w-full bg-none"
+      class="loading-icon"
       xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink"
       style="shape-rendering: auto;"

@@ -10,9 +10,20 @@ import {
   selector: 'app-input-error',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .input-error {
+        color: $error;
+      }
+    `,
+  ],
   template: `
     <ng-template #errorTemplate>
-      <ng-content />
+      <div class="input-error">
+        <ng-content />
+      </div>
     </ng-template>
   `,
 })

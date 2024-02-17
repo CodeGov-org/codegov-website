@@ -19,13 +19,13 @@ export class InputDirective implements OnInit {
     const classes = 'input';
 
     if (this.elementRef.nativeElement.tagName.toLowerCase() === 'textarea') {
-      return classes + ' input-textarea';
+      return classes + ' input--textarea';
     }
 
     return classes;
   }
 
-  @HostBinding('class.input-invalid')
+  @HostBinding('class.input--invalid')
   public get hasError(): boolean {
     return this.formControl?.invalid ?? false;
   }

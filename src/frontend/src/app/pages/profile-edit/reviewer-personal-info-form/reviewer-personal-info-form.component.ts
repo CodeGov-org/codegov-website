@@ -117,16 +117,15 @@ export interface ReviewerProfileForm {
         </app-value-col>
       </app-key-value-grid>
 
-      <div class="flex items-center justify-end">
+      <div class="btn-group">
         @if (profileForm.invalid) {
           <div class="text-error pr-5 text-sm md:pr-10">
             Uh-oh! There are some errors in your form. Please fix them and try
             again.
           </div>
         }
-        <button class="btn btn-outline mr-4" (click)="cancelEdits()">
-          Cancel
-        </button>
+
+        <button class="btn btn--outline" (click)="cancelEdits()">Cancel</button>
 
         <button
           type="submit"
