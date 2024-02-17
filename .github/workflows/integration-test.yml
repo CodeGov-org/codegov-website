@@ -1,0 +1,44 @@
+name: Integration tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  integration_tests:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - uses: ./.github/actions/setup-rust
+        with:
+          cache-key: 'build-wasm'
+
+      - uses: ./.github/actions/setup-node
+
+      - uses: ./.github/actions/setup-pnpm
+
+      - uses: ./.github/actions/setup-env-files
+        with:
+          storyblok-token: ${{ secrets.STAGING_STORYBLOK_TOKEN }}
+
+      - uses: ./.github/actions/setup-bun
+
+      - uses: ./.github/actions/setup-dfx
+
+      - name: Build
+        run: dfx build --check
+
+      - name: Run frontend tests
+        run: pnpm -F frontend test:ci
+
+      - name: Run integration tests
+        run: |
+          pnpm -F @cg/backend build
+          pnpm -F backend-integration test

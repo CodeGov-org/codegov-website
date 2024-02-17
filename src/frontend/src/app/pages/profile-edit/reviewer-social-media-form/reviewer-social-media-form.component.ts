@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,6 +16,7 @@ import {
 
 import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from '../profile.model';
 import { ReviewerProfileComponent } from '../reviewer-profile';
+import { LoadingIconComponent } from '~core/icons';
 import {
   ProfileService,
   ReviewerProfile,
@@ -27,7 +29,10 @@ import {
   FormFieldComponent,
   InputDirective,
   InputHintComponent,
-  LabelComponent,
+  KeyColComponent,
+  KeyValueGridComponent,
+  TooltipDirective,
+  ValueColComponent,
 } from '~core/ui';
 import { ComponentChanges, keysOf } from '~core/utils';
 
@@ -42,42 +47,80 @@ export type SocialMediaForm = {
     ReactiveFormsModule,
     FormFieldComponent,
     InputHintComponent,
-    LabelComponent,
     InputDirective,
+    KeyValueGridComponent,
+    KeyColComponent,
+    ValueColComponent,
+    TooltipDirective,
+    LoadingIconComponent,
+    CommonModule,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .validation-info {
+        color: $error;
+        padding-right: size(5);
+
+        @include text-sm;
+        @include md {
+          padding-right: size(10);
+        }
+      }
+
+      .transparent-label {
+        color: transparent;
+      }
+    `,
   ],
   template: `
     <form [formGroup]="socialMediaForm" (ngSubmit)="onSubmit()">
-      @for (key of socialMediaKeys; track key) {
-        <app-form-field>
-          <app-label>{{ socialMediaInputs[key].label }}</app-label>
+      <app-key-value-grid>
+        @for (key of socialMediaKeys; track key) {
+          <app-key-col>
+            <label appLabel [for]="key">
+              {{ socialMediaInputs[key].formLabel }}
+            </label>
+          </app-key-col>
 
-          <input appInput [id]="key" type="text" [formControlName]="key" />
+          <app-value-col>
+            <app-form-field>
+              <input appInput [id]="key" type="text" [formControlName]="key" />
 
-          <app-input-hint>
-            @if (socialMediaControlHasValue(key)) {
-              <a
-                href="{{ getSocialMediaUrl(key) }}"
-                target="_blank"
-                rel="nofollow noreferrer"
-                >{{ getSocialMediaUrl(key) }}</a
-              >
-            }
-          </app-input-hint>
-        </app-form-field>
-      }
-      <div class="flex items-center">
-        <a
-          title="Cancel your edits"
-          class="ml-auto mr-4"
-          (click)="cancelEdits()"
-        >
-          Cancel
-        </a>
-        <button type="submit" class="btn">Save</button>
+              <app-input-hint>
+                @if (socialMediaControlHasValue(key)) {
+                  <a
+                    href="{{ getSocialMediaUrl(key) }}"
+                    target="_blank"
+                    rel="nofollow noreferrer"
+                    >{{ getSocialMediaUrl(key) }}</a
+                  >
+                }
+              </app-input-hint>
+            </app-form-field>
+          </app-value-col>
+        }
+      </app-key-value-grid>
+
+      <div class="btn-group">
+        <button class="btn btn--outline" (click)="cancelEdits()">Cancel</button>
+
+        <button type="submit" [disabled]="isSaving" class="btn">
+          @if (isSaving) {
+            <app-loading-icon class="btn--loading" aria-label="Saving" />
+          }
+          <div
+            [ngClass]="isSaving ? 'transparent-label' : ''"
+            [attr.aria-hidden]="isSaving"
+          >
+            Save
+          </div>
+        </button>
       </div>
     </form>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReviewerSocialMediaFormComponent implements OnChanges {
   @Input({ required: true })
@@ -85,6 +128,11 @@ export class ReviewerSocialMediaFormComponent implements OnChanges {
 
   @Output()
   public formClose = new EventEmitter<void>();
+
+  @Output()
+  public formSaving = new EventEmitter<void>();
+
+  public isSaving = false;
 
   public readonly socialMediaForm: FormGroup<SocialMediaForm>;
   public readonly socialMediaKeys = keysOf(SOCIAL_MEDIA_INPUTS);
@@ -109,7 +157,10 @@ export class ReviewerSocialMediaFormComponent implements OnChanges {
     }
   }
 
-  public onSubmit(): void {
+  public async onSubmit(): Promise<void> {
+    this.socialMediaForm.disable();
+    this.isSaving = true;
+
     const socialMediaFormValues = this.socialMediaForm.value;
 
     const socialMedia = Object.entries(
@@ -124,8 +175,12 @@ export class ReviewerSocialMediaFormComponent implements OnChanges {
       socialMedia: socialMedia,
     };
 
-    this.profileService.saveProfile(profileUpdate);
-    this.formClose.emit();
+    try {
+      await this.profileService.saveProfile(profileUpdate);
+    } finally {
+      this.isSaving = false;
+      this.formClose.emit();
+    }
   }
 
   public cancelEdits(): void {

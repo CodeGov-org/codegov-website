@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProfileService, SocialMediaType, UserRole } from '~core/state';
 import { ProfileServiceMock } from '~core/state/profile/profile.service.mock';
-import { ReviewerSocialMediaFormComponent } from './reviewer-social-media.component';
+import { ReviewerSocialMediaFormComponent } from './reviewer-social-media-form.component';
 
 describe('ReviewerSocialMediaFormComponent', () => {
   let component: ReviewerSocialMediaFormComponent;
