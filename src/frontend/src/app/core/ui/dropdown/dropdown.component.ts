@@ -22,7 +22,7 @@ import { ChevronIconComponent } from '~core/icons';
   template: `
     <button
       (click)="onTriggerClicked()"
-      [ngClass]="[menuTriggerClassName, 'dropdown-trigger']"
+      [ngClass]="[menuTriggerClassName, 'dropdown__trigger']"
       [appTooltip]="tooltip"
     >
       <div>
@@ -30,11 +30,14 @@ import { ChevronIconComponent } from '~core/icons';
       </div>
 
       @if (showChevron) {
-        <app-chevron-icon />
+        <app-chevron-icon class="dropdown__chevron" />
       }
     </button>
 
-    <div class="dropdown-menu" [ngClass]="{ hidden: !isOpen }">
+    <div
+      class="dropdown__menu"
+      [ngClass]="{ 'dropdown__menu--closed': !isOpen }"
+    >
       <ng-content select="[menu]" />
     </div>
   `,

@@ -13,14 +13,19 @@ const { menuTriggerClassName } = Astro.props;
   <div data-wrapper class="dropdown">
     <button
       data-menu-trigger
-      class:list={[menuTriggerClassName, 'dropdown-trigger']}
+      class:list={[menuTriggerClassName, 'dropdown__trigger']}
     >
       <div><slot name="menuTrigger" /></div>
 
-      <ChevronIcon />
+      <div class="dropdown__chevron">
+        <ChevronIcon />
+      </div>
     </button>
 
-    <div class:list={['dropdown-menu', 'hidden']} data-menu-wrapper>
+    <div
+      class:list={['dropdown__menu', 'dropdown__menu--closed']}
+      data-menu-wrapper
+    >
       <slot name="menu" />
     </div>
   </div>
@@ -47,12 +52,12 @@ const { menuTriggerClassName } = Astro.props;
       }
 
       menuTriggerBtn.addEventListener('click', () => {
-        menuWrapper.classList.toggle('hidden');
+        menuWrapper.classList.toggle('dropdown__menu--closed');
       });
 
       document.addEventListener('click', event => {
         if (event.target && !wrapper.contains(event.target as Node)) {
-          menuWrapper.classList.add('hidden');
+          menuWrapper.classList.add('dropdown__menu--closed');
         }
       });
     }

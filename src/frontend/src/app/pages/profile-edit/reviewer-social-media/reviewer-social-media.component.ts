@@ -19,21 +19,28 @@ import { keysOf } from '~core/utils';
   selector: 'app-reviewer-social-media',
   imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .reviewer-social-media {
+        margin-bottom: size(4);
+      }
+    `,
+  ],
   template: `
-    <app-key-value-grid class="mb-4">
+    <app-key-value-grid class="reviewer-social-media">
       @for (key of socialMediaKeys; track key) {
         <app-key-col>{{ socialMediaInputs[key].label }}</app-key-col>
         <app-value-col>{{ getSocialMediaValue(key) }}</app-value-col>
       }
     </app-key-value-grid>
 
-    <div class="flex items-center">
-      <button type="button" class="btn ml-auto" (click)="editForm()">
-        Edit
-      </button>
+    <div class="btn-group">
+      <button type="button" class="btn" (click)="editForm()">Edit</button>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReviewerSocialMediaComponent {
   @Input({ required: true })

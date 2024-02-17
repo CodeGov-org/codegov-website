@@ -4,14 +4,25 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   selector: 'app-hamburger-menu-icon',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .hamburger-menu-icon {
+        width: size(7);
+        height: size(7);
+        margin: size(1);
+      }
+    `,
+  ],
   template: `
     <svg
+      class="hamburger-menu-icon"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
       stroke-width="1.5"
       stroke="currentColor"
-      class="m-1 h-7 w-7"
     >
       <path
         stroke-linecap="round"

@@ -1,0 +1,137 @@
+%heading {
+  margin-top: 0;
+  margin-bottom: size(3);
+  font-weight: $font-weight-semibold;
+}
+
+h1,
+.h1 {
+  @extend %heading;
+  @include text-xxxxl;
+}
+
+h2,
+.h2 {
+  @extend %heading;
+  @include text-xxxl;
+}
+
+h3,
+.h3 {
+  @extend %heading;
+  @include text-xxl;
+}
+
+h4,
+.h4 {
+  @extend %heading;
+  @include text-xl;
+}
+
+h5,
+.h5 {
+  @extend %heading;
+  @include text-lg;
+}
+
+h6,
+.h6 {
+  @extend %heading;
+  @include text-md;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: size(3);
+
+  a {
+    text-decoration-line: underline;
+
+    &:hover,
+    &:focus {
+      text-decoration-line: none;
+    }
+  }
+}
+
+a {
+  outline: none;
+  color: $primary;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  text-decoration: none;
+
+  &:hover,
+  &:focus {
+    text-decoration-line: underline;
+  }
+}
+
+ul,
+ol {
+  margin-top: 0;
+  margin-bottom: size(3);
+  padding-left: size(8);
+}
+
+ul {
+  list-style: disc;
+}
+
+ol {
+  list-style: decimal;
+}
+
+li {
+  & > p {
+    display: inline-block;
+    margin-bottom: 0;
+  }
+}
+
+blockquote {
+  @include mx(0);
+  @include my(4);
+  padding: size(4);
+
+  border-left: $border-size solid $slate-500;
+  background-color: $slate-200;
+
+  @include dark {
+    color: $slate-300;
+    background-color: $slate-900;
+  }
+
+  & > p {
+    margin-bottom: 0;
+  }
+}
+
+hr {
+  margin-top: size(8);
+  margin-bottom: size(8);
+
+  border: none;
+  background-color: $slate-200;
+  height: $border-size;
+
+  @include dark {
+    background-color: $slate-900;
+  }
+}
+
+code {
+  font-family: $font-family-monospace;
+  font-size: $font-size-base;
+
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  padding: size(4);
+  border-radius: $border-radius;
+
+  background-color: $slate-200;
+  @include dark {
+    background-color: $slate-900;
+  }
+}

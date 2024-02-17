@@ -4,9 +4,20 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   selector: 'app-menu-close-icon',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .menu-close-icon {
+        width: size(7);
+        height: size(7);
+        margin: size(1);
+      }
+    `,
+  ],
   template: `
     <svg
-      class="m-1 h-7 w-7"
+      class="menu-close-icon"
       fill="none"
       viewBox="0 0 24 24"
       stroke-width="1.5"

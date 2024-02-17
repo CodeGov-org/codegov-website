@@ -36,9 +36,9 @@
               "src/frontend/src/.ic-assets.json",
               "src/frontend/src/assets"
             ],
-            "styles": ["src/frontend/src/app.css"],
+            "styles": ["src/frontend/src/app.scss"],
             "polyfills": ["zone.js"],
-            "scripts": []
+            "inlineStyleLanguage": "scss"
           },
           "configurations": {
             "production": {
@@ -96,9 +96,9 @@
               "src/frontend/src/favicon.ico",
               "src/frontend/src/assets"
             ],
-            "styles": ["src/frontend/src/app.css"],
+            "styles": ["src/frontend/src/app.scss"],
             "polyfills": ["zone.js", "zone.js/testing"],
-            "scripts": []
+            "inlineStyleLanguage": "scss"
           }
         }
       }

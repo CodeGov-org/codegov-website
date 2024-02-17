@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import { defineConfig } from 'astro/config';
-import tailwind from '@astrojs/tailwind';
 import storyblok from '@storyblok/astro';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 import { loadEnv } from 'vite';
@@ -28,9 +27,6 @@ export default defineConfig({
     },
   },
   integrations: [
-    tailwind({
-      applyBaseStyles: false,
-    }),
     storyblok({
       accessToken: env.STORYBLOK_TOKEN,
       apiOptions: {
@@ -40,7 +36,6 @@ export default defineConfig({
       components: {
         global_config: 'storyblok/GlobalConfig',
         page: 'storyblok/Page',
-        grid: 'storyblok/Grid',
         rich_text: 'storyblok/RichText',
         heading_level_one: 'storyblok/headings/HeadingLevelOne',
       },

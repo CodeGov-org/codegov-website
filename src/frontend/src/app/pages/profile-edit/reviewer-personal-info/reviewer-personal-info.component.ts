@@ -18,8 +18,21 @@ import {
   standalone: true,
   imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .reviewer-personal-info {
+        margin-bottom: size(4);
+      }
+
+      .wallet-address {
+        word-break: break-all;
+      }
+    `,
+  ],
   template: `
-    <app-key-value-grid class="mb-4">
+    <app-key-value-grid class="reviewer-personal-info">
       <app-key-col>Username</app-key-col>
       <app-value-col>{{ userProfile.username }}</app-value-col>
 
@@ -27,12 +40,12 @@ import {
       <app-value-col>{{ userProfile.bio }}</app-value-col>
 
       <app-key-col>Wallet address</app-key-col>
-      <app-value-col class="break-all">
+      <app-value-col class="wallet-address">
         {{ userProfile.walletAddress }}
       </app-value-col>
     </app-key-value-grid>
 
-    <div class="flex items-center justify-end">
+    <div class="btn-group">
       <button type="button" class="btn" (click)="editForm()">Edit</button>
     </div>
   `,
