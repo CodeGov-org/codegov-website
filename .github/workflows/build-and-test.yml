@@ -34,14 +34,8 @@ jobs:
           touch ./src/frontend/.env
           echo STORYBLOK_TOKEN=${{ secrets.STAGING_STORYBLOK_TOKEN }} >> ./src/frontend/.env
 
-      - name: Start DFX
-        run: dfx start --background
-
-      - name: Create canisters
-        run: dfx canister create --all
-
       - name: Build
-        run: dfx build
+        run: dfx build --check
 
       - name: Run frontend tests
         run: pnpm -F frontend test:ci
