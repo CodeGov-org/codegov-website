@@ -3,13 +3,16 @@ import ChevronIcon from '../icons/ChevronIcon.astro';
 ---
 
 <collapsible-content>
-  <button data-header class="collapsible-trigger">
+  <button data-header class="collapsible__trigger">
     <slot name="header" />
 
     <ChevronIcon />
   </button>
 
-  <div class="collapsible-content hidden" data-body-wrapper>
+  <div
+    class="collapsible__content collapsible__content--closed"
+    data-body-wrapper
+  >
     <slot name="body" />
   </div>
 </collapsible-content>
@@ -30,7 +33,7 @@ import ChevronIcon from '../icons/ChevronIcon.astro';
       }
 
       headerBtn.addEventListener('click', () => {
-        bodyWrapper.classList.toggle('hidden');
+        bodyWrapper.classList.toggle('collapsible__content--closed');
       });
     }
   }

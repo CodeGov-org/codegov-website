@@ -27,9 +27,19 @@ import {
     AdminPersonalInfoFormComponent,
     AdminPersonalInfoComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .admin-profile-card {
+        margin-bottom: size(6);
+      }
+    `,
+  ],
   template: `
-    <app-card class="mb-6">
-      <h2 class="h3" cardTitle>Profile</h2>
+    <app-card class="admin-profile-card">
+      <h2 class="h4" cardTitle>Profile</h2>
 
       <app-key-value-grid>
         <app-key-col>ID</app-key-col>
@@ -45,7 +55,7 @@ import {
     </app-card>
 
     <app-card>
-      <h2 class="h3" cardTitle>Personal Info</h2>
+      <h2 class="h4" cardTitle>Personal Info</h2>
 
       @if (isFormEditable) {
         <app-admin-personal-info-form
@@ -60,7 +70,6 @@ import {
       }
     </app-card>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminProfileComponent {
   @Input({ required: true })

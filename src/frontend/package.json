@@ -20,8 +20,8 @@
     "@angular/router": "^17.0.8",
     "@hadronous/ic-angular": "^0.2.1",
     "rxjs": "~7.8.1",
-    "@cg/tailwind": "workspace:*",
-    "@cg/backend": "workspace:*"
+    "@cg/backend": "workspace:*",
+    "@cg/styles": "workspace:*"
   },
   "devDependencies": {
     "@angular/compiler": "^17.0.8",
