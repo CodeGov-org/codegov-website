@@ -18,22 +18,17 @@ import { AdminProfile } from '~core/state';
   standalone: true,
   imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @import '@cg/styles/common';
-
-      .personal-info {
-        margin-bottom: size(4);
-      }
-    `,
-  ],
   template: `
-    <app-key-value-grid class="personal-info">
-      <app-key-col>Username</app-key-col>
-      <app-value-col>{{ userProfile.username }}</app-value-col>
+    <app-key-value-grid>
+      <app-key-col id="admin-username">Username</app-key-col>
+      <app-value-col aria-labelledby="admin-username">
+        {{ userProfile.username }}
+      </app-value-col>
 
-      <app-key-col>Bio</app-key-col>
-      <app-value-col>{{ userProfile.bio }}</app-value-col>
+      <app-key-col id="admin-bio">Bio</app-key-col>
+      <app-value-col aria-labelledby="admin-bio">
+        {{ userProfile.bio }}
+      </app-value-col>
     </app-key-value-grid>
 
     <div class="btn-group">

@@ -19,7 +19,6 @@ export function mapProfileResponse(
       bio: config.bio,
       neuronId: config.neuron_id,
       walletAddress: config.wallet_address,
-      proposalTypes: [],
       socialMedia: [],
     };
   } else if ('admin' in apiResponse.config) {

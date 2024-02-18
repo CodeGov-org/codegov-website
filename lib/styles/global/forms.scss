@@ -1,12 +1,9 @@
-// [TODO] move to Angular components
-
 .input {
-  @include layer-10;
   display: block;
   width: 100%;
 
   border-radius: $border-radius;
-  border: 1px solid $slate-400;
+  border: $border-size solid $slate-400;
   padding: size(2.5);
 
   font-size: 0.875rem;
@@ -18,17 +15,17 @@
 
   &:focus {
     border-color: $primary;
-    @include ring($primary-800, 4, 0.5);
+    @include ring($primary-400);
+
+    @include dark {
+      @include ring($primary-800);
+    }
   }
 
   @include dark {
     color: $slate-200;
     background-color: $slate-950;
     border-color: $slate-500;
-
-    &:focus {
-      @include ring($primary-800, 4, 1);
-    }
   }
 }
 
@@ -38,7 +35,7 @@
   &:focus {
     border-color: $error;
 
-    @include ring($error, 2, 30);
+    @include ring($error);
   }
 }
 
