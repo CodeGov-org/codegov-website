@@ -8,6 +8,9 @@
     "npm": "please use pnpm"
   },
   "scripts": {
+    "turbo": "turbo --cache-dir=.turbo",
+    "build": "pnpm turbo build",
+    "test": "pnpm turbo test",
     "lint": "eslint -c .eslintrc.js .",
     "lint:fix": "eslint -c .eslintrc.js --fix .",
     "format": "prettier --write .",
@@ -48,6 +51,7 @@
     "eslint-plugin-react": "^7.33.2",
     "prettier": "^3.1.1",
     "prettier-plugin-astro": "^0.12.3",
+    "turbo": "^1.12.4",
     "typescript": "~5.2.2"
   }
 }
