@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterLinkActive, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 
 import {
@@ -24,6 +24,7 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
     EditIconComponent,
     DropdownComponent,
     TooltipDirective,
+    RouterLinkActive,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -33,8 +34,6 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
       .secondary-navbar {
         background-color: $primary-950;
         @include layer-20;
-        @include px(4);
-        @include py(3);
         color: $white;
 
         @include dark {
@@ -50,16 +49,19 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        align-items: center;
       }
 
       .secondary-navbar__left {
+        padding-left: size(4);
         display: flex;
         flex: 1;
         flex-direction: row;
+        align-items: end;
       }
 
       .secondary-navbar__right {
+        @include py(3);
+        padding-right: size(4);
         display: flex;
         flex-direction: row;
       }
@@ -73,6 +75,25 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
       .profile-menu__item-icon {
         margin-right: size(2);
       }
+
+      .secondary-navbar__link {
+        color: $white;
+
+        @include no-underline;
+        @include py(2);
+        @include mx(4);
+        border-bottom: 3px solid transparent;
+
+        &:hover {
+          border-color: $slate-700;
+        }
+      }
+
+      .active-link,
+      .active-link:hover {
+        color: $primary;
+        border-color: $primary;
+      }
     `,
   ],
   template: `
@@ -80,9 +101,23 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
       <div class="secondary-navbar__inner">
         <div class="secondary-navbar__left">
           <!-- left aligned items -->
+          <a
+            class="secondary-navbar__link"
+            [routerLink]="['/proposals/open']"
+            routerLinkActive="active-link"
+            [routerLinkActiveOptions]="{ exact: true }"
+            >Review period open</a
+          >
+          <a
+            class="secondary-navbar__link"
+            [routerLink]="['/proposals/closed']"
+            routerLinkActive="active-link"
+            [routerLinkActiveOptions]="{ exact: false }"
+            >Review period closed</a
+          >
         </div>
 
-        <div class="flex flex-row">
+        <div class="secondary-navbar__right">
           @if (isAuthenticated$ | async) {
             <app-dropdown
               [showChevron]="false"
