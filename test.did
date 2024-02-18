@@ -1,0 +1,229 @@
+(
+  variant {
+    ok = record {
+      proposals = vec {
+        record {
+          id = "c8c6e405-22cf-4720-b444-d7121a45d20d";
+          proposal = record {
+            title = "Upgrade NNS Canister: ghsi2-tqaaa-aaaan-aaaca-cai to wasm with hash: 1830d3b90ae4cceab6b4b148f66ebe242535a920faa9daba66b8ac9983314cc2";
+            review_completed_at = null;
+            state = variant { in_progress };
+            synced_at = "2024-02-11T22:25:57+00:00";
+            nervous_system = variant {
+              network = record {
+                id = 127_691 : nat64;
+                topic = variant { system_canister_management };
+              };
+            };
+            proposed_at = "2024-02-09T09:54:06+00:00";
+            proposed_by = 50 : nat64;
+          };
+        };
+        record {
+          id = "6d2eacd8-e0b0-4d58-a05a-97b3f0b159c7";
+          proposal = record {
+            title = "Elect new IC/Replica revision (commit 8d4b6898), and retire old replica versions fed43163,072b2a65";
+            review_completed_at = null;
+            state = variant { in_progress };
+            synced_at = "2024-02-11T22:25:57+00:00";
+            nervous_system = variant {
+              network = record {
+                id = 127_692 : nat64;
+                topic = variant { replica_version_management };
+              };
+            };
+            proposed_at = "2024-02-09T11:17:02+00:00";
+            proposed_by = 61 : nat64;
+          };
+        };
+        record {
+          id = "6a2eb49e-60d8-4155-b449-ab13f93c595b";
+          proposal = record {
+            title = "Elect new IC/Replica revision (commit 3e25df8f)";
+            review_completed_at = null;
+            state = variant { in_progress };
+            synced_at = "2024-02-11T22:25:57+00:00";
+            nervous_system = variant {
+              network = record {
+                id = 127_694 : nat64;
+                topic = variant { replica_version_management };
+              };
+            };
+            proposed_at = "2024-02-09T11:27:06+00:00";
+            proposed_by = 61 : nat64;
+          };
+        };
+        record {
+          id = "ebcf67cf-40ed-4afc-9444-2286e42450a3";
+          proposal = record {
+            title = "Upgrade NNS Canister: qoctq-giaaa-aaaaa-aaaea-cai to wasm with hash: 7edae02d1e8fb2cb817e988371de2121a50be5bae9c786ca0d95de97362e6672";
+            review_completed_at = null;
+            state = variant { in_progress };
+            synced_at = "2024-02-11T22:25:57+00:00";
+            nervous_system = variant {
+              network = record {
+                id = 127_696 : nat64;
+                topic = variant { system_canister_management };
+              };
+            };
+            proposed_at = "2024-02-09T12:59:10+00:00";
+            proposed_by = 52 : nat64;
+          };
+        };
+        record {
+          id = "fe821775-87b8-4ed3-bd99-1b23f5a75e4f";
+          proposal = record {
+            title = "Add root SNS canister wasm to SNS-WASM";
+            review_completed_at = null;
+            state = variant { in_progress };
+            synced_at = "2024-02-11T22:25:57+00:00";
+            nervous_system = variant {
+              network = record {
+                id = 127_698 : nat64;
+                topic = variant { system_canister_management };
+              };
+            };
+            proposed_at = "2024-02-09T20:00:24+00:00";
+            proposed_by = 16_664_007_084_337_444_895 : nat64;
+          };
+        };
+        record {
+          id = "f085f7c7-0fa2-4545-b799-470dc076a9ed";
+          proposal = record {
+            title = "Add governance SNS canister wasm to SNS-WASM";
+            review_completed_at = null;
+            state = variant { in_progress };
+            synced_at = "2024-02-11T22:25:57+00:00";
+            nervous_system = variant {
+              network = record {
+                id = 127_699 : nat64;
+                topic = variant { system_canister_management };
+              };
+            };
+            proposed_at = "2024-02-09T20:04:40+00:00";
+            proposed_by = 16_664_007_084_337_444_895 : nat64;
+          };
+        };
+        record {
+          id = "9e010bb1-ba7e-47d1-8c4b-4aeede90e8e4";
+          proposal = record {
+            title = "Upgrade Nns Canister: rrkah-fqaaa-aaaaa-aaaaq-cai to wasm with hash: ca86c3cc6c7bc40fbd2df866762ec0a0b6a50e49c54f89cab0ce3df574629167";
+            review_completed_at = null;
+            state = variant { in_progress };
+            synced_at = "2024-02-11T22:25:57+00:00";
+            nervous_system = variant {
+              network = record {
+                id = 127_700 : nat64;
+                topic = variant { system_canister_management };
+              };
+            };
+            proposed_at = "2024-02-09T20:06:36+00:00";
+            proposed_by = 16_664_007_084_337_444_895 : nat64;
+          };
+        };
+        record {
+          id = "33696306-372b-48d4-a3a3-eba520aca4da";
+          proposal = record {
+            title = "Upgrade Root Canister to wasm with hash: c18561e245a42b28add7e36d8fdd51affed75fc3e855f01d466354c9dd222f88";
+            review_completed_at = null;
+            state = variant { in_progress };
+            synced_at = "2024-02-11T22:25:57+00:00";
+            nervous_system = variant {
+              network = record {
+                id = 127_701 : nat64;
+                topic = variant { system_canister_management };
+              };
+            };
+            proposed_at = "2024-02-09T20:07:12+00:00";
+            proposed_by = 16_664_007_084_337_444_895 : nat64;
+          };
+        };
+        record {
+          id = "5b5da2b6-7a63-4e64-9c06-65baba1959f0";
+          proposal = record {
+            title = "Elect new IC/Replica revision (commit 8d4b6898), and retire old replica versions fed43163,072b2a65";
+            review_completed_at = null;
+            state = variant { in_progress };
+            synced_at = "2024-02-12T18:17:27+00:00";
+            nervous_system = variant {
+              network = record {
+                id = 127_706 : nat64;
+                topic = variant { replica_version_management };
+              };
+            };
+            proposed_at = "2024-02-12T18:16:38+00:00";
+            proposed_by = 77 : nat64;
+          };
+        };
+        record {
+          id = "79ff3ac3-38a9-471d-b181-d51b7b14bb71";
+          proposal = record {
+            title = "Elect new IC/Replica revision (commit 3e25df8f)";
+            review_completed_at = null;
+            state = variant { in_progress };
+            synced_at = "2024-02-12T18:32:30+00:00";
+            nervous_system = variant {
+              network = record {
+                id = 127_707 : nat64;
+                topic = variant { replica_version_management };
+              };
+            };
+            proposed_at = "2024-02-12T18:31:31+00:00";
+            proposed_by = 77 : nat64;
+          };
+        };
+        record {
+          id = "36999988-e4bf-4a30-916d-80e5af4aa8cd";
+          proposal = record {
+            title = "Upgrade NNS Canister: rdmx6-jaaaa-aaaaa-aaadq-cai to wasm with hash: a3b50a3b35c487b9e5e9cd0174845d83fe15d5bb5d78e507647ed2272777568f";
+            review_completed_at = null;
+            state = variant { in_progress };
+            synced_at = "2024-02-16T16:32:42+00:00";
+            nervous_system = variant {
+              network = record {
+                id = 127_761 : nat64;
+                topic = variant { system_canister_management };
+              };
+            };
+            proposed_at = "2024-02-16T16:27:48+00:00";
+            proposed_by = 73 : nat64;
+          };
+        };
+        record {
+          id = "e820e852-88d5-468c-af81-ef0bb0e407f7";
+          proposal = record {
+            title = "Upgrade NNS Canister: qoctq-giaaa-aaaaa-aaaea-cai to wasm with hash: 18b9b31def26b22a644ac2a311d0ee641d12c7c42d473c39fa647c64ed58ead3";
+            review_completed_at = null;
+            state = variant { in_progress };
+            synced_at = "2024-02-16T17:02:44+00:00";
+            nervous_system = variant {
+              network = record {
+                id = 127_764 : nat64;
+                topic = variant { system_canister_management };
+              };
+            };
+            proposed_at = "2024-02-16T17:01:47+00:00";
+            proposed_by = 52 : nat64;
+          };
+        };
+        record {
+          id = "2cbd396f-02af-49ba-b9f7-0f4659d8d5bd";
+          proposal = record {
+            title = "Upgrade NNS Canister: rwlgt-iiaaa-aaaaa-aaaaa-cai to wasm with hash: 57050d34ce370dacd7d323bf1c3aea448ce7e9636fe658b822f8902fe0732188";
+            review_completed_at = null;
+            state = variant { in_progress };
+            synced_at = "2024-02-17T01:03:22+00:00";
+            nervous_system = variant {
+              network = record {
+                id = 127_768 : nat64;
+                topic = variant { system_canister_management };
+              };
+            };
+            proposed_at = "2024-02-17T01:01:25+00:00";
+            proposed_by = 16_664_007_084_337_444_895 : nat64;
+          };
+        };
+      };
+    };
+  }
+);
