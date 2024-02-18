@@ -12,10 +12,10 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
 
       - uses: ./.github/actions/setup-node
-
-      - uses: ./.github/actions/setup-pnpm
 
       - uses: ./.github/actions/setup-env-files
         with:
@@ -28,6 +28,9 @@ jobs:
           echo "${{ secrets.MAINNET_PEM }}" > ./mainnet.pem
           dfx identity import --ic --storage-mode plaintext mainnet ./mainnet.pem
           dfx identity use mainnet
+
+      - name: Turbo build
+        run: pnpm build
 
       - name: Deploy to mainnet
         run: dfx deploy --ic

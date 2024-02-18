@@ -16,6 +16,7 @@ target/
 node_modules/
 dist/
 .astro/
+.turbo/
 
 # environment variables
 .env
