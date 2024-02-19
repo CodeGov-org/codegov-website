@@ -32,9 +32,6 @@ jobs:
 
       - uses: ./.github/actions/setup-dfx
 
-      - name: Turbo build
-        run: pnpm build
-
       - name: DFX build
         run: dfx build --check
 
