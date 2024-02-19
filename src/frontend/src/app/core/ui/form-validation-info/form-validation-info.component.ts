@@ -27,7 +27,7 @@ import { isNotNil } from '../../utils';
         @include text-sm;
       }
 
-      :host-context(.form-validation-info__hidden) {
+      :host-context(.form-validation-info--hidden) {
         color: transparent;
       }
     `,
@@ -37,7 +37,7 @@ import { isNotNil } from '../../utils';
   `,
 })
 export class FormValidationInfoComponent {
-  @HostBinding('class.form-validation-info__hidden')
+  @HostBinding('class.form-validation-info--hidden')
   public get isFormValid(): boolean {
     // controlContainer.valid is false when the form is submitted for some reason,
     // so we invert controlContainer.invalid instead, which behaves as expected.

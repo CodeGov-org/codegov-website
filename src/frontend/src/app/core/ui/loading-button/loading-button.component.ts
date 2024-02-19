@@ -15,7 +15,7 @@ import { LoadingIconComponent } from '../../icons';
     `,
   ],
   template: `
-    <button type="submit" [disabled]="disabled" [class]="btnClass">
+    <button [type]="type" [disabled]="disabled" [class]="btnClass">
       @if (isSaving) {
         <app-loading-icon class="btn--loading" aria-label="Saving" />
       }
@@ -24,7 +24,7 @@ import { LoadingIconComponent } from '../../icons';
         [attr.aria-hidden]="isSaving"
         [class.loading-button__text--transparent]="isSaving"
       >
-        Save
+        <ng-content />
       </div>
     </button>
   `,
