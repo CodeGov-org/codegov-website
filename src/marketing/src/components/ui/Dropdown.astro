@@ -4,9 +4,11 @@ import ChevronIcon from '../icons/ChevronIcon.astro';
 
 export interface Props {
   menuTriggerClassName?: AstroBuiltinAttributes['class:list'];
+  ariaLabel?: string;
+  id: string;
 }
 
-const { menuTriggerClassName } = Astro.props;
+const { menuTriggerClassName, ariaLabel, id } = Astro.props;
 ---
 
 <dropdown-component>
@@ -14,10 +16,14 @@ const { menuTriggerClassName } = Astro.props;
     <button
       data-menu-trigger
       class:list={[menuTriggerClassName, 'dropdown__trigger']}
+      aria-label={ariaLabel}
+      aria-expanded="false"
+      aria-controls={id}
+      aria-haspopup="menu"
     >
       <div><slot name="menuTrigger" /></div>
 
-      <div class="dropdown__chevron">
+      <div data-menu-chevron class="dropdown__chevron" aria-hidden="true">
         <ChevronIcon />
       </div>
     </button>
@@ -25,6 +31,8 @@ const { menuTriggerClassName } = Astro.props;
     <div
       class:list={['dropdown__menu', 'dropdown__menu--closed']}
       data-menu-wrapper
+      id={id}
+      role="menu"
     >
       <slot name="menu" />
     </div>
@@ -35,6 +43,8 @@ const { menuTriggerClassName } = Astro.props;
   class DropdownComponent extends HTMLElement {
     constructor() {
       super();
+
+      let isOpen = false;
 
       const wrapper = this.querySelector('[data-wrapper]');
       if (!wrapper) {
@@ -51,13 +61,26 @@ const { menuTriggerClassName } = Astro.props;
         throw new Error('Dropdown must have a menu wrapper');
       }
 
+      const menuChevron = this.querySelector('[data-menu-chevron]');
+      if (!menuChevron) {
+        throw new Error('Dropdown must have a menu chevron');
+      }
+
       menuTriggerBtn.addEventListener('click', () => {
+        console.log('Toggling dropdown', isOpen);
+        isOpen = !isOpen;
+
         menuWrapper.classList.toggle('dropdown__menu--closed');
+        menuTriggerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        console.log('isExpanded', menuTriggerBtn.getAttribute('aria-expanded'));
+        menuChevron.classList.toggle('dropdown__chevron--open');
       });
 
       document.addEventListener('click', event => {
         if (event.target && !wrapper.contains(event.target as Node)) {
           menuWrapper.classList.add('dropdown__menu--closed');
+          menuTriggerBtn.setAttribute('aria-expanded', 'false');
+          menuChevron.classList.remove('dropdown__chevron--open');
         }
       });
     }

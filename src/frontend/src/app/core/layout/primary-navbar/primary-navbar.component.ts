@@ -36,16 +36,27 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
           </a>
 
           <div class="navbar__desktop-nav">
-            @for (item of globalConfig.headerLinks; track item.title) {
+            @for (
+              item of globalConfig.headerLinks;
+              track item.title;
+              let i = $index
+            ) {
               @if (isLinkCategory(item)) {
-                <app-dropdown menuTriggerClassName="navbar__nav-item">
+                <app-dropdown
+                  menuTriggerClassName="navbar__nav-item"
+                  [id]="'navbar-menu-' + i"
+                >
                   <ng-container ngProjectAs="[menuTrigger]">
                     {{ item.title }}
                   </ng-container>
 
                   <ng-container ngProjectAs="[menu]">
                     @for (subItem of item.children; track subItem.title) {
-                      <a [href]="subItem.url" class="dropdown__menu-item">
+                      <a
+                        role="menuitem"
+                        [href]="subItem.url"
+                        class="dropdown__menu-item"
+                      >
                         {{ subItem.title }}
                       </a>
                     }
@@ -64,8 +75,8 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
               type="button"
               class="navbar__mobile-nav-button"
               (click)="onSidenavOpenClicked()"
+              aria-label="Open main menu"
             >
-              <span class="sr-only">Open main menu</span>
               <app-hamburger-menu-icon />
             </button>
           </div>
@@ -91,8 +102,11 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
                 <span class="sidenav__company">codegov.org</span>
               </a>
 
-              <button type="button" (click)="onSidenavCloseClicked()">
-                <span class="sr-only">Close menu</span>
+              <button
+                type="button"
+                (click)="onSidenavCloseClicked()"
+                aria-label="Close menu"
+              >
                 <app-menu-close-icon />
               </button>
             </div>

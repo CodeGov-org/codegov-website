@@ -38,7 +38,11 @@ import {
 
       .reviewer-profile-card,
       .reviewer-personal-info-card {
-        margin-bottom: size(6);
+        margin-bottom: size(3);
+
+        @include sm {
+          margin-bottom: size(4);
+        }
       }
     `,
   ],
@@ -47,29 +51,51 @@ import {
       <h2 class="h3" cardTitle>Profile</h2>
 
       <app-key-value-grid>
-        <app-key-col>ID</app-key-col>
-        <app-value-col>{{ userProfile.id }}</app-value-col>
+        <app-key-col id="reviewer-id">ID</app-key-col>
+        <app-value-col aria-labelledby="reviewer-id">
+          {{ userProfile.id }}
+        </app-value-col>
 
-        <app-key-col>Role</app-key-col>
-        <app-value-col>
+        <app-key-col id="reviewer-role">Role</app-key-col>
+        <app-value-col
+          aria-labelledby="reviewer-role"
+          aria-describedby="reviewer-role-description"
+        >
           {{ userProfile.role }}
 
-          <app-info-icon [appTooltip]="nonEditableInfo"></app-info-icon>
+          <app-info-icon
+            aria-hidden="true"
+            [appTooltip]="nonEditableInfo"
+          ></app-info-icon>
         </app-value-col>
+        <div id="reviewer-role-description" role="tooltip" class="sr-only">
+          {{ nonEditableInfo }}
+        </div>
 
-        <app-key-col>Proposal types</app-key-col>
-        <app-value-col>
-          {{ userProfile.proposalTypes.join(', ') }}
+        <app-key-col id="reviewer-neuron-id">Neuron ID</app-key-col>
+        <app-value-col
+          aria-labelledby="reviewer-neuron-id"
+          aria-describedby="reviewer-neuron-id-description"
+        >
+          <a
+            [href]="
+              'https://dashboard.internetcomputer.org/neuron/' +
+              userProfile.neuronId
+            "
+            target="_blank"
+            rel="nofollow noreferrer"
+          >
+            {{ userProfile.neuronId }}
+          </a>
 
-          <app-info-icon [appTooltip]="nonEditableInfo"></app-info-icon>
+          <app-info-icon
+            aria-hidden="true"
+            [appTooltip]="nonEditableInfo"
+          ></app-info-icon>
         </app-value-col>
-
-        <app-key-col>Neuron ID</app-key-col>
-        <app-value-col>
-          {{ userProfile.neuronId }}
-
-          <app-info-icon [appTooltip]="nonEditableInfo"></app-info-icon>
-        </app-value-col>
+        <div id="reviewer-neuron-id-description" role="tooltip" class="sr-only">
+          {{ nonEditableInfo }}
+        </div>
       </app-key-value-grid>
     </app-card>
 
