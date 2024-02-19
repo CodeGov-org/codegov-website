@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDotEnv": [".env"],
   "globalDependencies": [
     ".editorconfig",
     ".eslintrc.js",
@@ -14,10 +15,17 @@
   "pipeline": {
     "build": {
       "outputs": ["dist/**", "build/**", ".docusaurus/**"],
+      "dotEnv": [".env"],
       "dependsOn": ["^build"]
     },
     "test": {
       "outputs": [],
+      "dotEnv": [".env"],
+      "dependsOn": ["^build"]
+    },
+    "start": {
+      "outputs": [],
+      "dotEnv": [".env"],
       "dependsOn": ["^build"]
     }
   }
