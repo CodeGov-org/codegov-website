@@ -18,7 +18,6 @@ describe('ReviewerProfileComponent', () => {
       id: '1',
       role: UserRole.Reviewer,
       username: 'TestReviewer',
-      proposalTypes: ['SCM'],
       neuronId: 10685924793606457081n,
       walletAddress: '123213123sdfsdfs',
       bio: 'bio',
