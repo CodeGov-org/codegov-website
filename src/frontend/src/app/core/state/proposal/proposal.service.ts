@@ -30,11 +30,6 @@ export class ProposalService {
   constructor(private readonly actorService: BackendActorService) {}
 
   public async loadOpenProposalList(): Promise<void> {
-    // const currentProposalList = this.openProposalListSubject.getValue();
-    // if (isNotNil(openProposalListSubject)) {
-    //   return;
-    // }
-
     const getResponse = await this.actorService.list_proposals();
 
     if (isOk(getResponse)) {

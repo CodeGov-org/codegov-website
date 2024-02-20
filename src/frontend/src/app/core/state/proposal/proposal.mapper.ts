@@ -24,7 +24,7 @@ export function mapOpenProposalListResponse(
       votingPeriodEnd: new Date(2024, 1, 19, 1, 1, 25),
       proposedAt: new Date(proposalResponse.proposal.proposed_at),
       proposedBy: proposalResponse.proposal.proposed_by,
-      canister: '',
+      canister: '-',
       summary: 'This is a summary',
       proposalLinks: [
         {

@@ -63,35 +63,50 @@ import {
             {{ proposal.id }}: {{ proposal.title }}
           </h2>
           <app-key-value-grid [columnNumber]="2">
-            <app-key-col>Topic</app-key-col>
-            <app-value-col>{{ proposal.topic }}</app-value-col>
+            <app-key-col id="proposal-topic">Topic</app-key-col>
+            <app-value-col aria-labelledby="proposal-topic">{{
+              proposal.topic
+            }}</app-value-col>
 
-            <app-key-col>Created</app-key-col>
-            <app-value-col>
+            <app-key-col id="proposal-created">Created</app-key-col>
+            <app-value-col aria-labelledby="proposal-created">
               {{ proposal.proposedAt | date: 'medium' }}</app-value-col
             >
 
-            <app-key-col>Type</app-key-col>
-            <app-value-col>{{ proposal.type }}</app-value-col>
+            <app-key-col id="proposal-type">Type</app-key-col>
+            <app-value-col aria-labelledby="proposal-type">{{
+              proposal.type
+            }}</app-value-col>
 
-            <app-key-col>Proposer</app-key-col>
-            <app-value-col>{{ proposal.proposedBy }}</app-value-col>
+            <app-key-col id="proposal-proposer">Proposer</app-key-col>
+            <app-value-col aria-labelledby="proposal-proposer">{{
+              proposal.proposedBy
+            }}</app-value-col>
 
-            <app-key-col>Review period end</app-key-col>
-            <app-value-col>
+            <app-key-col id="proposal-review-end"
+              >Review period end</app-key-col
+            >
+            <app-value-col aria-labelledby="proposal-review-end">
               {{ proposal.reviewPeriodEnd | date: 'medium' }}</app-value-col
             >
 
-            <app-key-col>Voting period end</app-key-col>
-            <app-value-col>
+            <app-key-col id="proposal-voting-end"
+              >Voting period end</app-key-col
+            >
+            <app-value-col aria-labelledby="proposal-voting-end">
               {{ proposal.votingPeriodEnd | date: 'medium' }}
             </app-value-col>
 
-            <app-key-col>Canister</app-key-col>
-            <app-value-col>{{ proposal.canister }}</app-value-col>
+            <app-key-col id="proposal-canister">Canister</app-key-col>
+            <app-value-col aria-labelledby="proposal-canister">{{
+              proposal.canister
+            }}</app-value-col>
 
-            <app-key-col>Links</app-key-col>
-            <app-value-col class="proposal-links">
+            <app-key-col id="proposal-links">Links</app-key-col>
+            <app-value-col
+              class="proposal-links"
+              aria-labelledby="proposal-links"
+            >
               @if (proposal.proposalLinks !== []) {
                 @for (
                   proposalLink of proposal.proposalLinks;
