@@ -113,7 +113,6 @@ Run the system setup script.
 Note:
 
 - `fnm` will warn about missing environment variables, this is fine.
-- `dfxvm` will pause execution to ask for confirmation, choosing `default` is fine here.
 - The script may also pause execution to prompt for an administrator password.
 
 ```bash
