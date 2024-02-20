@@ -15,7 +15,8 @@ import {
 
       :host {
         display: grid;
-        padding-bottom: size(4);
+        grid-template-columns: repeat(3, 1fr);
+        margin-bottom: size(8);
 
         gap: size(1) size(8);
         @include md {

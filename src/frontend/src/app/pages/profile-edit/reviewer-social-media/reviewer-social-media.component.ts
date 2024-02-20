@@ -20,20 +20,15 @@ import { keysOf } from '~core/utils';
   imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @import '@cg/styles/common';
-
-      .reviewer-social-media {
-        margin-bottom: size(4);
-      }
-    `,
-  ],
   template: `
-    <app-key-value-grid class="reviewer-social-media">
-      @for (key of socialMediaKeys; track key) {
-        <app-key-col>{{ socialMediaInputs[key].label }}</app-key-col>
-        <app-value-col>{{ getSocialMediaValue(key) }}</app-value-col>
+    <app-key-value-grid>
+      @for (key of socialMediaKeys; track key; let i = $index) {
+        <app-key-col [id]="'social-media-' + i">
+          {{ socialMediaInputs[key].label }}
+        </app-key-col>
+        <app-value-col [attr.aria-labelledby]="'social-media-' + i">
+          {{ getSocialMediaValue(key) }}
+        </app-value-col>
       }
     </app-key-value-grid>
 

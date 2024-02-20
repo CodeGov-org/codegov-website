@@ -122,26 +122,37 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
             <app-dropdown
               [showChevron]="false"
               menuTriggerClassName="btn btn--icon"
-              aria-label="Open profile menu"
+              ariaLabel="Open profile menu"
+              id="profile-menu"
             >
               <ng-container ngProjectAs="[menuTrigger]">
-                <app-profile-icon />
+                <app-profile-icon aria-hidden="true" />
               </ng-container>
 
               <ng-container ngProjectAs="[menu]">
                 <a
                   [routerLink]="'/profile/edit'"
                   class="dropdown__menu-item profile-menu__item"
+                  role="menuitem"
                 >
-                  <app-edit-icon class="profile-menu__item-icon" />
-                  Edit Profile
+                  <app-edit-icon
+                    class="profile-menu__item-icon"
+                    aria-hidden="true"
+                  />
+
+                  Edit profile
                 </a>
 
                 <button
                   (click)="onLogoutButtonClicked()"
                   class="dropdown__menu-item profile-menu__item"
+                  role="menuitem"
                 >
-                  <app-logout-icon class="profile-menu__item-icon" />
+                  <app-logout-icon
+                    class="profile-menu__item-icon"
+                    aria-hidden="true"
+                  />
+
                   Logout
                 </button>
               </ng-container>
@@ -152,7 +163,6 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
               class="btn btn--icon"
               aria-label="Log in"
             >
-              <span class="sr-only">Login</span>
               <app-login-icon />
             </button>
           }
