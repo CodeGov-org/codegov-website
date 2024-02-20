@@ -1,10 +1,10 @@
 export interface Proposal {
-  id: number;
+  id: bigint | number;
   title: string;
   topic: ProposalTopic;
   type: string;
   state: ProposalState;
-  canister?: string;
+  canister: string;
   reviewPeriodEnd: Date;
   votingPeriodEnd: Date;
   proposedAt: Date;

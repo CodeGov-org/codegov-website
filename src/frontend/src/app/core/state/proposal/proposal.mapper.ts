@@ -13,7 +13,7 @@ export function mapOpenProposalListResponse(
 
   for (const proposalResponse of apiResponseList) {
     const proposalObject: Proposal = {
-      id: Number(proposalResponse.id),
+      id: proposalResponse.proposal.nervous_system.network.id,
       title: proposalResponse.proposal.title,
       topic: getProposalTopic(
         proposalResponse.proposal.nervous_system.network.topic,
@@ -24,22 +24,24 @@ export function mapOpenProposalListResponse(
       votingPeriodEnd: new Date(2024, 1, 19, 1, 1, 25),
       proposedAt: new Date(proposalResponse.proposal.proposed_at),
       proposedBy: proposalResponse.proposal.proposed_by,
+      canister: '',
       summary: 'This is a summary',
       proposalLinks: [
         {
           type: ProposalLinkType.NNSDApp,
           link:
             'https://nns.ic0.app/proposal/?u=qoctq-giaaa-aaaaa-aaaea-cai&proposal=' +
-            Number(proposalResponse.id),
+            proposalResponse.proposal.nervous_system.network.id,
         },
         {
           type: ProposalLinkType.DfinityDashboard,
           link:
             'https://dashboard.internetcomputer.org/proposal/' +
-            Number(proposalResponse.id),
+            proposalResponse.proposal.nervous_system.network.id,
         },
       ],
     };
+
     proposalsList.push(proposalObject);
   }
   return proposalsList;

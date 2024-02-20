@@ -11,46 +11,6 @@ import {
   ValueColComponent,
 } from '~core/ui';
 
-// const FAKE_LIST = [
-//   {
-//     id: 127768,
-//     title:
-//       'Upgrade NNS Canister: rwlgt-iiaaa-aaaaa-aaaaa-cai to wasm with hash: 57050d34ce370dacd7d323bf1c3aea448ce7e9636fe658b822f8902fe0732188',
-//     topic: ProposalTopic.SCM,
-//     type: 'NNS Canister Upgrade',
-//     state: ProposalState.InProgress,
-//     reviewPeriodEnd: new Date(2024, 1, 17, 1, 1, 25),
-//     votingPeriodEnd: new Date(2024, 1, 19, 1, 1, 25),
-//     proposedAt: new Date(2024, 1, 15, 1, 1, 25),
-//     proposedBy: 16664007084337444895n,
-//     summary: 'This is an SCM summary',
-//     proposalLinks: [
-//       {
-//         type: ProposalLinkType.NNSDApp,
-//         link: 'https://nns.ic0.app/proposal/?u=qoctq-giaaa-aaaaa-aaaea-cai&proposal=127768',
-//       },
-//     ],
-//   },
-//   {
-//     id: 127707,
-//     title: 'Elect new IC/Replica revision (commit 3e25df8f)',
-//     topic: ProposalTopic.RVM,
-//     type: 'Update Elected Replica Versions',
-//     state: ProposalState.InProgress,
-//     reviewPeriodEnd: new Date(2024, 1, 16, 1, 1, 25),
-//     votingPeriodEnd: new Date(2024, 1, 20, 1, 1, 25),
-//     proposedAt: new Date(2024, 1, 14, 1, 1, 25),
-//     proposedBy: 77,
-//     summary: 'This is an RVM summary',
-//     proposalLinks: [
-//       {
-//         type: ProposalLinkType.DfinityDashboard,
-//         link: 'https://dashboard.internetcomputer.org/proposal/126875',
-//       },
-//     ],
-//   },
-// ];
-
 @Component({
   selector: 'app-open-proposal-list',
   standalone: true,
@@ -89,6 +49,10 @@ import {
           width: 66.66667%;
         }
       }
+
+      .proposal-links__link {
+        margin-right: size(4);
+      }
     `,
   ],
   template: `
@@ -99,31 +63,48 @@ import {
             {{ proposal.id }}: {{ proposal.title }}
           </h2>
           <app-key-value-grid [columnNumber]="2">
-            <app-key-col>Type</app-key-col>
-            <app-value-col>{{ proposal.type }}</app-value-col>
+            <app-key-col>Topic</app-key-col>
+            <app-value-col>{{ proposal.topic }}</app-value-col>
 
             <app-key-col>Created</app-key-col>
-            <app-value-col>{{
-              proposal.proposedAt | date: 'medium'
-            }}</app-value-col>
+            <app-value-col>
+              {{ proposal.proposedAt | date: 'medium' }}</app-value-col
+            >
+
+            <app-key-col>Type</app-key-col>
+            <app-value-col>{{ proposal.type }}</app-value-col>
 
             <app-key-col>Proposer</app-key-col>
             <app-value-col>{{ proposal.proposedBy }}</app-value-col>
 
             <app-key-col>Review period end</app-key-col>
-            <app-value-col>{{
-              proposal.reviewPeriodEnd | date: 'medium'
-            }}</app-value-col>
+            <app-value-col>
+              {{ proposal.reviewPeriodEnd | date: 'medium' }}</app-value-col
+            >
 
             <app-key-col>Voting period end</app-key-col>
-            <app-value-col>{{
-              proposal.votingPeriodEnd | date: 'medium'
-            }}</app-value-col>
+            <app-value-col>
+              {{ proposal.votingPeriodEnd | date: 'medium' }}
+            </app-value-col>
 
-            @if (proposal.topic === proposalTopic.RVM) {
-              <app-key-col>Canister</app-key-col>
-              <app-value-col>{{ proposal.canister }}</app-value-col>
-            }
+            <app-key-col>Canister</app-key-col>
+            <app-value-col>{{ proposal.canister }}</app-value-col>
+
+            <app-key-col>Links</app-key-col>
+            <app-value-col class="proposal-links">
+              @if (proposal.proposalLinks !== []) {
+                @for (
+                  proposalLink of proposal.proposalLinks;
+                  track proposalLink.type
+                ) {
+                  <a
+                    class="proposal-links__link"
+                    href="{{ proposalLink.link }}"
+                    >{{ proposalLink.type }}</a
+                  >
+                }
+              }
+            </app-value-col>
           </app-key-value-grid>
           <div class="btn-group">
             <a [routerLink]="['/proposals/open', proposal.id]">View details</a>
@@ -136,8 +117,6 @@ import {
 export class OpenProposalListComponent implements OnInit {
   public readonly proposalList$ = this.proposalService.openProposalList$;
   public readonly proposalTopic = ProposalTopic;
-
-  //public proposalList: Proposal[] = FAKE_LIST;
 
   constructor(private readonly proposalService: ProposalService) {}
 
