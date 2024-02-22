@@ -31,3 +31,8 @@ export enum ProposalLinkType {
   NNSDApp = 'NNS DApp',
   DfinityDashboard = 'Dashboard',
 }
+
+export enum ProposalLinkBaseUrl {
+  NNSDApp = 'https://nns.ic0.app/proposal/?u=qoctq-giaaa-aaaaa-aaaea-cai&proposal=',
+  DfinityDashboard = 'https://dashboard.internetcomputer.org/proposal/',
+}

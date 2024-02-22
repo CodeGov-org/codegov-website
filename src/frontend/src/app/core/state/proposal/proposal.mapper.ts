@@ -1,6 +1,7 @@
 import { NnsProposalTopic, ProposalResponse } from '@cg/backend';
 import {
   Proposal,
+  ProposalLinkBaseUrl,
   ProposalLinkType,
   ProposalState,
   ProposalTopic,
@@ -29,13 +30,13 @@ export function mapOpenProposalListResponse(
         {
           type: ProposalLinkType.NNSDApp,
           link:
-            'https://nns.ic0.app/proposal/?u=qoctq-giaaa-aaaaa-aaaea-cai&proposal=' +
+            ProposalLinkBaseUrl.NNSDApp +
             proposalResponse.proposal.nervous_system.network.id,
         },
         {
           type: ProposalLinkType.DfinityDashboard,
           link:
-            'https://dashboard.internetcomputer.org/proposal/' +
+            ProposalLinkBaseUrl.DfinityDashboard +
             proposalResponse.proposal.nervous_system.network.id,
         },
       ],
