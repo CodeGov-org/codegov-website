@@ -53,6 +53,13 @@ import {
       .proposal-links__link {
         margin-right: size(4);
       }
+
+      .proposal-action {
+        border-color: $primary;
+        border: solid 1px;
+        padding: size(2);
+        border-radius: $border-radius;
+      }
     `,
   ],
   template: `
@@ -63,25 +70,54 @@ import {
             {{ proposal.id }}: {{ proposal.title }}
           </h2>
           <app-key-value-grid [columnNumber]="2">
+            <app-key-col id="proposal-links">Links</app-key-col>
+            <app-value-col
+              class="proposal-links"
+              aria-labelledby="proposal-links"
+            >
+              @if (proposal.proposalLinks !== []) {
+                @for (
+                  proposalLink of proposal.proposalLinks;
+                  track proposalLink.type
+                ) {
+                  <a
+                    class="proposal-links__link"
+                    href="{{ proposalLink.link }}"
+                    target="_blank"
+                    rel="nofollow noreferrer"
+                    >{{ proposalLink.type }}</a
+                  >
+                }
+              }
+            </app-value-col>
+          </app-key-value-grid>
+          <app-key-value-grid [columnNumber]="2">
             <app-key-col id="proposal-topic">Topic</app-key-col>
-            <app-value-col aria-labelledby="proposal-topic">{{
-              proposal.topic
-            }}</app-value-col>
+            <app-value-col aria-labelledby="proposal-topic">
+              {{ proposal.topic }}</app-value-col
+            >
+
+            <app-key-col id="proposal-type">Type</app-key-col>
+            <app-value-col aria-labelledby="proposal-type">
+              {{ proposal.type }}</app-value-col
+            >
 
             <app-key-col id="proposal-created">Created</app-key-col>
             <app-value-col aria-labelledby="proposal-created">
               {{ proposal.proposedAt | date: 'medium' }}</app-value-col
             >
 
-            <app-key-col id="proposal-type">Type</app-key-col>
-            <app-value-col aria-labelledby="proposal-type">{{
-              proposal.type
-            }}</app-value-col>
-
             <app-key-col id="proposal-proposer">Proposer</app-key-col>
-            <app-value-col aria-labelledby="proposal-proposer">{{
-              proposal.proposedBy
-            }}</app-value-col>
+            <app-value-col aria-labelledby="proposal-proposer">
+              <a
+                href="https://dashboard.internetcomputer.org/neuron/{{
+                  proposal.proposedBy
+                }}"
+                target="_blank"
+                rel="nofollow noreferrer"
+                >{{ proposal.proposedBy }}</a
+              ></app-value-col
+            >
 
             <app-key-col id="proposal-review-end"
               >Review period end</app-key-col
@@ -96,33 +132,11 @@ import {
             <app-value-col aria-labelledby="proposal-voting-end">
               {{ proposal.votingPeriodEnd | date: 'medium' }}
             </app-value-col>
-
-            <app-key-col id="proposal-canister">Canister</app-key-col>
-            <app-value-col aria-labelledby="proposal-canister">{{
-              proposal.canister
-            }}</app-value-col>
-
-            <app-key-col id="proposal-links">Links</app-key-col>
-            <app-value-col
-              class="proposal-links"
-              aria-labelledby="proposal-links"
-            >
-              @if (proposal.proposalLinks !== []) {
-                @for (
-                  proposalLink of proposal.proposalLinks;
-                  track proposalLink.type
-                ) {
-                  <a
-                    class="proposal-links__link"
-                    href="{{ proposalLink.link }}"
-                    >{{ proposalLink.type }}</a
-                  >
-                }
-              }
-            </app-value-col>
           </app-key-value-grid>
           <div class="btn-group">
-            <a [routerLink]="['/proposals/open', proposal.id]">View details</a>
+            <a class="proposal-action" [routerLink]="['/open', proposal.id]"
+              >View details</a
+            >
           </div>
         </app-card>
       }

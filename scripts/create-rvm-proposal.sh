@@ -2,6 +2,7 @@ NEURON_ID=$( \
   sed -n 's/^NEURON_ID=\([0-9]*\)$/\1/p' ./data/info.txt \
 )
 
+
 NNS_FUNCTION_ARG=$(didc encode -d ./scripts/canisters/registry.did -m update_elected_replica_versions '(
   record {
     release_package_urls = vec {
@@ -23,7 +24,7 @@ dfx canister call \
       command = opt variant {
         MakeProposal = record {
           url = "";
-          title = opt "Proposal title";
+          title = opt "Elect new IC/Replica revision (commit 8d4b6898), and retire old replica versions fed43163,072b2a65";
           summary = "Proposal summary";
           action = opt variant {
             ExecuteNnsFunction = record {

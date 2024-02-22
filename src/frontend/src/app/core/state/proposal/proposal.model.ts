@@ -4,7 +4,6 @@ export interface Proposal {
   topic: ProposalTopic;
   type: string;
   state: ProposalState;
-  canister: string;
   reviewPeriodEnd: Date;
   votingPeriodEnd: Date;
   proposedAt: Date;

@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostBinding,
+  Input,
+} from '@angular/core';
 
 @Component({
   selector: 'app-value-col',
@@ -14,7 +19,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
         align-items: center;
 
         grid-column: span 3;
-        margin-bottom: size(8);
+        margin-bottom: size(6);
         @include md {
           grid-column: span 2;
           margin-bottom: 0;
@@ -24,4 +29,12 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   ],
   template: `<ng-content />`,
 })
-export class ValueColComponent {}
+export class ValueColComponent {
+  @Input()
+  public hintSpace = false;
+
+  @HostBinding('class.hint-space')
+  public get hasHintSpace(): boolean {
+    return this.hintSpace === true;
+  }
+}

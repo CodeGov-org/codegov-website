@@ -12,6 +12,7 @@ import {
   KeyValueGridComponent,
   ValueColComponent,
 } from '~core/ui';
+import { isNotNil } from '~core/utils';
 
 @Component({
   selector: 'app-open-proposal-details',
@@ -75,41 +76,6 @@ import {
       }
       @if (currentProposal$ | async; as proposal) {
         <app-key-value-grid [columnNumber]="2">
-          <app-key-col id="proposal-topic">Topic</app-key-col>
-          <app-value-col aria-labelledby="proposal-topic">{{
-            proposal.topic
-          }}</app-value-col>
-
-          <app-key-col id="proposal-created">Created</app-key-col>
-          <app-value-col aria-labelledby="proposal-created">
-            {{ proposal.proposedAt | date: 'medium' }}</app-value-col
-          >
-
-          <app-key-col id="proposal-type">Type</app-key-col>
-          <app-value-col aria-labelledby="proposal-type">{{
-            proposal.type
-          }}</app-value-col>
-
-          <app-key-col id="proposal-proposer">Proposer</app-key-col>
-          <app-value-col aria-labelledby="proposal-proposer">{{
-            proposal.proposedBy
-          }}</app-value-col>
-
-          <app-key-col id="proposal-review-end">Review period end</app-key-col>
-          <app-value-col aria-labelledby="proposal-review-end">
-            {{ proposal.reviewPeriodEnd | date: 'medium' }}</app-value-col
-          >
-
-          <app-key-col id="proposal-voting-end">Voting period end</app-key-col>
-          <app-value-col aria-labelledby="proposal-voting-end">
-            {{ proposal.votingPeriodEnd | date: 'medium' }}
-          </app-value-col>
-
-          <app-key-col id="proposal-canister">Canister</app-key-col>
-          <app-value-col aria-labelledby="proposal-canister">{{
-            proposal.canister
-          }}</app-value-col>
-
           <app-key-col id="proposal-links">Links</app-key-col>
           <app-value-col
             class="proposal-links"
@@ -123,10 +89,50 @@ import {
                 <a
                   class="proposal-links__link"
                   href="{{ proposalLink.link }}"
+                  target="_blank"
+                  rel="nofollow noreferrer"
                   >{{ proposalLink.type }}</a
                 >
               }
             }
+          </app-value-col>
+        </app-key-value-grid>
+        <app-key-value-grid [columnNumber]="2">
+          <app-key-col id="proposal-topic">Topic</app-key-col>
+          <app-value-col aria-labelledby="proposal-topic">
+            {{ proposal.topic }}</app-value-col
+          >
+
+          <app-key-col id="proposal-type">Type</app-key-col>
+          <app-value-col aria-labelledby="proposal-type">
+            {{ proposal.type }}</app-value-col
+          >
+
+          <app-key-col id="proposal-created">Created</app-key-col>
+          <app-value-col aria-labelledby="proposal-created">
+            {{ proposal.proposedAt | date: 'medium' }}</app-value-col
+          >
+
+          <app-key-col id="proposal-proposer">Proposer</app-key-col>
+          <app-value-col aria-labelledby="proposal-proposer">
+            <a
+              href="https://dashboard.internetcomputer.org/neuron/{{
+                proposal.proposedBy
+              }}"
+              target="_blank"
+              rel="nofollow noreferrer"
+              >{{ proposal.proposedBy }}</a
+            ></app-value-col
+          >
+
+          <app-key-col id="proposal-review-end">Review period end</app-key-col>
+          <app-value-col aria-labelledby="proposal-review-end">
+            {{ proposal.reviewPeriodEnd | date: 'medium' }}</app-value-col
+          >
+
+          <app-key-col id="proposal-voting-end">Voting period end</app-key-col>
+          <app-value-col aria-labelledby="proposal-voting-end">
+            {{ proposal.votingPeriodEnd | date: 'medium' }}
           </app-value-col>
         </app-key-value-grid>
         <h2 class="h4 proposal-summary">Proposal summary</h2>
@@ -163,13 +169,10 @@ export class OpenProposalDetailsComponent implements OnInit {
       });
 
     this.currentProposal$
-      .pipe(takeUntilDestroyed(), filter(Boolean))
+      .pipe(takeUntilDestroyed(), filter(isNotNil))
       .subscribe(proposal => {
         if (proposal.state === ProposalState.Completed) {
-          this.router.navigate([
-            'proposals/closed',
-            { id: this.proposalIdFromRoute$ },
-          ]);
+          this.router.navigate(['closed', { id: this.proposalIdFromRoute$ }]);
         }
       });
   }

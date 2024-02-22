@@ -103,14 +103,14 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
           <!-- left aligned items -->
           <a
             class="secondary-navbar__link"
-            [routerLink]="['/proposals/open']"
+            [routerLink]="['/open']"
             routerLinkActive="active-link"
             [routerLinkActiveOptions]="{ exact: true }"
             >Review period open</a
           >
           <a
             class="secondary-navbar__link"
-            [routerLink]="['/proposals/closed']"
+            [routerLink]="['/closed']"
             routerLinkActive="active-link"
             [routerLinkActiveOptions]="{ exact: false }"
             >Review period closed</a
