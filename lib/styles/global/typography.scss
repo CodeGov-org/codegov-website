@@ -94,7 +94,7 @@ blockquote {
   @include my(4);
   padding: size(4);
 
-  border-left: $border-size solid $slate-500;
+  border-left: $border-lg-size solid $slate-500;
   background-color: $slate-200;
 
   @include dark {
@@ -113,7 +113,7 @@ hr {
 
   border: none;
   background-color: $slate-200;
-  height: $border-size;
+  height: $border-lg-size;
 
   @include dark {
     background-color: $slate-900;

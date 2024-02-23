@@ -13,9 +13,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 
-import { LoadingIconComponent } from '~core/icons';
 import {
   ProfileService,
   ReviewerProfile,
@@ -24,11 +22,14 @@ import {
 } from '~core/state';
 import {
   FormFieldComponent,
+  FormValidationInfoComponent,
   InputDirective,
   InputErrorComponent,
+  InputHintComponent,
   KeyColComponent,
   KeyValueGridComponent,
-  TooltipDirective,
+  LabelDirective,
+  LoadingButtonComponent,
   ValueColComponent,
 } from '~core/ui';
 import { ComponentChanges } from '~core/utils';
@@ -43,35 +44,30 @@ export interface ReviewerProfileForm {
   selector: 'app-reviewer-personal-info-form',
   standalone: true,
   imports: [
-    FormFieldComponent,
-    InputErrorComponent,
-    InputDirective,
+    CommonModule,
     ReactiveFormsModule,
-    RouterModule,
-    TooltipDirective,
+    FormFieldComponent,
+    FormValidationInfoComponent,
+    InputDirective,
+    LabelDirective,
+    InputHintComponent,
+    InputErrorComponent,
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
-    CommonModule,
-    LoadingIconComponent,
+    LoadingButtonComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
       @import '@cg/styles/common';
 
-      .validation-info {
-        color: $error;
-        padding-right: size(5);
-
-        @include text-sm;
-        @include md {
-          padding-right: size(10);
-        }
-      }
-
-      .transparent-label {
-        color: transparent;
+      .wallet-address-link {
+        display: block;
+        overflow-x: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        margin-right: size(4);
       }
     `,
   ],
@@ -118,16 +114,29 @@ export interface ReviewerProfileForm {
         </app-value-col>
 
         <app-key-col>
-          <label appLabel for="walletAddress">Wallet address</label>
+          <label appLabel for="wallet-address">Wallet address</label>
         </app-key-col>
         <app-value-col>
           <app-form-field>
             <input
               appInput
-              id="walletAddress"
+              id="wallet-address"
               type="text"
               formControlName="walletAddress"
             />
+
+            <app-input-hint>
+              @if (walletAddressControlHasValue()) {
+                <a
+                  class="wallet-address-link"
+                  [href]="getWalletAddressLink()"
+                  target="_blank"
+                  rel="nofollow noreferrer"
+                >
+                  {{ getWalletAddressLink() }}
+                </a>
+              }
+            </app-input-hint>
 
             <app-input-error key="required">
               Wallet address cannot be empty
@@ -136,31 +145,25 @@ export interface ReviewerProfileForm {
         </app-value-col>
       </app-key-value-grid>
 
+      <app-form-validation-info />
+
       <div class="btn-group">
-        @if (profileForm.invalid) {
-          <div class="validation-info">
-            Uh-oh! There are some errors in your form. Please fix them and try
-            again.
-          </div>
-        }
-
-        <button class="btn btn--outline" (click)="cancelEdits()">Cancel</button>
-
         <button
+          class="btn btn--outline"
+          (click)="cancelEdits()"
+          [disabled]="profileForm.invalid || isSaving"
+        >
+          Cancel
+        </button>
+
+        <app-loading-button
+          btnClass="btn"
           type="submit"
           [disabled]="profileForm.invalid || isSaving"
-          class="btn"
+          [isSaving]="isSaving"
         >
-          @if (isSaving) {
-            <app-loading-icon class="btn--loading" aria-label="Saving" />
-          }
-          <div
-            [ngClass]="isSaving ? 'transparent-label' : ''"
-            [attr.aria-hidden]="isSaving"
-          >
-            Save
-          </div>
-        </button>
+          Save
+        </app-loading-button>
       </div>
     </form>
   `,
@@ -230,5 +233,17 @@ export class ReviewerPersonalInfoFormComponent implements OnChanges {
 
   public cancelEdits(): void {
     this.formClose.emit();
+  }
+
+  public walletAddressControlHasValue(): boolean {
+    const control = this.profileForm.get('walletAddress');
+
+    return Boolean(control?.value);
+  }
+
+  public getWalletAddressLink(): string {
+    const walletAddress = this.profileForm.get('walletAddress')?.value;
+
+    return `https://dashboard.internetcomputer.org/account/${walletAddress}`;
   }
 }

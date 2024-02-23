@@ -18,8 +18,6 @@ jobs:
 
       - uses: ./.github/actions/setup-node
 
-      - uses: ./.github/actions/setup-pnpm
-
       - name: Check TypeScript Formatting
         run: pnpm format:check
 

@@ -13,6 +13,8 @@ import { LoadingIconComponent } from '~core/icons';
       @import '@cg/styles/common';
 
       :host {
+        @include layer-50;
+
         display: flex;
         flex-direction: row;
         align-items: center;

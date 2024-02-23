@@ -49,7 +49,7 @@ import { ReviewerProfileComponent } from './reviewer-profile';
     `,
   ],
   template: `
-    <h1 class="h2 profile-edit__title">Edit profile</h1>
+    <h1 class="profile-edit__title">Edit profile</h1>
 
     @if (userProfile$ | async; as userProfile) {
       @switch (userProfile.role) {

@@ -1,47 +1,54 @@
+$btn-color: $primary;
+$bn-hover-color: $primary-600;
+$btn-disabled-color: rgba($primary, 0.45);
+
 .btn {
-  @include layer-10;
   @include px(4);
   @include py(1);
 
-  border: 1px solid $primary;
+  border: $border-size solid transparent;
   border-radius: $border-radius;
   outline: none;
 
   color: $white;
-  background-color: $primary;
+  background-color: $btn-color;
   position: relative;
 
-  &:hover {
-    border-color: $primary-600;
-    background-color: $primary-600;
+  &:hover:not(:disabled) {
+    border-color: $bn-hover-color;
+    background-color: $bn-hover-color;
   }
 
-  &:disabled {
-    border-color: rgba($primary, 0.45);
-    background-color: rgba($primary, 0.45);
+  &:focus:not(:disabled) {
+    @include ring($primary-400);
 
-    &:hover {
-      background-color: rgba($primary, 0.45);
+    @include dark {
+      @include ring($primary-800);
     }
   }
 
-  &:focus {
-    @include ring($primary-800, 4, 0.5);
-  }
+  &:disabled {
+    background-color: $btn-disabled-color;
 
-  @include dark {
-    &:focus {
-      @include ring($primary-800, 4, 1);
+    &:hover {
+      cursor: not-allowed;
     }
   }
 }
 
 .btn--outline {
-  color: $primary;
+  color: $btn-color;
+  border-color: $btn-color;
   background-color: transparent;
 
-  &:hover {
+  &:hover:not(:disabled) {
     color: $white;
+  }
+
+  &:disabled {
+    color: $btn-disabled-color;
+    border-color: $btn-disabled-color;
+    background-color: transparent;
   }
 }
 
@@ -59,7 +66,6 @@
 
   color: $white;
   border-radius: 50%;
-  // border-radius: 9999px;
 }
 
 .btn-group {
