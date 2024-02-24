@@ -32,7 +32,10 @@ export enum ProposalLinkType {
   DfinityDashboard = 'Dashboard',
 }
 
-export enum ProposalLinkBaseUrl {
+export enum LinkBaseUrl {
   NNSDApp = 'https://nns.ic0.app/proposal/?u=qoctq-giaaa-aaaaa-aaaea-cai&proposal=',
   DfinityDashboard = 'https://dashboard.internetcomputer.org/proposal/',
 }
+
+export const NEURON_LINK_BASE_URL =
+  'https://dashboard.internetcomputer.org/neuron/';

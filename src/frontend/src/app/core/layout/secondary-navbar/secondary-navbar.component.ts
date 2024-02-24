@@ -85,14 +85,23 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
         border-bottom: 3px solid transparent;
 
         &:hover {
-          border-color: $slate-700;
+          border-color: $slate-400;
+
+          @include dark {
+            border-color: $slate-700;
+          }
         }
       }
 
       .active-link,
       .active-link:hover {
-        color: $primary;
-        border-color: $primary;
+        color: $primary-400;
+        border-color: $primary-400;
+
+        @include dark {
+          color: $primary;
+          border-color: $primary;
+        }
       }
     `,
   ],

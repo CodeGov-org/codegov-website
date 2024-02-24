@@ -1,10 +1,21 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  SecurityContext,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { marked } from 'marked';
 import { filter, map } from 'rxjs';
 
-import { ProposalState, ProposalTopic } from '~core/state';
+import {
+  NEURON_LINK_BASE_URL,
+  ProposalState,
+  ProposalTopic,
+} from '~core/state';
 import { ProposalService } from '~core/state/proposal/proposal.service';
 import {
   CardComponent,
@@ -65,17 +76,31 @@ import { isNotNil } from '~core/utils';
           border-color: $slate-700;
         }
       }
+
+      .proposal-summary__content {
+        background-color: $slate-200;
+
+        @include dark {
+          background-color: $slate-900;
+        }
+      }
     `,
   ],
   template: `
     <app-card class="proposal">
       @if (currentProposal$ | async; as proposal) {
         <h2 class="h4 proposal-title" cardTitle>
-          {{ proposal.id }}: {{ proposal.title }}
+          {{ proposal.title }}
         </h2>
       }
+
       @if (currentProposal$ | async; as proposal) {
         <app-key-value-grid [columnNumber]="2">
+          <app-key-col id="proposal-id">ID</app-key-col>
+          <app-value-col aria-labelledby="proposal-id">
+            {{ proposal.id }}</app-value-col
+          >
+
           <app-key-col id="proposal-links">Links</app-key-col>
           <app-value-col
             class="proposal-links"
@@ -96,8 +121,7 @@ import { isNotNil } from '~core/utils';
               }
             }
           </app-value-col>
-        </app-key-value-grid>
-        <app-key-value-grid [columnNumber]="2">
+
           <app-key-col id="proposal-topic">Topic</app-key-col>
           <app-value-col aria-labelledby="proposal-topic">
             {{ proposal.topic }}</app-value-col
@@ -116,9 +140,7 @@ import { isNotNil } from '~core/utils';
           <app-key-col id="proposal-proposer">Proposer</app-key-col>
           <app-value-col aria-labelledby="proposal-proposer">
             <a
-              href="https://dashboard.internetcomputer.org/neuron/{{
-                proposal.proposedBy
-              }}"
+              href="{{ neuronBaseLink }}{{ proposal.proposedBy }}"
               target="_blank"
               rel="nofollow noreferrer"
               >{{ proposal.proposedBy }}</a
@@ -136,7 +158,12 @@ import { isNotNil } from '~core/utils';
           </app-value-col>
         </app-key-value-grid>
         <h2 class="h4 proposal-summary">Proposal summary</h2>
-        <div>{{ proposal.summary }}</div>
+
+        <app-card
+          class="proposal-summary__content"
+          [innerHTML]="convertMarkdownToHTML(proposal.summary)"
+        >
+        </app-card>
       }
     </app-card>
   `,
@@ -144,6 +171,7 @@ import { isNotNil } from '~core/utils';
 export class OpenProposalDetailsComponent implements OnInit {
   public readonly proposalList$ = this.proposalService.openProposalList$;
   public readonly proposalTopic = ProposalTopic;
+  public readonly neuronBaseLink = NEURON_LINK_BASE_URL;
   public readonly currentProposal$ = this.proposalService.currentProposal$;
 
   private readonly proposalIdFromRoute$ = this.route.params.pipe(
@@ -157,10 +185,13 @@ export class OpenProposalDetailsComponent implements OnInit {
     filter(Boolean),
   );
 
+  public proposalSummary = '';
+
   constructor(
     private readonly proposalService: ProposalService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private readonly sanitizer: DomSanitizer,
   ) {
     this.proposalIdFromRoute$
       .pipe(takeUntilDestroyed())
@@ -174,10 +205,18 @@ export class OpenProposalDetailsComponent implements OnInit {
         if (proposal.state === ProposalState.Completed) {
           this.router.navigate(['closed', { id: this.proposalIdFromRoute$ }]);
         }
+        this.proposalSummary = proposal.summary;
       });
   }
 
   public ngOnInit(): void {
     this.proposalService.loadOpenProposalList();
+  }
+
+  public convertMarkdownToHTML(proposalSummary: string): string | null {
+    return this.sanitizer.sanitize(
+      SecurityContext.HTML,
+      marked.parse(proposalSummary),
+    );
   }
 }
