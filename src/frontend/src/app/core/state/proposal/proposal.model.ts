@@ -9,7 +9,7 @@ export interface Proposal {
   proposedAt: Date;
   proposedBy: bigint | number;
   summary: string;
-  proposalLinks: ProposalLink[];
+  proposalLinks: ProposalVotingLink[];
 }
 
 export enum ProposalState {
@@ -22,20 +22,17 @@ export enum ProposalTopic {
   RVM = 'Replica Version Management',
 }
 
-export interface ProposalLink {
-  type: ProposalLinkType;
+export interface ProposalVotingLink {
+  type: ProposalVotingLinkType;
   link: string;
 }
 
-export enum ProposalLinkType {
+export enum ProposalVotingLinkType {
   NNSDApp = 'NNS DApp',
-  DfinityDashboard = 'Dashboard',
 }
 
-export enum LinkBaseUrl {
+export enum ProposalLinkBaseUrl {
   NNSDApp = 'https://nns.ic0.app/proposal/?u=qoctq-giaaa-aaaaa-aaaea-cai&proposal=',
-  DfinityDashboard = 'https://dashboard.internetcomputer.org/proposal/',
+  ProposalId = 'https://dashboard.internetcomputer.org/proposal/',
+  Neuron = 'https://dashboard.internetcomputer.org/neuron/',
 }
-
-export const NEURON_LINK_BASE_URL =
-  'https://dashboard.internetcomputer.org/neuron/';

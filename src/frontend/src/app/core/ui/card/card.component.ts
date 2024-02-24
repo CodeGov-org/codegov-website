@@ -22,7 +22,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
         }
       }
 
-      .card__title {
+      .card__title:not(:empty) {
         margin-bottom: size(6);
         border-bottom: 1px solid $slate-300;
         color: $black;
@@ -38,7 +38,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     <div class="card__title">
       <ng-content select="[cardTitle]" />
     </div>
-
     <ng-content />
   `,
 })

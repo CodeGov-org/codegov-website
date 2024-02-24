@@ -1,8 +1,8 @@
 import { NnsProposalTopic, ProposalResponse } from '@cg/backend';
 import {
   Proposal,
-  LinkBaseUrl,
-  ProposalLinkType,
+  ProposalLinkBaseUrl,
+  ProposalVotingLinkType,
   ProposalState,
   ProposalTopic,
 } from './proposal.model';
@@ -36,15 +36,9 @@ export function mapOpenProposalListResponse(
 
       proposalLinks: [
         {
-          type: ProposalLinkType.NNSDApp,
+          type: ProposalVotingLinkType.NNSDApp,
           link:
-            LinkBaseUrl.NNSDApp +
-            proposalResponse.proposal.nervous_system.network.id,
-        },
-        {
-          type: ProposalLinkType.DfinityDashboard,
-          link:
-            LinkBaseUrl.DfinityDashboard +
+            ProposalLinkBaseUrl.NNSDApp +
             proposalResponse.proposal.nervous_system.network.id,
         },
       ],

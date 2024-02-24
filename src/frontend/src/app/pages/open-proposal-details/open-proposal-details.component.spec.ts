@@ -6,8 +6,8 @@ import { of } from 'rxjs';
 import {
   ProposalTopic,
   ProposalState,
-  ProposalLinkType,
-  LinkBaseUrl,
+  ProposalVotingLinkType,
+  ProposalLinkBaseUrl,
 } from '~core/state';
 import { ProposalService } from '~core/state';
 import {
@@ -45,8 +45,8 @@ describe('OpenProposalDetailsComponent', () => {
         summary: 'Elect new replica binary revision',
         proposalLinks: [
           {
-            type: ProposalLinkType.NNSDApp,
-            link: LinkBaseUrl.NNSDApp + 1,
+            type: ProposalVotingLinkType.NNSDApp,
+            link: ProposalLinkBaseUrl.NNSDApp + 1,
           },
         ],
       }),

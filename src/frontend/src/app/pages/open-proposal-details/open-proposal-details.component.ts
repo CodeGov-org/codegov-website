@@ -11,11 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { marked } from 'marked';
 import { filter, map } from 'rxjs';
 
-import {
-  NEURON_LINK_BASE_URL,
-  ProposalState,
-  ProposalTopic,
-} from '~core/state';
+import { ProposalLinkBaseUrl, ProposalState, ProposalTopic } from '~core/state';
 import { ProposalService } from '~core/state';
 import {
   CardComponent,
@@ -69,7 +65,7 @@ import { isNotNil } from '~core/utils';
 
       .proposal-summary {
         margin-top: size(3);
-        padding-top: size(3);
+        padding-top: size(6);
         border-top: 1px solid $slate-300;
 
         @include dark {
@@ -87,21 +83,22 @@ import { isNotNil } from '~core/utils';
     `,
   ],
   template: `
-    <app-card class="proposal">
-      @if (currentProposal$ | async; as proposal) {
-        <h2 class="h4 proposal-title" cardTitle>
-          {{ proposal.title }}
-        </h2>
-      }
+    @if (currentProposal$ | async; as proposal) {
+      <h2 class="h3">{{ proposal.title }}</h2>
 
-      @if (currentProposal$ | async; as proposal) {
+      <app-card class="proposal">
         <app-key-value-grid [columnNumber]="2">
           <app-key-col id="proposal-id">ID</app-key-col>
           <app-value-col aria-labelledby="proposal-id">
-            {{ proposal.id }}</app-value-col
-          >
+            <a
+              href="{{ linkBaseUrl.ProposalId }}{{ proposal.id }}"
+              target="_blank"
+              rel="nofollow noreferrer"
+              >{{ proposal.id }}
+            </a>
+          </app-value-col>
 
-          <app-key-col id="proposal-links">Links</app-key-col>
+          <app-key-col id="proposal-links">Voting links</app-key-col>
           <app-value-col
             class="proposal-links"
             aria-labelledby="proposal-links"
@@ -116,41 +113,41 @@ import { isNotNil } from '~core/utils';
                   href="{{ proposalLink.link }}"
                   target="_blank"
                   rel="nofollow noreferrer"
-                  >{{ proposalLink.type }}</a
-                >
+                  >{{ proposalLink.type }}
+                </a>
               }
             }
           </app-value-col>
 
           <app-key-col id="proposal-topic">Topic</app-key-col>
           <app-value-col aria-labelledby="proposal-topic">
-            {{ proposal.topic }}</app-value-col
-          >
+            {{ proposal.topic }}
+          </app-value-col>
 
           <app-key-col id="proposal-type">Type</app-key-col>
           <app-value-col aria-labelledby="proposal-type">
-            {{ proposal.type }}</app-value-col
-          >
+            {{ proposal.type }}
+          </app-value-col>
 
           <app-key-col id="proposal-created">Created</app-key-col>
           <app-value-col aria-labelledby="proposal-created">
-            {{ proposal.proposedAt | date: 'medium' }}</app-value-col
-          >
+            {{ proposal.proposedAt | date: 'medium' }}
+          </app-value-col>
 
           <app-key-col id="proposal-proposer">Proposer</app-key-col>
           <app-value-col aria-labelledby="proposal-proposer">
             <a
-              href="{{ neuronBaseLink }}{{ proposal.proposedBy }}"
+              href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
               target="_blank"
               rel="nofollow noreferrer"
-              >{{ proposal.proposedBy }}</a
-            ></app-value-col
-          >
+              >{{ proposal.proposedBy }}
+            </a>
+          </app-value-col>
 
           <app-key-col id="proposal-review-end">Review period end</app-key-col>
           <app-value-col aria-labelledby="proposal-review-end">
-            {{ proposal.reviewPeriodEnd | date: 'medium' }}</app-value-col
-          >
+            {{ proposal.reviewPeriodEnd | date: 'medium' }}
+          </app-value-col>
 
           <app-key-col id="proposal-voting-end">Voting period end</app-key-col>
           <app-value-col aria-labelledby="proposal-voting-end">
@@ -158,20 +155,18 @@ import { isNotNil } from '~core/utils';
           </app-value-col>
         </app-key-value-grid>
 
-        <h2 class="h4 proposal-summary">Proposal summary</h2>
-        <app-card
-          class="proposal-summary__content"
-          [innerHTML]="convertMarkdownToHTML(proposal.summary)"
-        >
+        <h3 class="h4 proposal-summary">Proposal summary</h3>
+        <app-card class="proposal-summary__content">
+          <div [innerHTML]="convertMarkdownToHTML(proposal.summary)"></div>
         </app-card>
-      }
-    </app-card>
+      </app-card>
+    }
   `,
 })
 export class OpenProposalDetailsComponent implements OnInit {
   public readonly proposalList$ = this.proposalService.openProposalList$;
   public readonly proposalTopic = ProposalTopic;
-  public readonly neuronBaseLink = NEURON_LINK_BASE_URL;
+  public readonly linkBaseUrl = ProposalLinkBaseUrl;
   public readonly currentProposal$ = this.proposalService.currentProposal$;
 
   private readonly proposalIdFromRoute$ = this.route.params.pipe(

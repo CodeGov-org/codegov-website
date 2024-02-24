@@ -109,21 +109,22 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
     <nav class="secondary-navbar">
       <div class="secondary-navbar__inner">
         <div class="secondary-navbar__left">
-          <!-- left aligned items -->
           <a
             class="secondary-navbar__link"
             [routerLink]="['/open']"
             routerLinkActive="active-link"
-            [routerLinkActiveOptions]="{ exact: true }"
-            >Review period open</a
+            [routerLinkActiveOptions]="{ exact: false }"
           >
+            Review period open
+          </a>
           <a
             class="secondary-navbar__link"
             [routerLink]="['/closed']"
             routerLinkActive="active-link"
             [routerLinkActiveOptions]="{ exact: false }"
-            >Review period closed</a
           >
+            Review period closed
+          </a>
         </div>
 
         <div class="secondary-navbar__right">
@@ -161,7 +162,6 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
                     class="profile-menu__item-icon"
                     aria-hidden="true"
                   />
-
                   Logout
                 </button>
               </ng-container>

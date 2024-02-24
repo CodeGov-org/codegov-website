@@ -2,7 +2,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { NEURON_LINK_BASE_URL, ProposalTopic } from '~core/state';
+import { ProposalLinkBaseUrl, ProposalTopic } from '~core/state';
 import { ProposalService } from '~core/state';
 import {
   CardComponent,
@@ -70,10 +70,15 @@ import {
           <app-key-value-grid [columnNumber]="2">
             <app-key-col id="proposal-id">ID</app-key-col>
             <app-value-col aria-labelledby="proposal-id">
-              {{ proposal.id }}</app-value-col
-            >
+              <a
+                href="{{ linkBaseUrl.ProposalId }}{{ proposal.id }}"
+                target="_blank"
+                rel="nofollow noreferrer"
+                >{{ proposal.id }}
+              </a>
+            </app-value-col>
 
-            <app-key-col id="proposal-links">Links</app-key-col>
+            <app-key-col id="proposal-links">Voting links</app-key-col>
             <app-value-col
               class="proposal-links"
               aria-labelledby="proposal-links"
@@ -88,47 +93,47 @@ import {
                     href="{{ proposalLink.link }}"
                     target="_blank"
                     rel="nofollow noreferrer"
-                    >{{ proposalLink.type }}</a
-                  >
+                    >{{ proposalLink.type }}
+                  </a>
                 }
               }
             </app-value-col>
 
             <app-key-col id="proposal-topic">Topic</app-key-col>
             <app-value-col aria-labelledby="proposal-topic">
-              {{ proposal.topic }}</app-value-col
-            >
+              {{ proposal.topic }}
+            </app-value-col>
 
             <app-key-col id="proposal-type">Type</app-key-col>
             <app-value-col aria-labelledby="proposal-type">
-              {{ proposal.type }}</app-value-col
-            >
+              {{ proposal.type }}
+            </app-value-col>
 
             <app-key-col id="proposal-created">Created</app-key-col>
             <app-value-col aria-labelledby="proposal-created">
-              {{ proposal.proposedAt | date: 'medium' }}</app-value-col
-            >
+              {{ proposal.proposedAt | date: 'medium' }}
+            </app-value-col>
 
             <app-key-col id="proposal-proposer">Proposer</app-key-col>
             <app-value-col aria-labelledby="proposal-proposer">
               <a
-                href="{{ neuronBaseLink }}{{ proposal.proposedBy }}"
+                href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
                 target="_blank"
                 rel="nofollow noreferrer"
-                >{{ proposal.proposedBy }}</a
-              ></app-value-col
-            >
+                >{{ proposal.proposedBy }}
+              </a>
+            </app-value-col>
 
             <app-key-col id="proposal-review-end"
-              >Review period end</app-key-col
-            >
+              >Review period end
+            </app-key-col>
             <app-value-col aria-labelledby="proposal-review-end">
-              {{ proposal.reviewPeriodEnd | date: 'medium' }}</app-value-col
-            >
+              {{ proposal.reviewPeriodEnd | date: 'medium' }}
+            </app-value-col>
 
             <app-key-col id="proposal-voting-end"
-              >Voting period end</app-key-col
-            >
+              >Voting period end
+            </app-key-col>
             <app-value-col aria-labelledby="proposal-voting-end">
               {{ proposal.votingPeriodEnd | date: 'medium' }}
             </app-value-col>
@@ -137,8 +142,8 @@ import {
             <a
               class="btn btn--outline proposal-action"
               [routerLink]="['/open', proposal.id]"
-              >View details</a
-            >
+              >View details
+            </a>
           </div>
         </app-card>
       }
@@ -148,7 +153,7 @@ import {
 export class OpenProposalListComponent implements OnInit {
   public readonly proposalList$ = this.proposalService.openProposalList$;
   public readonly proposalTopic = ProposalTopic;
-  public readonly neuronBaseLink = NEURON_LINK_BASE_URL;
+  public readonly linkBaseUrl = ProposalLinkBaseUrl;
 
   constructor(private readonly proposalService: ProposalService) {}
 
