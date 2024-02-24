@@ -12,5 +12,6 @@ export * from './key-value-grid';
 export * from './label';
 export * from './loading-button';
 export * from './loading-dialog';
+export * from './theme-toggle';
 export * from './tooltip';
 export * from './value-col';

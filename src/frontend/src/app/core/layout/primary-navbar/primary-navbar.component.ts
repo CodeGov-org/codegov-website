@@ -7,7 +7,11 @@ import {
   HamburgerMenuIconComponent,
   MenuCloseIconComponent,
 } from '~core/icons';
-import { CollapsibleComponent, DropdownComponent } from '~core/ui';
+import {
+  CollapsibleComponent,
+  DropdownComponent,
+  ThemeToggleComponent,
+} from '~core/ui';
 
 @Component({
   selector: 'app-primary-navbar',
@@ -20,6 +24,7 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
     CollapsibleComponent,
     HamburgerMenuIconComponent,
     MenuCloseIconComponent,
+    ThemeToggleComponent,
   ],
   template: `
     <header class="navbar">
@@ -68,9 +73,11 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
                 </a>
               }
             }
+            <app-theme-toggle />
           </div>
 
           <div class="navbar__mobile-nav-trigger">
+            <app-theme-toggle />
             <button
               type="button"
               class="navbar__mobile-nav-button"
@@ -142,8 +149,8 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
 })
 export class PrimaryNavbarComponent {
   public globalConfig = GLOBAL_CONFIG;
-
   public isSidenavOpen = false;
+  public isDarkMode = true;
 
   public isLinkCategory = isLinkCategory;
 
