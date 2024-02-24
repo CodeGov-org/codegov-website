@@ -14,6 +14,8 @@ NNS_FUNCTION_ARG=$(didc encode -d ./scripts/canisters/registry.did -m update_ele
   }
 )' | sed 's/../\\&/g')
 
+SUMMARY="$(cat ./scripts/s.md)"
+echo $SUMMARY
 dfx canister call \
   --identity cg-test-proposer \
   --candid ./scripts/canisters/governance.did \
