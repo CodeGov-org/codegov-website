@@ -1,4 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute } from '@angular/router';
+import {
+  ActivatedRouteMock,
+  activatedRouteMockFactory,
+} from 'src/app/testing/activated-route-mock';
 
 import { UserAuthService } from '~core/services';
 import {
@@ -11,9 +16,11 @@ describe('SecondaryNavbarComponent', () => {
   let component: SecondaryNavbarComponent;
   let fixture: ComponentFixture<SecondaryNavbarComponent>;
   let userAuthServiceMock: UserAuthServiceMock;
+  let activatedRouteMock: ActivatedRouteMock;
 
   beforeEach(async () => {
     userAuthServiceMock = userAuthServiceMockFactory();
+    activatedRouteMock = activatedRouteMockFactory();
 
     await TestBed.configureTestingModule({
       imports: [SecondaryNavbarComponent],
@@ -21,6 +28,10 @@ describe('SecondaryNavbarComponent', () => {
         {
           provide: UserAuthService,
           useValue: userAuthServiceMock,
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: activatedRouteMock,
         },
       ],
     }).compileComponents();

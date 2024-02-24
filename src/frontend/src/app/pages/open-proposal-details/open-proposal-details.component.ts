@@ -185,8 +185,6 @@ export class OpenProposalDetailsComponent implements OnInit {
     filter(Boolean),
   );
 
-  public proposalSummary = '';
-
   constructor(
     private readonly proposalService: ProposalService,
     private readonly route: ActivatedRoute,
@@ -205,7 +203,6 @@ export class OpenProposalDetailsComponent implements OnInit {
         if (proposal.state === ProposalState.Completed) {
           this.router.navigate(['closed', { id: this.proposalIdFromRoute$ }]);
         }
-        this.proposalSummary = proposal.summary;
       });
   }
 
