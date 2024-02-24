@@ -21,8 +21,14 @@ export function mapOpenProposalListResponse(
       ),
       type: 'unknown',
       state: ProposalState.InProgress,
-      reviewPeriodEnd: new Date(2024, 1, 17, 1, 1, 25),
-      votingPeriodEnd: new Date(2024, 1, 19, 1, 1, 25),
+      reviewPeriodEnd: addDays(
+        new Date(proposalResponse.proposal.proposed_at),
+        2,
+      ),
+      votingPeriodEnd: addDays(
+        new Date(proposalResponse.proposal.proposed_at),
+        4,
+      ),
       proposedAt: new Date(proposalResponse.proposal.proposed_at),
       proposedBy: proposalResponse.proposal.proposed_by,
       summary:
@@ -53,4 +59,10 @@ function getProposalTopic(nnsProposalTopic: NnsProposalTopic): ProposalTopic {
   if ('replica_version_management' in nnsProposalTopic) {
     return ProposalTopic.RVM;
   } else return ProposalTopic.SCM;
+}
+
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(date.getDate() + days);
+  return result;
 }

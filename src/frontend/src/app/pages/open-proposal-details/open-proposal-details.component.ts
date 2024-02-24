@@ -16,7 +16,7 @@ import {
   ProposalState,
   ProposalTopic,
 } from '~core/state';
-import { ProposalService } from '~core/state/proposal/proposal.service';
+import { ProposalService } from '~core/state';
 import {
   CardComponent,
   KeyColComponent,
@@ -157,8 +157,8 @@ import { isNotNil } from '~core/utils';
             {{ proposal.votingPeriodEnd | date: 'medium' }}
           </app-value-col>
         </app-key-value-grid>
-        <h2 class="h4 proposal-summary">Proposal summary</h2>
 
+        <h2 class="h4 proposal-summary">Proposal summary</h2>
         <app-card
           class="proposal-summary__content"
           [innerHTML]="convertMarkdownToHTML(proposal.summary)"

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
-import { ProposalService } from '~core/state/proposal/proposal.service';
+import { ProposalService } from '~core/state';
 import {
   ProposalServiceMock,
   proposalServiceMockFactory,

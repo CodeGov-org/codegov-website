@@ -9,7 +9,7 @@ import {
   ProposalLinkType,
   LinkBaseUrl,
 } from '~core/state';
-import { ProposalService } from '~core/state/proposal/proposal.service';
+import { ProposalService } from '~core/state';
 import {
   ProposalServiceMock,
   proposalServiceMockFactory,

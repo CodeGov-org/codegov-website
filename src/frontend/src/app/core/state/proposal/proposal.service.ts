@@ -3,7 +3,7 @@ import { BehaviorSubject, map, switchMap } from 'rxjs';
 
 import { ListProposalsResponse } from '@cg/backend';
 import { BackendActorService } from '~core/services';
-import { isOk } from '~core/utils';
+import { isNotNil, isOk } from '~core/utils';
 import { mapOpenProposalListResponse } from './proposal.mapper';
 import { Proposal } from './proposal.model';
 
@@ -17,7 +17,7 @@ export class ProposalService {
   private currentProposalIdSubject = new BehaviorSubject<bigint | null>(null);
   public currentProposalId$ = this.currentProposalIdSubject.asObservable();
 
-  private lastLoadTime: Date | undefined = undefined;
+  private lastLoadTime: Date | null = null;
 
   public readonly currentProposal$ = this.currentProposalId$.pipe(
     switchMap(proposalId =>
@@ -36,8 +36,8 @@ export class ProposalService {
     let getResponse: ListProposalsResponse;
 
     if (
-      this.lastLoadTime === undefined ||
-      new Date().getTime() - this.lastLoadTime?.getTime() > 5_000
+      !isNotNil(this.lastLoadTime) ||
+      new Date().getTime() - this.lastLoadTime.getTime() > 5_000
     ) {
       getResponse = await this.actorService.list_proposals();
     } else return;

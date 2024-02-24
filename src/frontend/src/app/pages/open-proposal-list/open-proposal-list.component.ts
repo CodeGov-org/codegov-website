@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 import { NEURON_LINK_BASE_URL, ProposalTopic } from '~core/state';
-import { ProposalService } from '~core/state/proposal/proposal.service';
+import { ProposalService } from '~core/state';
 import {
   CardComponent,
   KeyColComponent,
