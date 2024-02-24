@@ -19,8 +19,35 @@ pub enum UserConfig {
 }
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub enum SocialLinkPlatform {
+    #[serde(rename = "dscvr")]
+    DSCVR,
+
+    #[serde(rename = "openchat")]
+    OpenChat,
+
+    #[serde(rename = "taggr")]
+    Taggr,
+
+    #[serde(rename = "x")]
+    X,
+
+    #[serde(rename = "github")]
+    GitHub,
+
+    #[serde(rename = "dfinityforum")]
+    DfinityForum,
+
+    #[serde(rename = "discord")]
+    Discord,
+
+    #[serde(rename = "website")]
+    Website,
+}
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
 pub struct SocialLink {
-    pub platform: String,
+    pub platform: SocialLinkPlatform,
     pub username: String,
 }
 

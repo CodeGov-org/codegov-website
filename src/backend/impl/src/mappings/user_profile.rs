@@ -1,5 +1,6 @@
 use crate::repositories::{
-    HistoryAction, SocialLink, UserConfig, UserId, UserProfile, UserProfileHistoryEntry,
+    HistoryAction, SocialLink, SocialLinkPlatform, UserConfig, UserId, UserProfile,
+    UserProfileHistoryEntry,
 };
 use backend_api::{
     CreateMyUserProfileResponse, GetMyUserProfileHistoryResponse, GetMyUserProfileResponse,
@@ -26,10 +27,40 @@ impl From<UserConfig> for backend_api::UserConfig {
     }
 }
 
+impl From<SocialLinkPlatform> for backend_api::SocialLinkPlatform {
+    fn from(value: SocialLinkPlatform) -> Self {
+        match value {
+            SocialLinkPlatform::Dscvr => backend_api::SocialLinkPlatform::DSCVR,
+            SocialLinkPlatform::OpenChat => backend_api::SocialLinkPlatform::OpenChat,
+            SocialLinkPlatform::Taggr => backend_api::SocialLinkPlatform::Taggr,
+            SocialLinkPlatform::X => backend_api::SocialLinkPlatform::X,
+            SocialLinkPlatform::GitHub => backend_api::SocialLinkPlatform::GitHub,
+            SocialLinkPlatform::DfinityForum => backend_api::SocialLinkPlatform::DfinityForum,
+            SocialLinkPlatform::Discord => backend_api::SocialLinkPlatform::Discord,
+            SocialLinkPlatform::Website => backend_api::SocialLinkPlatform::Website,
+        }
+    }
+}
+
+impl From<backend_api::SocialLinkPlatform> for SocialLinkPlatform {
+    fn from(value: backend_api::SocialLinkPlatform) -> Self {
+        match value {
+            backend_api::SocialLinkPlatform::DSCVR => SocialLinkPlatform::Dscvr,
+            backend_api::SocialLinkPlatform::OpenChat => SocialLinkPlatform::OpenChat,
+            backend_api::SocialLinkPlatform::Taggr => SocialLinkPlatform::Taggr,
+            backend_api::SocialLinkPlatform::X => SocialLinkPlatform::X,
+            backend_api::SocialLinkPlatform::GitHub => SocialLinkPlatform::GitHub,
+            backend_api::SocialLinkPlatform::DfinityForum => SocialLinkPlatform::DfinityForum,
+            backend_api::SocialLinkPlatform::Discord => SocialLinkPlatform::Discord,
+            backend_api::SocialLinkPlatform::Website => SocialLinkPlatform::Website,
+        }
+    }
+}
+
 impl From<SocialLink> for backend_api::SocialLink {
     fn from(value: SocialLink) -> Self {
         backend_api::SocialLink {
-            platform: value.platform,
+            platform: value.platform.into(),
             username: value.username,
         }
     }
@@ -38,7 +69,7 @@ impl From<SocialLink> for backend_api::SocialLink {
 impl From<backend_api::SocialLink> for SocialLink {
     fn from(value: backend_api::SocialLink) -> Self {
         SocialLink {
-            platform: value.platform,
+            platform: value.platform.into(),
             username: value.username,
         }
     }

@@ -10,8 +10,19 @@ type HistoryAction = variant {
   restore;
 };
 
+type SocialLinkPlatform = variant {
+  dscvr;
+  openchat;
+  taggr;
+  x;
+  github;
+  dfinityforum;
+  discord;
+  website;
+};
+
 type SocialLink = record {
-  platform : text;
+  platform : SocialLinkPlatform;
   username : text;
 };
 

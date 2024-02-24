@@ -288,7 +288,7 @@ describe('User Profile', () => {
         'da01eead5eb00bb853b9c42e1637433c81348a8856f4cff1bb917e2cd04df2cb';
       const bobUpdateSocialLinks: SocialLink[] = [
         {
-          platform: 'X',
+          platform: { x: null },
           username: 'bob',
         },
       ];
@@ -328,7 +328,7 @@ describe('User Profile', () => {
         '4dfa940def17f1427ae47378c440f10185867677109a02bc8374fc25b9dee8af';
       const bobFinalUpdateSocialLinks: SocialLink[] = [
         {
-          platform: 'X',
+          platform: { x: null },
           username: 'infinitebob',
         },
       ];
@@ -610,7 +610,7 @@ describe('User Profile', () => {
         'da01eead5eb00bb853b9c42e1637433c81348a8856f4cff1bb917e2cd04df2cb';
       const bobUpdateSocialLinks: SocialLink[] = [
         {
-          platform: 'X',
+          platform: { x: null },
           username: 'bob',
         },
       ];

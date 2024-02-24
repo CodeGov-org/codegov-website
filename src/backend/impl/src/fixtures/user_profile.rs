@@ -1,7 +1,8 @@
 use crate::{
     fixtures::{date_time_a, principal},
     repositories::{
-        HistoryAction, NeuronId, SocialLink, UserConfig, UserProfile, UserProfileHistoryEntry,
+        HistoryAction, NeuronId, SocialLink, SocialLinkPlatform, UserConfig, UserProfile,
+        UserProfileHistoryEntry,
     },
 };
 use rstest::*;
@@ -27,7 +28,7 @@ pub fn anonymous_user_profile() -> UserProfile {
 #[fixture]
 pub fn dscvr_social_link() -> SocialLink {
     SocialLink {
-        platform: "dscvr".to_string(),
+        platform: SocialLinkPlatform::Dscvr,
         username: "ZurichExplorer2023".to_string(),
     }
 }
@@ -35,7 +36,7 @@ pub fn dscvr_social_link() -> SocialLink {
 #[fixture]
 pub fn open_chat_social_link() -> SocialLink {
     SocialLink {
-        platform: "open_chat".to_string(),
+        platform: SocialLinkPlatform::OpenChat,
         username: "k3b7z-9jklm-abcde-fghij-yz12".to_string(),
     }
 }
@@ -43,7 +44,7 @@ pub fn open_chat_social_link() -> SocialLink {
 #[fixture]
 pub fn taggr_social_link() -> SocialLink {
     SocialLink {
-        platform: "taggr".to_string(),
+        platform: SocialLinkPlatform::Taggr,
         username: "ZurichExplorer2023".to_string(),
     }
 }

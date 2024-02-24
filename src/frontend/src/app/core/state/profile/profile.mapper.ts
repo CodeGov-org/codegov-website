@@ -3,6 +3,7 @@ import {
   GetMyUserProfileResponse,
   UpdateMyUserProfileRequest,
   SocialLink as ApiSocialLink,
+  SocialLinkPlatform,
 } from '@cg/backend';
 import { Ok, optional } from '~core/utils';
 import {
@@ -53,23 +54,42 @@ export function mapSocialLinksResponse(
   }));
 }
 
-export function mapSocialLinkPlatform(platform: string): SocialMediaType {
-  switch (platform) {
-    case 'DSCVR':
-      return SocialMediaType.DSCVR;
-    case 'OpenChat':
-      return SocialMediaType.OpenChat;
-    case 'Taggr':
-      return SocialMediaType.Taggr;
-    case 'X':
-      return SocialMediaType.X;
-    case 'DfinityForum':
-      return SocialMediaType.DfinityForum;
-    case 'Discord':
-      return SocialMediaType.Discord;
-    default:
-      throw new Error(`Unknown social link platform: ${platform}`);
+export function mapSocialLinkPlatform(
+  platform: SocialLinkPlatform,
+): SocialMediaType {
+  if ('dscvr' in platform) {
+    return SocialMediaType.DSCVR;
   }
+
+  if ('openchat' in platform) {
+    return SocialMediaType.OpenChat;
+  }
+
+  if ('taggr' in platform) {
+    return SocialMediaType.Taggr;
+  }
+
+  if ('x' in platform) {
+    return SocialMediaType.X;
+  }
+
+  if ('github' in platform) {
+    return SocialMediaType.Github;
+  }
+
+  if ('dfinityforum' in platform) {
+    return SocialMediaType.DfinityForum;
+  }
+
+  if ('discord' in platform) {
+    return SocialMediaType.Discord;
+  }
+
+  if ('website' in platform) {
+    return SocialMediaType.Website;
+  }
+
+  throw new Error(`Unknown social link platform: ${JSON.stringify(platform)}`);
 }
 
 export function mapUpdateProfileRequest(
@@ -133,20 +153,26 @@ export function mapProfileUpdateSocialLinksRequest(
   }));
 }
 
-export function mapSocialLinkType(type: SocialMediaType): string {
+export function mapSocialLinkType(type: SocialMediaType): SocialLinkPlatform {
   switch (type) {
     case SocialMediaType.DSCVR:
-      return 'DSCVR';
+      return { dscvr: null };
     case SocialMediaType.OpenChat:
-      return 'OpenChat';
+      return { openchat: null };
     case SocialMediaType.Taggr:
-      return 'Taggr';
+      return { taggr: null };
     case SocialMediaType.X:
-      return 'X';
+      return { x: null };
+    case SocialMediaType.Github:
+      return { github: null };
     case SocialMediaType.DfinityForum:
-      return 'DfinityForum';
+      return { dfinityforum: null };
     case SocialMediaType.Discord:
-      return 'Discord';
+      return { discord: null };
+    case SocialMediaType.Website:
+      return { website: null };
+    default:
+      throw new Error(`Unknown social link type: ${type}`);
   }
 }
 

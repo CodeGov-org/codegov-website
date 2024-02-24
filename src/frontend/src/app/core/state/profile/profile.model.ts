@@ -58,6 +58,8 @@ export enum SocialMediaType {
   OpenChat = 'OpenChat',
   Taggr = 'Taggr',
   X = 'X',
+  Github = 'Github',
   DfinityForum = 'DfinityForum',
   Discord = 'Discord',
+  Website = 'Website',
 }
