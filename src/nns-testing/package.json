@@ -1,0 +1,15 @@
+{
+  "name": "nns-testing",
+  "private": true,
+  "scripts": {
+    "start": "bun run ./src/index.ts"
+  },
+  "dependencies": {
+    "@dfinity/ledger-icp": "^2.2.1",
+    "@dfinity/nns": "^4.0.1",
+    "@dfinity/nns-proto": "^1.0.1",
+    "@dfinity/utils": "^2.1.2",
+    "@inquirer/prompts": "^4.1.0",
+    "ora": "^8.0.1"
+  }
+}
