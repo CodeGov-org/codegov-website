@@ -120,26 +120,26 @@ $ambient-opacity: 0.12;
   @extend %layer;
 
   z-index: 20;
-  @include box-shadow(9);
+  @include box-shadow(4);
 }
 
 @mixin layer-30 {
   @extend %layer;
 
   z-index: 30;
-  @include box-shadow(14);
+  @include box-shadow(6);
 }
 
 @mixin layer-40 {
   @extend %layer;
 
   z-index: 40;
-  @include box-shadow(19);
+  @include box-shadow(8);
 }
 
 @mixin layer-50 {
   @extend %layer;
 
   z-index: 50;
-  @include box-shadow(24);
+  @include box-shadow(10);
 }

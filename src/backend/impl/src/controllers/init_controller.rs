@@ -21,6 +21,12 @@ fn init() {
 
 #[post_upgrade]
 fn post_upgrade() {
+    let calling_principal = caller();
+
+    set_timer(Duration::from_secs(0), move || {
+        spawn(init_admin(calling_principal))
+    });
+
     jobs::start_jobs();
 }
 

@@ -13,7 +13,6 @@ export interface BaseProfile<T extends UserRole> {
 export type AnonymousProfile = BaseProfile<UserRole.Anonymous>;
 
 export interface ReviewerProfile extends BaseProfile<UserRole.Reviewer> {
-  proposalTypes: string[];
   neuronId: bigint;
   walletAddress: string;
   bio: string;

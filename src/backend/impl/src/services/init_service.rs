@@ -20,6 +20,14 @@ impl Default for InitServiceImpl<UserProfileRepositoryImpl> {
 
 impl<T: UserProfileRepository> InitService for InitServiceImpl<T> {
     async fn init(&self, calling_principal: Principal) -> Result<(), ApiError> {
+        if self
+            .user_profile_repository
+            .get_user_id_by_principal(&calling_principal)
+            .is_some()
+        {
+            return Ok(());
+        }
+
         let profile = UserProfile::new_admin();
 
         self.user_profile_repository
@@ -46,17 +54,40 @@ mod tests {
     use rstest::*;
 
     #[rstest]
-    async fn init() {
+    async fn init_with_new_principal() {
         let calling_principal = fixtures::principal();
         let id = fixtures::user_id();
         let profile = UserProfile::new_admin();
 
         let mut repository_mock = MockUserProfileRepository::new();
         repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(None);
+        repository_mock
             .expect_create_user_profile()
             .once()
             .with(eq(calling_principal), eq(profile.clone()))
             .return_const(Ok(id));
+
+        let service = InitServiceImpl::new(repository_mock);
+
+        service.init(calling_principal).await.unwrap();
+    }
+
+    #[rstest]
+    async fn init_with_existing_principal() {
+        let calling_principal = fixtures::principal();
+        let id = fixtures::user_id();
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(id));
+        repository_mock.expect_create_user_profile().never();
 
         let service = InitServiceImpl::new(repository_mock);
 

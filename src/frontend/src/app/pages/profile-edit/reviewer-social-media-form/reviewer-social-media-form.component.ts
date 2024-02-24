@@ -16,7 +16,6 @@ import {
 
 import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from '../profile.model';
 import { ReviewerProfileComponent } from '../reviewer-profile';
-import { LoadingIconComponent } from '~core/icons';
 import {
   ProfileService,
   ReviewerProfile,
@@ -27,11 +26,13 @@ import {
 } from '~core/state';
 import {
   FormFieldComponent,
+  FormValidationInfoComponent,
   InputDirective,
   InputHintComponent,
   KeyColComponent,
   KeyValueGridComponent,
-  TooltipDirective,
+  LabelDirective,
+  LoadingButtonComponent,
   ValueColComponent,
 } from '~core/ui';
 import { ComponentChanges, keysOf } from '~core/utils';
@@ -44,37 +45,19 @@ export type SocialMediaForm = {
   selector: 'app-reviewer-social-media-form',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     FormFieldComponent,
-    InputHintComponent,
+    FormValidationInfoComponent,
     InputDirective,
+    LabelDirective,
+    InputHintComponent,
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
-    TooltipDirective,
-    LoadingIconComponent,
-    CommonModule,
+    LoadingButtonComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @import '@cg/styles/common';
-
-      .validation-info {
-        color: $error;
-        padding-right: size(5);
-
-        @include text-sm;
-        @include md {
-          padding-right: size(10);
-        }
-      }
-
-      .transparent-label {
-        color: transparent;
-      }
-    `,
-  ],
   template: `
     <form [formGroup]="socialMediaForm" (ngSubmit)="onSubmit()">
       <app-key-value-grid>
@@ -95,8 +78,9 @@ export type SocialMediaForm = {
                     href="{{ getSocialMediaUrl(key) }}"
                     target="_blank"
                     rel="nofollow noreferrer"
-                    >{{ getSocialMediaUrl(key) }}</a
                   >
+                    {{ getSocialMediaUrl(key) }}
+                  </a>
                 }
               </app-input-hint>
             </app-form-field>
@@ -104,20 +88,25 @@ export type SocialMediaForm = {
         }
       </app-key-value-grid>
 
-      <div class="btn-group">
-        <button class="btn btn--outline" (click)="cancelEdits()">Cancel</button>
+      <app-form-validation-info />
 
-        <button type="submit" [disabled]="isSaving" class="btn">
-          @if (isSaving) {
-            <app-loading-icon class="btn--loading" aria-label="Saving" />
-          }
-          <div
-            [ngClass]="isSaving ? 'transparent-label' : ''"
-            [attr.aria-hidden]="isSaving"
-          >
-            Save
-          </div>
+      <div class="btn-group">
+        <button
+          class="btn btn--outline"
+          (click)="cancelEdits()"
+          [disabled]="socialMediaForm.invalid || isSaving"
+        >
+          Cancel
         </button>
+
+        <app-loading-button
+          btnClass="btn"
+          type="submit"
+          [disabled]="socialMediaForm.invalid || isSaving"
+          [isSaving]="isSaving"
+        >
+          Save
+        </app-loading-button>
       </div>
     </form>
   `,

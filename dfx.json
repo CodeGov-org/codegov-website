@@ -30,7 +30,7 @@
       },
       "source": ["src/frontend/dist/browser"],
       "type": "assets",
-      "build": ["pnpm -F frontend... build"]
+      "build": ["pnpm turbo build --filter frontend"]
     },
     "marketing": {
       "type": "assets",
@@ -40,7 +40,7 @@
         "entrypoint": "src/marketing/dist/index.html"
       },
       "source": ["src/marketing/dist"],
-      "build": ["pnpm -F marketing... build"]
+      "build": ["pnpm turbo build --filter marketing"]
     },
     "docs": {
       "type": "assets",
@@ -50,7 +50,7 @@
         "entrypoint": "src/docs/build/index.html"
       },
       "source": ["src/docs/build"],
-      "build": ["pnpm -F docs... build"]
+      "build": ["pnpm turbo build --filter docs"]
     },
     "internet_identity": {
       "type": "custom",

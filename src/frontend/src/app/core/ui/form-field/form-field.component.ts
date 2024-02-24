@@ -44,7 +44,7 @@ import { InputHintComponent } from '../input-hint';
   template: `
     <ng-content></ng-content>
 
-    <div class="form-field__feedback">
+    <div class="form-field__feedback" [id]="formControlId + '-feedback'">
       @if (hasError()) {
         <ng-container *ngTemplateOutlet="getErrorTemplate()" />
       } @else if (hasHint()) {
@@ -65,6 +65,8 @@ export class FormFieldComponent implements AfterContentInit {
 
   private formControl: AbstractControl | undefined;
 
+  public formControlId: string | undefined;
+
   constructor(
     @SkipSelf()
     @Optional()
@@ -82,6 +84,7 @@ export class FormFieldComponent implements AfterContentInit {
     if (!formControlName) {
       throw new Error('Form field could not find form control name');
     }
+    this.formControlId = this.inputDirective.getId();
 
     const formControl = this.controlContainer?.control?.get(formControlName);
     if (!formControl) {

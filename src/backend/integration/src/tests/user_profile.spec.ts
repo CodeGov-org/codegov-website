@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'bun:test';
 import { SocialLink, type _SERVICE } from '@cg/backend';
 import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
 import {
+  BACKEND_WASM_PATH,
   anonymousIdentity,
   controllerIdentity,
   dateToRfc3339,
@@ -9,9 +10,11 @@ import {
   extractOkResponse,
   setupBackendCanister,
 } from '../support';
+import { Principal } from '@dfinity/principal';
 
 describe('User Profile', () => {
   let actor: Actor<_SERVICE>;
+  let canisterId: Principal;
   let pic: PocketIc;
   const currentDate = new Date(1988, 1, 14, 0, 0, 0, 0);
 
@@ -19,6 +22,7 @@ describe('User Profile', () => {
     pic = await PocketIc.create();
     const fixture = await setupBackendCanister(pic, currentDate);
     actor = fixture.actor;
+    canisterId = fixture.canisterId;
   });
 
   it('should not allow the anonymous principal', async () => {
@@ -55,6 +59,50 @@ describe('User Profile', () => {
     expect(historyOk.history[0]).toEqual({
       action: { create: null },
       user: controllerIdentity.getPrincipal(),
+      date_time: dateToRfc3339(currentDate),
+      data: {
+        username: resOk.username,
+        config: resOk.config,
+      },
+    });
+  });
+
+  it('should auto create an admin profile for a new controller', async () => {
+    const newControllerIdentity = generateRandomIdentity();
+    actor.setIdentity(newControllerIdentity);
+
+    await pic.updateCanisterSettings({
+      canisterId,
+      controllers: [newControllerIdentity.getPrincipal()],
+      sender: controllerIdentity.getPrincipal(),
+    });
+    await pic.upgradeCanister({
+      canisterId,
+      wasm: BACKEND_WASM_PATH,
+      sender: newControllerIdentity.getPrincipal(),
+    });
+    // make sure init timers run
+    await pic.tick(2);
+
+    const res = await actor.get_my_user_profile();
+    const resOk = extractOkResponse(res);
+
+    const historyRes = await actor.get_my_user_profile_history();
+    const historyOk = extractOkResponse(historyRes);
+
+    expect(resOk).toEqual({
+      id: expect.any(String),
+      username: 'Admin',
+      config: {
+        admin: {
+          bio: 'Default admin profile created for canister controllers',
+        },
+      },
+    });
+    expect(historyOk.history).toHaveLength(1);
+    expect(historyOk.history[0]).toEqual({
+      action: { create: null },
+      user: newControllerIdentity.getPrincipal(),
       date_time: dateToRfc3339(currentDate),
       data: {
         username: resOk.username,

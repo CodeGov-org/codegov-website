@@ -26,7 +26,6 @@ export function mapProfileResponse(
       bio: config.bio,
       neuronId: config.neuron_id,
       walletAddress: config.wallet_address,
-      proposalTypes: [],
       socialMedia: mapSocialLinksResponse(config.social_links),
     };
   } else if ('admin' in apiResponse.config) {

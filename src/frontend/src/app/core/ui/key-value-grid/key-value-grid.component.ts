@@ -11,6 +11,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       :host {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
+        margin-bottom: size(8);
 
         gap: size(1) size(8);
         @include md {

@@ -11,6 +11,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       .copy-icon {
         width: size(5);
         height: size(5);
+        vertical-align: text-bottom;
       }
     `,
   ],
