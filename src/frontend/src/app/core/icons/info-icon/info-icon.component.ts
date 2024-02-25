@@ -12,6 +12,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
         width: size(5);
         height: size(5);
         margin-left: size(2);
+        vertical-align: text-bottom;
       }
     `,
   ],

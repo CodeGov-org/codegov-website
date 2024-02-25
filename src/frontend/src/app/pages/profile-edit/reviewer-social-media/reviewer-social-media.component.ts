@@ -6,7 +6,7 @@ import {
   Output,
 } from '@angular/core';
 
-import { SOCIAL_MEDIA_INPUTS } from '../profile.model';
+import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from '../profile.model';
 import { ReviewerProfile } from '~core/state';
 import {
   KeyColComponent,
@@ -20,20 +20,23 @@ import { keysOf } from '~core/utils';
   imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @import '@cg/styles/common';
-
-      .reviewer-social-media {
-        margin-bottom: size(4);
-      }
-    `,
-  ],
   template: `
-    <app-key-value-grid class="reviewer-social-media">
-      @for (key of socialMediaKeys; track key) {
-        <app-key-col>{{ socialMediaInputs[key].label }}</app-key-col>
-        <app-value-col>{{ getSocialMediaValue(key) }}</app-value-col>
+    <app-key-value-grid>
+      @for (key of socialMediaKeys; track key; let i = $index) {
+        <app-key-col [id]="'social-media-' + i">
+          {{ socialMediaInputs[key].label }}
+        </app-key-col>
+        <app-value-col [attr.aria-labelledby]="'social-media-' + i">
+          @if (hasSocialMedia(key)) {
+            <a
+              [href]="getSocialMediaUrl(key)"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ getSocialMediaUrl(key) }}
+            </a>
+          }
+        </app-value-col>
       }
     </app-key-value-grid>
 
@@ -56,10 +59,22 @@ export class ReviewerSocialMediaComponent {
     this.edit.emit();
   }
 
-  public getSocialMediaValue(lookupKey: string): string {
+  public hasSocialMedia(lookupKey: keyof SocialMediaInputs): boolean {
+    const username = this.getSocialMediaUsername(lookupKey);
+
+    return username.length > 0;
+  }
+
+  public getSocialMediaUrl(lookupKey: keyof SocialMediaInputs): string {
+    const username = this.getSocialMediaUsername(lookupKey);
+
+    return this.socialMediaInputs[lookupKey].baseUrl + username;
+  }
+
+  private getSocialMediaUsername(lookupKey: keyof SocialMediaInputs): string {
     return (
       this.userProfile.socialMedia.find(element => element.type === lookupKey)
-        ?.link ?? ''
+        ?.username ?? ''
     );
   }
 }

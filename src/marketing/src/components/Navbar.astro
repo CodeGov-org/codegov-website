@@ -22,14 +22,18 @@ const {
 
       <div class="navbar__desktop-nav">
         {
-          header_links.map(item =>
+          header_links.map((item, i) =>
             isLinkCategory(item) ? (
-              <Dropdown menuTriggerClassName={['navbar__nav-item']}>
+              <Dropdown
+                menuTriggerClassName={['navbar__nav-item']}
+                id={'navbar-menu-' + i}
+              >
                 <Fragment slot="menuTrigger">{item.title}</Fragment>
 
                 <Fragment slot="menu">
                   {item.children.map(subItem => (
                     <a
+                      role="menuitem"
                       href={subItem.content.cached_url}
                       class="dropdown__menu-item"
                     >
@@ -48,8 +52,7 @@ const {
       </div>
 
       <div class="navbar__mobile-nav-trigger">
-        <button type="button" data-menu-open>
-          <span class="sr-only">Open main menu</span>
+        <button type="button" data-menu-open aria-label="Open main menu">
           <HamburgerMenuIcon />
         </button>
       </div>
@@ -75,8 +78,7 @@ const {
             <span class="sidenav__company">codegov.org</span>
           </a>
 
-          <button type="button" data-menu-close>
-            <span class="sr-only">Close menu</span>
+          <button type="button" data-menu-close aria-label="Close menu">
             <MenuCloseIcon />
           </button>
         </div>

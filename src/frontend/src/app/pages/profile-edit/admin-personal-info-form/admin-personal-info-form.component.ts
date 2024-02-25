@@ -15,7 +15,6 @@ import {
 } from '@angular/forms';
 
 import { AdminProfileComponent } from '../admin-profile';
-import { LoadingIconComponent } from '~core/icons';
 import {
   AdminProfile,
   AdminProfileUpdate,
@@ -24,12 +23,13 @@ import {
 } from '~core/state';
 import {
   FormFieldComponent,
+  FormValidationInfoComponent,
   InputDirective,
   InputErrorComponent,
   KeyColComponent,
   KeyValueGridComponent,
   LabelDirective,
-  TooltipDirective,
+  LoadingButtonComponent,
   ValueColComponent,
 } from '~core/ui';
 import { ComponentChanges } from '~core/utils';
@@ -43,38 +43,19 @@ export interface AdminProfileForm {
   selector: 'app-admin-personal-info-form',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     FormFieldComponent,
-    InputErrorComponent,
+    FormValidationInfoComponent,
     InputDirective,
-    TooltipDirective,
+    LabelDirective,
+    InputErrorComponent,
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
-    LabelDirective,
-    LoadingIconComponent,
-    CommonModule,
+    LoadingButtonComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @import '@cg/styles/common';
-
-      .validation-info {
-        color: $error;
-        padding-right: size(5);
-
-        @include text-sm;
-        @include md {
-          padding-right: size(10);
-        }
-      }
-
-      .transparent-label {
-        color: transparent;
-      }
-    `,
-  ],
   template: `
     <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
       <app-key-value-grid>
@@ -118,31 +99,25 @@ export interface AdminProfileForm {
         </app-value-col>
       </app-key-value-grid>
 
+      <app-form-validation-info />
+
       <div class="btn-group">
-        @if (profileForm.invalid) {
-          <div class="validation-info">
-            Uh-oh! There are some errors in your form. Please fix them and try
-            again.
-          </div>
-        }
-
-        <button class="btn btn--outline" (click)="cancelEdits()">Cancel</button>
-
         <button
+          class="btn btn--outline"
+          (click)="cancelEdits()"
+          [disabled]="profileForm.invalid || isSaving"
+        >
+          Cancel
+        </button>
+
+        <app-loading-button
+          btnClass="btn"
           type="submit"
           [disabled]="profileForm.invalid || isSaving"
-          class="btn"
+          [isSaving]="isSaving"
         >
-          @if (isSaving) {
-            <app-loading-icon class="btn--loading" aria-label="Saving" />
-          }
-          <div
-            [ngClass]="isSaving ? 'transparent-label' : ''"
-            [attr.aria-hidden]="isSaving"
-          >
-            Save
-          </div>
-        </button>
+          Save
+        </app-loading-button>
       </div>
     </form>
   `,

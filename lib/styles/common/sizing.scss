@@ -13,9 +13,9 @@ $sizes: ();
   @return map.get($sizes, $multiplier);
 }
 
-$border-sm-size: 2px;
-$border-size: size(1);
-$border-radius: size(1);
+$border-size: 2px;
+$border-lg-size: size(1);
+$border-radius: size(1.5);
 
 @mixin py($multiplier) {
   padding-top: size($multiplier);

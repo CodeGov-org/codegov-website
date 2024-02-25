@@ -22,26 +22,38 @@ import {
     `
       @import '@cg/styles/common';
 
-      .reviewer-personal-info {
-        margin-bottom: size(4);
-      }
-
       .wallet-address {
         word-break: break-all;
       }
     `,
   ],
   template: `
-    <app-key-value-grid class="reviewer-personal-info">
-      <app-key-col>Username</app-key-col>
-      <app-value-col>{{ userProfile.username }}</app-value-col>
+    <app-key-value-grid>
+      <app-key-col id="reviewer-username">Username</app-key-col>
+      <app-value-col aria-labelledby="reviewer-username">
+        {{ userProfile.username }}
+      </app-value-col>
 
-      <app-key-col>Bio</app-key-col>
-      <app-value-col>{{ userProfile.bio }}</app-value-col>
+      <app-key-col id="reviewer-bio">Bio</app-key-col>
+      <app-value-col aria-labelledby="reviewer-bio">
+        {{ userProfile.bio }}
+      </app-value-col>
 
-      <app-key-col>Wallet address</app-key-col>
-      <app-value-col class="wallet-address">
-        {{ userProfile.walletAddress }}
+      <app-key-col id="reviewer-wallet-address">Wallet address</app-key-col>
+      <app-value-col
+        class="wallet-address"
+        aria-labelledby="reviewer-wallet-address"
+      >
+        <a
+          [href]="
+            'https://dashboard.internetcomputer.org/account/' +
+            userProfile.walletAddress
+          "
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ userProfile.walletAddress }}
+        </a>
       </app-value-col>
     </app-key-value-grid>
 

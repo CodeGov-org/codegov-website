@@ -13,7 +13,6 @@ export interface BaseProfile<T extends UserRole> {
 export type AnonymousProfile = BaseProfile<UserRole.Anonymous>;
 
 export interface ReviewerProfile extends BaseProfile<UserRole.Reviewer> {
-  proposalTypes: string[];
   neuronId: bigint;
   walletAddress: string;
   bio: string;
@@ -51,7 +50,7 @@ export type ProfileUpdate =
 
 export interface SocialLink {
   type: SocialMediaType;
-  link: string;
+  username: string;
 }
 
 export enum SocialMediaType {
@@ -59,6 +58,8 @@ export enum SocialMediaType {
   OpenChat = 'OpenChat',
   Taggr = 'Taggr',
   X = 'X',
+  Github = 'Github',
   DfinityForum = 'DfinityForum',
   Discord = 'Discord',
+  Website = 'Website',
 }

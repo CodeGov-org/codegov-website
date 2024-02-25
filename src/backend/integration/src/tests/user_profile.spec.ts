@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
-import { type _SERVICE } from '@cg/backend';
+import { SocialLink, type _SERVICE } from '@cg/backend';
 import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
 import {
+  BACKEND_WASM_PATH,
   anonymousIdentity,
   controllerIdentity,
   dateToRfc3339,
@@ -9,9 +10,11 @@ import {
   extractOkResponse,
   setupBackendCanister,
 } from '../support';
+import { Principal } from '@dfinity/principal';
 
 describe('User Profile', () => {
   let actor: Actor<_SERVICE>;
+  let canisterId: Principal;
   let pic: PocketIc;
   const currentDate = new Date(1988, 1, 14, 0, 0, 0, 0);
 
@@ -19,6 +22,7 @@ describe('User Profile', () => {
     pic = await PocketIc.create();
     const fixture = await setupBackendCanister(pic, currentDate);
     actor = fixture.actor;
+    canisterId = fixture.canisterId;
   });
 
   it('should not allow the anonymous principal', async () => {
@@ -55,6 +59,50 @@ describe('User Profile', () => {
     expect(historyOk.history[0]).toEqual({
       action: { create: null },
       user: controllerIdentity.getPrincipal(),
+      date_time: dateToRfc3339(currentDate),
+      data: {
+        username: resOk.username,
+        config: resOk.config,
+      },
+    });
+  });
+
+  it('should auto create an admin profile for a new controller', async () => {
+    const newControllerIdentity = generateRandomIdentity();
+    actor.setIdentity(newControllerIdentity);
+
+    await pic.updateCanisterSettings({
+      canisterId,
+      controllers: [newControllerIdentity.getPrincipal()],
+      sender: controllerIdentity.getPrincipal(),
+    });
+    await pic.upgradeCanister({
+      canisterId,
+      wasm: BACKEND_WASM_PATH,
+      sender: newControllerIdentity.getPrincipal(),
+    });
+    // make sure init timers run
+    await pic.tick(2);
+
+    const res = await actor.get_my_user_profile();
+    const resOk = extractOkResponse(res);
+
+    const historyRes = await actor.get_my_user_profile_history();
+    const historyOk = extractOkResponse(historyRes);
+
+    expect(resOk).toEqual({
+      id: expect.any(String),
+      username: 'Admin',
+      config: {
+        admin: {
+          bio: 'Default admin profile created for canister controllers',
+        },
+      },
+    });
+    expect(historyOk.history).toHaveLength(1);
+    expect(historyOk.history[0]).toEqual({
+      action: { create: null },
+      user: newControllerIdentity.getPrincipal(),
       date_time: dateToRfc3339(currentDate),
       data: {
         username: resOk.username,
@@ -276,6 +324,12 @@ describe('User Profile', () => {
       const bobUpdateNeuronId = 7862326246190316138n;
       const bobUpdateWalletAddress =
         'da01eead5eb00bb853b9c42e1637433c81348a8856f4cff1bb917e2cd04df2cb';
+      const bobUpdateSocialLinks: SocialLink[] = [
+        {
+          platform: { x: null },
+          username: 'bob',
+        },
+      ];
       await actor.update_user_profile({
         user_id: bobCreate.id,
         username: [bobUpdateUsername],
@@ -285,6 +339,7 @@ describe('User Profile', () => {
               bio: [bobUpdateBio],
               neuron_id: [bobUpdateNeuronId],
               wallet_address: [bobUpdateWalletAddress],
+              social_links: [bobUpdateSocialLinks],
             },
           },
         ],
@@ -309,6 +364,12 @@ describe('User Profile', () => {
       const bobFinalUpdateBio = 'Bob is an infinitely good reviewer...';
       const bobFinalUpdateWalletAddress =
         '4dfa940def17f1427ae47378c440f10185867677109a02bc8374fc25b9dee8af';
+      const bobFinalUpdateSocialLinks: SocialLink[] = [
+        {
+          platform: { x: null },
+          username: 'infinitebob',
+        },
+      ];
       await actor.update_my_user_profile({
         username: [bobFinalUpdateUsername],
         config: [
@@ -316,6 +377,7 @@ describe('User Profile', () => {
             reviewer: {
               bio: [bobFinalUpdateBio],
               wallet_address: [bobFinalUpdateWalletAddress],
+              social_links: [bobFinalUpdateSocialLinks],
             },
           },
         ],
@@ -394,6 +456,7 @@ describe('User Profile', () => {
             bio: bobFinalUpdateBio,
             neuron_id: bobUpdateNeuronId,
             wallet_address: bobFinalUpdateWalletAddress,
+            social_links: bobFinalUpdateSocialLinks,
           },
         },
       });
@@ -419,6 +482,7 @@ describe('User Profile', () => {
                 bio: bobUpdateBio,
                 neuron_id: bobUpdateNeuronId,
                 wallet_address: bobUpdateWalletAddress,
+                social_links: bobUpdateSocialLinks,
               },
             },
           },
@@ -434,6 +498,7 @@ describe('User Profile', () => {
                 bio: bobFinalUpdateBio,
                 neuron_id: bobUpdateNeuronId,
                 wallet_address: bobFinalUpdateWalletAddress,
+                social_links: bobFinalUpdateSocialLinks,
               },
             },
           },
@@ -581,6 +646,12 @@ describe('User Profile', () => {
       const bobUpdateNeuronId = 7862326246190316138n;
       const bobUpdateWalletAddress =
         'da01eead5eb00bb853b9c42e1637433c81348a8856f4cff1bb917e2cd04df2cb';
+      const bobUpdateSocialLinks: SocialLink[] = [
+        {
+          platform: { x: null },
+          username: 'bob',
+        },
+      ];
       await actor.update_user_profile({
         user_id: bobCreate.id,
         username: [bobUpdateUsername],
@@ -590,6 +661,7 @@ describe('User Profile', () => {
               bio: [bobUpdateBio],
               neuron_id: [bobUpdateNeuronId],
               wallet_address: [bobUpdateWalletAddress],
+              social_links: [bobUpdateSocialLinks],
             },
           },
         ],
@@ -640,6 +712,7 @@ describe('User Profile', () => {
             bio: bobUpdateBio,
             neuron_id: bobUpdateNeuronId,
             wallet_address: bobUpdateWalletAddress,
+            social_links: bobUpdateSocialLinks,
           },
         },
       });
@@ -664,6 +737,7 @@ describe('User Profile', () => {
               bio: bobUpdateBio,
               neuron_id: bobUpdateNeuronId,
               wallet_address: bobUpdateWalletAddress,
+              social_links: bobUpdateSocialLinks,
             },
           },
         },
