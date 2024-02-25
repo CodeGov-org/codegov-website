@@ -18,7 +18,7 @@
     "@angular/platform-browser": "^17.0.8",
     "@angular/platform-browser-dynamic": "^17.0.8",
     "@angular/router": "^17.0.8",
-    "@hadronous/ic-angular": "^0.2.1",
+    "@hadronous/ic-angular": "^0.3.0",
     "rxjs": "~7.8.1",
     "@cg/backend": "workspace:*",
     "@cg/styles": "workspace:*"

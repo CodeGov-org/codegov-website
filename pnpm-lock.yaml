@@ -9,20 +9,20 @@ importers:
   .:
     dependencies:
       '@dfinity/agent':
-        specifier: ~0.21.4
-        version: 0.21.4(@dfinity/candid@0.21.4)(@dfinity/principal@0.21.4)
+        specifier: ^1.0.1
+        version: 1.0.1(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1)
       '@dfinity/auth-client':
-        specifier: ~0.21.4
-        version: 0.21.4(@dfinity/agent@0.21.4)(@dfinity/identity@0.21.4)(@dfinity/principal@0.21.4)
+        specifier: ^1.0.1
+        version: 1.0.1(@dfinity/agent@1.0.1)(@dfinity/identity@1.0.1)(@dfinity/principal@1.0.1)
       '@dfinity/candid':
-        specifier: ~0.21.4
-        version: 0.21.4(@dfinity/principal@0.21.4)
+        specifier: ^1.0.1
+        version: 1.0.1(@dfinity/principal@1.0.1)
       '@dfinity/identity':
-        specifier: ~0.21.4
-        version: 0.21.4(@dfinity/agent@0.21.4)(@dfinity/principal@0.21.4)(@peculiar/webcrypto@1.4.5)
+        specifier: ^1.0.1
+        version: 1.0.1(@dfinity/agent@1.0.1)(@dfinity/principal@1.0.1)(@peculiar/webcrypto@1.4.5)
       '@dfinity/principal':
-        specifier: ~0.21.4
-        version: 0.21.4
+        specifier: ^1.0.1
+        version: 1.0.1
       date-fns:
         specifier: ^3.2.0
         version: 3.2.0
@@ -58,8 +58,8 @@ importers:
         specifier: ^17.0.8
         version: 17.1.0
       '@hadronous/pic':
-        specifier: ~0.3.0
-        version: 0.3.0(@dfinity/agent@0.21.4)(@dfinity/candid@0.21.4)(@dfinity/identity@0.21.4)(@dfinity/principal@0.21.4)
+        specifier: ~0.5.0
+        version: 0.5.0(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/identity@1.0.1)(@dfinity/principal@1.0.1)
       '@types/node':
         specifier: ^20.0.0
         version: 20.10.5
@@ -189,8 +189,8 @@ importers:
         specifier: workspace:*
         version: link:../../lib/styles
       '@hadronous/ic-angular':
-        specifier: ^0.2.1
-        version: 0.2.1(@angular/core@17.1.0)(@angular/router@17.1.0)(@dfinity/agent@0.21.4)(@dfinity/auth-client@0.21.4)(@dfinity/candid@0.21.4)(@dfinity/principal@0.21.4)(rxjs@7.8.1)
+        specifier: ^0.3.0
+        version: 0.3.0(@angular/core@17.1.0)(@angular/router@17.1.0)(@dfinity/agent@1.0.1)(@dfinity/auth-client@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1)(rxjs@7.8.1)
       rxjs:
         specifier: ~7.8.1
         version: 7.8.1
@@ -253,6 +253,27 @@ importers:
       sharp:
         specifier: ^0.33.1
         version: 0.33.1
+
+  src/nns-testing:
+    dependencies:
+      '@dfinity/ledger-icp':
+        specifier: ^2.2.1
+        version: 2.2.1(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/nns-proto@1.0.1)(@dfinity/principal@1.0.1)(@dfinity/utils@2.1.2)
+      '@dfinity/nns':
+        specifier: ^4.0.1
+        version: 4.0.1(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/ledger-icp@2.2.1)(@dfinity/nns-proto@1.0.1)(@dfinity/principal@1.0.1)(@dfinity/utils@2.1.2)
+      '@dfinity/nns-proto':
+        specifier: ^1.0.1
+        version: 1.0.1
+      '@dfinity/utils':
+        specifier: ^2.1.2
+        version: 2.1.2(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1)
+      '@inquirer/prompts':
+        specifier: ^4.1.0
+        version: 4.1.0
+      ora:
+        specifier: ^8.0.1
+        version: 8.0.1
 
 packages:
 
@@ -3369,14 +3390,14 @@ packages:
     engines: {node: '>=0.1.90'}
     requiresBuild: true
 
-  /@dfinity/agent@0.21.4(@dfinity/candid@0.21.4)(@dfinity/principal@0.21.4):
-    resolution: {integrity: sha512-k5k8v1BmDE8RStC22FtuqbFzMLaQAQL3cE/wF45ZMKP4WmBBmCPss75RDgIVGiFwLGEKKKXE1muHQDy9g+m5yQ==}
+  /@dfinity/agent@1.0.1(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1):
+    resolution: {integrity: sha512-QoCiKIWEgsXoaiHpb76M2qLXYDS9IdfvC81dLJYvX9KVXRq8Ojo4S82tBqBFGtM0j0EKEC6mIAJV/bqhOJTtjQ==}
     peerDependencies:
-      '@dfinity/candid': ^0.21.4
-      '@dfinity/principal': ^0.21.4
+      '@dfinity/candid': ^1.0.1
+      '@dfinity/principal': ^1.0.1
     dependencies:
-      '@dfinity/candid': 0.21.4(@dfinity/principal@0.21.4)
-      '@dfinity/principal': 0.21.4
+      '@dfinity/candid': 1.0.1(@dfinity/principal@1.0.1)
+      '@dfinity/principal': 1.0.1
       '@noble/curves': 1.3.0
       '@noble/hashes': 1.3.3
       base64-arraybuffer: 0.2.0
@@ -3384,44 +3405,98 @@ packages:
       buffer: 6.0.3
       simple-cbor: 0.4.1
 
-  /@dfinity/auth-client@0.21.4(@dfinity/agent@0.21.4)(@dfinity/identity@0.21.4)(@dfinity/principal@0.21.4):
-    resolution: {integrity: sha512-FF5UrFEURj7/1vcaFsR7bHFJQXXoyXH+epIYCSNno8PwbEoxpfE0kpTmE0LWXudRbOE/bajP6OoGsv33d1Nmxg==}
+  /@dfinity/auth-client@1.0.1(@dfinity/agent@1.0.1)(@dfinity/identity@1.0.1)(@dfinity/principal@1.0.1):
+    resolution: {integrity: sha512-QooHufXCDHTXySC1Tb1xf9+KRJISbw1sLYLIgY7PTxrA4Nc1ZgA7o4exwgRyIuJgoWMKrjgHPUZcu4N5ak69OQ==}
     peerDependencies:
-      '@dfinity/agent': ^0.21.4
-      '@dfinity/identity': ^0.21.4
-      '@dfinity/principal': ^0.21.4
+      '@dfinity/agent': ^1.0.1
+      '@dfinity/identity': ^1.0.1
+      '@dfinity/principal': ^1.0.1
     dependencies:
-      '@dfinity/agent': 0.21.4(@dfinity/candid@0.21.4)(@dfinity/principal@0.21.4)
-      '@dfinity/identity': 0.21.4(@dfinity/agent@0.21.4)(@dfinity/principal@0.21.4)(@peculiar/webcrypto@1.4.5)
-      '@dfinity/principal': 0.21.4
+      '@dfinity/agent': 1.0.1(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1)
+      '@dfinity/identity': 1.0.1(@dfinity/agent@1.0.1)(@dfinity/principal@1.0.1)(@peculiar/webcrypto@1.4.5)
+      '@dfinity/principal': 1.0.1
       idb: 7.1.1
     dev: false
 
-  /@dfinity/candid@0.21.4(@dfinity/principal@0.21.4):
-    resolution: {integrity: sha512-BRdgLQjPbqEZDRIR985jpy92uwhdBn4mN2D8StMKyOXQLmR6hKSD0p/P2b632Sh7zPUY8HuiA8njpMZ67JEyAg==}
+  /@dfinity/candid@1.0.1(@dfinity/principal@1.0.1):
+    resolution: {integrity: sha512-PfZNV1fTOWtl+NhLOw71ACLYGugKF9HdEJKtkyBJqbj+6pqshvK6rllCUkGwMsmXfP8YopLzmoNVdy1rp/eOgg==}
     peerDependencies:
-      '@dfinity/principal': ^0.21.4
+      '@dfinity/principal': ^1.0.1
     dependencies:
-      '@dfinity/principal': 0.21.4
+      '@dfinity/principal': 1.0.1
 
-  /@dfinity/identity@0.21.4(@dfinity/agent@0.21.4)(@dfinity/principal@0.21.4)(@peculiar/webcrypto@1.4.5):
-    resolution: {integrity: sha512-+lTcr5+/RYwDSM7sGAKbt+kbpIWYDNpMmGi7D9iPWNJWYdWtTX6TDIJDx9dMCRN83/1lKLXF0p7F18ROZdjdUA==}
+  /@dfinity/identity@1.0.1(@dfinity/agent@1.0.1)(@dfinity/principal@1.0.1)(@peculiar/webcrypto@1.4.5):
+    resolution: {integrity: sha512-ArajyKSkiA4LjOq/ocGLMd66svgMVntF9j9P7irZScrzTCPcEXk5c7VteAqRGMwHCpI4LRipjmuZA1agwmUzRw==}
     peerDependencies:
-      '@dfinity/agent': ^0.21.4
-      '@dfinity/principal': ^0.21.4
+      '@dfinity/agent': ^1.0.1
+      '@dfinity/principal': ^1.0.1
       '@peculiar/webcrypto': ^1.4.0
     dependencies:
-      '@dfinity/agent': 0.21.4(@dfinity/candid@0.21.4)(@dfinity/principal@0.21.4)
-      '@dfinity/principal': 0.21.4
+      '@dfinity/agent': 1.0.1(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1)
+      '@dfinity/principal': 1.0.1
       '@noble/curves': 1.3.0
       '@noble/hashes': 1.3.3
       '@peculiar/webcrypto': 1.4.5
       borc: 2.1.2
 
-  /@dfinity/principal@0.21.4:
-    resolution: {integrity: sha512-r9d+9BYZdFMzrq1+zcdIg6q6tlWeZ9SKnakVdhQ21qUJ6iDe0yxDlah6k9QKEh6fVsg2yv95nID++nqEosvt1Q==}
+  /@dfinity/ledger-icp@2.2.1(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/nns-proto@1.0.1)(@dfinity/principal@1.0.1)(@dfinity/utils@2.1.2):
+    resolution: {integrity: sha512-0+muT7oPhrvSHQevX3XAMbyfwghYzFlEjLeiNQSsH/3Y1lBuY0GVn0UufR/5iBHkuDkCMmWGGLdHLyr55Qn44g==}
+    peerDependencies:
+      '@dfinity/agent': ^1.0.1
+      '@dfinity/candid': ^1.0.1
+      '@dfinity/nns-proto': ^1.0.1
+      '@dfinity/principal': ^1.0.1
+      '@dfinity/utils': ^2.1.2
+    dependencies:
+      '@dfinity/agent': 1.0.1(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1)
+      '@dfinity/candid': 1.0.1(@dfinity/principal@1.0.1)
+      '@dfinity/nns-proto': 1.0.1
+      '@dfinity/principal': 1.0.1
+      '@dfinity/utils': 2.1.2(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1)
+    dev: false
+
+  /@dfinity/nns-proto@1.0.1:
+    resolution: {integrity: sha512-zMtlERvmE3X9vlx13rMPghWJNiTAzEU8R6CA5EScnK3EnDFUMdFhBPeW06/BmqG3ngVqES+AM58u9v/SB4ECDQ==}
+    dependencies:
+      google-protobuf: 3.21.2
+    dev: false
+
+  /@dfinity/nns@4.0.1(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/ledger-icp@2.2.1)(@dfinity/nns-proto@1.0.1)(@dfinity/principal@1.0.1)(@dfinity/utils@2.1.2):
+    resolution: {integrity: sha512-i87zVwCGNqDjVEekyn918n8VMUMv+H2dVYy7IYeNk0BHK2cR+AmIePE/X4DugpBCLgQ5QJKilxh0Kv9nrUP/JQ==}
+    peerDependencies:
+      '@dfinity/agent': ^1.0.1
+      '@dfinity/candid': ^1.0.1
+      '@dfinity/ledger-icp': ^2.2.1
+      '@dfinity/nns-proto': ^1.0.1
+      '@dfinity/principal': ^1.0.1
+      '@dfinity/utils': ^2.1.2
+    dependencies:
+      '@dfinity/agent': 1.0.1(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1)
+      '@dfinity/candid': 1.0.1(@dfinity/principal@1.0.1)
+      '@dfinity/ledger-icp': 2.2.1(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/nns-proto@1.0.1)(@dfinity/principal@1.0.1)(@dfinity/utils@2.1.2)
+      '@dfinity/nns-proto': 1.0.1
+      '@dfinity/principal': 1.0.1
+      '@dfinity/utils': 2.1.2(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1)
+      '@noble/hashes': 1.3.3
+      randombytes: 2.1.0
+    dev: false
+
+  /@dfinity/principal@1.0.1:
+    resolution: {integrity: sha512-pCAuTLcvZEZ8fYgVzTVhfUfFGadxeWN4v2z8Q0rizeiqcHKhbJVfWUiXXjzPGG5lNz2DxKyUHQ/WS4UTbTaxvg==}
     dependencies:
       '@noble/hashes': 1.3.3
+
+  /@dfinity/utils@2.1.2(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1):
+    resolution: {integrity: sha512-iMbprcyLOQFhrvvb5b51acDvSsnXmMEpGBC/dwFNEDQBMPeX/rB3lm9HUOQf3ga1wOs20pYi4Rh42xVXhvmHdg==}
+    peerDependencies:
+      '@dfinity/agent': ^1.0.1
+      '@dfinity/candid': ^1.0.1
+      '@dfinity/principal': ^1.0.1
+    dependencies:
+      '@dfinity/agent': 1.0.1(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1)
+      '@dfinity/candid': 1.0.1(@dfinity/principal@1.0.1)
+      '@dfinity/principal': 1.0.1
+    dev: false
 
   /@discoveryjs/json-ext@0.5.7:
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
@@ -4899,23 +4974,23 @@ packages:
     engines: {node: '>=14'}
     dev: true
 
-  /@hadronous/ic-angular@0.2.1(@angular/core@17.1.0)(@angular/router@17.1.0)(@dfinity/agent@0.21.4)(@dfinity/auth-client@0.21.4)(@dfinity/candid@0.21.4)(@dfinity/principal@0.21.4)(rxjs@7.8.1):
-    resolution: {integrity: sha512-Y1DaxNwovZ5Xm8r/yEzG65dcYv1G3Dp9zsTsX/lAHePKvPlbLvZnCTkZaY9gU2A7y1MAYsJ+QVGNrx5sNSD0Nw==}
+  /@hadronous/ic-angular@0.3.0(@angular/core@17.1.0)(@angular/router@17.1.0)(@dfinity/agent@1.0.1)(@dfinity/auth-client@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1)(rxjs@7.8.1):
+    resolution: {integrity: sha512-wUvjQRmQn63+F0WSAm+HWOKJQU3BMj1BkCE5BhsrvEFQ5xOidnQGkmSmXB7XkC8UKT/lCyrnCrLlCO+wHSYiJQ==}
     peerDependencies:
       '@angular/core': ^17.0.0
       '@angular/router': ^17.0.0
-      '@dfinity/agent': ~0.21.0
-      '@dfinity/auth-client': ~0.21.0
-      '@dfinity/candid': ~0.21.0
-      '@dfinity/principal': ~0.21.0
+      '@dfinity/agent': ^1.0.1
+      '@dfinity/auth-client': ^1.0.1
+      '@dfinity/candid': ^1.0.1
+      '@dfinity/principal': ^1.0.1
       rxjs: ^7.8.0
     dependencies:
       '@angular/core': 17.1.0(rxjs@7.8.1)(zone.js@0.14.2)
       '@angular/router': 17.1.0(@angular/common@17.1.0)(@angular/core@17.1.0)(@angular/platform-browser@17.1.0)(rxjs@7.8.1)
-      '@dfinity/agent': 0.21.4(@dfinity/candid@0.21.4)(@dfinity/principal@0.21.4)
-      '@dfinity/auth-client': 0.21.4(@dfinity/agent@0.21.4)(@dfinity/identity@0.21.4)(@dfinity/principal@0.21.4)
-      '@dfinity/candid': 0.21.4(@dfinity/principal@0.21.4)
-      '@dfinity/principal': 0.21.4
+      '@dfinity/agent': 1.0.1(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1)
+      '@dfinity/auth-client': 1.0.1(@dfinity/agent@1.0.1)(@dfinity/identity@1.0.1)(@dfinity/principal@1.0.1)
+      '@dfinity/candid': 1.0.1(@dfinity/principal@1.0.1)
+      '@dfinity/principal': 1.0.1
       rxjs: 7.8.1
       tslib: 2.6.2
     dev: false
@@ -4936,19 +5011,19 @@ packages:
       rxjs: 7.8.1
     dev: true
 
-  /@hadronous/pic@0.3.0(@dfinity/agent@0.21.4)(@dfinity/candid@0.21.4)(@dfinity/identity@0.21.4)(@dfinity/principal@0.21.4):
-    resolution: {integrity: sha512-PeAJQWmxG3+Cjw9LYxeZwTKJSuOsIb9Tc10OVnDrEDWEQq2LjpKIrWLStyxfcfU3Sb8x6IP5CCMlJ+tUG9VfIw==}
+  /@hadronous/pic@0.5.0(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/identity@1.0.1)(@dfinity/principal@1.0.1):
+    resolution: {integrity: sha512-rQwHMJgWHEamPSehRKMMws7zvBb0SM6tcL9N4D1zYNvoU+79VljMXgmQrD5herinYlY9+YcJxYp5DXfIsOYeWw==}
     requiresBuild: true
     peerDependencies:
-      '@dfinity/agent': ~0.21.4
-      '@dfinity/candid': ~0.21.4
-      '@dfinity/identity': ~0.21.4
-      '@dfinity/principal': ~0.21.4
+      '@dfinity/agent': ^1.0.1
+      '@dfinity/candid': ^1.0.1
+      '@dfinity/identity': ^1.0.1
+      '@dfinity/principal': ^1.0.1
     dependencies:
-      '@dfinity/agent': 0.21.4(@dfinity/candid@0.21.4)(@dfinity/principal@0.21.4)
-      '@dfinity/candid': 0.21.4(@dfinity/principal@0.21.4)
-      '@dfinity/identity': 0.21.4(@dfinity/agent@0.21.4)(@dfinity/principal@0.21.4)(@peculiar/webcrypto@1.4.5)
-      '@dfinity/principal': 0.21.4
+      '@dfinity/agent': 1.0.1(@dfinity/candid@1.0.1)(@dfinity/principal@1.0.1)
+      '@dfinity/candid': 1.0.1(@dfinity/principal@1.0.1)
+      '@dfinity/identity': 1.0.1(@dfinity/agent@1.0.1)(@dfinity/principal@1.0.1)(@peculiar/webcrypto@1.4.5)
+      '@dfinity/principal': 1.0.1
       bip39: 3.1.0
     dev: true
 
@@ -5164,6 +5239,121 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@inquirer/checkbox@2.1.0:
+    resolution: {integrity: sha512-DyvMAKFoqJ5BCVBqHqiQELSJvwHTqXaJmV1onATgjxyM3vtp6b8xbfPE5feX1pR9wvH+sso02Pb326S92h6Q/A==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@inquirer/core': 7.0.0
+      '@inquirer/type': 1.2.0
+      ansi-escapes: 4.3.2
+      chalk: 4.1.2
+      figures: 3.2.0
+    dev: false
+
+  /@inquirer/confirm@3.0.0:
+    resolution: {integrity: sha512-LHeuYP1D8NmQra1eR4UqvZMXwxEdDXyElJmmZfU44xdNLL6+GcQBS0uE16vyfZVjH8c22p9e+DStROfE/hyHrg==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@inquirer/core': 7.0.0
+      '@inquirer/type': 1.2.0
+    dev: false
+
+  /@inquirer/core@7.0.0:
+    resolution: {integrity: sha512-g13W5yEt9r1sEVVriffJqQ8GWy94OnfxLCreNSOTw0HPVcszmc/If1KIf7YBmlwtX4klmvwpZHnQpl3N7VX2xA==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@inquirer/type': 1.2.0
+      '@types/mute-stream': 0.0.4
+      '@types/node': 20.11.20
+      '@types/wrap-ansi': 3.0.0
+      ansi-escapes: 4.3.2
+      chalk: 4.1.2
+      cli-spinners: 2.9.2
+      cli-width: 4.1.0
+      figures: 3.2.0
+      mute-stream: 1.0.0
+      run-async: 3.0.0
+      signal-exit: 4.1.0
+      strip-ansi: 6.0.1
+      wrap-ansi: 6.2.0
+    dev: false
+
+  /@inquirer/editor@2.0.0:
+    resolution: {integrity: sha512-0n3agxb1X23A/lx+MI5sV6s/qeywGr4xmKAzZS7ZhToee7L/6DXotWa/VvvwNEoBT0mSuk9SDIAoQ0zLkJmpHg==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@inquirer/core': 7.0.0
+      '@inquirer/type': 1.2.0
+      external-editor: 3.1.0
+    dev: false
+
+  /@inquirer/expand@2.0.0:
+    resolution: {integrity: sha512-2VETEz+RyRrIeBwULKc5o+PJzKqbsibyT6IY0oP0XvM/17flO6eW7P+rdGCAvFP6g2hKieIH23ZVrcgsosb1/g==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@inquirer/core': 7.0.0
+      '@inquirer/type': 1.2.0
+      chalk: 4.1.2
+      figures: 3.2.0
+    dev: false
+
+  /@inquirer/input@2.0.0:
+    resolution: {integrity: sha512-qOjxSHLzqp/u6TvK7UtidPERoCa6BSSKyKG17aEaSOBl9uAQ4XIIqs9TtcEqwDloakarWS6xxTfR0sE1qvLwIQ==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@inquirer/core': 7.0.0
+      '@inquirer/type': 1.2.0
+    dev: false
+
+  /@inquirer/password@2.0.0:
+    resolution: {integrity: sha512-PlUek3wTMiGZothmmGIL4OBLo+rDSCxqIUHsyroyM/+AnR3xr5NHMM0/5z6CuptpJs1ZbQewqslaNi7k6goWMw==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@inquirer/core': 7.0.0
+      '@inquirer/type': 1.2.0
+      ansi-escapes: 4.3.2
+    dev: false
+
+  /@inquirer/prompts@4.1.0:
+    resolution: {integrity: sha512-HUVJ5yLjDUEq61LQiujs26qqFrKIaZOnpzDRmnYT67bsXUD8gxPmLg+DJq2ENniiDSQyBK33qVQIbeeAdR3ZlQ==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@inquirer/checkbox': 2.1.0
+      '@inquirer/confirm': 3.0.0
+      '@inquirer/core': 7.0.0
+      '@inquirer/editor': 2.0.0
+      '@inquirer/expand': 2.0.0
+      '@inquirer/input': 2.0.0
+      '@inquirer/password': 2.0.0
+      '@inquirer/rawlist': 2.0.0
+      '@inquirer/select': 2.0.0
+    dev: false
+
+  /@inquirer/rawlist@2.0.0:
+    resolution: {integrity: sha512-o4jHJBAvknVE6K15zX8AuLMemb1eN1EL0l+BIbJ2JgtpoU2zSuLf6jT98omvtWk/gbaowjw7RLsW7X5F+G19KA==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@inquirer/core': 7.0.0
+      '@inquirer/type': 1.2.0
+      chalk: 4.1.2
+    dev: false
+
+  /@inquirer/select@2.0.0:
+    resolution: {integrity: sha512-ZxWP1gHbReAH6HdoNQRV/9W/UjgKSeiiQX2DxJ6w3GDiQeC3fRAL+lukuMM+QGteGqaTjWwIEWhPLvgbGIrRgg==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@inquirer/core': 7.0.0
+      '@inquirer/type': 1.2.0
+      ansi-escapes: 4.3.2
+      chalk: 4.1.2
+      figures: 3.2.0
+    dev: false
+
+  /@inquirer/type@1.2.0:
+    resolution: {integrity: sha512-/vvkUkYhrjbm+RolU7V1aUFDydZVKNKqKHR5TsE+j5DXgXFwrsOPcoGUJ02K0O7q7O53CU2DOTMYCHeGZ25WHA==}
+    engines: {node: '>=18'}
+    dev: false
 
   /@isaacs/cliui@8.0.2:
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -6229,6 +6419,12 @@ packages:
   /@types/ms@0.7.34:
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
 
+  /@types/mute-stream@0.0.4:
+    resolution: {integrity: sha512-CPM9nzrCPPJHQNA9keH9CVkVI+WR5kMa+7XEs5jcGQ0VoAGnLv242w8lIVgwAEfmE4oufJRaTc9PNLQl0ioAow==}
+    dependencies:
+      '@types/node': 20.11.20
+    dev: false
+
   /@types/nlcst@1.0.4:
     resolution: {integrity: sha512-ABoYdNQ/kBSsLvZAekMhIPMQ3YUZvavStpKYs7BjLLuKVmIMA0LUgZ7b54zzuWJRbHF80v1cNf4r90Vd6eMQDg==}
     dependencies:
@@ -6254,6 +6450,12 @@ packages:
     resolution: {integrity: sha512-nNPsNE65wjMxEKI93yOP+NPGGBJz/PoN3kZsVLee0XMiJolxSekEVD8wRwBUBqkwc7UWop0edW50yrCQW4CyRw==}
     dependencies:
       undici-types: 5.26.5
+
+  /@types/node@20.11.20:
+    resolution: {integrity: sha512-7/rR21OS+fq8IyHTgtLkDK949uzsa6n8BkziAKtPVpugIkO6D+/ooXMvzXxDnZrmtXVfjb1bKQafYpb8s89LOg==}
+    dependencies:
+      undici-types: 5.26.5
+    dev: false
 
   /@types/parse-json@4.0.2:
     resolution: {integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw==}
@@ -6353,6 +6555,10 @@ packages:
 
   /@types/unist@3.0.2:
     resolution: {integrity: sha512-dqId9J8K/vGi5Zr7oo212BGii5m3q5Hxlkwy3WpYuKPklmBEvsbMYYyLxAQpSffdLl/gdW0XUpKWFvYmyoWCoQ==}
+    dev: false
+
+  /@types/wrap-ansi@3.0.0:
+    resolution: {integrity: sha512-ltIpx+kM7g/MLRZfkbL7EsCEjfzCcScLpkg37eXEtx5kmrAKBkTJwd1GIAjDSL8wTpM6Hzn5YO4pSb91BEwu1g==}
     dev: false
 
   /@types/ws@8.5.10:
@@ -6936,7 +7142,6 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       type-fest: 0.21.3
-    dev: true
 
   /ansi-html-community@0.0.8:
     resolution: {integrity: sha512-1APHAyr3+PCamwNw3bXCPp4HFLONZt/yIH0sZp0/469KWNTEy+qN5jQ3GVX6DMZ1UXAi34yVwtTeaG/HpBuuzw==}
@@ -7805,7 +8010,6 @@ packages:
 
   /chardet@0.7.0:
     resolution: {integrity: sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==}
-    dev: true
 
   /cheerio-select@2.1.0:
     resolution: {integrity: sha512-9v9kG0LvzrlcungtnJtpGNxY+fzECQKhK4EGJX2vByejiMX84MFNQw4UxPJl3bFbTMw+Dfs37XaIkCwTZfLh4g==}
@@ -7920,7 +8124,6 @@ packages:
   /cli-width@4.1.0:
     resolution: {integrity: sha512-ouuZd4/dm2Sw5Gmqy6bGyNNNe1qt9RpmxveLSO7KcgsTnU7RXfsw+/bukWGo1abgBiMAic068rclZsO4IWmmxQ==}
     engines: {node: '>= 12'}
-    dev: true
 
   /cliui@7.0.4:
     resolution: {integrity: sha512-OcRE68cOsVMXp1Yvonl/fzkQOyjLSu/8bhPDfQt0e0/Eb283TKP20Fs2MqoPsr9SwA595rRCA+QMzYc9nBP+JQ==}
@@ -9759,7 +9962,6 @@ packages:
       chardet: 0.7.0
       iconv-lite: 0.4.24
       tmp: 0.0.33
-    dev: true
 
   /fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
@@ -9831,7 +10033,6 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       escape-string-regexp: 1.0.5
-    dev: true
 
   /figures@5.0.0:
     resolution: {integrity: sha512-ej8ksPF4x6e5wvK9yevct0UCXh8TTFlWGVLlgjZuoBH1HwjIfKE/IdL5mq89sFA7zELi1VhKpmtDnrs7zWyeyg==}
@@ -10346,6 +10547,10 @@ packages:
       ignore: 5.3.0
       merge2: 1.4.1
       slash: 4.0.0
+
+  /google-protobuf@3.21.2:
+    resolution: {integrity: sha512-3MSOYFO5U9mPGikIYCzK0SaThypfGgS6bHqrUGXG3DPHCrb+txNqeEcns1W0lkGfk0rCyNXm7xB9rMxnCiZOoA==}
+    dev: false
 
   /gopd@1.0.1:
     resolution: {integrity: sha512-d65bNlIadxvpb/A2abVdlqKqV563juRnZ1Wtk6s1sIR8uNsXR70xqIzVqxVf1eTqDunwT2MkczEeaezCKTZhwA==}
@@ -11345,6 +11550,11 @@ packages:
     resolution: {integrity: sha512-43r2mRvz+8JRIKnWJ+3j8JtjRKZ6GmjzfaE/qiBJnikNnYv/6bagRJ1kUhNk8R5EX/GkobD+r+sfxCPJsiKBLQ==}
     engines: {node: '>=12'}
 
+  /is-unicode-supported@2.0.0:
+    resolution: {integrity: sha512-FRdAyx5lusK1iHG0TWpVtk9+1i+GjrzRffhDg4ovQ7mcidMQ6mj+MhKPmvh7Xwyv5gIS06ns49CA7Sqg7lC22Q==}
+    engines: {node: '>=18'}
+    dev: false
+
   /is-weakmap@2.0.1:
     resolution: {integrity: sha512-NSBR4kH5oVj1Uwvv970ruUkCV7O1mzgVFO4/rev2cLRda9Tm9HrL70ZPut4rOHgY0FNrUu9BCbXA2sdQ+x0chA==}
     dev: true
@@ -11964,6 +12174,14 @@ packages:
   /log-symbols@5.1.0:
     resolution: {integrity: sha512-l0x2DvrW294C9uDCoQe1VSU4gf529FkSZ6leBl4TiqZH/e+0R7hSfHQBNut2mNygDgHwvYHfFLn6Oxb3VWj2rA==}
     engines: {node: '>=12'}
+    dependencies:
+      chalk: 5.3.0
+      is-unicode-supported: 1.3.0
+    dev: false
+
+  /log-symbols@6.0.0:
+    resolution: {integrity: sha512-i24m8rpwhmPIS4zscNzK6MSEhk0DUWa/8iYQWxhffV8jkI4Phvs3F+quL5xvS0gdQR0FyTCMMH33Y78dDTzzIw==}
+    engines: {node: '>=18'}
     dependencies:
       chalk: 5.3.0
       is-unicode-supported: 1.3.0
@@ -13307,7 +13525,6 @@ packages:
   /mute-stream@1.0.0:
     resolution: {integrity: sha512-avsJQhyd+680gKXyG/sQc0nXaC6rBkPOfyHYcFb9+hdkqQkR9bdnkJ0AMZhke0oesPqIO+mFFJ+IdBc7mst4IA==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
-    dev: true
 
   /nanoid@3.3.7:
     resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
@@ -13791,10 +14008,24 @@ packages:
       strip-ansi: 7.1.0
     dev: false
 
+  /ora@8.0.1:
+    resolution: {integrity: sha512-ANIvzobt1rls2BDny5fWZ3ZVKyD6nscLvfFRpQgfWsythlcsVUC9kL0zq6j2Z5z9wwp1kd7wpsD/T9qNPVLCaQ==}
+    engines: {node: '>=18'}
+    dependencies:
+      chalk: 5.3.0
+      cli-cursor: 4.0.0
+      cli-spinners: 2.9.2
+      is-interactive: 2.0.0
+      is-unicode-supported: 2.0.0
+      log-symbols: 6.0.0
+      stdin-discarder: 0.2.2
+      string-width: 7.0.0
+      strip-ansi: 7.1.0
+    dev: false
+
   /os-tmpdir@1.0.2:
     resolution: {integrity: sha512-D2FR03Vir7FIu45XBY20mTb+/ZSWB00sjU9jdQXt83gDrI4Ztz5Fs7/yy74g2N5SVQY4xY1qDr4rNddwYRVX0g==}
     engines: {node: '>=0.10.0'}
-    dev: true
 
   /p-cancelable@3.0.0:
     resolution: {integrity: sha512-mlVgR3PGuzlo0MmTdk4cXqXWlwQDLnONTAg6sm62XkMJEiRxN3GL3SffkYvqwonbkJBcrI7Uvv5Zh9yjvn2iUw==}
@@ -15816,7 +16047,6 @@ packages:
   /run-async@3.0.0:
     resolution: {integrity: sha512-540WwVDOMxA6dN6We19EcT9sc3hkXPw5mzRNGM3FkdN/vtE9NFvj5lFAPNwUDmJjXidm3v7TC1cTE7t17Ulm1Q==}
     engines: {node: '>=0.12.0'}
-    dev: true
 
   /run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
@@ -16519,6 +16749,11 @@ packages:
       bl: 5.1.0
     dev: false
 
+  /stdin-discarder@0.2.2:
+    resolution: {integrity: sha512-UhDfHmA92YAlNnCfhmq0VeNL5bDbiZGg7sZ2IvPsXubGkiNa9EC+tUTsjBRsYUAz87btI6/1wf4XoVvQ3uRnmQ==}
+    engines: {node: '>=18'}
+    dev: false
+
   /storyblok-js-client@6.6.3:
     resolution: {integrity: sha512-SF74HnxrddCmjzP6e1ABw36SaREV9SqGsEh0PBWKSs1AwGiVfmcZLfMfjNRC8wUamsk7Xho8Tc9Zia7upeYaMg==}
     dev: false
@@ -16968,7 +17203,6 @@ packages:
     engines: {node: '>=0.6.0'}
     dependencies:
       os-tmpdir: 1.0.2
-    dev: true
 
   /tmp@0.2.1:
     resolution: {integrity: sha512-76SUhtfqR2Ijn+xllcI5P1oyannHNHByD80W1q447gU3mp9G9PSpGdWmjUOHRDPiHYacIk66W7ubDTuPF3BEtQ==}
@@ -17150,7 +17384,6 @@ packages:
   /type-fest@0.21.3:
     resolution: {integrity: sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==}
     engines: {node: '>=10'}
-    dev: true
 
   /type-fest@1.4.0:
     resolution: {integrity: sha512-yGSza74xk0UG8k+pLh5oeoYirvIiWo5t0/o3zHHAO2tRDiZcxWP7fywNlXhqb6/r6sWvwi+RsyQMWhVLe4BVuA==}
@@ -18262,7 +18495,6 @@ packages:
       ansi-styles: 4.3.0
       string-width: 4.2.3
       strip-ansi: 6.0.1
-    dev: true
 
   /wrap-ansi@7.0.0:
     resolution: {integrity: sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==}

@@ -5,3 +5,4 @@ packages:
   - src/docs
   - src/frontend
   - src/marketing
+  - src/nns-testing
