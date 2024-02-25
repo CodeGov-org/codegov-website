@@ -1,0 +1,11 @@
+$ring-width: 2px;
+$ring-blur: 2px;
+$dark-ring-blur: 5px;
+
+@mixin ring($color) {
+  box-shadow: 0 0 $ring-blur $ring-width $color;
+
+  @include dark {
+    box-shadow: 0 0 $dark-ring-blur $ring-width $color;
+  }
+}

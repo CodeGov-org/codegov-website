@@ -23,77 +23,95 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
   ],
   template: `
     <header class="navbar">
-      <div class="container mx-auto">
-        <nav class="navbar-nav">
-          <a [routerLink]="'/'" class="navbar-brand">
+      <div class="navbar__inner">
+        <nav class="navbar__nav">
+          <a [routerLink]="'/'" class="navbar__brand">
             <img
-              class="navbar-logo"
+              class="navbar__logo"
               src="assets/codegov-logo.png"
               alt="CodeGov Logo"
             />
 
-            <span class="navbar-company">codegov.org</span>
+            codegov.org
           </a>
 
-          <div class="navbar-desktop-nav">
-            @for (item of globalConfig.headerLinks; track item.title) {
+          <div class="navbar__desktop-nav">
+            @for (
+              item of globalConfig.headerLinks;
+              track item.title;
+              let i = $index
+            ) {
               @if (isLinkCategory(item)) {
-                <app-dropdown menuTriggerClassName="navbar-nav-item">
+                <app-dropdown
+                  menuTriggerClassName="navbar__nav-item"
+                  [id]="'navbar-menu-' + i"
+                >
                   <ng-container ngProjectAs="[menuTrigger]">
                     {{ item.title }}
                   </ng-container>
 
                   <ng-container ngProjectAs="[menu]">
                     @for (subItem of item.children; track subItem.title) {
-                      <a [href]="subItem.url" class="dropdown-item">
+                      <a
+                        role="menuitem"
+                        [href]="subItem.url"
+                        class="dropdown__menu-item"
+                      >
                         {{ subItem.title }}
                       </a>
                     }
                   </ng-container>
                 </app-dropdown>
               } @else {
-                <a [href]="item.url" class="navbar-nav-item">
+                <a [href]="item.url" class="navbar__nav-item">
                   {{ item.title }}
                 </a>
               }
             }
           </div>
 
-          <div class="navbar-mobile-nav-trigger">
-            <button type="button" (click)="onSidenavOpenClicked()">
-              <span class="sr-only">Open main menu</span>
+          <div class="navbar__mobile-nav-trigger">
+            <button
+              type="button"
+              class="navbar__mobile-nav-button"
+              (click)="onSidenavOpenClicked()"
+              aria-label="Open main menu"
+            >
               <app-hamburger-menu-icon />
             </button>
           </div>
         </nav>
 
         <div
-          class="navbar-mobile-nav"
-          [ngClass]="{ hidden: !isSidenavOpen }"
+          class="navbar__mobile-nav"
+          [ngClass]="{ 'navbar__mobile-nav--closed': !isSidenavOpen }"
           role="dialog"
           aria-modal="true"
         >
           <div class="backdrop" (click)="onSidenavCloseClicked()"></div>
 
           <div class="sidenav">
-            <div class="sidenav-header">
-              <a href="/" class="sidenav-brand">
+            <div class="sidenav__header">
+              <a href="/" class="sidenav__brand">
                 <img
-                  class="sidenav-logo"
+                  class="sidenav__logo"
                   src="assets/codegov-logo.png"
                   alt="CodeGov Logo"
                 />
 
-                <span class="sidenav-company">codegov.org</span>
+                <span class="sidenav__company">codegov.org</span>
               </a>
 
-              <button type="button" (click)="onSidenavCloseClicked()">
-                <span class="sr-only">Close menu</span>
+              <button
+                type="button"
+                (click)="onSidenavCloseClicked()"
+                aria-label="Close menu"
+              >
                 <app-menu-close-icon />
               </button>
             </div>
 
-            <nav class="sidebar-nav">
+            <nav class="sidebar__nav">
               @for (item of globalConfig.headerLinks; track item.title) {
                 @if (isLinkCategory(item)) {
                   <app-collapsible>
@@ -103,14 +121,14 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
 
                     <ng-container ngProjectAs="[body]">
                       @for (subItem of item.children; track subItem.title) {
-                        <a [href]="subItem.url" class="sidenav-item">
+                        <a [href]="subItem.url" class="sidenav__item">
                           {{ subItem.title }}
                         </a>
                       }
                     </ng-container>
                   </app-collapsible>
                 } @else {
-                  <a [href]="item.url" class="sidenav-item">
+                  <a [href]="item.url" class="sidenav__item">
                     {{ item.title }}
                   </a>
                 }

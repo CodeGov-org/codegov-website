@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, HostBinding } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { ChevronIconComponent } from '~core/icons';
 
@@ -8,23 +8,30 @@ import { ChevronIconComponent } from '~core/icons';
   standalone: true,
   imports: [ChevronIconComponent, CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
-    <button class="collapsible-trigger" (click)="onTriggerClicked()">
+    <button class="collapsible__trigger" (click)="onTriggerClicked()">
       <ng-content select="[header]" />
 
       <app-chevron-icon />
     </button>
 
-    <div class="collapsible-content" [ngClass]="{ hidden: !isOpen }">
+    <div
+      class="collapsible__content"
+      [ngClass]="{ 'collapsible__content--closed': !isOpen }"
+    >
       <ng-content select="[body]" />
     </div>
   `,
 })
 export class CollapsibleComponent {
   public isOpen = false;
-
-  @HostBinding('class.block')
-  public hostCssClass = true;
 
   public onTriggerClicked(): void {
     this.isOpen = !this.isOpen;

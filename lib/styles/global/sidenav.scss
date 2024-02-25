@@ -1,0 +1,85 @@
+.sidenav {
+  @include layer-50;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  overflow-y: auto;
+  @include px(4);
+  @include py(3);
+
+  color: $white;
+  background-color: $primary-900;
+  @include dark {
+    background-color: $slate-900;
+    color: $slate-300;
+  }
+
+  @include sm {
+    max-width: 24rem;
+  }
+}
+
+.sidenav__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidenav__brand {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  color: $white;
+
+  @include no-underline;
+
+  @include dark {
+    color: $slate-300;
+  }
+}
+
+.sidenav__logo {
+  height: size(10);
+  width: size(10);
+}
+
+.sidenav__company {
+  margin-left: size(3);
+  font-size: 1.125rem;
+  font-weight: $font-weight-medium;
+}
+
+.sidebar__nav {
+  margin-top: size(6);
+
+  & > * {
+    @include my(2);
+  }
+}
+
+.sidenav__item {
+  display: block;
+  border-radius: $border-radius;
+  @include px(3);
+  @include py(2);
+  font-weight: $font-weight-semibold;
+
+  color: $white;
+  &:hover {
+    color: $primary-900;
+    background-color: $white;
+  }
+
+  @include no-underline;
+
+  @include dark {
+    color: $slate-300;
+
+    &:hover {
+      background-color: $slate-200;
+      color: $slate-900;
+    }
+  }
+}

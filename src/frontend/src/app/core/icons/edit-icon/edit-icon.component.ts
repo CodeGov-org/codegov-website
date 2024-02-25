@@ -4,14 +4,24 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   selector: 'app-edit-icon',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .edit-icon {
+        width: size(6);
+        height: size(6);
+      }
+    `,
+  ],
   template: `
     <svg
+      class="edit-icon"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
       stroke-width="1.5"
       stroke="currentColor"
-      class="h-6 w-6"
     >
       <path
         stroke-linecap="round"

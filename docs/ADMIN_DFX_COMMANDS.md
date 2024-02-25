@@ -196,7 +196,7 @@ dfx canister call --ic --identity ${identityName} backend update_user_profile '(
     user_id = "${userId}";
     config = opt variant {
       reviewer = record {
-        neuron_id = opt "${neuronId}"
+        neuron_id = opt ${neuronId}
       }
     }
   }
@@ -228,6 +228,33 @@ dfx canister call --ic --identity ${identityName} backend update_user_profile '(
 
 This command will also change the role of a user to reviewer, if it is not already set.
 
+### Setting reviewer social links
+
+To change the social links of another reviewer user, run the following command using an identity that has admin privileges:
+
+- Replace `${identityName}` with the name of the identity that should be used to change the social links.
+- Replace `${userId}` with the user ID of the profile that should have the social links changed.
+- Replace `${platform}` with the social media platform.
+- Replace `${username}` with the username for that platform.
+
+```bash
+dfx canister call --ic --identity ${identityName} backend update_user_profile '(
+  record {
+    user_id = "${userId}";
+    config = opt variant {
+      reviewer = record {
+        social_links = opt vec {
+          record {
+            platform = variant { ${platform} };
+            username = "{$username}"
+          }
+        }
+      }
+    }
+  }
+)'
+```
+
 ### Setting all reviewer attributes
 
 To change all attributes of another reviewer user in a single command, run the following command using an identity that has admin privileges:
@@ -247,7 +274,7 @@ dfx canister call --ic --identity ${identityName} backend update_user_profile '(
     config = opt variant {
       reviewer = record {
         bio = opt "${bio}";
-        neuron_id = opt "${neuronId}";
+        neuron_id = opt ${neuronId};
         wallet_address = opt "${walletAddress}"
       }
     }

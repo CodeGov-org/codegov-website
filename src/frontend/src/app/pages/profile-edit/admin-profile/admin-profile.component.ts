@@ -1,151 +1,105 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-} from '@angular/core';
-import {
-  FormGroup,
-  Validators,
-  ReactiveFormsModule,
-  FormControl,
-} from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
+import { AdminPersonalInfoComponent } from '../admin-personal-info';
+import { AdminPersonalInfoFormComponent } from '../admin-personal-info-form';
 import { InfoIconComponent } from '~core/icons';
+import { AdminProfile } from '~core/state';
 import {
-  AdminProfile,
-  AdminProfileUpdate,
-  ProfileService,
-  UserRole,
-} from '~core/state';
-import {
-  FormFieldComponent,
-  InputDirective,
-  InputErrorComponent,
-  LabelComponent,
+  CardComponent,
+  KeyColComponent,
+  KeyValueGridComponent,
   TooltipDirective,
+  ValueColComponent,
 } from '~core/ui';
-import { ComponentChanges } from '~core/utils';
-
-export interface AdminProfileForm {
-  username: FormControl<string>;
-  bio: FormControl<string>;
-}
 
 @Component({
   selector: 'app-admin-profile',
   standalone: true,
   imports: [
-    ReactiveFormsModule,
-    FormFieldComponent,
-    LabelComponent,
     CommonModule,
-    InputDirective,
-    InputErrorComponent,
     InfoIconComponent,
-    RouterModule,
     TooltipDirective,
+    CardComponent,
+    KeyValueGridComponent,
+    KeyColComponent,
+    ValueColComponent,
+    AdminPersonalInfoFormComponent,
+    AdminPersonalInfoComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .admin-profile-card {
+        margin-bottom: size(3);
+
+        @include sm {
+          margin-bottom: size(4);
+        }
+      }
+    `,
   ],
   template: `
-    <div class="mb-4 flex flex-row items-center">
-      <span class="w-1/3 font-bold">ID</span>
-      <span>{{ userProfile.id }}</span>
-    </div>
+    <app-card class="admin-profile-card">
+      <h2 class="h3" cardTitle>Profile</h2>
 
-    <div class="mb-4 flex flex-row items-center">
-      <span class="w-1/3 font-bold">Role</span>
-      <span>{{ userProfile.role }}</span>
-      <app-info-icon [appTooltip]="adminInfo"></app-info-icon>
-    </div>
+      <app-key-value-grid>
+        <app-key-col id="admin-id">ID</app-key-col>
+        <app-value-col aria-labelledby="admin-id">
+          {{ userProfile.id }}
+        </app-value-col>
 
-    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-      <app-form-field>
-        <app-label>Username</app-label>
-
-        <input appInput id="username" type="text" formControlName="username" />
-
-        <app-input-error key="required">
-          Username cannot be empty
-        </app-input-error>
-        <app-input-error key="minlength">
-          Username must have at least 3 characters
-        </app-input-error>
-      </app-form-field>
-
-      <app-form-field>
-        <app-label>Bio</app-label>
-
-        <textarea
-          appInput
-          id="bio"
-          type="text"
-          formControlName="bio"
-        ></textarea>
-
-        <app-input-error key="required">Bio cannot be empty</app-input-error>
-      </app-form-field>
-
-      <div class="flex items-center">
-        <a title="Cancel your edits" [routerLink]="'/'" class="ml-auto mr-4">
-          Cancel
-        </a>
-        <button
-          type="submit"
-          [attr.title]="
-            profileForm.invalid ? 'Fix the validation errors' : null
-          "
-          [disabled]="profileForm.invalid"
-          class="btn"
+        <app-key-col id="admin-role">Role</app-key-col>
+        <app-value-col
+          aria-labelledby="admin-role"
+          aria-describedby="admin-role-description"
         >
-          Save
-        </button>
-      </div>
-    </form>
+          {{ userProfile.role }}
+
+          <app-info-icon
+            aria-hidden="true"
+            [appTooltip]="adminInfo"
+          ></app-info-icon>
+        </app-value-col>
+        <div class="admin-role-description sr-only" role="tooltip">
+          {{ adminInfo }}
+        </div>
+      </app-key-value-grid>
+    </app-card>
+
+    <app-card>
+      <h2 class="h3" cardTitle>Personal Info</h2>
+
+      @if (isFormEditable) {
+        <app-admin-personal-info-form
+          [userProfile]="userProfile"
+          (formClose)="hideForm()"
+        />
+      } @else {
+        <app-admin-personal-info
+          [userProfile]="userProfile"
+          (edit)="showForm()"
+        />
+      }
+    </app-card>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminProfileComponent implements OnChanges {
+export class AdminProfileComponent {
   @Input({ required: true })
   public userProfile!: AdminProfile;
 
   public readonly adminInfo: string =
     'Use DFX command to change this property.';
 
-  public readonly profileForm: FormGroup<AdminProfileForm>;
+  public isFormEditable = false;
 
-  constructor(private readonly profileService: ProfileService) {
-    this.profileForm = new FormGroup<AdminProfileForm>({
-      username: new FormControl('', {
-        nonNullable: true,
-        validators: [Validators.required, Validators.minLength(3)],
-      }),
-      bio: new FormControl('', {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-    });
+  public showForm(): void {
+    this.isFormEditable = true;
   }
 
-  public ngOnChanges(changes: ComponentChanges<AdminProfileComponent>): void {
-    if (changes.userProfile) {
-      this.profileForm.patchValue({
-        username: this.userProfile.username,
-        bio: this.userProfile.bio,
-      });
-    }
-  }
-
-  public onSubmit(): void {
-    const formValues = this.profileForm.value;
-
-    const profileUpdate: AdminProfileUpdate = {
-      role: UserRole.Admin,
-      username: formValues.username,
-      bio: formValues.bio,
-    };
-
-    this.profileService.saveProfile(profileUpdate);
+  public hideForm(): void {
+    this.isFormEditable = false;
   }
 }

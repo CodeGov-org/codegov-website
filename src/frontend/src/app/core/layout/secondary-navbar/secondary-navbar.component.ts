@@ -25,56 +25,116 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
     DropdownComponent,
     TooltipDirective,
   ],
-  template: `<nav
-    class="bg-primary-950 layer-20 px-4 py-3 text-white dark:bg-slate-900 dark:text-slate-200"
-  >
-    <div class="container mx-auto flex flex-row items-center justify-between">
-      <div class="flex flex-1 flex-row">
-        <!-- left aligned items -->
-      </div>
-
-      <div class="flex flex-row">
-        @if (isAuthenticated$ | async) {
-          <app-dropdown
-            [showChevron]="false"
-            menuTriggerClassName="btn btn-icon"
-            [tooltip]="'Open profile menu'"
-          >
-            <ng-container ngProjectAs="[menuTrigger]">
-              <app-profile-icon />
-            </ng-container>
-
-            <ng-container ngProjectAs="[menu]">
-              <a
-                [routerLink]="'/profile/edit'"
-                class="dropdown-item flex flex-row items-center"
-              >
-                <app-edit-icon class="mr-2" />Edit Profile</a
-              >
-
-              <button
-                (click)="onLogoutButtonClicked()"
-                class="dropdown-item flex flex-row items-center"
-              >
-                <app-logout-icon class="mr-2" />
-                Logout
-              </button>
-            </ng-container>
-          </app-dropdown>
-        } @else {
-          <button
-            (click)="onLoginButtonClicked()"
-            class="btn btn-icon"
-            [appTooltip]="'Log in'"
-          >
-            <span class="sr-only">Login</span>
-            <app-login-icon />
-          </button>
-        }
-      </div>
-    </div>
-  </nav>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .secondary-navbar {
+        background-color: $primary-950;
+        @include layer-20;
+        @include px(4);
+        @include py(3);
+        color: $white;
+
+        @include dark {
+          background-color: $slate-900;
+          color: $slate-200;
+        }
+      }
+
+      .secondary-navbar__inner {
+        @include container;
+        margin-left: auto;
+        margin-right: auto;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .secondary-navbar__left {
+        display: flex;
+        flex: 1;
+        flex-direction: row;
+      }
+
+      .secondary-navbar__right {
+        display: flex;
+        flex-direction: row;
+      }
+
+      .profile-menu__item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .profile-menu__item-icon {
+        margin-right: size(2);
+      }
+    `,
+  ],
+  template: `
+    <nav class="secondary-navbar">
+      <div class="secondary-navbar__inner">
+        <div class="secondary-navbar__left">
+          <!-- left aligned items -->
+        </div>
+
+        <div class="flex flex-row">
+          @if (isAuthenticated$ | async) {
+            <app-dropdown
+              [showChevron]="false"
+              menuTriggerClassName="btn btn--icon"
+              ariaLabel="Open profile menu"
+              id="profile-menu"
+            >
+              <ng-container ngProjectAs="[menuTrigger]">
+                <app-profile-icon aria-hidden="true" />
+              </ng-container>
+
+              <ng-container ngProjectAs="[menu]">
+                <a
+                  [routerLink]="'/profile/edit'"
+                  class="dropdown__menu-item profile-menu__item"
+                  role="menuitem"
+                >
+                  <app-edit-icon
+                    class="profile-menu__item-icon"
+                    aria-hidden="true"
+                  />
+
+                  Edit profile
+                </a>
+
+                <button
+                  (click)="onLogoutButtonClicked()"
+                  class="dropdown__menu-item profile-menu__item"
+                  role="menuitem"
+                >
+                  <app-logout-icon
+                    class="profile-menu__item-icon"
+                    aria-hidden="true"
+                  />
+
+                  Logout
+                </button>
+              </ng-container>
+            </app-dropdown>
+          } @else {
+            <button
+              (click)="onLoginButtonClicked()"
+              class="btn btn--icon"
+              aria-label="Log in"
+            >
+              <app-login-icon />
+            </button>
+          }
+        </div>
+      </div>
+    </nav>
+  `,
 })
 export class SecondaryNavbarComponent {
   public readonly isAuthenticated$: Observable<boolean>;

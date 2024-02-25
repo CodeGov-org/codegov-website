@@ -1,0 +1,89 @@
+$btn-color: $primary;
+$bn-hover-color: $primary-600;
+$btn-disabled-color: rgba($primary, 0.45);
+
+.btn {
+  @include px(4);
+  @include py(1);
+
+  border: $border-size solid transparent;
+  border-radius: $border-radius;
+  outline: none;
+
+  color: $white;
+  background-color: $btn-color;
+  position: relative;
+
+  &:hover:not(:disabled) {
+    border-color: $bn-hover-color;
+    background-color: $bn-hover-color;
+  }
+
+  &:focus:not(:disabled) {
+    @include ring($primary-400);
+
+    @include dark {
+      @include ring($primary-800);
+    }
+  }
+
+  &:disabled {
+    background-color: $btn-disabled-color;
+
+    &:hover {
+      cursor: not-allowed;
+    }
+  }
+}
+
+.btn--outline {
+  color: $btn-color;
+  border-color: $btn-color;
+  background-color: transparent;
+
+  &:hover:not(:disabled) {
+    color: $white;
+  }
+
+  &:disabled {
+    color: $btn-disabled-color;
+    border-color: $btn-disabled-color;
+    background-color: transparent;
+  }
+}
+
+.btn--icon {
+  @include layer-20;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: size(9);
+  width: size(9);
+
+  font-size: initial;
+  line-height: initial;
+
+  color: $white;
+  border-radius: 50%;
+}
+
+.btn-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  align-items: center;
+
+  > :not(:last-child) {
+    margin-right: size(2);
+  }
+}
+
+.btn--loading {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: size(9);
+  width: size(9);
+  transform: translate(-50%, -50%);
+}

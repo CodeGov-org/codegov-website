@@ -9,7 +9,7 @@ import {
   LoadingDialogInput,
   getLoadingDialogConfig,
 } from '~core/ui';
-import { isErr, isOk } from '~core/utils';
+import { isErr, isNil, isNotNil, isOk } from '~core/utils';
 import {
   mapProfileResponse,
   mapUpdateProfileRequest,
@@ -35,6 +35,11 @@ export class ProfileService {
   ) {}
 
   public async loadProfile(): Promise<void> {
+    const currentProfile = this.userProfileSubject.getValue();
+    if (isNotNil(currentProfile)) {
+      return;
+    }
+
     const getResponse = await this.actorService.get_my_user_profile();
 
     if (isOk(getResponse)) {
@@ -62,7 +67,7 @@ export class ProfileService {
 
   public async saveProfile(profileUpdate: ProfileUpdate): Promise<void> {
     const currentProfile = this.userProfileSubject.getValue();
-    if (!currentProfile) {
+    if (isNil(currentProfile)) {
       throw new Error('User profile not loaded yet');
     }
 

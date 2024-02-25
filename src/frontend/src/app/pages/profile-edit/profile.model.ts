@@ -6,32 +6,49 @@ export type SocialMediaInputs = {
 
 export const SOCIAL_MEDIA_INPUTS: SocialMediaInputs = {
   DSCVR: {
-    label: 'DSCVR username',
+    label: 'DSCVR',
+    formLabel: 'DSCVR username',
     baseUrl: 'https://dscvr.one/u/',
   },
   OpenChat: {
-    label: 'Open Chat canister/user ID',
+    label: 'OpenChat',
+    formLabel: 'Open Chat canister/user ID',
     baseUrl: 'https://oc.app/user/',
   },
   Taggr: {
-    label: 'TAGGR username',
+    label: 'TAGGR',
+    formLabel: 'TAGGR username',
     baseUrl: 'https://taggr.link/#/user/',
   },
   X: {
-    label: 'X (Twitter) username',
+    label: 'X (Twitter)',
+    formLabel: 'X (Twitter) username',
     baseUrl: 'https://twitter.com/',
   },
+  Github: {
+    label: 'GitHub',
+    formLabel: 'GitHub username',
+    baseUrl: 'https://github.com/',
+  },
   DfinityForum: {
-    label: 'Dfinity Forum username',
+    label: 'Dfinity Forum',
+    formLabel: 'Dfinity Forum username',
     baseUrl: 'https://forum.dfinity.org/u/',
   },
   Discord: {
-    label: 'Discord username',
+    label: 'Discord',
+    formLabel: 'Discord username',
     baseUrl: 'https://discord.com/users/',
+  },
+  Website: {
+    label: 'Website',
+    formLabel: 'Website URL',
+    baseUrl: '',
   },
 };
 
 export interface SocialMediaInputProps {
   label: string;
+  formLabel: string;
   baseUrl: string;
 }

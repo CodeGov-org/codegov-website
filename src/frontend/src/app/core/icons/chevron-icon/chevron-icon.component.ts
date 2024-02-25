@@ -4,9 +4,20 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   selector: 'app-chevron-icon',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .copy-icon {
+        width: size(5);
+        height: size(5);
+        vertical-align: text-bottom;
+      }
+    `,
+  ],
   template: `
     <svg
-      class="h-5 w-5 flex-none"
+      class="copy-icon"
       viewBox="0 0 20 20"
       fill="currentColor"
       aria-hidden="true"

@@ -1,24 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
 
-import { ProfileService, UserRole } from '~core/state';
-import {
-  ProfileServiceMock,
-  profileServiceMockFactory,
-} from '~core/state/profile/profile.service.mock';
+import { UserRole } from '~core/state';
 import { ReviewerProfileComponent } from './reviewer-profile.component';
 
 describe('ReviewerProfileComponent', () => {
   let component: ReviewerProfileComponent;
   let fixture: ComponentFixture<ReviewerProfileComponent>;
-  let profileServiceMock: ProfileServiceMock;
 
   beforeEach(async () => {
-    profileServiceMock = profileServiceMockFactory();
-
     await TestBed.configureTestingModule({
-      imports: [ReviewerProfileComponent, RouterTestingModule],
-      providers: [{ provide: ProfileService, useValue: profileServiceMock }],
+      imports: [ReviewerProfileComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ReviewerProfileComponent);
@@ -27,7 +18,6 @@ describe('ReviewerProfileComponent', () => {
       id: '1',
       role: UserRole.Reviewer,
       username: 'TestReviewer',
-      proposalTypes: ['SCM'],
       neuronId: 10685924793606457081n,
       walletAddress: '123213123sdfsdfs',
       bio: 'bio',

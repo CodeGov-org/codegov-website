@@ -1,0 +1,53 @@
+.input {
+  display: block;
+  width: 100%;
+
+  border-radius: $border-radius;
+  border: $border-size solid $slate-400;
+  padding: size(2.5);
+
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+
+  color: $slate-900;
+  background-color: $white;
+  outline: none;
+
+  &:focus {
+    border-color: $primary;
+    @include ring($primary-400);
+
+    @include dark {
+      @include ring($primary-800);
+    }
+  }
+
+  @include dark {
+    color: $slate-200;
+    background-color: $slate-950;
+    border-color: $slate-500;
+  }
+}
+
+.input--invalid {
+  border-color: $error;
+
+  &:focus {
+    border-color: $error;
+
+    @include ring($error);
+  }
+}
+
+.input--textarea {
+  height: size(24);
+  resize: vertical;
+}
+
+.label {
+  color: $black;
+
+  @include dark {
+    color: $white;
+  }
+}

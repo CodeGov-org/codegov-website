@@ -10,6 +10,22 @@ type HistoryAction = variant {
   restore;
 };
 
+type SocialLinkPlatform = variant {
+  dscvr;
+  openchat;
+  taggr;
+  x;
+  github;
+  dfinityforum;
+  discord;
+  website;
+};
+
+type SocialLink = record {
+  platform : SocialLinkPlatform;
+  username : text;
+};
+
 type UserConfig = variant {
   admin : record {
     bio : text;
@@ -18,6 +34,7 @@ type UserConfig = variant {
     bio : text;
     neuron_id : nat64;
     wallet_address : text;
+    social_links : vec SocialLink;
   };
   anonymous;
 };
@@ -64,6 +81,7 @@ type MyUserConfigUpdate = variant {
   reviewer : record {
     bio : opt text;
     wallet_address : opt text;
+    social_links : opt vec SocialLink;
   };
   anonymous;
 };
@@ -86,6 +104,7 @@ type UserConfigUpdate = variant {
     bio : opt text;
     neuron_id : opt nat64;
     wallet_address : opt text;
+    social_links : opt vec SocialLink;
   };
   anonymous;
 };

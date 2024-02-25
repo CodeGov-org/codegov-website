@@ -5,8 +5,8 @@
     "start": "node ./pull-global-config.mjs && ng serve frontend -c development",
     "build": "node ./pull-global-config.mjs && ng build frontend -c production",
     "build:dev": "node ./pull-global-config.mjs && ng build frontend -c development",
-    "test": "node ./pull-global-config.mjs && ng test frontend",
-    "test:ci": "node ./pull-global-config.mjs && ng test frontend --no-watch --no-progress --browsers=ChromeHeadless"
+    "test": "node ./pull-global-config.mjs && ng test frontend --no-watch --no-progress --browsers=ChromeHeadless",
+    "test:watch": "node ./pull-global-config.mjs && ng test frontend"
   },
   "dependencies": {
     "@angular/animations": "^17.0.8",
@@ -20,8 +20,8 @@
     "@angular/router": "^17.0.8",
     "@hadronous/ic-angular": "^0.2.1",
     "rxjs": "~7.8.1",
-    "@cg/tailwind": "workspace:*",
-    "@cg/backend": "workspace:*"
+    "@cg/backend": "workspace:*",
+    "@cg/styles": "workspace:*"
   },
   "devDependencies": {
     "@angular/compiler": "^17.0.8",

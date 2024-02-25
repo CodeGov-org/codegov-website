@@ -4,14 +4,26 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   selector: 'app-info-icon',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .info-icon {
+        width: size(5);
+        height: size(5);
+        margin-left: size(2);
+        vertical-align: text-bottom;
+      }
+    `,
+  ],
   template: `
     <svg
+      class="info-icon"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
       stroke-width="1.5"
       stroke="currentColor"
-      class="ml-2 h-5 w-5"
     >
       <path
         stroke-linecap="round"

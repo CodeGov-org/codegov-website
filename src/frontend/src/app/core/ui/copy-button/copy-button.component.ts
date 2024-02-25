@@ -13,8 +13,9 @@ const INITIAL_TOOLTIP_TEXT = 'Copy to clipboard';
   template: `
     <button
       (click)="copyToClipboard()"
-      class="btn btn-icon"
+      class="btn btn--icon"
       [appTooltip]="tooltipText"
+      [attr.aria-label]="tooltipText"
       (tooltipClose)="onTooltipClosed()"
     >
       <app-copy-icon />

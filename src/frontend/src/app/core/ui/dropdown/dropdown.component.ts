@@ -22,19 +22,30 @@ import { ChevronIconComponent } from '~core/icons';
   template: `
     <button
       (click)="onTriggerClicked()"
-      [ngClass]="[menuTriggerClassName, 'dropdown-trigger']"
+      [ngClass]="[menuTriggerClassName, 'dropdown__trigger']"
       [appTooltip]="tooltip"
+      [attr.aria-label]="ariaLabel"
+      [attr.aria-expanded]="isOpen"
+      [attr.aria-controls]="id"
+      aria-haspopup="menu"
     >
-      <div>
-        <ng-content select="[menuTrigger]" />
-      </div>
+      <ng-content select="[menuTrigger]" />
 
       @if (showChevron) {
-        <app-chevron-icon />
+        <app-chevron-icon
+          class="dropdown__chevron"
+          aria-hidden="true"
+          [class.dropdown__chevron--open]="isOpen"
+        />
       }
     </button>
 
-    <div class="dropdown-menu" [ngClass]="{ hidden: !isOpen }">
+    <div
+      class="dropdown__menu"
+      [class.dropdown__menu--closed]="!isOpen"
+      [id]="id"
+      role="menu"
+    >
       <ng-content select="[menu]" />
     </div>
   `,
@@ -45,6 +56,12 @@ export class DropdownComponent {
 
   @Input()
   public tooltip: string | null = null;
+
+  @Input()
+  public ariaLabel: string | null = null;
+
+  @Input({ required: true })
+  public id!: string;
 
   @Input()
   public showChevron = true;
