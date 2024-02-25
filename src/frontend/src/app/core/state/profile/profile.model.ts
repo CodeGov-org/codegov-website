@@ -50,7 +50,7 @@ export type ProfileUpdate =
 
 export interface SocialLink {
   type: SocialMediaType;
-  link: string;
+  username: string;
 }
 
 export enum SocialMediaType {
@@ -58,6 +58,8 @@ export enum SocialMediaType {
   OpenChat = 'OpenChat',
   Taggr = 'Taggr',
   X = 'X',
+  Github = 'Github',
   DfinityForum = 'DfinityForum',
   Discord = 'Discord',
+  Website = 'Website',
 }

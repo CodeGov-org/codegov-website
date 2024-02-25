@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
-import { type _SERVICE } from '@cg/backend';
+import { SocialLink, type _SERVICE } from '@cg/backend';
 import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
 import {
   BACKEND_WASM_PATH,
@@ -183,6 +183,44 @@ describe('User Profile', () => {
     expect(bobGet).toEqual(bobCreate);
   });
 
+  it('should not allow the same user to create multiple profiles', async () => {
+    const alice = generateRandomIdentity();
+    actor.setIdentity(alice);
+
+    const aliceCreateRes = await actor.create_my_user_profile();
+    const aliceCreate = extractOkResponse(aliceCreateRes);
+
+    const aliceCreateAgainRes = await actor.create_my_user_profile();
+    const aliceCreateAgainErr = extractErrResponse(aliceCreateAgainRes);
+
+    const aliceGetRes = await actor.get_my_user_profile();
+    const aliceGet = extractOkResponse(aliceGetRes);
+    const aliceGetHistoryRes = await actor.get_my_user_profile_history();
+    const aliceGetHistory = extractOkResponse(aliceGetHistoryRes);
+
+    expect(aliceCreate.id).toBeString();
+    expect(aliceCreate.username).toBe('Anonymous');
+    expect(aliceCreate.config).toEqual({ anonymous: null });
+    expect(aliceGetHistory.history).toHaveLength(1);
+    expect(aliceGetHistory.history[0]).toEqual({
+      action: { create: null },
+      user: alice.getPrincipal(),
+      date_time: dateToRfc3339(currentDate),
+      data: {
+        username: aliceCreate.username,
+        config: aliceCreate.config,
+      },
+    });
+    expect(aliceGet).toEqual(aliceCreate);
+
+    expect(aliceCreateAgainErr).toEqual({
+      code: 409,
+      message: `User profile for principal ${alice
+        .getPrincipal()
+        .toText()} already exists`,
+    });
+  });
+
   describe('update my user profile', () => {
     it('should not allow anonymous principals', async () => {
       actor.setIdentity(anonymousIdentity);
@@ -286,6 +324,12 @@ describe('User Profile', () => {
       const bobUpdateNeuronId = 7862326246190316138n;
       const bobUpdateWalletAddress =
         'da01eead5eb00bb853b9c42e1637433c81348a8856f4cff1bb917e2cd04df2cb';
+      const bobUpdateSocialLinks: SocialLink[] = [
+        {
+          platform: { x: null },
+          username: 'bob',
+        },
+      ];
       await actor.update_user_profile({
         user_id: bobCreate.id,
         username: [bobUpdateUsername],
@@ -295,6 +339,7 @@ describe('User Profile', () => {
               bio: [bobUpdateBio],
               neuron_id: [bobUpdateNeuronId],
               wallet_address: [bobUpdateWalletAddress],
+              social_links: [bobUpdateSocialLinks],
             },
           },
         ],
@@ -319,6 +364,12 @@ describe('User Profile', () => {
       const bobFinalUpdateBio = 'Bob is an infinitely good reviewer...';
       const bobFinalUpdateWalletAddress =
         '4dfa940def17f1427ae47378c440f10185867677109a02bc8374fc25b9dee8af';
+      const bobFinalUpdateSocialLinks: SocialLink[] = [
+        {
+          platform: { x: null },
+          username: 'infinitebob',
+        },
+      ];
       await actor.update_my_user_profile({
         username: [bobFinalUpdateUsername],
         config: [
@@ -326,6 +377,7 @@ describe('User Profile', () => {
             reviewer: {
               bio: [bobFinalUpdateBio],
               wallet_address: [bobFinalUpdateWalletAddress],
+              social_links: [bobFinalUpdateSocialLinks],
             },
           },
         ],
@@ -404,6 +456,7 @@ describe('User Profile', () => {
             bio: bobFinalUpdateBio,
             neuron_id: bobUpdateNeuronId,
             wallet_address: bobFinalUpdateWalletAddress,
+            social_links: bobFinalUpdateSocialLinks,
           },
         },
       });
@@ -429,6 +482,7 @@ describe('User Profile', () => {
                 bio: bobUpdateBio,
                 neuron_id: bobUpdateNeuronId,
                 wallet_address: bobUpdateWalletAddress,
+                social_links: bobUpdateSocialLinks,
               },
             },
           },
@@ -444,6 +498,7 @@ describe('User Profile', () => {
                 bio: bobFinalUpdateBio,
                 neuron_id: bobUpdateNeuronId,
                 wallet_address: bobFinalUpdateWalletAddress,
+                social_links: bobFinalUpdateSocialLinks,
               },
             },
           },
@@ -591,6 +646,12 @@ describe('User Profile', () => {
       const bobUpdateNeuronId = 7862326246190316138n;
       const bobUpdateWalletAddress =
         'da01eead5eb00bb853b9c42e1637433c81348a8856f4cff1bb917e2cd04df2cb';
+      const bobUpdateSocialLinks: SocialLink[] = [
+        {
+          platform: { x: null },
+          username: 'bob',
+        },
+      ];
       await actor.update_user_profile({
         user_id: bobCreate.id,
         username: [bobUpdateUsername],
@@ -600,6 +661,7 @@ describe('User Profile', () => {
               bio: [bobUpdateBio],
               neuron_id: [bobUpdateNeuronId],
               wallet_address: [bobUpdateWalletAddress],
+              social_links: [bobUpdateSocialLinks],
             },
           },
         ],
@@ -650,6 +712,7 @@ describe('User Profile', () => {
             bio: bobUpdateBio,
             neuron_id: bobUpdateNeuronId,
             wallet_address: bobUpdateWalletAddress,
+            social_links: bobUpdateSocialLinks,
           },
         },
       });
@@ -674,6 +737,7 @@ describe('User Profile', () => {
               bio: bobUpdateBio,
               neuron_id: bobUpdateNeuronId,
               wallet_address: bobUpdateWalletAddress,
+              social_links: bobUpdateSocialLinks,
             },
           },
         },

@@ -25,6 +25,11 @@ export const SOCIAL_MEDIA_INPUTS: SocialMediaInputs = {
     formLabel: 'X (Twitter) username',
     baseUrl: 'https://twitter.com/',
   },
+  Github: {
+    label: 'GitHub',
+    formLabel: 'GitHub username',
+    baseUrl: 'https://github.com/',
+  },
   DfinityForum: {
     label: 'Dfinity Forum',
     formLabel: 'Dfinity Forum username',
@@ -34,6 +39,11 @@ export const SOCIAL_MEDIA_INPUTS: SocialMediaInputs = {
     label: 'Discord',
     formLabel: 'Discord username',
     baseUrl: 'https://discord.com/users/',
+  },
+  Website: {
+    label: 'Website',
+    formLabel: 'Website URL',
+    baseUrl: '',
   },
 };
 

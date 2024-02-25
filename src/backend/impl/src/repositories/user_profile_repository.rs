@@ -109,13 +109,6 @@ impl UserProfileRepository for UserProfileRepositoryImpl {
         user_id: UserId,
         user_profile: UserProfile,
     ) -> Result<(), ApiError> {
-        self.get_user_profile_by_user_id(&user_id).ok_or_else(|| {
-            ApiError::not_found(&format!(
-                "User profile for user with id {} not found",
-                user_id.to_string()
-            ))
-        })?;
-
         let history_entry_id = Self::get_next_history_id()?;
 
         STATE.with_borrow_mut(|s| {

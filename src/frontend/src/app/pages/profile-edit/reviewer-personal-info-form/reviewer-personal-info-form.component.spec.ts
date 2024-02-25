@@ -24,7 +24,7 @@ describe('ReviewerPersonalInfoFormComponent', () => {
       neuronId: 10685924793606457081n,
       walletAddress: '123213123sdfsdfs',
       bio: 'bio',
-      socialMedia: [{ type: SocialMediaType.DSCVR, link: 'testLink' }],
+      socialMedia: [{ type: SocialMediaType.DSCVR, username: 'testLink' }],
     };
     fixture.detectChanges();
   });

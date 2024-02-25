@@ -44,6 +44,13 @@ impl ApiError {
         }
     }
 
+    pub fn conflict(message: &str) -> Self {
+        Self {
+            code: 409,
+            message: message.into(),
+        }
+    }
+
     pub fn internal(message: &str) -> Self {
         Self {
             code: 500,
