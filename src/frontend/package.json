@@ -20,7 +20,7 @@
     "@angular/router": "^17.0.8",
     "@cg/backend": "workspace:*",
     "@cg/styles": "workspace:*",
-    "@hadronous/ic-angular": "^0.2.1",
+    "@hadronous/ic-angular": "^0.3.0",
     "marked": "^12.0.0",
     "rxjs": "~7.8.1"
   },

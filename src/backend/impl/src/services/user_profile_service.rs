@@ -92,6 +92,17 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
         &self,
         calling_principal: Principal,
     ) -> Result<CreateMyUserProfileResponse, ApiError> {
+        if self
+            .user_profile_repository
+            .get_user_id_by_principal(&calling_principal)
+            .is_some()
+        {
+            return Err(ApiError::conflict(&format!(
+                "User profile for principal {} already exists",
+                calling_principal.to_text()
+            )));
+        }
+
         let profile = UserProfile::new_anonymous();
         let id = self
             .user_profile_repository
@@ -141,16 +152,25 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
                 Some(backend_api::MyUserConfigUpdate::Reviewer {
                     bio: bio_update,
                     wallet_address: wallet_address_update,
+                    social_links: social_links_update,
                 }),
                 UserConfig::Reviewer {
                     bio,
                     neuron_id,
                     wallet_address,
+                    social_links,
                 },
             ) => UserConfig::Reviewer {
                 bio: bio_update.unwrap_or(bio),
                 neuron_id,
                 wallet_address: wallet_address_update.unwrap_or(wallet_address),
+                social_links: match social_links_update {
+                    Some(links) => links
+                        .into_iter()
+                        .map(|link| link.into())
+                        .collect::<Vec<_>>(),
+                    None => social_links,
+                },
             },
             (Some(backend_api::MyUserConfigUpdate::Anonymous), UserConfig::Anonymous) => {
                 UserConfig::Anonymous
@@ -207,6 +227,7 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
                     bio,
                     neuron_id,
                     wallet_address,
+                    social_links,
                 } => {
                     let bio = bio.unwrap_or_else(|| match current_user_profile.config.clone() {
                         UserConfig::Admin { bio, .. } => bio,
@@ -220,15 +241,29 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
                     });
 
                     let wallet_address =
-                        wallet_address.unwrap_or_else(|| match current_user_profile.config {
-                            UserConfig::Reviewer { wallet_address, .. } => wallet_address,
-                            _ => "".to_string(),
+                        wallet_address.unwrap_or_else(|| {
+                            match current_user_profile.clone().config {
+                                UserConfig::Reviewer { wallet_address, .. } => wallet_address,
+                                _ => "".to_string(),
+                            }
                         });
+
+                    let social_links = match social_links {
+                        Some(links) => links
+                            .into_iter()
+                            .map(|link| link.into())
+                            .collect::<Vec<_>>(),
+                        None => match current_user_profile.config {
+                            UserConfig::Reviewer { social_links, .. } => social_links,
+                            _ => vec![],
+                        },
+                    };
 
                     current_user_profile.config = UserConfig::Reviewer {
                         bio,
                         neuron_id,
                         wallet_address,
+                        social_links,
                     };
                 }
                 backend_api::UserConfigUpdate::Anonymous => {
@@ -387,6 +422,11 @@ mod tests {
 
         let mut repository_mock = MockUserProfileRepository::new();
         repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(None);
+        repository_mock
             .expect_create_user_profile()
             .once()
             .with(eq(calling_principal), eq(profile.clone()))
@@ -406,6 +446,35 @@ mod tests {
                 username: profile.username,
                 config: profile.config.into(),
             }
+        )
+    }
+
+    #[rstest]
+    async fn create_my_user_profile_existing_profile() {
+        let calling_principal = fixtures::principal();
+        let id = fixtures::user_id();
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(id));
+        repository_mock.expect_create_user_profile().never();
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let result = service
+            .create_my_user_profile(calling_principal)
+            .await
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::conflict(&format!(
+                "User profile for principal {} already exists",
+                calling_principal.to_text()
+            ))
         )
     }
 
@@ -487,6 +556,10 @@ mod tests {
         let original_profile = fixtures::reviewer_user_profile();
         let neuron_id = fixtures::neuron_id();
         let wallet_address = fixtures::wallet_address();
+        let social_links = vec![
+            fixtures::dscvr_social_link(),
+            fixtures::open_chat_social_link(),
+        ];
         let bio = "New bio...".to_string();
 
         (
@@ -496,6 +569,7 @@ mod tests {
                 config: Some(MyUserConfigUpdate::Reviewer {
                     bio: Some(bio.clone()),
                     wallet_address: None,
+                    social_links: None,
                 }),
             },
             UserProfile {
@@ -503,9 +577,79 @@ mod tests {
                     bio,
                     neuron_id,
                     wallet_address,
+                    social_links,
                 },
                 ..original_profile
             },
+        )
+    }
+
+    #[rstest]
+    fn update_my_user_profile_no_user_id() {
+        let calling_principal = fixtures::principal();
+        let request = UpdateMyUserProfileRequest {
+            username: None,
+            config: None,
+        };
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(None);
+        repository_mock.expect_get_user_profile_by_user_id().never();
+        repository_mock.expect_update_user_profile().never();
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let result = service
+            .update_my_user_profile(calling_principal, request)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::not_found(&format!(
+                "User id for principal {} not found",
+                calling_principal.to_text()
+            ))
+        )
+    }
+
+    #[rstest]
+    fn update_my_user_profile_no_profile() {
+        let calling_principal = fixtures::principal();
+        let user_id = fixtures::user_id();
+        let request = UpdateMyUserProfileRequest {
+            username: None,
+            config: None,
+        };
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(user_id));
+        repository_mock
+            .expect_get_user_profile_by_user_id()
+            .once()
+            .with(eq(user_id))
+            .return_const(None);
+        repository_mock.expect_update_user_profile().never();
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let result = service
+            .update_my_user_profile(calling_principal, request)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::not_found(&format!(
+                "User profile for principal {} not found",
+                calling_principal.to_text()
+            ))
         )
     }
 
@@ -585,6 +729,7 @@ mod tests {
         let bio = "New bio...".to_string();
         let neuron_id = fixtures::neuron_id();
         let wallet_address = fixtures::wallet_address();
+        let social_links = vec![fixtures::taggr_social_link()];
 
         (
             original_profile,
@@ -595,6 +740,13 @@ mod tests {
                     bio: Some(bio.clone()),
                     neuron_id: Some(neuron_id),
                     wallet_address: Some(wallet_address.clone()),
+                    social_links: Some(
+                        social_links
+                            .clone()
+                            .into_iter()
+                            .map(|link| link.into())
+                            .collect(),
+                    ),
                 }),
             },
             UserProfile {
@@ -602,6 +754,7 @@ mod tests {
                     bio,
                     neuron_id,
                     wallet_address,
+                    social_links,
                 },
                 ..fixtures::anonymous_user_profile()
             },
@@ -643,6 +796,7 @@ mod tests {
         else {
             panic!("Invalid test setup");
         };
+        let social_links = vec![fixtures::taggr_social_link()];
 
         (
             original_profile.clone(),
@@ -653,6 +807,13 @@ mod tests {
                     bio: None,
                     neuron_id: Some(neuron_id),
                     wallet_address: Some(wallet_address.clone()),
+                    social_links: Some(
+                        social_links
+                            .clone()
+                            .into_iter()
+                            .map(|link| link.into())
+                            .collect(),
+                    ),
                 }),
             },
             UserProfile {
@@ -660,9 +821,43 @@ mod tests {
                     bio: original_bio,
                     neuron_id,
                     wallet_address,
+                    social_links,
                 },
                 ..original_profile
             },
+        )
+    }
+
+    #[rstest]
+    fn update_user_profile_no_profile() {
+        let calling_principal = fixtures::principal();
+        let user_id = fixtures::user_id();
+        let request = UpdateUserProfileRequest {
+            user_id: user_id.to_string(),
+            username: None,
+            config: None,
+        };
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_profile_by_user_id()
+            .once()
+            .with(eq(user_id))
+            .return_const(None);
+        repository_mock.expect_update_user_profile().never();
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let result = service
+            .update_user_profile(calling_principal, request)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::not_found(&format!(
+                "User profile for user with id {} not found",
+                user_id.to_string()
+            ))
         )
     }
 }
