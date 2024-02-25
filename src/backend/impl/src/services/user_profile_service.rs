@@ -141,16 +141,25 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
                 Some(backend_api::MyUserConfigUpdate::Reviewer {
                     bio: bio_update,
                     wallet_address: wallet_address_update,
+                    social_links: social_links_update,
                 }),
                 UserConfig::Reviewer {
                     bio,
                     neuron_id,
                     wallet_address,
+                    social_links,
                 },
             ) => UserConfig::Reviewer {
                 bio: bio_update.unwrap_or(bio),
                 neuron_id,
                 wallet_address: wallet_address_update.unwrap_or(wallet_address),
+                social_links: match social_links_update {
+                    Some(links) => links
+                        .into_iter()
+                        .map(|link| link.into())
+                        .collect::<Vec<_>>(),
+                    None => social_links,
+                },
             },
             (Some(backend_api::MyUserConfigUpdate::Anonymous), UserConfig::Anonymous) => {
                 UserConfig::Anonymous
@@ -207,6 +216,7 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
                     bio,
                     neuron_id,
                     wallet_address,
+                    social_links,
                 } => {
                     let bio = bio.unwrap_or_else(|| match current_user_profile.config.clone() {
                         UserConfig::Admin { bio, .. } => bio,
@@ -220,15 +230,29 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
                     });
 
                     let wallet_address =
-                        wallet_address.unwrap_or_else(|| match current_user_profile.config {
-                            UserConfig::Reviewer { wallet_address, .. } => wallet_address,
-                            _ => "".to_string(),
+                        wallet_address.unwrap_or_else(|| {
+                            match current_user_profile.clone().config {
+                                UserConfig::Reviewer { wallet_address, .. } => wallet_address,
+                                _ => "".to_string(),
+                            }
                         });
+
+                    let social_links = match social_links {
+                        Some(links) => links
+                            .into_iter()
+                            .map(|link| link.into())
+                            .collect::<Vec<_>>(),
+                        None => match current_user_profile.config {
+                            UserConfig::Reviewer { social_links, .. } => social_links,
+                            _ => vec![],
+                        },
+                    };
 
                     current_user_profile.config = UserConfig::Reviewer {
                         bio,
                         neuron_id,
                         wallet_address,
+                        social_links,
                     };
                 }
                 backend_api::UserConfigUpdate::Anonymous => {
@@ -487,6 +511,10 @@ mod tests {
         let original_profile = fixtures::reviewer_user_profile();
         let neuron_id = fixtures::neuron_id();
         let wallet_address = fixtures::wallet_address();
+        let social_links = vec![
+            fixtures::dscvr_social_link(),
+            fixtures::open_chat_social_link(),
+        ];
         let bio = "New bio...".to_string();
 
         (
@@ -496,6 +524,7 @@ mod tests {
                 config: Some(MyUserConfigUpdate::Reviewer {
                     bio: Some(bio.clone()),
                     wallet_address: None,
+                    social_links: None,
                 }),
             },
             UserProfile {
@@ -503,6 +532,7 @@ mod tests {
                     bio,
                     neuron_id,
                     wallet_address,
+                    social_links,
                 },
                 ..original_profile
             },
@@ -585,6 +615,7 @@ mod tests {
         let bio = "New bio...".to_string();
         let neuron_id = fixtures::neuron_id();
         let wallet_address = fixtures::wallet_address();
+        let social_links = vec![fixtures::taggr_social_link()];
 
         (
             original_profile,
@@ -595,6 +626,13 @@ mod tests {
                     bio: Some(bio.clone()),
                     neuron_id: Some(neuron_id),
                     wallet_address: Some(wallet_address.clone()),
+                    social_links: Some(
+                        social_links
+                            .clone()
+                            .into_iter()
+                            .map(|link| link.into())
+                            .collect(),
+                    ),
                 }),
             },
             UserProfile {
@@ -602,6 +640,7 @@ mod tests {
                     bio,
                     neuron_id,
                     wallet_address,
+                    social_links,
                 },
                 ..fixtures::anonymous_user_profile()
             },
@@ -643,6 +682,7 @@ mod tests {
         else {
             panic!("Invalid test setup");
         };
+        let social_links = vec![fixtures::taggr_social_link()];
 
         (
             original_profile.clone(),
@@ -653,6 +693,13 @@ mod tests {
                     bio: None,
                     neuron_id: Some(neuron_id),
                     wallet_address: Some(wallet_address.clone()),
+                    social_links: Some(
+                        social_links
+                            .clone()
+                            .into_iter()
+                            .map(|link| link.into())
+                            .collect(),
+                    ),
                 }),
             },
             UserProfile {
@@ -660,6 +707,7 @@ mod tests {
                     bio: original_bio,
                     neuron_id,
                     wallet_address,
+                    social_links,
                 },
                 ..original_profile
             },

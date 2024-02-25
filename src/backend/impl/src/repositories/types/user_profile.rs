@@ -14,6 +14,7 @@ pub enum UserConfig {
         bio: String,
         neuron_id: NeuronId,
         wallet_address: String,
+        social_links: Vec<SocialLink>,
     },
     Anonymous,
 }
@@ -22,6 +23,39 @@ pub enum UserConfig {
 pub struct UserProfile {
     pub username: String,
     pub config: UserConfig,
+}
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub enum SocialLinkPlatform {
+    #[serde(rename = "dscvr")]
+    Dscvr,
+
+    #[serde(rename = "openchat")]
+    OpenChat,
+
+    #[serde(rename = "taggr")]
+    Taggr,
+
+    #[serde(rename = "x")]
+    X,
+
+    #[serde(rename = "github")]
+    GitHub,
+
+    #[serde(rename = "dfinityforum")]
+    DfinityForum,
+
+    #[serde(rename = "Discord")]
+    Discord,
+
+    #[serde(rename = "website")]
+    Website,
+}
+
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+pub struct SocialLink {
+    pub platform: SocialLinkPlatform,
+    pub username: String,
 }
 
 impl UserProfile {

@@ -139,7 +139,7 @@ export class ReviewerSocialMediaFormComponent implements OnChanges {
     if (changes.userProfile) {
       this.socialMediaForm.patchValue(
         this.userProfile.socialMedia.reduce(
-          (accum, value) => ({ ...accum, [value.type]: value.link }),
+          (accum, value) => ({ ...accum, [value.type]: value.username }),
           {},
         ),
       );
@@ -156,7 +156,7 @@ export class ReviewerSocialMediaFormComponent implements OnChanges {
       socialMediaFormValues ?? {},
     ).map<SocialLink>(([key, value]) => ({
       type: key as SocialMediaType,
-      link: value,
+      username: value,
     }));
 
     const profileUpdate: ReviewerProfileUpdate = {
