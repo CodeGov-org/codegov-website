@@ -92,6 +92,17 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
         &self,
         calling_principal: Principal,
     ) -> Result<CreateMyUserProfileResponse, ApiError> {
+        if self
+            .user_profile_repository
+            .get_user_id_by_principal(&calling_principal)
+            .is_some()
+        {
+            return Err(ApiError::conflict(&format!(
+                "User profile for principal {} already exists",
+                calling_principal.to_text()
+            )));
+        }
+
         let profile = UserProfile::new_anonymous();
         let id = self
             .user_profile_repository
@@ -411,6 +422,11 @@ mod tests {
 
         let mut repository_mock = MockUserProfileRepository::new();
         repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(None);
+        repository_mock
             .expect_create_user_profile()
             .once()
             .with(eq(calling_principal), eq(profile.clone()))
@@ -430,6 +446,35 @@ mod tests {
                 username: profile.username,
                 config: profile.config.into(),
             }
+        )
+    }
+
+    #[rstest]
+    async fn create_my_user_profile_existing_profile() {
+        let calling_principal = fixtures::principal();
+        let id = fixtures::user_id();
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(id));
+        repository_mock.expect_create_user_profile().never();
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let result = service
+            .create_my_user_profile(calling_principal)
+            .await
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::conflict(&format!(
+                "User profile for principal {} already exists",
+                calling_principal.to_text()
+            ))
         )
     }
 
@@ -536,6 +581,75 @@ mod tests {
                 },
                 ..original_profile
             },
+        )
+    }
+
+    #[rstest]
+    fn update_my_user_profile_no_user_id() {
+        let calling_principal = fixtures::principal();
+        let request = UpdateMyUserProfileRequest {
+            username: None,
+            config: None,
+        };
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(None);
+        repository_mock.expect_get_user_profile_by_user_id().never();
+        repository_mock.expect_update_user_profile().never();
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let result = service
+            .update_my_user_profile(calling_principal, request)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::not_found(&format!(
+                "User id for principal {} not found",
+                calling_principal.to_text()
+            ))
+        )
+    }
+
+    #[rstest]
+    fn update_my_user_profile_no_profile() {
+        let calling_principal = fixtures::principal();
+        let user_id = fixtures::user_id();
+        let request = UpdateMyUserProfileRequest {
+            username: None,
+            config: None,
+        };
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(user_id));
+        repository_mock
+            .expect_get_user_profile_by_user_id()
+            .once()
+            .with(eq(user_id))
+            .return_const(None);
+        repository_mock.expect_update_user_profile().never();
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let result = service
+            .update_my_user_profile(calling_principal, request)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::not_found(&format!(
+                "User profile for principal {} not found",
+                calling_principal.to_text()
+            ))
         )
     }
 
@@ -711,6 +825,39 @@ mod tests {
                 },
                 ..original_profile
             },
+        )
+    }
+
+    #[rstest]
+    fn update_user_profile_no_profile() {
+        let calling_principal = fixtures::principal();
+        let user_id = fixtures::user_id();
+        let request = UpdateUserProfileRequest {
+            user_id: user_id.to_string(),
+            username: None,
+            config: None,
+        };
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_profile_by_user_id()
+            .once()
+            .with(eq(user_id))
+            .return_const(None);
+        repository_mock.expect_update_user_profile().never();
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let result = service
+            .update_user_profile(calling_principal, request)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::not_found(&format!(
+                "User profile for user with id {} not found",
+                user_id.to_string()
+            ))
         )
     }
 }

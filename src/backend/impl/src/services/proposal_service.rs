@@ -79,7 +79,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
             (ReviewPeriodState::InProgress, ReviewPeriodState::Completed) => {
                 proposal.state = state;
 
-                self.proposal_repository.update_proposal(&id, proposal)
+                self.proposal_repository.update_proposal(id, proposal)
             }
             _ => Err(ApiError::invalid_argument(
                 "Invalid proposal state transition",
@@ -198,6 +198,30 @@ mod tests {
     }
 
     #[rstest]
+    async fn get_proposal_not_found() {
+        let proposal_id = fixtures::proposal_id();
+
+        let mut repository_mock = MockProposalRepository::new();
+        repository_mock
+            .expect_get_proposal_by_id()
+            .once()
+            .with(eq(proposal_id))
+            .return_const(None);
+
+        let service = ProposalServiceImpl::new(repository_mock);
+
+        let result = service.get_proposal(proposal_id).unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::not_found(&format!(
+                "Proposal with id {} not found",
+                &proposal_id.to_string()
+            ))
+        )
+    }
+
+    #[rstest]
     fn list_proposals() {
         let mut repository_mock = MockProposalRepository::new();
         repository_mock
@@ -248,6 +272,34 @@ mod tests {
         let service = ProposalServiceImpl::new(repository_mock);
 
         service.update_proposal_state(proposal_id, state).unwrap();
+    }
+
+    #[rstest]
+    fn update_proposal_state_not_found() {
+        let proposal_id = fixtures::proposal_id();
+        let state = ReviewPeriodState::Completed;
+
+        let mut repository_mock = MockProposalRepository::new();
+        repository_mock
+            .expect_get_proposal_by_id()
+            .once()
+            .with(eq(proposal_id))
+            .return_const(None);
+        repository_mock.expect_update_proposal().never();
+
+        let service = ProposalServiceImpl::new(repository_mock);
+
+        let result = service
+            .update_proposal_state(proposal_id, state)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::not_found(&format!(
+                "Proposal with id {} not found",
+                &proposal_id.to_string()
+            ))
+        )
     }
 
     #[rstest]

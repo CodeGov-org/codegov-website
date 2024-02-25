@@ -14,8 +14,7 @@ pub trait ProposalRepository {
 
     async fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError>;
 
-    fn update_proposal(&self, proposal_id: &ProposalId, proposal: Proposal)
-        -> Result<(), ApiError>;
+    fn update_proposal(&self, proposal_id: ProposalId, proposal: Proposal) -> Result<(), ApiError>;
 }
 
 pub struct ProposalRepositoryImpl {}
@@ -52,20 +51,9 @@ impl ProposalRepository for ProposalRepositoryImpl {
         Ok(proposal_id)
     }
 
-    fn update_proposal(
-        &self,
-        proposal_id: &ProposalId,
-        proposal: Proposal,
-    ) -> Result<(), ApiError> {
-        self.get_proposal_by_id(proposal_id).ok_or_else(|| {
-            ApiError::not_found(&format!(
-                "Proposal with id {} not found",
-                proposal_id.to_string()
-            ))
-        })?;
-
+    fn update_proposal(&self, proposal_id: ProposalId, proposal: Proposal) -> Result<(), ApiError> {
         STATE.with_borrow_mut(|s| {
-            s.proposals.insert(*proposal_id, proposal);
+            s.proposals.insert(proposal_id, proposal);
 
             Ok(())
         })
@@ -154,7 +142,7 @@ mod tests {
             .unwrap();
 
         repository
-            .update_proposal(&proposal_id, updated_proposal.clone())
+            .update_proposal(proposal_id, updated_proposal.clone())
             .unwrap();
 
         let result = repository.get_proposal_by_id(&proposal_id);

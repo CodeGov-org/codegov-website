@@ -183,6 +183,44 @@ describe('User Profile', () => {
     expect(bobGet).toEqual(bobCreate);
   });
 
+  it('should not allow the same user to create multiple profiles', async () => {
+    const alice = generateRandomIdentity();
+    actor.setIdentity(alice);
+
+    const aliceCreateRes = await actor.create_my_user_profile();
+    const aliceCreate = extractOkResponse(aliceCreateRes);
+
+    const aliceCreateAgainRes = await actor.create_my_user_profile();
+    const aliceCreateAgainErr = extractErrResponse(aliceCreateAgainRes);
+
+    const aliceGetRes = await actor.get_my_user_profile();
+    const aliceGet = extractOkResponse(aliceGetRes);
+    const aliceGetHistoryRes = await actor.get_my_user_profile_history();
+    const aliceGetHistory = extractOkResponse(aliceGetHistoryRes);
+
+    expect(aliceCreate.id).toBeString();
+    expect(aliceCreate.username).toBe('Anonymous');
+    expect(aliceCreate.config).toEqual({ anonymous: null });
+    expect(aliceGetHistory.history).toHaveLength(1);
+    expect(aliceGetHistory.history[0]).toEqual({
+      action: { create: null },
+      user: alice.getPrincipal(),
+      date_time: dateToRfc3339(currentDate),
+      data: {
+        username: aliceCreate.username,
+        config: aliceCreate.config,
+      },
+    });
+    expect(aliceGet).toEqual(aliceCreate);
+
+    expect(aliceCreateAgainErr).toEqual({
+      code: 409,
+      message: `User profile for principal ${alice
+        .getPrincipal()
+        .toText()} already exists`,
+    });
+  });
+
   describe('update my user profile', () => {
     it('should not allow anonymous principals', async () => {
       actor.setIdentity(anonymousIdentity);
