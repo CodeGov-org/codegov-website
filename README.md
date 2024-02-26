@@ -57,6 +57,22 @@ The primary backend canister for CodeGov proposal review management.
 | `cargo test`                             | Run unit tests                |
 | `pnpm turbo test -F backend-integration` | Run integration tests         |
 
+### NNS Testing
+
+An NNS testing utility tool.
+
+This tool currently supports:
+
+- Random identity generation
+- Neuron staking
+- RVM proposal creation
+
+All supported actions are performed through self-documenting prompts in the terminal window.
+
+| Command                     | Description  |
+| --------------------------- | ------------ |
+| `pnpm -F nns-testing start` | Run the tool |
+
 ## System Setup
 
 Add the following to the `~/.bashrc` (or `.zprofile` on Mac) file:
@@ -271,21 +287,7 @@ Any property preceded by `opt` is optional and can be omitted. For example, to o
 dfx canister call backend update_user_profile '(record { user_id = "${userId}"; username = opt "${username}"; })'
 ```
 
-### Creating proposals
-
-Manual steps to create a neuron and make a proposal are documented in the [wiki](https://wiki.internetcomputer.org/wiki/How-To:_Create_an_NNS_motion_proposal).
-
-To create a proposal, a neuron is needed first. Run the following command to create a neuron, alternatively follow the script steps manually:
-
-```bash
-./scripts/setup-neuron.sh
-```
-
-To set up a replica version management proposal:
-
-```bash
-./scripts/create-rvm-proposal.sh
-```
+### Listing open proposals
 
 To list open replica version management proposals:
 
@@ -321,7 +323,7 @@ To list open replica version management proposals:
    ```bash
    dfx deploy
    ```
-7. Create proposals according to the [Creating proposals](#creating-proposals) section.
+7. Create proposals using the [NNS Testing tool](#nns-testing).
 8. Manually sync proposals with:
    ```bash
    dfx canister call backend sync_proposals
@@ -384,7 +386,7 @@ To list open replica version management proposals:
    dfx canister call backend list_logs '(record{})'
    ```
 
-### Writing proposal scripts
+### Creating proposals
 
 - The method to call on the NNS governance canister is [`manage_neuron`](https://github.com/dfinity/ic/blob/046de5375825975b57ca3a6f92cd80eaf062f21a/rs/nns/governance/canister/governance.did#L679).
 - This method takes a [`ManageNeuron`](https://github.com/dfinity/ic/blob/046de5375825975b57ca3a6f92cd80eaf062f21a/rs/nns/governance/canister/governance.did#L300-L304) record as an argument.
