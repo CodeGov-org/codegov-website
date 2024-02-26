@@ -31,7 +31,7 @@ impl<T: UserProfileRepository> InitService for InitServiceImpl<T> {
         let profile = UserProfile::new_admin();
 
         self.user_profile_repository
-            .create_user_profile(calling_principal, profile.clone())
+            .create_user_profile(calling_principal, profile)
             .await?;
 
         Ok(())
@@ -68,7 +68,7 @@ mod tests {
         repository_mock
             .expect_create_user_profile()
             .once()
-            .with(eq(calling_principal), eq(profile.clone()))
+            .with(eq(calling_principal), eq(profile))
             .return_const(Ok(id));
 
         let service = InitServiceImpl::new(repository_mock);

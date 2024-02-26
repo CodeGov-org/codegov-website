@@ -2,11 +2,10 @@ use std::str::FromStr;
 
 use crate::{
     mappings::map_get_proposal_response,
-    repositories::{
-        Proposal, ProposalId, ProposalRepository, ProposalRepositoryImpl, ReviewPeriodState,
-    },
+    repositories::{DateTime, Proposal, ProposalId, ProposalRepository, ProposalRepositoryImpl},
+    system_api::get_date_time,
 };
-use backend_api::{ApiError, GetProposalResponse, ListProposalsResponse};
+use backend_api::{ApiError, GetProposalResponse, ListProposalsRequest, ListProposalsResponse};
 use candid::Principal;
 use external_canisters::nns::GovernanceCanisterService;
 use ic_nns_governance::pb::v1::{
@@ -19,15 +18,14 @@ const NNS_GOVERNANCE_CANISTER_ID: &str = "rrkah-fqaaa-aaaaa-aaaaq-cai";
 pub trait ProposalService {
     fn get_proposal(&self, id: ProposalId) -> Result<GetProposalResponse, ApiError>;
 
-    fn list_proposals(&self) -> Result<ListProposalsResponse, ApiError>;
-
-    fn update_proposal_state(
+    fn list_proposals(
         &self,
-        id: ProposalId,
-        state: ReviewPeriodState,
-    ) -> Result<(), ApiError>;
+        request: Option<ListProposalsRequest>,
+    ) -> Result<ListProposalsResponse, ApiError>;
 
     async fn fetch_and_save_nns_proposals(&self) -> Result<(), ApiError>;
+
+    fn complete_pending_proposals(&self) -> Result<(), ApiError>;
 }
 
 pub struct ProposalServiceImpl<T: ProposalRepository> {
@@ -52,39 +50,20 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
         Ok(map_get_proposal_response(id, proposal))
     }
 
-    fn list_proposals(&self) -> Result<ListProposalsResponse, ApiError> {
+    fn list_proposals(
+        &self,
+        request: Option<ListProposalsRequest>,
+    ) -> Result<ListProposalsResponse, ApiError> {
+        let proposal_state = request.and_then(|r| r.state.map(Into::into));
+
         let proposals = self
             .proposal_repository
-            .get_proposals()
+            .get_proposals(proposal_state)?
             .into_iter()
             .map(|(id, proposal)| map_get_proposal_response(id, proposal))
             .collect();
 
         Ok(ListProposalsResponse { proposals })
-    }
-
-    fn update_proposal_state(
-        &self,
-        id: ProposalId,
-        state: ReviewPeriodState,
-    ) -> Result<(), ApiError> {
-        let mut proposal = self
-            .proposal_repository
-            .get_proposal_by_id(&id)
-            .ok_or_else(|| {
-                ApiError::not_found(&format!("Proposal with id {} not found", &id.to_string()))
-            })?;
-
-        match (proposal.state, state.clone()) {
-            (ReviewPeriodState::InProgress, ReviewPeriodState::Completed) => {
-                proposal.state = state;
-
-                self.proposal_repository.update_proposal(id, proposal)
-            }
-            _ => Err(ApiError::invalid_argument(
-                "Invalid proposal state transition",
-            )),
-        }
     }
 
     async fn fetch_and_save_nns_proposals(&self) -> Result<(), ApiError> {
@@ -142,13 +121,22 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
 
             if !self
                 .proposal_repository
-                .get_proposals()
+                .get_proposals(None)?
                 .iter()
                 .any(|(_, p)| p.nervous_system.id() == proposal.nervous_system.id())
             {
                 self.proposal_repository.create_proposal(proposal).await?;
             }
         }
+
+        Ok(())
+    }
+
+    fn complete_pending_proposals(&self) -> Result<(), ApiError> {
+        let current_time = get_date_time().and_then(DateTime::new)?;
+
+        self.proposal_repository
+            .complete_pending_proposals(current_time)?;
 
         Ok(())
     }
@@ -166,8 +154,8 @@ impl<T: ProposalRepository> ProposalServiceImpl<T> {
 mod tests {
     use super::*;
     use crate::{
-        fixtures::{self},
-        repositories::{MockProposalRepository, Proposal},
+        fixtures,
+        repositories::{DateTime, MockProposalRepository},
     };
     use mockall::predicate::*;
     use rstest::*;
@@ -227,7 +215,7 @@ mod tests {
         repository_mock
             .expect_get_proposals()
             .once()
-            .return_const(fixtures::nns_proposals_with_ids());
+            .return_const(Ok(fixtures::nns_proposals_with_ids()));
 
         let service = ProposalServiceImpl::new(repository_mock);
 
@@ -236,7 +224,7 @@ mod tests {
             .map(|(id, proposal)| map_get_proposal_response(id, proposal))
             .collect();
 
-        let result = service.list_proposals().unwrap();
+        let result = service.list_proposals(None).unwrap();
 
         assert_eq!(
             result,
@@ -247,84 +235,18 @@ mod tests {
     }
 
     #[rstest]
-    fn update_proposal_state() {
-        let proposal_id = fixtures::proposal_id();
-        let original_proposal = fixtures::nns_replica_version_management_proposal();
-        let state = ReviewPeriodState::Completed;
-
-        let updated_proposal = Proposal {
-            state: state.clone(),
-            ..fixtures::nns_replica_version_management_proposal()
-        };
+    fn complete_pending_proposals() {
+        let current_time: DateTime = get_date_time().and_then(DateTime::new).unwrap();
 
         let mut repository_mock = MockProposalRepository::new();
         repository_mock
-            .expect_get_proposal_by_id()
+            .expect_complete_pending_proposals()
             .once()
-            .with(eq(proposal_id))
-            .return_const(Some(original_proposal.clone()));
-        repository_mock
-            .expect_update_proposal()
-            .once()
-            .with(eq(proposal_id), eq(updated_proposal))
+            .with(eq(current_time))
             .return_const(Ok(()));
 
         let service = ProposalServiceImpl::new(repository_mock);
 
-        service.update_proposal_state(proposal_id, state).unwrap();
-    }
-
-    #[rstest]
-    fn update_proposal_state_not_found() {
-        let proposal_id = fixtures::proposal_id();
-        let state = ReviewPeriodState::Completed;
-
-        let mut repository_mock = MockProposalRepository::new();
-        repository_mock
-            .expect_get_proposal_by_id()
-            .once()
-            .with(eq(proposal_id))
-            .return_const(None);
-        repository_mock.expect_update_proposal().never();
-
-        let service = ProposalServiceImpl::new(repository_mock);
-
-        let result = service
-            .update_proposal_state(proposal_id, state)
-            .unwrap_err();
-
-        assert_eq!(
-            result,
-            ApiError::not_found(&format!(
-                "Proposal with id {} not found",
-                &proposal_id.to_string()
-            ))
-        )
-    }
-
-    #[rstest]
-    fn update_proposal_state_wrong() {
-        let proposal_id = fixtures::proposal_id();
-        let original_proposal = fixtures::nns_replica_version_management_proposal_completed();
-        let state = ReviewPeriodState::InProgress;
-
-        let mut repository_mock = MockProposalRepository::new();
-        repository_mock
-            .expect_get_proposal_by_id()
-            .once()
-            .with(eq(proposal_id))
-            .return_const(Some(original_proposal.clone()));
-        repository_mock.expect_update_proposal().never();
-
-        let service = ProposalServiceImpl::new(repository_mock);
-
-        let result = service
-            .update_proposal_state(proposal_id, state)
-            .unwrap_err();
-
-        assert_eq!(
-            result,
-            ApiError::invalid_argument("Invalid proposal state transition",)
-        )
+        service.complete_pending_proposals().unwrap();
     }
 }

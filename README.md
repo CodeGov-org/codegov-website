@@ -293,6 +293,97 @@ To list open replica version management proposals:
 ./scripts/list-open-rvm-proposals.sh
 ```
 
+### Creating closed proposals
+
+#### Creating proposals in the past
+
+1. Check your current system time:
+   ```bash
+   date
+   ```
+2. Set your system time to be at least 48 hours in the past:
+   ```bash
+   sudo date -s "Feb 24 20:55:54 CET 2024"
+   ```
+3. Verify the date is correct with:
+   ```bash
+   date
+   ```
+4. Run DFX with a clean replica:
+   ```bash
+   dfx start --clean --background
+   ```
+5. Install NNS canisters:
+   ```bash
+   dfx extension run nns install
+   ```
+6. Deploy canisters:
+   ```bash
+   dfx deploy
+   ```
+7. Create proposals according to the [Creating proposals](#creating-proposals) section.
+8. Manually sync proposals with:
+   ```bash
+   dfx canister call backend sync_proposals
+   ```
+9. Verify that the proposals are synced
+   - List all proposals
+     ```bash
+     dfx canister call backend list_proposals
+     ```
+   - List only pending proposals:
+     ```bash
+     dfx canister call backend list_proposals '(opt record { state = opt variant { in_progress }})'
+     ```
+   - List only completed proposals:
+     ```bash
+     dfx canister call backend list_proposals '(opt record { state = opt variant { completed }})'
+     ```
+10. You can also optionally verify the logs with:
+    ```bash
+    dfx canister call backend list_logs '(record{})'
+    ```
+
+#### Back to the future
+
+1. Stop DFX:
+   ```bash
+   dfx stop
+   ```
+2. Set your system time back to the current time:
+   ```bash
+   sudo date -s "Feb 26 21:55:54 CET 2024"
+   ```
+3. Verify the date is correct with:
+   ```bash
+   date
+   ```
+4. Start DFX
+   ```bash
+   dfx start --background
+   ```
+5. Manually sync proposals with:
+   ```bash
+   dfx canister call backend sync_proposals
+   ```
+6. Verify that the proposals are synced
+   - List all proposals
+     ```bash
+     dfx canister call backend list_proposals
+     ```
+   - List only pending proposals:
+     ```bash
+     dfx canister call backend list_proposals '(opt record { state = opt variant { in_progress }})'
+     ```
+   - List only completed proposals:
+     ```bash
+     dfx canister call backend list_proposals '(opt record { state = opt variant { completed }})'
+     ```
+7. You can also optionally verify the logs with:
+   ```bash
+   dfx canister call backend list_logs '(record{})'
+   ```
+
 ### Writing proposal scripts
 
 - The method to call on the NNS governance canister is [`manage_neuron`](https://github.com/dfinity/ic/blob/046de5375825975b57ca3a6f92cd80eaf062f21a/rs/nns/governance/canister/governance.did#L679).

@@ -5,7 +5,7 @@ use crate::{
         ProposalService, ProposalServiceImpl,
     },
 };
-use backend_api::{ApiError, ApiResult, ListProposalsResponse};
+use backend_api::{ApiError, ApiResult, ListProposalsRequest, ListProposalsResponse};
 use candid::Principal;
 use ic_cdk::*;
 
@@ -20,8 +20,8 @@ async fn sync_proposals() -> ApiResult<()> {
 }
 
 #[query]
-fn list_proposals() -> ApiResult<ListProposalsResponse> {
-    ProposalController::default().list_proposals().into()
+fn list_proposals(request: Option<ListProposalsRequest>) -> ApiResult<ListProposalsResponse> {
+    ProposalController::default().list_proposals(request).into()
 }
 
 pub(super) struct ProposalController<A: AccessControlService, L: LogService, P: ProposalService> {
@@ -76,15 +76,41 @@ impl<A: AccessControlService, L: LogService, P: ProposalService> ProposalControl
                 );
             }
             Err(e) => {
-                let _ = self
-                    .log_service
-                    .log_error(format!("{:?}", e), Some("sync_proposals".to_string()));
+                let _ = self.log_service.log_error(
+                    format!("Error syncing proposals ({})", e),
+                    Some("sync_proposals".to_string()),
+                );
             }
         }
     }
 
-    fn list_proposals(&self) -> Result<ListProposalsResponse, ApiError> {
-        self.proposal_service.list_proposals()
+    pub fn complete_pending_proposals_job(&self) {
+        let _ = self.log_service.log_info(
+            "Closing proposals".to_string(),
+            Some("close_pending_proposals".to_string()),
+        );
+
+        match self.proposal_service.complete_pending_proposals() {
+            Ok(_) => {
+                let _ = self.log_service.log_info(
+                    "Successfully closed completed proposals".to_string(),
+                    Some("close_pending_proposals".to_string()),
+                );
+            }
+            Err(e) => {
+                let _ = self.log_service.log_error(
+                    format!("Error closing completed proposals ({})", e),
+                    Some("close_pending_proposals".to_string()),
+                );
+            }
+        }
+    }
+
+    fn list_proposals(
+        &self,
+        request: Option<ListProposalsRequest>,
+    ) -> Result<ListProposalsResponse, ApiError> {
+        self.proposal_service.list_proposals(request)
     }
 }
 
@@ -187,8 +213,156 @@ mod tests {
             proposal_service_mock,
         );
 
-        let result = controller.list_proposals().unwrap();
+        let result = controller.list_proposals(None).unwrap();
 
         assert_eq!(result, ListProposalsResponse { proposals });
+    }
+
+    #[rstest]
+    async fn sync_proposals_success() {
+        let access_control_service_mock = MockAccessControlService::new();
+
+        let mut log_service_mock = MockLogService::new();
+        log_service_mock
+            .expect_log_info()
+            .once()
+            .with(
+                eq("Syncing proposals".to_string()),
+                eq(Some("sync_proposals".to_string())),
+            )
+            .return_const(Ok(()));
+        log_service_mock
+            .expect_log_info()
+            .once()
+            .with(
+                eq("Successfully synced proposals".to_string()),
+                eq(Some("sync_proposals".to_string())),
+            )
+            .return_const(Ok(()));
+
+        let mut proposal_service_mock = MockProposalService::new();
+        proposal_service_mock
+            .expect_fetch_and_save_nns_proposals()
+            .once()
+            .return_const(Ok(()));
+
+        let controller = ProposalController::new(
+            access_control_service_mock,
+            log_service_mock,
+            proposal_service_mock,
+        );
+
+        controller.sync_proposals_job().await;
+    }
+
+    #[rstest]
+    async fn sync_proposals_failure() {
+        let access_control_service_mock = MockAccessControlService::new();
+
+        let mut log_service_mock = MockLogService::new();
+        log_service_mock
+            .expect_log_info()
+            .once()
+            .with(
+                eq("Syncing proposals".to_string()),
+                eq(Some("sync_proposals".to_string())),
+            )
+            .return_const(Ok(()));
+        log_service_mock
+            .expect_log_error()
+            .once()
+            .with(
+                eq("Error syncing proposals (500: Failed to do something)".to_string()),
+                eq(Some("sync_proposals".to_string())),
+            )
+            .return_const(Ok(()));
+
+        let mut proposal_service_mock = MockProposalService::new();
+        proposal_service_mock
+            .expect_fetch_and_save_nns_proposals()
+            .once()
+            .return_const(Err(ApiError::internal("Failed to do something")));
+
+        let controller = ProposalController::new(
+            access_control_service_mock,
+            log_service_mock,
+            proposal_service_mock,
+        );
+
+        controller.sync_proposals_job().await;
+    }
+
+    #[rstest]
+    fn complete_pending_proposals_success() {
+        let access_control_service_mock = MockAccessControlService::new();
+
+        let mut log_service_mock = MockLogService::new();
+        log_service_mock
+            .expect_log_info()
+            .once()
+            .with(
+                eq("Closing proposals".to_string()),
+                eq(Some("close_pending_proposals".to_string())),
+            )
+            .return_const(Ok(()));
+        log_service_mock
+            .expect_log_info()
+            .once()
+            .with(
+                eq("Successfully closed completed proposals".to_string()),
+                eq(Some("close_pending_proposals".to_string())),
+            )
+            .return_const(Ok(()));
+
+        let mut proposal_service_mock = MockProposalService::new();
+        proposal_service_mock
+            .expect_complete_pending_proposals()
+            .once()
+            .return_const(Ok(()));
+
+        let controller = ProposalController::new(
+            access_control_service_mock,
+            log_service_mock,
+            proposal_service_mock,
+        );
+
+        controller.complete_pending_proposals_job();
+    }
+
+    #[rstest]
+    fn complete_pending_proposals_failure() {
+        let access_control_service_mock = MockAccessControlService::new();
+
+        let mut log_service_mock = MockLogService::new();
+        log_service_mock
+            .expect_log_info()
+            .once()
+            .with(
+                eq("Closing proposals".to_string()),
+                eq(Some("close_pending_proposals".to_string())),
+            )
+            .return_const(Ok(()));
+        log_service_mock
+            .expect_log_error()
+            .once()
+            .with(
+                eq("Error closing completed proposals (500: Failed to do something)".to_string()),
+                eq(Some("close_pending_proposals".to_string())),
+            )
+            .return_const(Ok(()));
+
+        let mut proposal_service_mock = MockProposalService::new();
+        proposal_service_mock
+            .expect_complete_pending_proposals()
+            .once()
+            .return_const(Err(ApiError::internal("Failed to do something")));
+
+        let controller = ProposalController::new(
+            access_control_service_mock,
+            log_service_mock,
+            proposal_service_mock,
+        );
+
+        controller.complete_pending_proposals_job();
     }
 }

@@ -89,11 +89,7 @@ impl UserProfileRepository for UserProfileRepositoryImpl {
             let history_entry =
                 UserProfileHistoryEntry::create_action(calling_principal, user_profile)?;
             s.profiles_history.insert(
-                UserProfileHistoryKey::new(
-                    user_id,
-                    history_entry.date_time.clone(),
-                    history_entry_id,
-                )?,
+                UserProfileHistoryKey::new(user_id, history_entry.date_time, history_entry_id)?,
                 history_entry,
             );
 
@@ -117,11 +113,7 @@ impl UserProfileRepository for UserProfileRepositoryImpl {
             let history_entry =
                 UserProfileHistoryEntry::update_action(calling_principal, user_profile)?;
             s.profiles_history.insert(
-                UserProfileHistoryKey::new(
-                    user_id,
-                    history_entry.date_time.clone(),
-                    history_entry_id,
-                )?,
+                UserProfileHistoryKey::new(user_id, history_entry.date_time, history_entry_id)?,
                 history_entry,
             );
 
