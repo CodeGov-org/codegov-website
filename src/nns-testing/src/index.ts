@@ -193,7 +193,10 @@ async function createRvmProposal(
 
   if (isNullish(config.neuronId)) {
     console.log('No neuron ID found, creating a neuron now...');
-    neuronId = await createNeuron(config);
+    neuronId = await createNeuron({
+      ...config,
+      identity,
+    });
   } else {
     neuronId = BigInt(config.neuronId);
   }
