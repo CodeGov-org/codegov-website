@@ -67,7 +67,7 @@ export class Governance {
     await this.ledger.mint(100, ownerAccount);
 
     spinner.text = 'Transferring ICP to governance account...';
-    await this.ledger.transfer(identity, 90, targetGovernanceAccount, nonce);
+    await this.ledger.transfer(identity, 10, targetGovernanceAccount, nonce);
 
     try {
       this.agent.replaceIdentity(identity);
@@ -86,7 +86,7 @@ export class Governance {
       spinner.text = 'Increasing dissolve delay...';
       await this.governanceCanister.increaseDissolveDelay({
         neuronId,
-        additionalDissolveDelaySeconds: 60 * 60 * 24 * 7 * 52 * 2, // 2 years
+        additionalDissolveDelaySeconds: 60 * 60 * 24 * 7 * 52 * 1, // 1 year
       });
 
       return neuronId;
