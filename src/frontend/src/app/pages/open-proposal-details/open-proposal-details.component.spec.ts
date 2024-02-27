@@ -33,7 +33,7 @@ describe('OpenProposalDetailsComponent', () => {
       proposalServiceMock,
       'currentProposal$',
       of({
-        id: 1,
+        id: 1n,
         title: 'title',
         topic: ProposalTopic.RVM,
         type: 'unknown',
