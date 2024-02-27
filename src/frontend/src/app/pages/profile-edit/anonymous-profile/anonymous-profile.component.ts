@@ -28,7 +28,7 @@ import { CardComponent, CopyButtonComponent } from '~core/ui';
         @include px(3);
         @include py(2);
 
-        border: 1px solid $slate-300;
+        border: $border-sm-size solid $slate-300;
         color: $slate-900;
         background-color: $white;
 

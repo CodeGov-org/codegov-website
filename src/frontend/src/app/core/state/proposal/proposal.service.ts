@@ -3,9 +3,11 @@ import { BehaviorSubject, map, switchMap } from 'rxjs';
 
 import { ListProposalsResponse } from '@cg/backend';
 import { BackendActorService } from '~core/services';
-import { isNotNil, isOk } from '~core/utils';
+import { isNil, isOk } from '~core/utils';
 import { mapOpenProposalListResponse } from './proposal.mapper';
 import { Proposal } from './proposal.model';
+
+const CACHE_TTL = 5_000;
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +19,7 @@ export class ProposalService {
   private currentProposalIdSubject = new BehaviorSubject<bigint | null>(null);
   public currentProposalId$ = this.currentProposalIdSubject.asObservable();
 
-  private lastLoadTime: Date | null = null;
+  private lastLoadTime: number | null = null;
 
   public readonly currentProposal$ = this.currentProposalId$.pipe(
     switchMap(proposalId =>
@@ -35,10 +37,7 @@ export class ProposalService {
   public async loadOpenProposalList(): Promise<void> {
     let getResponse: ListProposalsResponse;
 
-    if (
-      !isNotNil(this.lastLoadTime) ||
-      new Date().getTime() - this.lastLoadTime.getTime() > 5_000
-    ) {
+    if (!this.isCached()) {
       getResponse = await this.actorService.list_proposals();
     } else return;
 
@@ -46,7 +45,7 @@ export class ProposalService {
       this.openProposalListSubject.next(
         mapOpenProposalListResponse(getResponse.ok.proposals),
       );
-      this.lastLoadTime = new Date();
+      this.lastLoadTime = Date.now();
       return;
     }
 
@@ -57,5 +56,16 @@ export class ProposalService {
 
   public async setCurrentProposalId(proposalId: bigint): Promise<void> {
     this.currentProposalIdSubject.next(proposalId);
+  }
+
+  private isCached(): boolean {
+    if (isNil(this.lastLoadTime)) {
+      return false;
+    }
+
+    const cacheExpiryTime = this.lastLoadTime + CACHE_TTL;
+    const currentTime = Date.now();
+
+    return currentTime > cacheExpiryTime;
   }
 }

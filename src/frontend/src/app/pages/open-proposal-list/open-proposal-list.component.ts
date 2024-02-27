@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
@@ -10,6 +10,7 @@ import {
   KeyValueGridComponent,
   ValueColComponent,
 } from '~core/ui';
+import { FormatDatePipe } from '~core/utils/format-date-pipe';
 
 @Component({
   selector: 'app-open-proposal-list',
@@ -20,13 +21,17 @@ import {
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
-    DatePipe,
     RouterModule,
+    FormatDatePipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
       @import '@cg/styles/common';
+
+      :host {
+        @include page-content;
+      }
 
       .proposal {
         margin-bottom: size(6);
@@ -34,20 +39,6 @@ import {
 
       .proposal-title {
         word-break: break-all;
-      }
-
-      :host {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-
-        @include lg {
-          width: 75%;
-        }
-
-        @include xl {
-          width: 66.66667%;
-        }
       }
 
       .proposal-links__link {
@@ -61,6 +52,7 @@ import {
   ],
   template: `
     @if (proposalList$ | async; as proposalList) {
+      <h1 class="h3">Proposals pending review</h1>
       @for (proposal of proposalList; track proposal.id) {
         <app-card class="proposal">
           <h2 class="h4 proposal-title" cardTitle>
@@ -71,10 +63,11 @@ import {
             <app-key-col id="proposal-id">ID</app-key-col>
             <app-value-col aria-labelledby="proposal-id">
               <a
-                href="{{ linkBaseUrl.ProposalId }}{{ proposal.id }}"
+                href="{{ linkBaseUrl.Proposal }}{{ proposal.id }}"
                 target="_blank"
                 rel="nofollow noreferrer"
-                >{{ proposal.id }}
+              >
+                {{ proposal.id }}
               </a>
             </app-value-col>
 
@@ -93,7 +86,8 @@ import {
                     href="{{ proposalLink.link }}"
                     target="_blank"
                     rel="nofollow noreferrer"
-                    >{{ proposalLink.type }}
+                  >
+                    {{ proposalLink.type }}
                   </a>
                 }
               }
@@ -111,7 +105,7 @@ import {
 
             <app-key-col id="proposal-created">Created</app-key-col>
             <app-value-col aria-labelledby="proposal-created">
-              {{ proposal.proposedAt | date: 'medium' }}
+              {{ proposal.proposedAt | formatDate }}
             </app-value-col>
 
             <app-key-col id="proposal-proposer">Proposer</app-key-col>
@@ -120,29 +114,31 @@ import {
                 href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
                 target="_blank"
                 rel="nofollow noreferrer"
-                >{{ proposal.proposedBy }}
+              >
+                {{ proposal.proposedBy }}
               </a>
             </app-value-col>
 
-            <app-key-col id="proposal-review-end"
-              >Review period end
+            <app-key-col id="proposal-review-end">
+              Review period end
             </app-key-col>
             <app-value-col aria-labelledby="proposal-review-end">
-              {{ proposal.reviewPeriodEnd | date: 'medium' }}
+              {{ proposal.reviewPeriodEnd | formatDate }}
             </app-value-col>
 
-            <app-key-col id="proposal-voting-end"
-              >Voting period end
+            <app-key-col id="proposal-voting-end">
+              Voting period end
             </app-key-col>
             <app-value-col aria-labelledby="proposal-voting-end">
-              {{ proposal.votingPeriodEnd | date: 'medium' }}
+              {{ proposal.votingPeriodEnd | formatDate }}
             </app-value-col>
           </app-key-value-grid>
           <div class="btn-group">
             <a
               class="btn btn--outline proposal-action"
               [routerLink]="['/open', proposal.id]"
-              >View details
+            >
+              View details
             </a>
           </div>
         </app-card>

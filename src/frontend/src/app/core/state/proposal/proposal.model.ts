@@ -1,5 +1,5 @@
 export interface Proposal {
-  id: bigint | number;
+  id: bigint;
   title: string;
   topic: ProposalTopic;
   type: string;
@@ -7,7 +7,7 @@ export interface Proposal {
   reviewPeriodEnd: Date;
   votingPeriodEnd: Date;
   proposedAt: Date;
-  proposedBy: bigint | number;
+  proposedBy: bigint;
   summary: string;
   proposalLinks: ProposalVotingLink[];
 }
@@ -29,10 +29,12 @@ export interface ProposalVotingLink {
 
 export enum ProposalVotingLinkType {
   NNSDApp = 'NNS DApp',
+  ICLight = 'ICLight',
 }
 
 export enum ProposalLinkBaseUrl {
   NNSDApp = 'https://nns.ic0.app/proposal/?u=qoctq-giaaa-aaaaa-aaaea-cai&proposal=',
-  ProposalId = 'https://dashboard.internetcomputer.org/proposal/',
+  Proposal = 'https://dashboard.internetcomputer.org/proposal/',
   Neuron = 'https://dashboard.internetcomputer.org/neuron/',
+  ICLight = 'https://iclight.io/nns/proposals/',
 }

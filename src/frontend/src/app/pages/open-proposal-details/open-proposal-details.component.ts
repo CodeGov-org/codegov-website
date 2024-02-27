@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -20,6 +20,7 @@ import {
   ValueColComponent,
 } from '~core/ui';
 import { isNotNil } from '~core/utils';
+import { FormatDatePipe } from '~core/utils/format-date-pipe';
 
 @Component({
   selector: 'app-open-proposal-details',
@@ -30,12 +31,16 @@ import { isNotNil } from '~core/utils';
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
-    DatePipe,
+    FormatDatePipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
       @import '@cg/styles/common';
+
+      :host {
+        @include page-content;
+      }
 
       .proposal {
         margin-bottom: size(6);
@@ -45,56 +50,25 @@ import { isNotNil } from '~core/utils';
         word-break: break-all;
       }
 
-      :host {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-
-        @include lg {
-          width: 75%;
-        }
-
-        @include xl {
-          width: 66.66667%;
-        }
-      }
-
       .proposal-links__link {
         margin-right: size(4);
-      }
-
-      .proposal-summary {
-        margin-top: size(3);
-        padding-top: size(6);
-        border-top: 1px solid $slate-300;
-
-        @include dark {
-          border-color: $slate-700;
-        }
-      }
-
-      .proposal-summary__content {
-        background-color: $slate-200;
-
-        @include dark {
-          background-color: $slate-900;
-        }
       }
     `,
   ],
   template: `
     @if (currentProposal$ | async; as proposal) {
-      <h2 class="h3">{{ proposal.title }}</h2>
+      <h1 class="h3">{{ proposal.title }}</h1>
 
       <app-card class="proposal">
         <app-key-value-grid [columnNumber]="2">
           <app-key-col id="proposal-id">ID</app-key-col>
           <app-value-col aria-labelledby="proposal-id">
             <a
-              href="{{ linkBaseUrl.ProposalId }}{{ proposal.id }}"
+              href="{{ linkBaseUrl.Proposal }}{{ proposal.id }}"
               target="_blank"
               rel="nofollow noreferrer"
-              >{{ proposal.id }}
+            >
+              {{ proposal.id }}
             </a>
           </app-value-col>
 
@@ -113,7 +87,8 @@ import { isNotNil } from '~core/utils';
                   href="{{ proposalLink.link }}"
                   target="_blank"
                   rel="nofollow noreferrer"
-                  >{{ proposalLink.type }}
+                >
+                  {{ proposalLink.type }}
                 </a>
               }
             }
@@ -131,7 +106,7 @@ import { isNotNil } from '~core/utils';
 
           <app-key-col id="proposal-created">Created</app-key-col>
           <app-value-col aria-labelledby="proposal-created">
-            {{ proposal.proposedAt | date: 'medium' }}
+            {{ proposal.proposedAt | formatDate }}
           </app-value-col>
 
           <app-key-col id="proposal-proposer">Proposer</app-key-col>
@@ -140,31 +115,31 @@ import { isNotNil } from '~core/utils';
               href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
               target="_blank"
               rel="nofollow noreferrer"
-              >{{ proposal.proposedBy }}
+            >
+              {{ proposal.proposedBy }}
             </a>
           </app-value-col>
 
           <app-key-col id="proposal-review-end">Review period end</app-key-col>
           <app-value-col aria-labelledby="proposal-review-end">
-            {{ proposal.reviewPeriodEnd | date: 'medium' }}
+            {{ proposal.reviewPeriodEnd | formatDate }}
           </app-value-col>
 
           <app-key-col id="proposal-voting-end">Voting period end</app-key-col>
           <app-value-col aria-labelledby="proposal-voting-end">
-            {{ proposal.votingPeriodEnd | date: 'medium' }}
+            {{ proposal.votingPeriodEnd | formatDate }}
           </app-value-col>
         </app-key-value-grid>
+      </app-card>
 
-        <h3 class="h4 proposal-summary">Proposal summary</h3>
-        <app-card class="proposal-summary__content">
-          <div [innerHTML]="convertMarkdownToHTML(proposal.summary)"></div>
-        </app-card>
+      <h2 class="h4 proposal-summary">Proposal summary</h2>
+      <app-card class="proposal-summary__content">
+        <div [innerHTML]="convertMarkdownToHTML(proposal.summary)"></div>
       </app-card>
     }
   `,
 })
 export class OpenProposalDetailsComponent implements OnInit {
-  public readonly proposalList$ = this.proposalService.openProposalList$;
   public readonly proposalTopic = ProposalTopic;
   public readonly linkBaseUrl = ProposalLinkBaseUrl;
   public readonly currentProposal$ = this.proposalService.currentProposal$;
@@ -196,7 +171,7 @@ export class OpenProposalDetailsComponent implements OnInit {
       .pipe(takeUntilDestroyed(), filter(isNotNil))
       .subscribe(proposal => {
         if (proposal.state === ProposalState.Completed) {
-          this.router.navigate(['closed', { id: this.proposalIdFromRoute$ }]);
+          this.router.navigate(['closed', { id: proposal.id }]);
         }
       });
   }

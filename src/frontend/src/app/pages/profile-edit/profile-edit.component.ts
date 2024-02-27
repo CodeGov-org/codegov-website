@@ -30,17 +30,7 @@ import { ReviewerProfileComponent } from './reviewer-profile';
       @import '@cg/styles/common';
 
       :host {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-
-        @include lg {
-          width: 75%;
-        }
-
-        @include xl {
-          width: 66.66667%;
-        }
+        @include page-content;
       }
 
       .profile-edit__title {

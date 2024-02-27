@@ -27,7 +27,7 @@ export function mapOpenProposalListResponse(
       ),
       votingPeriodEnd: addDays(
         new Date(proposalResponse.proposal.proposed_at),
-        4,
+        3,
       ),
       proposedAt: new Date(proposalResponse.proposal.proposed_at),
       proposedBy: proposalResponse.proposal.proposed_by,
@@ -39,6 +39,12 @@ export function mapOpenProposalListResponse(
           type: ProposalVotingLinkType.NNSDApp,
           link:
             ProposalLinkBaseUrl.NNSDApp +
+            proposalResponse.proposal.nervous_system.network.id,
+        },
+        {
+          type: ProposalVotingLinkType.ICLight,
+          link:
+            ProposalLinkBaseUrl.ICLight +
             proposalResponse.proposal.nervous_system.network.id,
         },
       ],
