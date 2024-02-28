@@ -46,8 +46,8 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
         margin-bottom: size(6);
       }
 
-      .proposal-title {
-        word-break: break-all;
+      .break-text {
+        @include break-word;
       }
 
       .proposal-links__link {
@@ -57,7 +57,7 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
   ],
   template: `
     @if (currentProposal$ | async; as proposal) {
-      <h1 class="h3">{{ proposal.title }}</h1>
+      <h1 class="h3 break-text">{{ proposal.title }}</h1>
 
       <app-card class="proposal">
         <app-key-value-grid [columnNumber]="2">
@@ -110,7 +110,7 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
           </app-value-col>
 
           <app-key-col id="proposal-proposer">Proposer</app-key-col>
-          <app-value-col aria-labelledby="proposal-proposer">
+          <app-value-col aria-labelledby="proposal-proposer" class="break-text">
             <a
               href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
               target="_blank"

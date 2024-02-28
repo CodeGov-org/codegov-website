@@ -6,3 +6,7 @@
     text-decoration: none;
   }
 }
+
+@mixin break-word {
+  word-break: break-word;
+}

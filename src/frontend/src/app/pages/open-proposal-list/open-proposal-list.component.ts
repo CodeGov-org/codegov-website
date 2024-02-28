@@ -37,8 +37,8 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
         margin-bottom: size(6);
       }
 
-      .proposal-title {
-        word-break: break-all;
+      .break-text {
+        @include break-word;
       }
 
       .proposal-links__link {
@@ -55,7 +55,7 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
       <h1 class="h3">Proposals pending review</h1>
       @for (proposal of proposalList; track proposal.id) {
         <app-card class="proposal">
-          <h2 class="h4 proposal-title" cardTitle>
+          <h2 class="h4 break-text" cardTitle>
             {{ proposal.title }}
           </h2>
 
@@ -109,7 +109,10 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
             </app-value-col>
 
             <app-key-col id="proposal-proposer">Proposer</app-key-col>
-            <app-value-col aria-labelledby="proposal-proposer">
+            <app-value-col
+              aria-labelledby="proposal-proposer"
+              class="break-text"
+            >
               <a
                 href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
                 target="_blank"
