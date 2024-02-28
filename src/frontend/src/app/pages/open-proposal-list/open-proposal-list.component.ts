@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
+import { FormatDatePipe } from '~core/pipes';
 import { ProposalLinkBaseUrl, ProposalTopic } from '~core/state';
 import { ProposalService } from '~core/state';
 import {
@@ -10,7 +11,6 @@ import {
   KeyValueGridComponent,
   ValueColComponent,
 } from '~core/ui';
-import { FormatDatePipe } from '~core/utils/format-date-pipe';
 
 @Component({
   selector: 'app-open-proposal-list',
@@ -37,8 +37,9 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
         margin-bottom: size(6);
       }
 
-      .break-text {
-        @include break-word;
+      .proposal-title,
+      .proposal-proposer {
+        word-break: break-word;
       }
 
       .proposal-links__link {
@@ -53,15 +54,15 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
   template: `
     @if (proposalList$ | async; as proposalList) {
       <h1 class="h3">Proposals pending review</h1>
-      @for (proposal of proposalList; track proposal.id) {
+      @for (proposal of proposalList; track proposal.id; let i = $index) {
         <app-card class="proposal">
-          <h2 class="h4 break-text" cardTitle>
+          <h2 class="h4 proposal-title" cardTitle>
             {{ proposal.title }}
           </h2>
 
           <app-key-value-grid [columnNumber]="2">
-            <app-key-col id="proposal-id">ID</app-key-col>
-            <app-value-col aria-labelledby="proposal-id">
+            <app-key-col [id]="'proposal-id-' + i">ID</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'proposal-id-' + i">
               <a
                 href="{{ linkBaseUrl.Proposal }}{{ proposal.id }}"
                 target="_blank"
@@ -71,12 +72,12 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
               </a>
             </app-value-col>
 
-            <app-key-col id="proposal-links">Voting links</app-key-col>
+            <app-key-col [id]="'proposal-links-' + i">Voting links</app-key-col>
             <app-value-col
               class="proposal-links"
-              aria-labelledby="proposal-links"
+              [attr.aria-labelledby]="'proposal-links-' + i"
             >
-              @if (proposal.proposalLinks !== []) {
+              @if (proposal.proposalLinks.length > 0) {
                 @for (
                   proposalLink of proposal.proposalLinks;
                   track proposalLink.type
@@ -93,25 +94,25 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
               }
             </app-value-col>
 
-            <app-key-col id="proposal-topic">Topic</app-key-col>
-            <app-value-col aria-labelledby="proposal-topic">
+            <app-key-col [id]="'proposal-topic-' + i">Topic</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'proposal-topic-' + i">
               {{ proposal.topic }}
             </app-value-col>
 
-            <app-key-col id="proposal-type">Type</app-key-col>
-            <app-value-col aria-labelledby="proposal-type">
+            <app-key-col [id]="'proposal-type-' + i">Type</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'proposal-type-' + i">
               {{ proposal.type }}
             </app-value-col>
 
-            <app-key-col id="proposal-created">Created</app-key-col>
-            <app-value-col aria-labelledby="proposal-created">
+            <app-key-col [id]="'proposal-created-' + i">Created</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'proposal-created-' + i">
               {{ proposal.proposedAt | formatDate }}
             </app-value-col>
 
-            <app-key-col id="proposal-proposer">Proposer</app-key-col>
+            <app-key-col [id]="'proposal-proposer-' + i">Proposer</app-key-col>
             <app-value-col
-              aria-labelledby="proposal-proposer"
-              class="break-text"
+              [attr.aria-labelledby]="'proposal-proposer-' + i"
+              class="proposal-proposer"
             >
               <a
                 href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
@@ -122,17 +123,17 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
               </a>
             </app-value-col>
 
-            <app-key-col id="proposal-review-end">
+            <app-key-col [id]="'proposal-review-end-' + i">
               Review period end
             </app-key-col>
-            <app-value-col aria-labelledby="proposal-review-end">
+            <app-value-col [attr.aria-labelledby]="'proposal-review-end-' + i">
               {{ proposal.reviewPeriodEnd | formatDate }}
             </app-value-col>
 
-            <app-key-col id="proposal-voting-end">
+            <app-key-col [id]="'proposal-voting-end-' + i">
               Voting period end
             </app-key-col>
-            <app-value-col aria-labelledby="proposal-voting-end">
+            <app-value-col [attr.aria-labelledby]="'proposal-voting-end-' + i">
               {{ proposal.votingPeriodEnd | formatDate }}
             </app-value-col>
           </app-key-value-grid>

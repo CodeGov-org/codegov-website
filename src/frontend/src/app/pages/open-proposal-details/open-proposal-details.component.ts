@@ -11,6 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { marked } from 'marked';
 import { filter, map } from 'rxjs';
 
+import { FormatDatePipe } from '~core/pipes';
 import { ProposalLinkBaseUrl, ProposalState, ProposalTopic } from '~core/state';
 import { ProposalService } from '~core/state';
 import {
@@ -20,7 +21,6 @@ import {
   ValueColComponent,
 } from '~core/ui';
 import { isNotNil } from '~core/utils';
-import { FormatDatePipe } from '~core/utils/format-date-pipe';
 
 @Component({
   selector: 'app-open-proposal-details',
@@ -46,8 +46,9 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
         margin-bottom: size(6);
       }
 
-      .break-text {
-        @include break-word;
+      .proposal-title,
+      .proposal-proposer {
+        word-break: break-word;
       }
 
       .proposal-links__link {
@@ -57,7 +58,7 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
   ],
   template: `
     @if (currentProposal$ | async; as proposal) {
-      <h1 class="h3 break-text">{{ proposal.title }}</h1>
+      <h1 class="h3 proposal-title">{{ proposal.title }}</h1>
 
       <app-card class="proposal">
         <app-key-value-grid [columnNumber]="2">
@@ -77,7 +78,7 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
             class="proposal-links"
             aria-labelledby="proposal-links"
           >
-            @if (proposal.proposalLinks !== []) {
+            @if (proposal.proposalLinks.length > 0) {
               @for (
                 proposalLink of proposal.proposalLinks;
                 track proposalLink.type
@@ -110,7 +111,10 @@ import { FormatDatePipe } from '~core/utils/format-date-pipe';
           </app-value-col>
 
           <app-key-col id="proposal-proposer">Proposer</app-key-col>
-          <app-value-col aria-labelledby="proposal-proposer" class="break-text">
+          <app-value-col
+            aria-labelledby="proposal-proposer"
+            class="proposal-proposer"
+          >
             <a
               href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
               target="_blank"
