@@ -27,4 +27,18 @@ export const ROUTES: Routes = [
         m => m.OpenProposalDetailsComponent,
       ),
   },
+  {
+    path: 'review/view/:id',
+    loadComponent: () =>
+      import('./pages/view-proposal-review').then(
+        m => m.ViewProposalReviewComponent,
+      ),
+  },
+  {
+    path: 'review/edit/:id',
+    loadComponent: () =>
+      import('./pages/edit-proposal-review').then(
+        m => m.EditProposalReviewComponent,
+      ),
+  },
 ];
