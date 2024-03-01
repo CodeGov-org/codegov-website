@@ -152,6 +152,12 @@ import {
           <div class="btn-group">
             <a
               class="btn btn--outline proposal__action"
+              [routerLink]="['/review', proposal.id, 'edit']"
+            >
+              My review
+            </a>
+            <a
+              class="btn btn--outline proposal__action"
               [routerLink]="['/open', proposal.id]"
             >
               View details
