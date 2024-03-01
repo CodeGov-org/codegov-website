@@ -34,4 +34,18 @@ export const ROUTES: Routes = [
         m => m.ClosedProposalListComponent,
       ),
   },
+  {
+    path: 'review/:id/view',
+    loadComponent: () =>
+      import('./pages/view-proposal-review').then(
+        m => m.ViewProposalReviewComponent,
+      ),
+  },
+  {
+    path: 'review/:id/edit',
+    loadComponent: () =>
+      import('./pages/edit-proposal-review').then(
+        m => m.EditProposalReviewComponent,
+      ),
+  },
 ];
