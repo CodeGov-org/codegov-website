@@ -34,7 +34,7 @@ import {
 } from '~core/ui';
 import { ComponentChanges } from '~core/utils';
 
-export interface AdminProfileForm {
+interface AdminProfileForm {
   username: FormControl<string>;
   bio: FormControl<string>;
 }
