@@ -40,16 +40,16 @@ import {
         margin-bottom: size(6);
       }
 
-      .proposal-title,
-      .proposal-proposer {
+      .proposal__title,
+      .proposal__proposer {
         word-break: break-word;
       }
 
-      .proposal-links__link {
+      .proposal__link {
         margin-right: size(4);
       }
 
-      .proposal-action {
+      .proposal__action {
         @include no-underline;
       }
     `,
@@ -59,13 +59,13 @@ import {
       <h1 class="h3">Proposals pending review</h1>
       @for (proposal of proposalList; track proposal.id; let i = $index) {
         <app-card class="proposal">
-          <h2 class="h4 proposal-title" cardTitle>
+          <h2 class="h4 proposal__title" cardTitle>
             {{ proposal.title }}
           </h2>
 
           <app-key-value-grid [columnNumber]="2">
-            <app-key-col [id]="'proposal-id-' + i">ID</app-key-col>
-            <app-value-col [attr.aria-labelledby]="'proposal-id-' + i">
+            <app-key-col [id]="'open-proposal-id-' + i">ID</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'open-proposal-id-' + i">
               <a
                 href="{{ linkBaseUrl.Proposal }}{{ proposal.id }}"
                 target="_blank"
@@ -75,18 +75,17 @@ import {
               </a>
             </app-value-col>
 
-            <app-key-col [id]="'proposal-links-' + i">Voting links</app-key-col>
-            <app-value-col
-              class="proposal-links"
-              [attr.aria-labelledby]="'proposal-links-' + i"
+            <app-key-col [id]="'open-proposal-links-' + i"
+              >Voting links</app-key-col
             >
+            <app-value-col [attr.aria-labelledby]="'open-proposal-links-' + i">
               @if (proposal.proposalLinks.length > 0) {
                 @for (
                   proposalLink of proposal.proposalLinks;
                   track proposalLink.type
                 ) {
                   <a
-                    class="proposal-links__link"
+                    class="proposal__link"
                     href="{{ proposalLink.link }}"
                     target="_blank"
                     rel="nofollow noreferrer"
@@ -97,25 +96,31 @@ import {
               }
             </app-value-col>
 
-            <app-key-col [id]="'proposal-topic-' + i">Topic</app-key-col>
-            <app-value-col [attr.aria-labelledby]="'proposal-topic-' + i">
+            <app-key-col [id]="'open-proposal-topic-' + i">Topic</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'open-proposal-topic-' + i">
               {{ proposal.topic }}
             </app-value-col>
 
-            <app-key-col [id]="'proposal-type-' + i">Type</app-key-col>
-            <app-value-col [attr.aria-labelledby]="'proposal-type-' + i">
+            <app-key-col [id]="'open-proposal-type-' + i">Type</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'open-proposal-type-' + i">
               {{ proposal.type }}
             </app-value-col>
 
-            <app-key-col [id]="'proposal-created-' + i">Created</app-key-col>
-            <app-value-col [attr.aria-labelledby]="'proposal-created-' + i">
+            <app-key-col [id]="'open-proposal-created-' + i"
+              >Created</app-key-col
+            >
+            <app-value-col
+              [attr.aria-labelledby]="'open-proposal-created-' + i"
+            >
               {{ proposal.proposedAt | formatDate }}
             </app-value-col>
 
-            <app-key-col [id]="'proposal-proposer-' + i">Proposer</app-key-col>
+            <app-key-col [id]="'open-proposal-proposer-' + i"
+              >Proposer</app-key-col
+            >
             <app-value-col
-              [attr.aria-labelledby]="'proposal-proposer-' + i"
-              class="proposal-proposer"
+              [attr.aria-labelledby]="'open-proposal-proposer-' + i"
+              class="proposal__proposer"
             >
               <a
                 href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
@@ -126,23 +131,27 @@ import {
               </a>
             </app-value-col>
 
-            <app-key-col [id]="'proposal-review-end-' + i">
+            <app-key-col [id]="'open-proposal-review-end-' + i">
               Review period end
             </app-key-col>
-            <app-value-col [attr.aria-labelledby]="'proposal-review-end-' + i">
+            <app-value-col
+              [attr.aria-labelledby]="'open-proposal-review-end-' + i"
+            >
               {{ proposal.reviewPeriodEnd | formatDate }}
             </app-value-col>
 
-            <app-key-col [id]="'proposal-voting-end-' + i">
+            <app-key-col [id]="'open-proposal-voting-end-' + i">
               Voting period end
             </app-key-col>
-            <app-value-col [attr.aria-labelledby]="'proposal-voting-end-' + i">
+            <app-value-col
+              [attr.aria-labelledby]="'open-proposal-voting-end-' + i"
+            >
               {{ proposal.votingPeriodEnd | formatDate }}
             </app-value-col>
           </app-key-value-grid>
           <div class="btn-group">
             <a
-              class="btn btn--outline proposal-action"
+              class="btn btn--outline proposal__action"
               [routerLink]="['/open', proposal.id]"
             >
               View details
