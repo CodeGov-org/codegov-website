@@ -38,7 +38,9 @@ export class ProposalService {
     let getResponse: ListProposalsResponse;
 
     if (!this.isCached()) {
-      getResponse = await this.actorService.list_proposals();
+      getResponse = await this.actorService.list_proposals({
+        state: [{ in_progress: null }],
+      });
     } else return;
 
     if (isOk(getResponse)) {
