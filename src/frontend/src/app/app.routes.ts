@@ -27,4 +27,11 @@ export const ROUTES: Routes = [
         m => m.OpenProposalDetailsComponent,
       ),
   },
+  {
+    path: 'closed',
+    loadComponent: () =>
+      import('./pages/closed-proposal-list').then(
+        m => m.ClosedProposalListComponent,
+      ),
+  },
 ];

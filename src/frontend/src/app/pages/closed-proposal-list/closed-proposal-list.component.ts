@@ -16,7 +16,7 @@ import {
 } from '~core/ui';
 
 @Component({
-  selector: 'app-open-proposal-list',
+  selector: 'app-closed-proposal-list',
   standalone: true,
   imports: [
     CommonModule,
@@ -24,8 +24,8 @@ import {
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
-    RouterModule,
     FormatDatePipe,
+    RouterModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -56,7 +56,7 @@ import {
   ],
   template: `
     @if (proposalList$ | async; as proposalList) {
-      <h1 class="h3">Proposals pending review</h1>
+      <h1 class="h3">Reviewed proposals</h1>
       @for (proposal of proposalList; track proposal.id; let i = $index) {
         <app-card class="proposal">
           <h2 class="h4 proposal-title" cardTitle>
@@ -126,24 +126,32 @@ import {
               </a>
             </app-value-col>
 
-            <app-key-col [id]="'proposal-review-end-' + i">
-              Review period end
+            <app-key-col [id]="'proposal-date-decided-' + i">
+              Date decided
             </app-key-col>
-            <app-value-col [attr.aria-labelledby]="'proposal-review-end-' + i">
-              {{ proposal.reviewPeriodEnd | formatDate }}
+            <app-value-col
+              [attr.aria-labelledby]="'proposal-date-decided-' + i"
+            >
+              {{
+                proposal.decidedAt
+                  ? (proposal.decidedAt | formatDate)
+                  : 'Not yet decided'
+              }}
             </app-value-col>
 
-            <app-key-col [id]="'proposal-voting-end-' + i">
-              Voting period end
+            <app-key-col [id]="'proposal-codegov-vote-' + i">
+              CodeGov vote
             </app-key-col>
-            <app-value-col [attr.aria-labelledby]="'proposal-voting-end-' + i">
-              {{ proposal.votingPeriodEnd | formatDate }}
+            <app-value-col
+              [attr.aria-labelledby]="'proposal-codegov-vote-' + i"
+            >
+              {{ proposal.codeGovVote }}
             </app-value-col>
           </app-key-value-grid>
           <div class="btn-group">
             <a
               class="btn btn--outline proposal-action"
-              [routerLink]="['/open', proposal.id]"
+              [routerLink]="['/closed', proposal.id]"
             >
               View details
             </a>
@@ -153,14 +161,15 @@ import {
     }
   `,
 })
-export class OpenProposalListComponent implements OnInit {
-  public readonly proposalList$ = this.proposalService.openProposalList$;
+export class ClosedProposalListComponent implements OnInit {
+  public readonly proposalList$ = this.proposalService.closedProposalList$;
   public readonly proposalTopic = ProposalTopic;
   public readonly linkBaseUrl = ProposalLinkBaseUrl;
 
   constructor(private readonly proposalService: ProposalService) {}
 
   public ngOnInit(): void {
-    this.proposalService.loadOpenProposalList();
+    this.proposalService.loadClosedProposalList();
+    console.log(this.proposalList$.pipe());
   }
 }
