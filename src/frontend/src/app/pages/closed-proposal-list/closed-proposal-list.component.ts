@@ -40,17 +40,29 @@ import {
         margin-bottom: size(6);
       }
 
-      .proposal-title,
-      .proposal-proposer {
+      .proposal__title,
+      .proposal__proposer {
         word-break: break-word;
       }
 
-      .proposal-links__link {
+      .proposal__link {
         margin-right: size(4);
       }
 
-      .proposal-action {
+      .proposal__action {
         @include no-underline;
+      }
+
+      .proposal__vote {
+        font-weight: bold;
+      }
+
+      .proposal__vote--adopt {
+        color: $success;
+      }
+
+      .proposal__vote--reject {
+        color: $error;
       }
     `,
   ],
@@ -59,7 +71,7 @@ import {
       <h1 class="h3">Reviewed proposals</h1>
       @for (proposal of proposalList; track proposal.id; let i = $index) {
         <app-card class="proposal">
-          <h2 class="h4 proposal-title" cardTitle>
+          <h2 class="h4 proposal__title" cardTitle>
             {{ proposal.title }}
           </h2>
 
@@ -86,7 +98,7 @@ import {
                   track proposalLink.type
                 ) {
                   <a
-                    class="proposal-links__link"
+                    class="proposal__link"
                     href="{{ proposalLink.link }}"
                     target="_blank"
                     rel="nofollow noreferrer"
@@ -115,7 +127,7 @@ import {
             <app-key-col [id]="'proposal-proposer-' + i">Proposer</app-key-col>
             <app-value-col
               [attr.aria-labelledby]="'proposal-proposer-' + i"
-              class="proposal-proposer"
+              class="proposal__proposer"
             >
               <a
                 href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
@@ -144,13 +156,18 @@ import {
             </app-key-col>
             <app-value-col
               [attr.aria-labelledby]="'proposal-codegov-vote-' + i"
+              class="proposal__vote"
+              [ngClass]="{
+                'proposal__vote--adopt': proposal.codeGovVote === 'ADOPT',
+                'proposal__vote--reject': proposal.codeGovVote === 'REJECT'
+              }"
             >
               {{ proposal.codeGovVote }}
             </app-value-col>
           </app-key-value-grid>
           <div class="btn-group">
             <a
-              class="btn btn--outline proposal-action"
+              class="btn btn--outline proposal__action"
               [routerLink]="['/closed', proposal.id]"
             >
               View details
@@ -170,6 +187,5 @@ export class ClosedProposalListComponent implements OnInit {
 
   public ngOnInit(): void {
     this.proposalService.loadClosedProposalList();
-    console.log(this.proposalList$.pipe());
   }
 }

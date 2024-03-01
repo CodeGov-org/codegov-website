@@ -76,7 +76,7 @@ export class ProposalService {
   }
 
   public async loadClosedProposalList(): Promise<void> {
-    const closedProposalsPlaceholder: ProposalResponse[] = [
+    const closedProposalsList: ProposalResponse[] = [
       {
         id: '1234',
         proposal: {
@@ -97,7 +97,7 @@ export class ProposalService {
     ];
 
     this.closedProposalListSubject.next(
-      mapClosedProposalListResponse(closedProposalsPlaceholder),
+      mapClosedProposalListResponse(closedProposalsList),
     );
   }
 }
