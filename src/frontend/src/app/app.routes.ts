@@ -28,14 +28,14 @@ export const ROUTES: Routes = [
       ),
   },
   {
-    path: 'review/view/:id',
+    path: 'review/:id/view',
     loadComponent: () =>
       import('./pages/view-proposal-review').then(
         m => m.ViewProposalReviewComponent,
       ),
   },
   {
-    path: 'review/edit/:id',
+    path: 'review/:id/edit',
     loadComponent: () =>
       import('./pages/edit-proposal-review').then(
         m => m.EditProposalReviewComponent,

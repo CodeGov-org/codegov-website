@@ -73,9 +73,7 @@
 
   &:checked {
     border-color: $primary;
-  }
 
-  &:checked {
     &::after {
       background-color: $primary;
     }

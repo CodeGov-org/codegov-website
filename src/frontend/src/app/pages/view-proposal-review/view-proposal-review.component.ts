@@ -1,10 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
-import { filter, map } from 'rxjs';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { of } from 'rxjs';
 
-import { ProposalService } from '~core/state';
 import { CardComponent } from '~core/ui';
 
 @Component({
@@ -22,7 +19,7 @@ import { CardComponent } from '~core/ui';
     `,
   ],
   template: `
-    @if (currentProposal$ | async; as proposal) {
+    @if (currentReview$ | async; as proposal) {
       <h1 class="h1">Review for proposal {{ proposal.id }} by AnonReviewer</h1>
 
       <app-card>
@@ -31,32 +28,6 @@ import { CardComponent } from '~core/ui';
     }
   `,
 })
-export class ViewProposalReviewComponent implements OnInit {
-  public readonly currentProposal$ = this.proposalService.currentProposal$;
-
-  private readonly proposalIdFromRoute$ = this.route.params.pipe(
-    map(params => {
-      try {
-        return BigInt(params['id']);
-      } catch (error) {
-        return null;
-      }
-    }),
-    filter(Boolean),
-  );
-
-  constructor(
-    private readonly proposalService: ProposalService,
-    private readonly route: ActivatedRoute,
-  ) {
-    this.proposalIdFromRoute$
-      .pipe(takeUntilDestroyed())
-      .subscribe(proposalId => {
-        this.proposalService.setCurrentProposalId(proposalId);
-      });
-  }
-
-  public ngOnInit(): void {
-    this.proposalService.loadOpenProposalList();
-  }
+export class ViewProposalReviewComponent {
+  public currentReview$ = of({ id: 1, title: 'Proposal Title' });
 }
