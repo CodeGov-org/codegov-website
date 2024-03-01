@@ -6,5 +6,6 @@ export function proposalServiceMockFactory(): ProposalServiceMock {
   return jasmine.createSpyObj<ProposalService>('ProposalService', [
     'loadOpenProposalList',
     'setCurrentProposalId',
+    'loadClosedProposalList',
   ]);
 }
