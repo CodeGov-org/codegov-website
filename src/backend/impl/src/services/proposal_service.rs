@@ -20,7 +20,7 @@ pub trait ProposalService {
 
     fn list_proposals(
         &self,
-        request: Option<ListProposalsRequest>,
+        request: ListProposalsRequest,
     ) -> Result<ListProposalsResponse, ApiError>;
 
     async fn fetch_and_save_nns_proposals(&self) -> Result<(), ApiError>;
@@ -52,9 +52,9 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
 
     fn list_proposals(
         &self,
-        request: Option<ListProposalsRequest>,
+        request: ListProposalsRequest,
     ) -> Result<ListProposalsResponse, ApiError> {
-        let proposal_state = request.and_then(|r| r.state.map(Into::into));
+        let proposal_state = request.state.map(Into::into);
 
         let proposals = self
             .proposal_repository
@@ -224,7 +224,9 @@ mod tests {
             .map(|(id, proposal)| map_get_proposal_response(id, proposal))
             .collect();
 
-        let result = service.list_proposals(None).unwrap();
+        let result = service
+            .list_proposals(ListProposalsRequest { state: None })
+            .unwrap();
 
         assert_eq!(
             result,

@@ -331,7 +331,7 @@ To list open replica version management proposals:
 9. Verify that the proposals are synced
    - List all proposals
      ```bash
-     dfx canister call backend list_proposals
+     dfx canister call backend list_proposals '(opt record {})'
      ```
    - List only pending proposals:
      ```bash
@@ -371,7 +371,7 @@ To list open replica version management proposals:
 6. Verify that the proposals are synced
    - List all proposals
      ```bash
-     dfx canister call backend list_proposals
+     dfx canister call backend list_proposals '(opt record {})'
      ```
    - List only pending proposals:
      ```bash

@@ -20,7 +20,7 @@ async fn sync_proposals() -> ApiResult<()> {
 }
 
 #[query]
-fn list_proposals(request: Option<ListProposalsRequest>) -> ApiResult<ListProposalsResponse> {
+fn list_proposals(request: ListProposalsRequest) -> ApiResult<ListProposalsResponse> {
     ProposalController::default().list_proposals(request).into()
 }
 
@@ -87,20 +87,20 @@ impl<A: AccessControlService, L: LogService, P: ProposalService> ProposalControl
     pub fn complete_pending_proposals_job(&self) {
         let _ = self.log_service.log_info(
             "Closing proposals".to_string(),
-            Some("close_pending_proposals".to_string()),
+            Some("complete_pending_proposals".to_string()),
         );
 
         match self.proposal_service.complete_pending_proposals() {
             Ok(_) => {
                 let _ = self.log_service.log_info(
                     "Successfully closed completed proposals".to_string(),
-                    Some("close_pending_proposals".to_string()),
+                    Some("complete_pending_proposals".to_string()),
                 );
             }
             Err(e) => {
                 let _ = self.log_service.log_error(
                     format!("Error closing completed proposals ({})", e),
-                    Some("close_pending_proposals".to_string()),
+                    Some("complete_pending_proposals".to_string()),
                 );
             }
         }
@@ -108,7 +108,7 @@ impl<A: AccessControlService, L: LogService, P: ProposalService> ProposalControl
 
     fn list_proposals(
         &self,
-        request: Option<ListProposalsRequest>,
+        request: ListProposalsRequest,
     ) -> Result<ListProposalsResponse, ApiError> {
         self.proposal_service.list_proposals(request)
     }
@@ -213,7 +213,9 @@ mod tests {
             proposal_service_mock,
         );
 
-        let result = controller.list_proposals(None).unwrap();
+        let result = controller
+            .list_proposals(ListProposalsRequest { state: None })
+            .unwrap();
 
         assert_eq!(result, ListProposalsResponse { proposals });
     }
@@ -302,7 +304,7 @@ mod tests {
             .once()
             .with(
                 eq("Closing proposals".to_string()),
-                eq(Some("close_pending_proposals".to_string())),
+                eq(Some("complete_pending_proposals".to_string())),
             )
             .return_const(Ok(()));
         log_service_mock
@@ -310,7 +312,7 @@ mod tests {
             .once()
             .with(
                 eq("Successfully closed completed proposals".to_string()),
-                eq(Some("close_pending_proposals".to_string())),
+                eq(Some("complete_pending_proposals".to_string())),
             )
             .return_const(Ok(()));
 
@@ -339,7 +341,7 @@ mod tests {
             .once()
             .with(
                 eq("Closing proposals".to_string()),
-                eq(Some("close_pending_proposals".to_string())),
+                eq(Some("complete_pending_proposals".to_string())),
             )
             .return_const(Ok(()));
         log_service_mock
@@ -347,7 +349,7 @@ mod tests {
             .once()
             .with(
                 eq("Error closing completed proposals (500: Failed to do something)".to_string()),
-                eq(Some("close_pending_proposals".to_string())),
+                eq(Some("complete_pending_proposals".to_string())),
             )
             .return_const(Ok(()));
 

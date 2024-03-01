@@ -92,9 +92,7 @@ impl ProposalRepository for ProposalRepositoryImpl {
             }
 
             Ok(())
-        })?;
-
-        Ok(())
+        })
     }
 
     async fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError> {
