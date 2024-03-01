@@ -22,8 +22,8 @@ import {
     `
       @import '@cg/styles/common';
 
-      .wallet-address {
-        word-break: break-all;
+      .reviewer-wallet-address {
+        word-break: break-word;
       }
     `,
   ],
@@ -41,7 +41,7 @@ import {
 
       <app-key-col id="reviewer-wallet-address">Wallet address</app-key-col>
       <app-value-col
-        class="wallet-address"
+        class="reviewer-wallet-address"
         aria-labelledby="reviewer-wallet-address"
       >
         <a
