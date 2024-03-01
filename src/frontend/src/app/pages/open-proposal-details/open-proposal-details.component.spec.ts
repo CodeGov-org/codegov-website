@@ -69,7 +69,6 @@ describe('OpenProposalDetailsComponent', () => {
     fixture = TestBed.createComponent(OpenProposalDetailsComponent);
     component = fixture.componentInstance;
 
-    console.log(component.currentProposal$);
     fixture.detectChanges();
   });
 
