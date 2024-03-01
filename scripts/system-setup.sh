@@ -35,7 +35,7 @@ pnpm --version
 
 # Set up Bun
 echo "****** SYSTEM SETUP: Installing Bun ******"
-curl -fsSL https://bun.sh/install | bash
+curl -fsSL https://bun.sh/install | bash -s "bun-v1.0.26"
 
 # Set up DFX
 echo "****** SYSTEM SETUP: Installing DFXVM ******"

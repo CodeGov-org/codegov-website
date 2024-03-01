@@ -63,3 +63,17 @@ $screen-xxl: 1536px;
     max-width: $screen-xxl;
   }
 }
+
+@mixin page-content {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+
+  @include lg {
+    width: 75%;
+  }
+
+  @include xl {
+    width: 66.66667%;
+  }
+}

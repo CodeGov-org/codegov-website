@@ -14,7 +14,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
         align-items: center;
 
         grid-column: span 3;
-        margin-bottom: size(8);
+        margin-bottom: size(6);
         @include md {
           grid-column: span 2;
           margin-bottom: 0;
