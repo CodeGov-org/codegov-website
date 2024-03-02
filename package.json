@@ -10,7 +10,6 @@
   "scripts": {
     "turbo": "dotenv -- turbo --cache-dir=.turbo",
     "build": "pnpm turbo build",
-    "test": "pnpm turbo test",
     "lint": "eslint -c .eslintrc.js .",
     "lint:fix": "eslint -c .eslintrc.js --fix .",
     "format": "prettier --write .",
