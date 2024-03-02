@@ -121,8 +121,8 @@ import { isNotNil } from '~core/utils';
             </a>
           </app-value-col>
 
-          <app-key-col id="open-proposal-review-end"
-            >Review period end</app-key-col
+          <app-key-col id="open-proposal-review-end">
+            Review period end</app-key-col
           >
           <app-value-col aria-labelledby="open-proposal-review-end">
             {{ proposal.reviewPeriodEnd | formatDate }}

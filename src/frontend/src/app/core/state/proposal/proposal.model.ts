@@ -42,4 +42,4 @@ export enum ProposalLinkBaseUrl {
   ICLight = 'https://iclight.io/nns/proposals/',
 }
 
-export type ProposalCodeGovVote = 'ADOPT' | 'REJECT' | 'No vote';
+export type ProposalCodeGovVote = 'ADOPT' | 'REJECT' | 'NO VOTE';

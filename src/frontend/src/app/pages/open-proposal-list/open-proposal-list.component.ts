@@ -48,10 +48,6 @@ import {
       .proposal__link {
         margin-right: size(4);
       }
-
-      .proposal__action {
-        @include no-underline;
-      }
     `,
   ],
   template: `
@@ -75,8 +71,8 @@ import {
               </a>
             </app-value-col>
 
-            <app-key-col [id]="'open-proposal-links-' + i"
-              >Voting links</app-key-col
+            <app-key-col [id]="'open-proposal-links-' + i">
+              Voting links</app-key-col
             >
             <app-value-col [attr.aria-labelledby]="'open-proposal-links-' + i">
               @if (proposal.proposalLinks.length > 0) {
@@ -106,8 +102,8 @@ import {
               {{ proposal.type }}
             </app-value-col>
 
-            <app-key-col [id]="'open-proposal-created-' + i"
-              >Created</app-key-col
+            <app-key-col [id]="'open-proposal-created-' + i">
+              Created</app-key-col
             >
             <app-value-col
               [attr.aria-labelledby]="'open-proposal-created-' + i"
@@ -115,8 +111,8 @@ import {
               {{ proposal.proposedAt | formatDate }}
             </app-value-col>
 
-            <app-key-col [id]="'open-proposal-proposer-' + i"
-              >Proposer</app-key-col
+            <app-key-col [id]="'open-proposal-proposer-' + i">
+              Proposer</app-key-col
             >
             <app-value-col
               [attr.aria-labelledby]="'open-proposal-proposer-' + i"
@@ -151,15 +147,12 @@ import {
           </app-key-value-grid>
           <div class="btn-group">
             <a
-              class="btn btn--outline proposal__action"
+              class="btn btn--outline"
               [routerLink]="['/review', proposal.id, 'edit']"
             >
               My review
             </a>
-            <a
-              class="btn btn--outline proposal__action"
-              [routerLink]="['/open', proposal.id]"
-            >
+            <a class="btn btn--outline" [routerLink]="['/open', proposal.id]">
               View details
             </a>
           </div>

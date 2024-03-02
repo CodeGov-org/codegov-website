@@ -4,10 +4,7 @@ import { BehaviorSubject, map, switchMap } from 'rxjs';
 import { ListProposalsResponse, ProposalResponse } from '@cg/backend';
 import { BackendActorService } from '~core/services';
 import { isNil, isOk } from '~core/utils';
-import {
-  mapClosedProposalListResponse,
-  mapOpenProposalListResponse,
-} from './proposal.mapper';
+import { mapProposalListResponse } from './proposal.mapper';
 import { Proposal } from './proposal.model';
 
 const CACHE_TTL = 5_000;
@@ -49,7 +46,7 @@ export class ProposalService {
 
     if (isOk(getResponse)) {
       this.openProposalListSubject.next(
-        mapOpenProposalListResponse(getResponse.ok.proposals),
+        mapProposalListResponse(getResponse.ok.proposals),
       );
       this.lastLoadTime = Date.now();
       return;
@@ -97,7 +94,7 @@ export class ProposalService {
     ];
 
     this.closedProposalListSubject.next(
-      mapClosedProposalListResponse(closedProposalsList),
+      mapProposalListResponse(closedProposalsList),
     );
   }
 }
