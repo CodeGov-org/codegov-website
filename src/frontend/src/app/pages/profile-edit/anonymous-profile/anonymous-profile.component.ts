@@ -46,7 +46,8 @@ import { CardComponent, CopyButtonComponent } from '~core/ui';
 
       <p>
         If you would like to become a reviewer,
-        <a [href]="applyLink">apply now</a>.
+        <a [href]="applyLink">apply now</a>
+        .
       </p>
 
       <p>When requested, provide this ID to a CodeGov admin:</p>
