@@ -5,7 +5,7 @@ import { of } from 'rxjs';
 import { CardComponent } from '~core/ui';
 
 @Component({
-  selector: 'app-view-proposal-review',
+  selector: 'app-proposal-review',
   standalone: true,
   imports: [CommonModule, CardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +28,6 @@ import { CardComponent } from '~core/ui';
     }
   `,
 })
-export class ViewProposalReviewComponent {
+export class ProposalReviewComponent {
   public currentReview$ = of({ id: 1, title: 'Proposal Title' });
 }

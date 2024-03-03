@@ -37,15 +37,14 @@ export const ROUTES: Routes = [
   {
     path: 'review/:id/view',
     loadComponent: () =>
-      import('./pages/view-proposal-review').then(
-        m => m.ViewProposalReviewComponent,
-      ),
+      import('./pages/proposal-review').then(m => m.ProposalReviewComponent),
   },
   {
     path: 'review/:id/edit',
+    pathMatch: 'full',
     loadComponent: () =>
-      import('./pages/edit-proposal-review').then(
-        m => m.EditProposalReviewComponent,
+      import('./pages/proposal-review-edit').then(
+        m => m.ProposalReviewEditComponent,
       ),
   },
 ];
