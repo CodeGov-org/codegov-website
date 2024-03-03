@@ -16,7 +16,7 @@ import {
 } from '~core/ui';
 
 @Component({
-  selector: 'app-open-proposal-list',
+  selector: 'app-closed-proposal-list',
   standalone: true,
   imports: [
     CommonModule,
@@ -24,8 +24,8 @@ import {
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
-    RouterModule,
     FormatDatePipe,
+    RouterModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -48,11 +48,23 @@ import {
       .proposal__link {
         margin-right: size(4);
       }
+
+      .proposal__vote {
+        font-weight: bold;
+      }
+
+      .proposal__vote--adopt {
+        color: $success;
+      }
+
+      .proposal__vote--reject {
+        color: $error;
+      }
     `,
   ],
   template: `
     @if (proposalList$ | async; as proposalList) {
-      <h1 class="h3">Proposals pending review</h1>
+      <h1 class="h3">Reviewed proposals</h1>
       @for (proposal of proposalList; track proposal.id; let i = $index) {
         <app-card class="proposal">
           <h2 class="h4 proposal__title" cardTitle>
@@ -60,8 +72,8 @@ import {
           </h2>
 
           <app-key-value-grid [columnNumber]="2">
-            <app-key-col [id]="'open-proposal-id-' + i">ID</app-key-col>
-            <app-value-col [attr.aria-labelledby]="'open-proposal-id-' + i">
+            <app-key-col [id]="'closed-proposal-id-' + i">ID</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'closed-proposal-id-' + i">
               <a
                 href="{{ linkBaseUrl.Proposal }}{{ proposal.id }}"
                 target="_blank"
@@ -71,51 +83,53 @@ import {
               </a>
             </app-value-col>
 
-            <app-key-col [id]="'open-proposal-links-' + i">
+            <app-key-col [id]="'closed-proposal-links-' + i">
               Voting links</app-key-col
             >
-            <app-value-col [attr.aria-labelledby]="'open-proposal-links-' + i">
-              @if (proposal.proposalLinks.length > 0) {
-                @for (
-                  proposalLink of proposal.proposalLinks;
-                  track proposalLink.type
-                ) {
-                  <a
-                    class="proposal__link"
-                    href="{{ proposalLink.link }}"
-                    target="_blank"
-                    rel="nofollow noreferrer"
-                  >
-                    {{ proposalLink.type }}
-                  </a>
-                }
+            <app-value-col
+              [attr.aria-labelledby]="'closed-proposal-links-' + i"
+            >
+              @for (
+                proposalLink of proposal.proposalLinks;
+                track proposalLink.type
+              ) {
+                <a
+                  class="proposal__link"
+                  href="{{ proposalLink.link }}"
+                  target="_blank"
+                  rel="nofollow noreferrer"
+                >
+                  {{ proposalLink.type }}
+                </a>
               }
             </app-value-col>
 
-            <app-key-col [id]="'open-proposal-topic-' + i">Topic</app-key-col>
-            <app-value-col [attr.aria-labelledby]="'open-proposal-topic-' + i">
+            <app-key-col [id]="'closed-proposal-topic-' + i">Topic</app-key-col>
+            <app-value-col
+              [attr.aria-labelledby]="'closed-proposal-topic-' + i"
+            >
               {{ proposal.topic }}
             </app-value-col>
 
-            <app-key-col [id]="'open-proposal-type-' + i">Type</app-key-col>
-            <app-value-col [attr.aria-labelledby]="'open-proposal-type-' + i">
+            <app-key-col [id]="'closed-proposal-type-' + i">Type</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'closed-proposal-type-' + i">
               {{ proposal.type }}
             </app-value-col>
 
-            <app-key-col [id]="'open-proposal-created-' + i">
+            <app-key-col [id]="'closed-proposal-created-' + i">
               Created</app-key-col
             >
             <app-value-col
-              [attr.aria-labelledby]="'open-proposal-created-' + i"
+              [attr.aria-labelledby]="'closed-proposal-created-' + i"
             >
               {{ proposal.proposedAt | formatDate }}
             </app-value-col>
 
-            <app-key-col [id]="'open-proposal-proposer-' + i">
+            <app-key-col [id]="'closed-proposal-proposer-' + i">
               Proposer</app-key-col
             >
             <app-value-col
-              [attr.aria-labelledby]="'open-proposal-proposer-' + i"
+              [attr.aria-labelledby]="'closed-proposal-proposer-' + i"
               class="proposal__proposer"
             >
               <a
@@ -127,32 +141,35 @@ import {
               </a>
             </app-value-col>
 
-            <app-key-col [id]="'open-proposal-review-end-' + i">
-              Review period end
+            <app-key-col [id]="'closed-proposal-date-decided-' + i">
+              Date decided
             </app-key-col>
             <app-value-col
-              [attr.aria-labelledby]="'open-proposal-review-end-' + i"
+              [attr.aria-labelledby]="'closed-proposal-date-decided-' + i"
             >
-              {{ proposal.reviewPeriodEnd | formatDate }}
+              {{
+                proposal.decidedAt
+                  ? (proposal.decidedAt | formatDate)
+                  : 'Not yet decided'
+              }}
             </app-value-col>
 
-            <app-key-col [id]="'open-proposal-voting-end-' + i">
-              Voting period end
+            <app-key-col [id]="'closed-proposal-codegov-vote-' + i">
+              CodeGov vote
             </app-key-col>
             <app-value-col
-              [attr.aria-labelledby]="'open-proposal-voting-end-' + i"
+              [attr.aria-labelledby]="'closed-proposal-codegov-vote-' + i"
+              class="proposal__vote"
+              [ngClass]="{
+                'proposal__vote--adopt': proposal.codeGovVote === 'ADOPT',
+                'proposal__vote--reject': proposal.codeGovVote === 'REJECT'
+              }"
             >
-              {{ proposal.votingPeriodEnd | formatDate }}
+              {{ proposal.codeGovVote }}
             </app-value-col>
           </app-key-value-grid>
           <div class="btn-group">
-            <a
-              class="btn btn--outline"
-              [routerLink]="['/review', proposal.id, 'edit']"
-            >
-              My review
-            </a>
-            <a class="btn btn--outline" [routerLink]="['/open', proposal.id]">
+            <a class="btn btn--outline" [routerLink]="['/closed', proposal.id]">
               View details
             </a>
           </div>
@@ -161,14 +178,14 @@ import {
     }
   `,
 })
-export class OpenProposalListComponent implements OnInit {
-  public readonly proposalList$ = this.proposalService.openProposalList$;
+export class ClosedProposalListComponent implements OnInit {
+  public readonly proposalList$ = this.proposalService.closedProposalList$;
   public readonly proposalTopic = ProposalTopic;
   public readonly linkBaseUrl = ProposalLinkBaseUrl;
 
   constructor(private readonly proposalService: ProposalService) {}
 
   public ngOnInit(): void {
-    this.proposalService.loadOpenProposalList();
+    this.proposalService.loadClosedProposalList();
   }
 }

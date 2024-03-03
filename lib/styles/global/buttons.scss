@@ -5,6 +5,7 @@ $btn-disabled-color: rgba($primary, 0.45);
 .btn {
   @include px(4);
   @include py(1);
+  @include no-underline;
 
   border: $border-size solid transparent;
   border-radius: $border-radius;

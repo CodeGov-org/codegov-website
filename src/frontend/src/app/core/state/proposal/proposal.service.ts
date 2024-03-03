@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, switchMap } from 'rxjs';
 
-import { ListProposalsResponse } from '@cg/backend';
+import { ListProposalsResponse, ProposalResponse } from '@cg/backend';
 import { BackendActorService } from '~core/services';
 import { isNil, isOk } from '~core/utils';
-import { mapOpenProposalListResponse } from './proposal.mapper';
+import { mapProposalListResponse } from './proposal.mapper';
 import { Proposal } from './proposal.model';
 
 const CACHE_TTL = 5_000;
@@ -15,6 +15,9 @@ const CACHE_TTL = 5_000;
 export class ProposalService {
   private openProposalListSubject = new BehaviorSubject<Proposal[]>([]);
   public openProposalList$ = this.openProposalListSubject.asObservable();
+
+  private closedProposalListSubject = new BehaviorSubject<Proposal[]>([]);
+  public closedProposalList$ = this.closedProposalListSubject.asObservable();
 
   private currentProposalIdSubject = new BehaviorSubject<bigint | null>(null);
   public currentProposalId$ = this.currentProposalIdSubject.asObservable();
@@ -43,7 +46,7 @@ export class ProposalService {
 
     if (isOk(getResponse)) {
       this.openProposalListSubject.next(
-        mapOpenProposalListResponse(getResponse.ok.proposals),
+        mapProposalListResponse(getResponse.ok.proposals),
       );
       this.lastLoadTime = Date.now();
       return;
@@ -67,5 +70,31 @@ export class ProposalService {
     const currentTime = Date.now();
 
     return currentTime > cacheExpiryTime;
+  }
+
+  public async loadClosedProposalList(): Promise<void> {
+    const closedProposalsList: ProposalResponse[] = [
+      {
+        id: '1234',
+        proposal: {
+          title: 'Test closed proposal',
+          review_completed_at: ['2/17/2024, 1:01:25 AM'],
+          state: { completed: null },
+          synced_at: '2/17/2024, 1:01:25 AM',
+          nervous_system: {
+            network: {
+              id: 12546n,
+              topic: { replica_version_management: null },
+            },
+          },
+          proposed_at: '2/14/2024, 1:01:25 AM',
+          proposed_by: 5465465465n,
+        },
+      },
+    ];
+
+    this.closedProposalListSubject.next(
+      mapProposalListResponse(closedProposalsList),
+    );
   }
 }

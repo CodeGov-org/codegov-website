@@ -28,6 +28,13 @@ export const ROUTES: Routes = [
       ),
   },
   {
+    path: 'closed',
+    loadComponent: () =>
+      import('./pages/closed-proposal-list').then(
+        m => m.ClosedProposalListComponent,
+      ),
+  },
+  {
     path: 'review/:id/view',
     loadComponent: () =>
       import('./pages/proposal-review').then(m => m.ProposalReviewComponent),
