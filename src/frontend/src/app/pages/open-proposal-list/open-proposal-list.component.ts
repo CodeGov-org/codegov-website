@@ -72,8 +72,8 @@ import {
             </app-value-col>
 
             <app-key-col [id]="'open-proposal-links-' + i">
-              Voting links</app-key-col
-            >
+              Voting links
+            </app-key-col>
             <app-value-col [attr.aria-labelledby]="'open-proposal-links-' + i">
               @if (proposal.proposalLinks.length > 0) {
                 @for (
@@ -103,8 +103,8 @@ import {
             </app-value-col>
 
             <app-key-col [id]="'open-proposal-created-' + i">
-              Created</app-key-col
-            >
+              Created
+            </app-key-col>
             <app-value-col
               [attr.aria-labelledby]="'open-proposal-created-' + i"
             >
@@ -112,8 +112,8 @@ import {
             </app-value-col>
 
             <app-key-col [id]="'open-proposal-proposer-' + i">
-              Proposer</app-key-col
-            >
+              Proposer
+            </app-key-col>
             <app-value-col
               [attr.aria-labelledby]="'open-proposal-proposer-' + i"
               class="proposal__proposer"

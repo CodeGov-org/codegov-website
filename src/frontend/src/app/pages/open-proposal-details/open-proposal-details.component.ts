@@ -122,15 +122,15 @@ import { isNotNil } from '~core/utils';
           </app-value-col>
 
           <app-key-col id="open-proposal-review-end">
-            Review period end</app-key-col
-          >
+            Review period end
+          </app-key-col>
           <app-value-col aria-labelledby="open-proposal-review-end">
             {{ proposal.reviewPeriodEnd | formatDate }}
           </app-value-col>
 
-          <app-key-col id="open-proposal-voting-end"
-            >Voting period end</app-key-col
-          >
+          <app-key-col id="open-proposal-voting-end">
+            Voting period end
+          </app-key-col>
           <app-value-col aria-labelledby="open-proposal-voting-end">
             {{ proposal.votingPeriodEnd | formatDate }}
           </app-value-col>

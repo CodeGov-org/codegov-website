@@ -33,7 +33,9 @@ import {
       }
     `,
   ],
-  template: `<ng-content />`,
+  template: `
+    <ng-content />
+  `,
 })
 export class KeyValueGridComponent {
   @Input()
