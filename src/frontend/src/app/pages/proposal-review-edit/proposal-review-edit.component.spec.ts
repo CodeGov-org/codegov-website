@@ -18,11 +18,11 @@ import {
   activatedRouteMockFactory,
   defineProp,
 } from '~testing';
-import { EditProposalReviewComponent } from './edit-proposal-review.component';
+import { ProposalReviewEditComponent } from './proposal-review-edit.component';
 
 describe('EditProposalReviewComponent', () => {
-  let component: EditProposalReviewComponent;
-  let fixture: ComponentFixture<EditProposalReviewComponent>;
+  let component: ProposalReviewEditComponent;
+  let fixture: ComponentFixture<ProposalReviewEditComponent>;
 
   let proposalServiceMock: ProposalServiceMock;
   let activatedRoute: ActivatedRouteMock;
@@ -56,7 +56,7 @@ describe('EditProposalReviewComponent', () => {
     activatedRoute.params = of([{ id: 1 }]);
 
     await TestBed.configureTestingModule({
-      imports: [EditProposalReviewComponent],
+      imports: [ProposalReviewEditComponent],
       providers: [
         { provide: ProposalService, useValue: proposalServiceMock },
         {
@@ -66,7 +66,7 @@ describe('EditProposalReviewComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(EditProposalReviewComponent);
+    fixture = TestBed.createComponent(ProposalReviewEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

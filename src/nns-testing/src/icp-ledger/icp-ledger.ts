@@ -34,8 +34,6 @@ export class Ledger {
     icpAmount: number,
     toAccount: AccountIdentifier,
   ): Promise<bigint> {
-    this.agent.replaceIdentity(minterIdentity);
-
     return await this.transfer(minterIdentity, icpAmount, toAccount);
   }
 

@@ -26,7 +26,9 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
       }
     `,
   ],
-  template: `{{ tooltipText }}`,
+  template: `
+    {{ tooltipText }}
+  `,
 })
 export class TooltipComponent {
   @Input({ required: true })

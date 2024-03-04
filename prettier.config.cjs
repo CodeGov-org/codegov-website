@@ -3,6 +3,7 @@ module.exports = {
   singleQuote: true,
   trailingComma: 'all',
   arrowParens: 'avoid',
+  htmlWhitespaceSensitivity: 'ignore',
   plugins: ['prettier-plugin-astro'],
   overrides: [
     {

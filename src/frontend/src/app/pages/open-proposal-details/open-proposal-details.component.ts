@@ -46,12 +46,12 @@ import { isNotNil } from '~core/utils';
         margin-bottom: size(6);
       }
 
-      .proposal-title,
-      .proposal-proposer {
+      .proposal__title,
+      .proposal__proposer {
         word-break: break-word;
       }
 
-      .proposal-links__link {
+      .proposal__link {
         margin-right: size(4);
       }
     `,
@@ -62,8 +62,8 @@ import { isNotNil } from '~core/utils';
 
       <app-card class="proposal">
         <app-key-value-grid [columnNumber]="2">
-          <app-key-col id="proposal-id">ID</app-key-col>
-          <app-value-col aria-labelledby="proposal-id">
+          <app-key-col id="open-proposal-id">ID</app-key-col>
+          <app-value-col aria-labelledby="open-proposal-id">
             <a
               href="{{ linkBaseUrl.Proposal }}{{ proposal.id }}"
               target="_blank"
@@ -73,18 +73,15 @@ import { isNotNil } from '~core/utils';
             </a>
           </app-value-col>
 
-          <app-key-col id="proposal-links">Voting links</app-key-col>
-          <app-value-col
-            class="proposal-links"
-            aria-labelledby="proposal-links"
-          >
+          <app-key-col id="open-proposal-links">Voting links</app-key-col>
+          <app-value-col aria-labelledby="open-proposal-links">
             @if (proposal.proposalLinks.length > 0) {
               @for (
                 proposalLink of proposal.proposalLinks;
                 track proposalLink.type
               ) {
                 <a
-                  class="proposal-links__link"
+                  class="proposal__link"
                   href="{{ proposalLink.link }}"
                   target="_blank"
                   rel="nofollow noreferrer"
@@ -95,25 +92,25 @@ import { isNotNil } from '~core/utils';
             }
           </app-value-col>
 
-          <app-key-col id="proposal-topic">Topic</app-key-col>
-          <app-value-col aria-labelledby="proposal-topic">
+          <app-key-col id="open-proposal-topic">Topic</app-key-col>
+          <app-value-col aria-labelledby="open-proposal-topic">
             {{ proposal.topic }}
           </app-value-col>
 
-          <app-key-col id="proposal-type">Type</app-key-col>
-          <app-value-col aria-labelledby="proposal-type">
+          <app-key-col id="open-proposal-type">Type</app-key-col>
+          <app-value-col aria-labelledby="open-proposal-type">
             {{ proposal.type }}
           </app-value-col>
 
-          <app-key-col id="proposal-created">Created</app-key-col>
-          <app-value-col aria-labelledby="proposal-created">
+          <app-key-col id="open-proposal-created">Created</app-key-col>
+          <app-value-col aria-labelledby="open-proposal-created">
             {{ proposal.proposedAt | formatDate }}
           </app-value-col>
 
-          <app-key-col id="proposal-proposer">Proposer</app-key-col>
+          <app-key-col id="open-proposal-proposer">Proposer</app-key-col>
           <app-value-col
-            aria-labelledby="proposal-proposer"
-            class="proposal-proposer"
+            aria-labelledby="open-proposal-proposer"
+            class="proposal__proposer"
           >
             <a
               href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
@@ -124,20 +121,24 @@ import { isNotNil } from '~core/utils';
             </a>
           </app-value-col>
 
-          <app-key-col id="proposal-review-end">Review period end</app-key-col>
-          <app-value-col aria-labelledby="proposal-review-end">
+          <app-key-col id="open-proposal-review-end">
+            Review period end
+          </app-key-col>
+          <app-value-col aria-labelledby="open-proposal-review-end">
             {{ proposal.reviewPeriodEnd | formatDate }}
           </app-value-col>
 
-          <app-key-col id="proposal-voting-end">Voting period end</app-key-col>
-          <app-value-col aria-labelledby="proposal-voting-end">
+          <app-key-col id="open-proposal-voting-end">
+            Voting period end
+          </app-key-col>
+          <app-value-col aria-labelledby="open-proposal-voting-end">
             {{ proposal.votingPeriodEnd | formatDate }}
           </app-value-col>
         </app-key-value-grid>
       </app-card>
 
-      <h2 class="h4 proposal-summary">Proposal summary</h2>
-      <app-card class="proposal-summary__content">
+      <h2 class="h4">Proposal summary</h2>
+      <app-card>
         <div [innerHTML]="convertMarkdownToHTML(proposal.summary)"></div>
       </app-card>
     }

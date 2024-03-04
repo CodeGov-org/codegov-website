@@ -8,8 +8,11 @@ export interface Proposal {
   votingPeriodEnd: Date;
   proposedAt: Date;
   proposedBy: bigint;
+  reviewCompletedAt?: Date;
+  decidedAt?: Date;
   summary: string;
   proposalLinks: ProposalVotingLink[];
+  codeGovVote?: ProposalCodeGovVote;
 }
 
 export enum ProposalState {
@@ -38,3 +41,5 @@ export enum ProposalLinkBaseUrl {
   Neuron = 'https://dashboard.internetcomputer.org/neuron/',
   ICLight = 'https://iclight.io/nns/proposals/',
 }
+
+export type ProposalCodeGovVote = 'ADOPT' | 'REJECT' | 'NO VOTE';

@@ -38,7 +38,7 @@ interface ReviewCommitForm {
 }
 
 @Component({
-  selector: 'app-edit-proposal-review',
+  selector: 'app-proposal-review-edit',
   standalone: true,
   imports: [
     CommonModule,
@@ -151,7 +151,7 @@ interface ReviewCommitForm {
     }
   `,
 })
-export class EditProposalReviewComponent implements OnInit {
+export class ProposalReviewEditComponent implements OnInit {
   public readonly reviewForm: FormGroup<ReviewForm>;
   public readonly commitForms: Array<FormGroup<ReviewCommitForm>> = [];
 

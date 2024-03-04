@@ -35,5 +35,8 @@ jobs:
       - name: DFX build
         run: dfx build --check
 
-      - name: Turbo test
-        run: pnpm test
+      - name: Backend integration tests
+        run: pnpm -F backend-integration test
+
+      - name: Frontend unit tests
+        run: pnpm -F frontend test
