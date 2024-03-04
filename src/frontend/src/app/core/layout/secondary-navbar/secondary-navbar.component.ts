@@ -131,7 +131,7 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
           @if (isAuthenticated$ | async) {
             <app-dropdown
               [showChevron]="false"
-              menuTriggerClassName="btn btn--icon"
+              menuTriggerClassName="btn btn--fab"
               ariaLabel="Open profile menu"
               id="profile-menu"
             >
@@ -169,7 +169,7 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
           } @else {
             <button
               (click)="onLoginButtonClicked()"
-              class="btn btn--icon"
+              class="btn btn--fab"
               aria-label="Log in"
             >
               <app-login-icon />

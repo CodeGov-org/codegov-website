@@ -2,16 +2,19 @@
 import codegovLogo from '../assets/codegov-logo.png';
 import MenuCloseIcon from './icons/MenuCloseIcon.astro';
 import HamburgerMenuIcon from './icons/HamburgerMenuIcon.astro';
+import SignInIcon from './icons/SignInIcon.astro';
 import Collapsible from './ui/Collapsible.astro';
 import Dropdown from './ui/Dropdown.astro';
 import { getGlobalConfigStory, isLinkCategory } from '../storyblok/api';
+import { env } from '../environment';
+import ProfileIcon from './icons/ProfileIcon.astro';
 
 const {
   content: { header_links },
 } = await getGlobalConfigStory();
 ---
 
-<header class="navbar">
+<header class="navbar" data-identity-provider={env.identityProvider}>
   <div class="navbar__inner">
     <nav class="navbar__nav">
       <a href="/" class="navbar__brand">
@@ -49,6 +52,17 @@ const {
             ),
           )
         }
+
+        <button class="navbar__desktop-auth btn btn--icon" data-auth-button>
+          <SignInIcon />
+        </button>
+
+        <button
+          class="navbar__desktop-profile btn btn--icon"
+          data-profile-button
+        >
+          <ProfileIcon />
+        </button>
       </div>
 
       <div class="navbar__mobile-nav-trigger">
@@ -116,36 +130,5 @@ const {
   </div>
 </header>
 
-<script>
-  const menuOpenBtn = document.querySelector('[data-menu-open]');
-  if (!menuOpenBtn) {
-    throw new Error('Could not find menu trigger');
-  }
-
-  const menuCloseBtn = document.querySelector('[data-menu-close]');
-  if (!menuCloseBtn) {
-    throw new Error('Could not find menu trigger');
-  }
-
-  const menu = document.querySelector('[data-menu]');
-  if (!menu) {
-    throw new Error('Could not find menu');
-  }
-
-  const sidenavBackdrop = document.querySelector('[data-sidenav-backdrop]');
-  if (!sidenavBackdrop) {
-    throw new Error('Could not find sidenav backdrop');
-  }
-
-  menuOpenBtn.addEventListener('click', () => {
-    menu.classList.remove('navbar__mobile-nav--closed');
-  });
-
-  sidenavBackdrop.addEventListener('click', () => {
-    menu.classList.add('navbar__mobile-nav--closed');
-  });
-
-  menuCloseBtn.addEventListener('click', () => {
-    menu.classList.add('navbar__mobile-nav--closed');
-  });
-</script>
+<script src="./navbar-menu.ts"></script>
+<script src="./navbar-auth.ts"></script>

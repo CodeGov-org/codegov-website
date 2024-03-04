@@ -54,6 +54,18 @@ $btn-disabled-color: rgba($primary, 0.45);
 }
 
 .btn--icon {
+  padding: 0;
+  background-color: transparent;
+
+  &:hover,
+  &:hover:not(:disabled) {
+    color: $slate-300;
+    background-color: transparent;
+    border-color: transparent;
+  }
+}
+
+.btn--fab {
   @include layer-20;
   display: inline-flex;
   align-items: center;

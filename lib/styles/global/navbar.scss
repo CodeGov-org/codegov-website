@@ -52,7 +52,26 @@
 
   @include lg {
     display: flex;
+    align-items: center;
   }
+}
+
+.navbar__desktop-auth {
+  margin-left: size(2);
+  display: block;
+}
+
+.navbar__desktop-auth--hidden {
+  display: none;
+}
+
+.navbar__desktop-profile {
+  margin-left: size(2);
+  display: none;
+}
+
+.navbar__desktop-profile--visible {
+  display: block;
 }
 
 .navbar__nav-item {
