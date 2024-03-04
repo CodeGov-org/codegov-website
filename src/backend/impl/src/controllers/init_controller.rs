@@ -57,11 +57,10 @@ impl<T: InitService> InitController<T> {
 }
 
 mod jobs {
+    use crate::services::{LogService, LogServiceImpl};
     use ic_cdk::spawn;
     use ic_cdk_timers::set_timer_interval;
     use std::time::Duration;
-
-    use crate::services::{LogService, LogServiceImpl};
 
     /// Starts all cron jobs.
     pub fn start_jobs() {
@@ -73,20 +72,26 @@ mod jobs {
     }
 
     mod nns_proposals {
+        use super::*;
         use crate::controllers::proposal_controller::ProposalController;
 
-        use super::*;
-
+        // spawn individiual jobs so that if one fails, the others can still run
         pub fn start() {
             set_timer_interval(Duration::from_millis(300_000), || {
-                spawn(run());
+                spawn(sync_proposals());
+            });
+
+            set_timer_interval(Duration::from_millis(300_000), || {
+                spawn(complete_pending_proposals());
             });
         }
 
-        async fn run() {
+        async fn sync_proposals() {
             ProposalController::default().sync_proposals_job().await;
+        }
 
-            // TODO: close proposals that have passed the review period
+        async fn complete_pending_proposals() {
+            ProposalController::default().complete_pending_proposals_job();
         }
     }
 }

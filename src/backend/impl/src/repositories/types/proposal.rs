@@ -1,14 +1,15 @@
-use crate::system_api::get_date_time;
-
 use super::{DateTime, Uuid};
+use crate::system_api::get_date_time;
 use backend_api::ApiError;
 use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_nns_governance::pb::v1::{ProposalInfo, ProposalStatus, Topic};
-use ic_stable_structures::{storable::Bound, Storable};
-use std::borrow::Cow;
+use ic_stable_structures::{
+    storable::{Blob, Bound},
+    Storable,
+};
+use std::{borrow::Cow, ops::RangeBounds};
 
 pub type ProposalId = Uuid;
-pub type ProposalIndex = (DateTime, ProposalId);
 pub type NervousSystemProposalId = u64;
 pub type NeuronId = u64;
 
@@ -50,10 +51,20 @@ impl TryFrom<Topic> for NnsProposalTopic {
     }
 }
 
-#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, CandidType, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+// We're explicit about the enum values here because they are serialized
+// to u8 when the state is used as a key and we want to make sure that the
+// values are stable.
+#[repr(u8)]
 pub enum ReviewPeriodState {
-    InProgress,
-    Completed,
+    InProgress = 1,
+    Completed = 2,
+}
+
+impl From<ReviewPeriodState> for u8 {
+    fn from(state: ReviewPeriodState) -> u8 {
+        state as u8
+    }
 }
 
 impl From<ProposalStatus> for ReviewPeriodState {
@@ -143,6 +154,73 @@ impl TryFrom<ProposalInfo> for Proposal {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ProposalStatusTimestampKey(Blob<{ Self::MAX_SIZE as usize }>);
+
+impl ProposalStatusTimestampKey {
+    const MAX_SIZE: u32 = <((u8, DateTime), ProposalId)>::BOUND.max_size();
+
+    pub fn new(state: u8, date_time: DateTime, proposal_id: ProposalId) -> Result<Self, ApiError> {
+        Ok(Self(
+            Blob::try_from(((state, date_time), proposal_id).to_bytes().as_ref()).map_err(
+                |_| {
+                    ApiError::internal(&format!(
+                    "Failed to convert state {:?}, date time {:?} and proposal id {:?} to bytes.",
+                    state, date_time, proposal_id
+                ))
+                },
+            )?,
+        ))
+    }
+}
+
+impl Storable for ProposalStatusTimestampKey {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        self.0.to_bytes()
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Self(Blob::from_bytes(bytes))
+    }
+
+    const BOUND: Bound = Bound::Bounded {
+        max_size: Self::MAX_SIZE,
+        is_fixed_size: true,
+    };
+}
+
+pub struct ProposalStatusTimestampRange {
+    start_bound: ProposalStatusTimestampKey,
+    end_bound: ProposalStatusTimestampKey,
+}
+
+impl ProposalStatusTimestampRange {
+    pub fn new(state: Option<ReviewPeriodState>) -> Result<Self, ApiError> {
+        Ok(Self {
+            start_bound: ProposalStatusTimestampKey::new(
+                state.map(Into::into).unwrap_or(u8::MIN),
+                DateTime::min(),
+                Uuid::MIN,
+            )?,
+            end_bound: ProposalStatusTimestampKey::new(
+                state.map(Into::into).unwrap_or(u8::MAX),
+                DateTime::max()?,
+                Uuid::MAX,
+            )?,
+        })
+    }
+}
+
+impl RangeBounds<ProposalStatusTimestampKey> for ProposalStatusTimestampRange {
+    fn start_bound(&self) -> std::ops::Bound<&ProposalStatusTimestampKey> {
+        std::ops::Bound::Included(&self.start_bound)
+    }
+
+    fn end_bound(&self) -> std::ops::Bound<&ProposalStatusTimestampKey> {
+        std::ops::Bound::Included(&self.end_bound)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -151,10 +229,28 @@ mod tests {
 
     #[rstest]
     #[case::nns_proposal(fixtures::nns_replica_version_management_proposal())]
-    fn storable_impl(#[case] proposal: Proposal) {
+    fn proposal_storable_impl(#[case] proposal: Proposal) {
         let serialized_proposal = proposal.to_bytes();
         let deserialized_proposal = Proposal::from_bytes(serialized_proposal);
 
         assert_eq!(proposal, deserialized_proposal);
+    }
+
+    #[rstest]
+    fn proposal_status_timestamp_key_storable_impl() {
+        let state = ReviewPeriodState::InProgress;
+        let date_time = get_date_time().unwrap();
+        let proposal_id = fixtures::proposal_id();
+
+        let key = ProposalStatusTimestampKey::new(
+            state.into(),
+            DateTime::new(date_time).unwrap(),
+            proposal_id,
+        )
+        .unwrap();
+        let serialized_key = key.to_bytes();
+        let deserialized_key = ProposalStatusTimestampKey::from_bytes(serialized_key);
+
+        assert_eq!(key, deserialized_key);
     }
 }

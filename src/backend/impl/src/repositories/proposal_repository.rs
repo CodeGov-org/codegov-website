@@ -1,20 +1,25 @@
 use super::{
-    init_proposals_sorted_index,
+    init_proposals_status_timestamp_index,
     memories::{init_proposals, ProposalMemory},
-    Proposal, ProposalId, ProposalIndex, ProposalSortedIndexMemory,
+    DateTime, Proposal, ProposalId, ProposalStatusTimestampIndexMemory, ProposalStatusTimestampKey,
+    ProposalStatusTimestampRange, ReviewPeriodState,
 };
 use backend_api::ApiError;
+use chrono::Duration;
 use std::cell::RefCell;
 
 #[cfg_attr(test, mockall::automock)]
 pub trait ProposalRepository {
     fn get_proposal_by_id(&self, proposal_id: &ProposalId) -> Option<Proposal>;
 
-    fn get_proposals(&self) -> Vec<(ProposalId, Proposal)>;
+    fn get_proposals(
+        &self,
+        state: Option<ReviewPeriodState>,
+    ) -> Result<Vec<(ProposalId, Proposal)>, ApiError>;
 
     async fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError>;
 
-    fn update_proposal(&self, proposal_id: ProposalId, proposal: Proposal) -> Result<(), ApiError>;
+    fn complete_pending_proposals(&self, current_time: DateTime) -> Result<(), ApiError>;
 }
 
 pub struct ProposalRepositoryImpl {}
@@ -30,33 +35,87 @@ impl ProposalRepository for ProposalRepositoryImpl {
         STATE.with_borrow(|s| s.proposals.get(proposal_id))
     }
 
-    fn get_proposals(&self) -> Vec<(ProposalId, Proposal)> {
-        STATE.with_borrow(|s| {
-            s.proposals_sorted_index
-                .iter()
-                .map(|((_, id), _)| (id, s.proposals.get(&id).unwrap()))
+    fn get_proposals(
+        &self,
+        state: Option<ReviewPeriodState>,
+    ) -> Result<Vec<(ProposalId, Proposal)>, ApiError> {
+        let range = ProposalStatusTimestampRange::new(state)?;
+
+        let proposals = STATE.with_borrow(|s| {
+            s.proposals_status_timestamp_index
+                .range(range)
+                .map(|(_, id)| (id, s.proposals.get(&id).unwrap()))
                 .collect()
+        });
+
+        Ok(proposals)
+    }
+
+    fn complete_pending_proposals(&self, current_time: DateTime) -> Result<(), ApiError> {
+        let range = ProposalStatusTimestampRange::new(ReviewPeriodState::InProgress.into())?;
+
+        STATE.with_borrow_mut(|s| {
+            let pending_proposals: Vec<_> = s
+                .proposals_status_timestamp_index
+                .range(range)
+                .filter_map(|(_, id)| {
+                    s.proposals.get(&id).and_then(|proposal| {
+                        self.is_proposal_pending(&proposal, &current_time)
+                            .then_some((id, proposal))
+                    })
+                })
+                .collect();
+
+            for (proposal_id, proposal) in pending_proposals {
+                let old_key = ProposalStatusTimestampKey::new(
+                    ReviewPeriodState::InProgress.into(),
+                    proposal.proposed_at,
+                    proposal_id,
+                )?;
+                let new_key = ProposalStatusTimestampKey::new(
+                    ReviewPeriodState::Completed.into(),
+                    proposal.proposed_at,
+                    proposal_id,
+                )?;
+
+                s.proposals_status_timestamp_index.remove(&old_key);
+                s.proposals_status_timestamp_index
+                    .insert(new_key, proposal_id);
+
+                s.proposals.insert(
+                    proposal_id,
+                    Proposal {
+                        state: ReviewPeriodState::Completed,
+                        ..proposal
+                    },
+                );
+            }
+
+            Ok(())
         })
     }
 
     async fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError> {
         let proposal_id = ProposalId::new().await?;
-        let proposal_index: ProposalIndex = (proposal.clone().proposed_at, proposal_id);
+        let proposal_status_key = ProposalStatusTimestampKey::new(
+            proposal.state.into(),
+            proposal.proposed_at,
+            proposal_id,
+        )?;
 
         STATE.with_borrow_mut(|s| {
             s.proposals.insert(proposal_id, proposal);
-            s.proposals_sorted_index.insert(proposal_index, ());
+            s.proposals_status_timestamp_index
+                .insert(proposal_status_key, proposal_id);
         });
 
         Ok(proposal_id)
     }
+}
 
-    fn update_proposal(&self, proposal_id: ProposalId, proposal: Proposal) -> Result<(), ApiError> {
-        STATE.with_borrow_mut(|s| {
-            s.proposals.insert(proposal_id, proposal);
-
-            Ok(())
-        })
+impl ProposalRepositoryImpl {
+    fn is_proposal_pending(&self, proposal: &Proposal, current_time: &DateTime) -> bool {
+        proposal.proposed_at <= current_time.sub(Duration::hours(48))
     }
 }
 
@@ -68,14 +127,14 @@ impl ProposalRepositoryImpl {
 
 struct ProposalState {
     proposals: ProposalMemory,
-    proposals_sorted_index: ProposalSortedIndexMemory,
+    proposals_status_timestamp_index: ProposalStatusTimestampIndexMemory,
 }
 
 impl Default for ProposalState {
     fn default() -> Self {
         Self {
             proposals: init_proposals(),
-            proposals_sorted_index: init_proposals_sorted_index(),
+            proposals_status_timestamp_index: init_proposals_status_timestamp_index(),
         }
     }
 }
@@ -90,6 +149,7 @@ mod tests {
     use crate::{
         fixtures::{self, date_time_a, date_time_b, date_time_c},
         repositories::ReviewPeriodState,
+        system_api::get_date_time,
     };
     use rstest::*;
 
@@ -118,44 +178,10 @@ mod tests {
             repository.create_proposal(proposal.clone()).await.unwrap();
         }
 
-        let result = repository.get_proposals();
+        let result = repository.get_proposals(None).unwrap();
         let proposals = result.into_iter().map(|(_, p)| p).collect::<Vec<_>>();
 
         assert_eq!(proposals, sorted_proposals());
-    }
-
-    #[rstest]
-    #[case::nns_proposal(
-        fixtures::nns_replica_version_management_proposal(),
-        updated_proposal()
-    )]
-    async fn update_proposal_state(
-        #[case] original_proposal: Proposal,
-        #[case] updated_proposal: Proposal,
-    ) {
-        STATE.set(ProposalState::default());
-
-        let repository = ProposalRepositoryImpl::default();
-        let proposal_id = repository
-            .create_proposal(original_proposal.clone())
-            .await
-            .unwrap();
-
-        repository
-            .update_proposal(proposal_id, updated_proposal.clone())
-            .unwrap();
-
-        let result = repository.get_proposal_by_id(&proposal_id);
-
-        assert_eq!(result, Some(updated_proposal),);
-    }
-
-    #[fixture]
-    fn updated_proposal() -> Proposal {
-        Proposal {
-            state: ReviewPeriodState::Completed,
-            ..fixtures::nns_replica_version_management_proposal()
-        }
     }
 
     #[fixture]
@@ -179,5 +205,151 @@ mod tests {
     #[fixture]
     fn unsorted_proposals() -> Vec<Proposal> {
         sorted_proposals().into_iter().rev().collect()
+    }
+
+    #[rstest]
+    async fn get_all_proposals() {
+        STATE.set(ProposalState::default());
+
+        let proposals = proposals_with_state();
+        let repository = ProposalRepositoryImpl::default();
+
+        for proposal in proposals.clone() {
+            repository.create_proposal(proposal).await.unwrap();
+        }
+
+        let result = repository.get_proposals(None).unwrap();
+
+        assert_eq!(result.len(), proposals.len());
+    }
+
+    #[rstest]
+    async fn get_in_progress_proposals() {
+        STATE.set(ProposalState::default());
+
+        let proposals = proposals_with_state();
+        let repository = ProposalRepositoryImpl::default();
+
+        for proposal in proposals {
+            repository.create_proposal(proposal).await.unwrap();
+        }
+
+        let result = repository
+            .get_proposals(Some(ReviewPeriodState::InProgress))
+            .unwrap();
+
+        assert_eq!(result.len(), 2);
+        for (_, proposal) in result {
+            assert_eq!(proposal.state, ReviewPeriodState::InProgress);
+        }
+    }
+
+    #[rstest]
+    async fn get_completed_proposals() {
+        STATE.set(ProposalState::default());
+
+        let proposals = proposals_with_state();
+        let repository = ProposalRepositoryImpl::default();
+
+        for proposal in proposals {
+            repository.create_proposal(proposal).await.unwrap();
+        }
+
+        let result = repository
+            .get_proposals(Some(ReviewPeriodState::Completed))
+            .unwrap();
+
+        assert_eq!(result.len(), 2);
+        for (_, proposal) in result {
+            assert_eq!(proposal.state, ReviewPeriodState::Completed);
+        }
+    }
+
+    #[fixture]
+    fn proposals_with_state() -> Vec<Proposal> {
+        vec![
+            Proposal {
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                state: ReviewPeriodState::Completed,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                state: ReviewPeriodState::Completed,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+        ]
+    }
+
+    #[rstest]
+    async fn complete_pending_proposals() {
+        STATE.set(ProposalState::default());
+
+        let repository = ProposalRepositoryImpl::default();
+        let current_time = DateTime::new(get_date_time().unwrap()).unwrap();
+
+        let proposals = proposals_with_pending();
+        for proposal in proposals {
+            repository.create_proposal(proposal).await.unwrap();
+        }
+
+        repository.complete_pending_proposals(current_time).unwrap();
+
+        let in_progress_result = repository
+            .get_proposals(Some(ReviewPeriodState::InProgress))
+            .unwrap();
+        let completed_result = repository
+            .get_proposals(Some(ReviewPeriodState::Completed))
+            .unwrap();
+
+        assert_eq!(in_progress_result.len(), 4);
+        assert_eq!(completed_result.len(), 2);
+    }
+
+    #[fixture]
+    fn proposals_with_pending() -> Vec<Proposal> {
+        let current_time = get_date_time().unwrap();
+
+        vec![
+            Proposal {
+                proposed_at: DateTime::new(current_time).unwrap(),
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                proposed_at: DateTime::new(current_time - Duration::hours(12)).unwrap(),
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                proposed_at: DateTime::new(current_time - Duration::hours(24)).unwrap(),
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                proposed_at: DateTime::new(current_time - Duration::hours(36)).unwrap(),
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                proposed_at: DateTime::new(
+                    current_time - Duration::hours(48) - Duration::minutes(1),
+                )
+                .unwrap(),
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                proposed_at: DateTime::new(current_time - Duration::hours(60)).unwrap(),
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+        ]
     }
 }

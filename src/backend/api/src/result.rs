@@ -1,4 +1,5 @@
 use candid::{CandidType, Deserialize};
+use std::fmt::Display;
 
 #[derive(Debug, CandidType, Deserialize)]
 pub enum ApiResult<T = ()> {
@@ -13,6 +14,12 @@ pub enum ApiResult<T = ()> {
 pub struct ApiError {
     code: u16,
     message: String,
+}
+
+impl Display for ApiError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {}", self.code, self.message)
+    }
 }
 
 impl ApiError {

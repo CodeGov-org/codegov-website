@@ -16,14 +16,12 @@ impl UserProfileHistoryKey {
 
     pub fn new(user_id: UserId, date_time: DateTime, id: u128) -> Result<Self, ApiError> {
         Ok(Self(
-            Blob::try_from((user_id, (date_time.clone(), id)).to_bytes().as_ref()).map_err(
-                |_| {
-                    ApiError::internal(&format!(
-                        "Failed to convert date time {:?} and user id {:?} to bytes.",
-                        date_time, user_id
-                    ))
-                },
-            )?,
+            Blob::try_from((user_id, (date_time, id)).to_bytes().as_ref()).map_err(|_| {
+                ApiError::internal(&format!(
+                    "Failed to convert date time {:?} and user id {:?} to bytes.",
+                    date_time, user_id
+                ))
+            })?,
         ))
     }
 }
