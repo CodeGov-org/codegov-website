@@ -1,6 +1,8 @@
 packages:
+  - lib/angular-ui
   - lib/backend
   - lib/styles
+  - lib/ui
   - src/backend/integration
   - src/docs
   - src/frontend
