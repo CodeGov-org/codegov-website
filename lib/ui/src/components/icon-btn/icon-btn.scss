@@ -11,19 +11,22 @@ $transition-timing-function: ease-in-out;
   align-items: center;
   justify-content: center;
 
-  height: size(10);
-  width: size(10);
-
   font-size: initial;
   line-height: initial;
 
-  color: $white;
+  height: size(10);
+  width: size(10);
   border-radius: 50%;
+
+  color: $slate-900;
+  @include dark {
+    color: $slate-300;
+  }
 
   transition: background-color $transition-duration $transition-timing-function;
 
   &:hover {
-    background-color: $slate-100;
+    background-color: $slate-200;
 
     @include dark {
       background-color: $slate-800;
@@ -31,7 +34,7 @@ $transition-timing-function: ease-in-out;
   }
 
   &:active {
-    background-color: $slate-200;
+    background-color: $slate-300;
 
     @include dark {
       background-color: $slate-700;

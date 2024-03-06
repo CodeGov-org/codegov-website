@@ -13,29 +13,29 @@ export class IconBtnComponent implements IconBtnProps, ComponentInterface {
   @Prop()
   public label!: string;
 
-  public onFocussed(): void {
-    this.isFocussed = true;
+  public onFocused(): void {
+    this.isFocused = true;
   }
 
   public onBlurred(): void {
-    this.isFocussed = false;
+    this.isFocused = false;
   }
 
   @State()
-  public isFocussed = false;
+  public isFocused = false;
 
   public render() {
     return (
       <button
         class="icon-btn"
         aria-label={this.label}
-        onFocus={() => this.onFocussed()}
+        onFocus={() => this.onFocused()}
         onBlur={() => this.onBlurred()}
       >
         <span
           class={{
             'icon-btn__focus-outline': true,
-            'icon-btn__focus-outline--visible': this.isFocussed,
+            'icon-btn__focus-outline--visible': this.isFocused,
           }}
         />
 
