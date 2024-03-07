@@ -40,3 +40,6 @@ jobs:
 
       - name: Frontend unit tests
         run: pnpm -F frontend test
+
+      - name: UI library unit tests
+        run: pnpm -F @cg/angular-ui test

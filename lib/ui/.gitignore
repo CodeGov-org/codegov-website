@@ -1,0 +1,7 @@
+dist/
+loader/
+
+.stencil/
+node_modules/
+
+src/components.d.ts

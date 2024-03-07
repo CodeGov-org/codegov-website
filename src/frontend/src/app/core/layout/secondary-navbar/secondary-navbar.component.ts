@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLinkActive, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 
+import { CgIconBtnComponent } from '@cg/angular-ui';
 import {
   LoginIconComponent,
   LogoutIconComponent,
@@ -18,6 +19,7 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
   imports: [
     CommonModule,
     RouterModule,
+    CgIconBtnComponent,
     LoginIconComponent,
     LogoutIconComponent,
     ProfileIconComponent,
@@ -167,13 +169,9 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
               </ng-container>
             </app-dropdown>
           } @else {
-            <button
-              (click)="onLoginButtonClicked()"
-              class="btn btn--icon"
-              aria-label="Log in"
-            >
+            <cg-icon-btn (click)="onLoginButtonClicked()" label="Log in">
               <app-login-icon />
-            </button>
+            </cg-icon-btn>
           }
         </div>
       </div>

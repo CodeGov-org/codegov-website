@@ -102,6 +102,36 @@
           }
         }
       }
+    },
+    "ui": {
+      "projectType": "library",
+      "root": "lib/angular-ui",
+      "sourceRoot": "lib/angular-ui/src",
+      "prefix": "cg",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "lib/angular-ui/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "lib/angular-ui/tsconfig.prod.json"
+            },
+            "development": {
+              "tsConfig": "lib/angular-ui/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "lib/angular-ui/tsconfig.spec.json",
+            "polyfills": ["zone.js", "zone.js/testing"]
+          }
+        }
+      }
     }
   }
 }
