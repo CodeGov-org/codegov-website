@@ -3,9 +3,10 @@ use std::cell::RefCell;
 use backend_api::ApiError;
 
 use super::{
-    init_proposal_review_proposal_id_index, init_proposal_reviews, ProposalId, ProposalReview,
-    ProposalReviewId, ProposalReviewMemory, ProposalReviewProposalIdIndexMemory,
-    ProposalReviewProposalKey, ProposalReviewProposalRange,
+    init_proposal_review_proposal_id_index, init_proposal_review_user_id_index,
+    init_proposal_reviews, ProposalId, ProposalReview, ProposalReviewId, ProposalReviewMemory,
+    ProposalReviewProposalIdIndexMemory, ProposalReviewProposalKey, ProposalReviewProposalRange,
+    ProposalReviewUserIdIndexMemory, ProposalReviewUserKey, ProposalReviewUserRange, UserId,
 };
 
 #[cfg_attr(test, mockall::automock)]
@@ -18,6 +19,11 @@ pub trait ProposalReviewRepository {
     fn get_proposal_reviews_by_proposal_id(
         &self,
         proposal_id: ProposalId,
+    ) -> Result<Vec<(ProposalReviewId, ProposalReview)>, ApiError>;
+
+    fn get_proposal_reviews_by_user_id(
+        &self,
+        user_id: UserId,
     ) -> Result<Vec<(ProposalReviewId, ProposalReview)>, ApiError>;
 
     async fn create_proposal_review(
@@ -69,17 +75,41 @@ impl ProposalReviewRepository for ProposalReviewRepositoryImpl {
         Ok(proposal_reviews)
     }
 
+    fn get_proposal_reviews_by_user_id(
+        &self,
+        user_id: UserId,
+    ) -> Result<Vec<(ProposalReviewId, ProposalReview)>, ApiError> {
+        let range = ProposalReviewUserRange::new(user_id)?;
+
+        let proposal_reviews = STATE.with_borrow(|s| {
+            s.user_id_index
+                .range(range)
+                .filter_map(|(_, proposal_review_id)| {
+                    // the None case should never happen
+                    s.proposal_reviews
+                        .get(&proposal_review_id)
+                        .map(|p_r| (proposal_review_id, p_r))
+                })
+                .collect()
+        });
+
+        Ok(proposal_reviews)
+    }
+
     async fn create_proposal_review(
         &self,
         proposal_review: ProposalReview,
     ) -> Result<ProposalReviewId, ApiError> {
         let proposal_review_id = ProposalReviewId::new().await?;
-        let key = ProposalReviewProposalKey::new(proposal_review.proposal_id, proposal_review_id)?;
+        let proposal_key =
+            ProposalReviewProposalKey::new(proposal_review.proposal_id, proposal_review_id)?;
+        let user_key = ProposalReviewUserKey::new(proposal_review.user_id, proposal_review_id)?;
 
         STATE.with_borrow_mut(|s| {
             s.proposal_reviews
                 .insert(proposal_review_id, proposal_review.clone());
-            s.proposal_id_index.insert(key, proposal_review_id);
+            s.proposal_id_index.insert(proposal_key, proposal_review_id);
+            s.user_id_index.insert(user_key, proposal_review_id);
         });
 
         Ok(proposal_review_id)
@@ -116,6 +146,7 @@ impl ProposalReviewRepositoryImpl {
 struct ProposalReviewState {
     proposal_reviews: ProposalReviewMemory,
     proposal_id_index: ProposalReviewProposalIdIndexMemory,
+    user_id_index: ProposalReviewUserIdIndexMemory,
 }
 
 impl Default for ProposalReviewState {
@@ -123,6 +154,7 @@ impl Default for ProposalReviewState {
         Self {
             proposal_reviews: init_proposal_reviews(),
             proposal_id_index: init_proposal_review_proposal_id_index(),
+            user_id_index: init_proposal_review_user_id_index(),
         }
     }
 }
@@ -161,13 +193,13 @@ mod tests {
     async fn get_proposal_reviews_by_proposal_id() {
         STATE.set(ProposalReviewState::default());
 
-        let proposal_reviews = proposal_reviews();
+        let proposal_reviews = proposal_reviews_fixed_proposal_id();
 
         let repository = ProposalReviewRepositoryImpl::default();
 
         for proposal_review in proposal_reviews {
             repository
-                .create_proposal_review(proposal_review.clone())
+                .create_proposal_review(proposal_review)
                 .await
                 .unwrap();
         }
@@ -175,10 +207,10 @@ mod tests {
         let result = repository
             .get_proposal_reviews_by_proposal_id(uuid_a())
             .unwrap();
-        let proposal_reviews = result.into_iter().map(|(_, p_r)| p_r).collect::<Vec<_>>();
+        let filtered_proposal_reviews = result.into_iter().map(|(_, p_r)| p_r).collect::<Vec<_>>();
 
         assert_eq!(
-            proposal_reviews,
+            filtered_proposal_reviews,
             vec![
                 ProposalReview {
                     proposal_id: uuid_a(),
@@ -186,6 +218,41 @@ mod tests {
                 },
                 ProposalReview {
                     proposal_id: uuid_a(),
+                    ..fixtures::proposal_review_published()
+                },
+            ]
+        );
+    }
+
+    #[rstest]
+    async fn get_proposal_reviews_by_user_id() {
+        STATE.set(ProposalReviewState::default());
+
+        let proposal_reviews = proposal_reviews_fixed_user_id();
+
+        let repository = ProposalReviewRepositoryImpl::default();
+
+        for proposal_review in proposal_reviews {
+            repository
+                .create_proposal_review(proposal_review)
+                .await
+                .unwrap();
+        }
+
+        let result = repository
+            .get_proposal_reviews_by_user_id(uuid_a())
+            .unwrap();
+        let filtered_proposal_reviews = result.into_iter().map(|(_, p_r)| p_r).collect::<Vec<_>>();
+
+        assert_eq!(
+            filtered_proposal_reviews,
+            vec![
+                ProposalReview {
+                    user_id: uuid_a(),
+                    ..fixtures::proposal_review_draft()
+                },
+                ProposalReview {
+                    user_id: uuid_a(),
                     ..fixtures::proposal_review_published()
                 },
             ]
@@ -217,7 +284,7 @@ mod tests {
     }
 
     #[fixture]
-    fn proposal_reviews() -> Vec<ProposalReview> {
+    fn proposal_reviews_fixed_proposal_id() -> Vec<ProposalReview> {
         vec![
             ProposalReview {
                 proposal_id: uuid_a(),
@@ -233,6 +300,28 @@ mod tests {
             },
             ProposalReview {
                 proposal_id: uuid_b(),
+                ..fixtures::proposal_review_published()
+            },
+        ]
+    }
+
+    #[fixture]
+    fn proposal_reviews_fixed_user_id() -> Vec<ProposalReview> {
+        vec![
+            ProposalReview {
+                user_id: uuid_a(),
+                ..fixtures::proposal_review_draft()
+            },
+            ProposalReview {
+                user_id: uuid_a(),
+                ..fixtures::proposal_review_published()
+            },
+            ProposalReview {
+                user_id: uuid_b(),
+                ..fixtures::proposal_review_draft()
+            },
+            ProposalReview {
+                user_id: uuid_b(),
                 ..fixtures::proposal_review_published()
             },
         ]

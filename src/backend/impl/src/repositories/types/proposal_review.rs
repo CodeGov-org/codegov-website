@@ -103,6 +103,63 @@ impl RangeBounds<ProposalReviewProposalKey> for ProposalReviewProposalRange {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ProposalReviewUserKey(Blob<{ Self::MAX_SIZE as usize }>);
+
+impl ProposalReviewUserKey {
+    const MAX_SIZE: u32 = <(UserId, ProposalReviewId)>::BOUND.max_size();
+
+    pub fn new(user_id: UserId, proposal_review_id: ProposalReviewId) -> Result<Self, ApiError> {
+        Ok(Self(
+            Blob::try_from((user_id, proposal_review_id).to_bytes().as_ref()).map_err(|_| {
+                ApiError::internal(&format!(
+                    "Failed to convert user id {:?} and proposal review id {:?} to bytes.",
+                    user_id, proposal_review_id
+                ))
+            })?,
+        ))
+    }
+}
+
+impl Storable for ProposalReviewUserKey {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        self.0.to_bytes()
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Self(Blob::from_bytes(bytes))
+    }
+
+    const BOUND: Bound = Bound::Bounded {
+        max_size: Self::MAX_SIZE,
+        is_fixed_size: true,
+    };
+}
+
+pub struct ProposalReviewUserRange {
+    start_bound: ProposalReviewUserKey,
+    end_bound: ProposalReviewUserKey,
+}
+
+impl ProposalReviewUserRange {
+    pub fn new(user_id: UserId) -> Result<Self, ApiError> {
+        Ok(Self {
+            start_bound: ProposalReviewUserKey::new(user_id, Uuid::min())?,
+            end_bound: ProposalReviewUserKey::new(user_id, Uuid::max())?,
+        })
+    }
+}
+
+impl RangeBounds<ProposalReviewUserKey> for ProposalReviewUserRange {
+    fn start_bound(&self) -> std::ops::Bound<&ProposalReviewUserKey> {
+        std::ops::Bound::Included(&self.start_bound)
+    }
+
+    fn end_bound(&self) -> std::ops::Bound<&ProposalReviewUserKey> {
+        std::ops::Bound::Included(&self.end_bound)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -120,13 +177,25 @@ mod tests {
     }
 
     #[rstest]
-    fn proposal_status_timestamp_key_storable_impl() {
+    fn proposal_review_proposal_key_storable_impl() {
         let proposal_id = fixtures::proposal_id();
         let proposal_review_id = fixtures::proposal_review_id();
 
         let key = ProposalReviewProposalKey::new(proposal_id, proposal_review_id).unwrap();
         let serialized_key = key.to_bytes();
         let deserialized_key = ProposalReviewProposalKey::from_bytes(serialized_key);
+
+        assert_eq!(key, deserialized_key);
+    }
+
+    #[rstest]
+    fn proposal_review_user_key_storable_impl() {
+        let user_id = fixtures::user_id();
+        let proposal_review_id = fixtures::proposal_review_id();
+
+        let key = ProposalReviewUserKey::new(user_id, proposal_review_id).unwrap();
+        let serialized_key = key.to_bytes();
+        let deserialized_key = ProposalReviewUserKey::from_bytes(serialized_key);
 
         assert_eq!(key, deserialized_key);
     }
