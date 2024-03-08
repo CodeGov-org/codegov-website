@@ -18,7 +18,7 @@ pub trait ProposalReviewRepository {
     fn get_proposal_reviews_by_proposal_id(
         &self,
         proposal_id: ProposalId,
-    ) -> Vec<(ProposalReviewId, ProposalReview)>;
+    ) -> Result<Vec<(ProposalReviewId, ProposalReview)>, ApiError>;
 
     async fn create_proposal_review(
         &self,
@@ -51,20 +51,22 @@ impl ProposalReviewRepository for ProposalReviewRepositoryImpl {
     fn get_proposal_reviews_by_proposal_id(
         &self,
         proposal_id: ProposalId,
-    ) -> Vec<(ProposalReviewId, ProposalReview)> {
-        STATE.with_borrow(|s| {
-            s.proposal_id_index
-                .range(ProposalReviewProposalRange::new(proposal_id))
-                .filter_map(|(k, _)| {
-                    let proposal_review_id = k.proposal_review_id();
+    ) -> Result<Vec<(ProposalReviewId, ProposalReview)>, ApiError> {
+        let range = ProposalReviewProposalRange::new(proposal_id)?;
 
-                    // the None case in this get should never happen
+        let proposal_reviews = STATE.with_borrow(|s| {
+            s.proposal_id_index
+                .range(range)
+                .filter_map(|(_, proposal_review_id)| {
+                    // the None case should never happen
                     s.proposal_reviews
                         .get(&proposal_review_id)
                         .map(|p_r| (proposal_review_id, p_r))
                 })
                 .collect()
-        })
+        });
+
+        Ok(proposal_reviews)
     }
 
     async fn create_proposal_review(
@@ -72,14 +74,12 @@ impl ProposalReviewRepository for ProposalReviewRepositoryImpl {
         proposal_review: ProposalReview,
     ) -> Result<ProposalReviewId, ApiError> {
         let proposal_review_id = ProposalReviewId::new().await?;
+        let key = ProposalReviewProposalKey::new(proposal_review.proposal_id, proposal_review_id)?;
 
         STATE.with_borrow_mut(|s| {
             s.proposal_reviews
                 .insert(proposal_review_id, proposal_review.clone());
-            s.proposal_id_index.insert(
-                ProposalReviewProposalKey::new(proposal_review.proposal_id, proposal_review_id),
-                (),
-            );
+            s.proposal_id_index.insert(key, proposal_review_id);
         });
 
         Ok(proposal_review_id)
@@ -172,11 +172,13 @@ mod tests {
                 .unwrap();
         }
 
-        let result = repository.get_proposal_reviews_by_proposal_id(uuid_a());
-        let result = result.into_iter().map(|(_, p_r)| p_r).collect::<Vec<_>>();
+        let result = repository
+            .get_proposal_reviews_by_proposal_id(uuid_a())
+            .unwrap();
+        let proposal_reviews = result.into_iter().map(|(_, p_r)| p_r).collect::<Vec<_>>();
 
         assert_eq!(
-            result,
+            proposal_reviews,
             vec![
                 ProposalReview {
                     proposal_id: uuid_a(),

@@ -8,7 +8,8 @@ use super::{
 };
 
 pub type ProposalReviewMemory = BTreeMap<ProposalReviewId, ProposalReview, Memory>;
-pub type ProposalReviewProposalIdIndexMemory = BTreeMap<ProposalReviewProposalKey, (), Memory>;
+pub type ProposalReviewProposalIdIndexMemory =
+    BTreeMap<ProposalReviewProposalKey, ProposalReviewId, Memory>;
 
 pub fn init_proposal_reviews() -> ProposalReviewMemory {
     ProposalReviewMemory::init(get_proposal_reviews_memory())

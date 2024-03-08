@@ -1,7 +1,11 @@
 use std::{borrow::Cow, ops::RangeBounds};
 
+use backend_api::ApiError;
 use candid::{CandidType, Decode, Deserialize, Encode};
-use ic_stable_structures::{storable::Bound, Storable};
+use ic_stable_structures::{
+    storable::{Blob, Bound},
+    Storable,
+};
 
 use super::{DateTime, ProposalId, UserId, Uuid};
 
@@ -37,23 +41,42 @@ impl Storable for ProposalReview {
     const BOUND: Bound = Bound::Unbounded;
 }
 
-#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ProposalReviewProposalKey {
-    proposal_id: ProposalId,
-    proposal_review_id: ProposalReviewId,
-}
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ProposalReviewProposalKey(Blob<{ Self::MAX_SIZE as usize }>);
 
 impl ProposalReviewProposalKey {
-    pub fn new(proposal_id: ProposalId, proposal_review_id: ProposalReviewId) -> Self {
-        Self {
-            proposal_id,
-            proposal_review_id,
-        }
+    const MAX_SIZE: u32 = <(ProposalId, ProposalReviewId)>::BOUND.max_size();
+
+    pub fn new(
+        proposal_id: ProposalId,
+        proposal_review_id: ProposalReviewId,
+    ) -> Result<Self, ApiError> {
+        Ok(Self(
+            Blob::try_from((proposal_id, proposal_review_id).to_bytes().as_ref()).map_err(
+                |_| {
+                    ApiError::internal(&format!(
+                        "Failed to convert proposal id {:?} and proposal review id {:?} to bytes.",
+                        proposal_id, proposal_review_id
+                    ))
+                },
+            )?,
+        ))
+    }
+}
+
+impl Storable for ProposalReviewProposalKey {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        self.0.to_bytes()
     }
 
-    pub fn proposal_review_id(&self) -> ProposalReviewId {
-        self.proposal_review_id
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Self(Blob::from_bytes(bytes))
     }
+
+    const BOUND: Bound = Bound::Bounded {
+        max_size: Self::MAX_SIZE,
+        is_fixed_size: true,
+    };
 }
 
 pub struct ProposalReviewProposalRange {
@@ -62,11 +85,11 @@ pub struct ProposalReviewProposalRange {
 }
 
 impl ProposalReviewProposalRange {
-    pub fn new(proposal_id: ProposalId) -> Self {
-        Self {
-            start_bound: ProposalReviewProposalKey::new(proposal_id, ProposalReviewId::min()),
-            end_bound: ProposalReviewProposalKey::new(proposal_id, ProposalReviewId::max()),
-        }
+    pub fn new(proposal_id: ProposalId) -> Result<Self, ApiError> {
+        Ok(Self {
+            start_bound: ProposalReviewProposalKey::new(proposal_id, Uuid::min())?,
+            end_bound: ProposalReviewProposalKey::new(proposal_id, Uuid::max())?,
+        })
     }
 }
 
@@ -78,19 +101,6 @@ impl RangeBounds<ProposalReviewProposalKey> for ProposalReviewProposalRange {
     fn end_bound(&self) -> std::ops::Bound<&ProposalReviewProposalKey> {
         std::ops::Bound::Included(&self.end_bound)
     }
-}
-
-impl Storable for ProposalReviewProposalKey {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
-        Cow::Owned(Encode!(self).unwrap())
-    }
-
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
-        Decode!(bytes.as_ref(), Self).unwrap()
-    }
-
-    // TODO: should be bounded
-    const BOUND: Bound = Bound::Unbounded;
 }
 
 #[cfg(test)]
@@ -107,5 +117,17 @@ mod tests {
         let deserialized_proposal_review = ProposalReview::from_bytes(serialized_proposal_review);
 
         assert_eq!(proposal_review, deserialized_proposal_review);
+    }
+
+    #[rstest]
+    fn proposal_status_timestamp_key_storable_impl() {
+        let proposal_id = fixtures::proposal_id();
+        let proposal_review_id = fixtures::proposal_review_id();
+
+        let key = ProposalReviewProposalKey::new(proposal_id, proposal_review_id).unwrap();
+        let serialized_key = key.to_bytes();
+        let deserialized_key = ProposalReviewProposalKey::from_bytes(serialized_key);
+
+        assert_eq!(key, deserialized_key);
     }
 }
