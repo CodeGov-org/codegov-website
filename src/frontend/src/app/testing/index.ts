@@ -1,3 +1,4 @@
+export * from './activated-route-mock';
 export * from './agent-service-mock';
 export * from './auth-service-mock';
 export * from './dialog-mock';

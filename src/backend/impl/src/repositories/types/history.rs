@@ -78,7 +78,7 @@ mod tests {
         let user_profile = fixtures::reviewer_user_profile();
         let principal = fixtures::principal();
 
-        HistoryEntry::create_action(principal, user_profile.clone()).unwrap()
+        HistoryEntry::create_action(principal, user_profile).unwrap()
     }
 
     #[fixture]
@@ -86,6 +86,6 @@ mod tests {
         let user_profile = fixtures::reviewer_user_profile();
         let principal = fixtures::principal();
 
-        HistoryEntry::update_action(principal, user_profile.clone()).unwrap()
+        HistoryEntry::update_action(principal, user_profile).unwrap()
     }
 }

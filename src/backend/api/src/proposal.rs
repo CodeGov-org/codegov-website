@@ -40,6 +40,11 @@ pub struct GetProposalResponse {
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+pub struct ListProposalsRequest {
+    pub state: Option<ReviewPeriodState>,
+}
+
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub struct ListProposalsResponse {
     pub proposals: Vec<GetProposalResponse>,
 }

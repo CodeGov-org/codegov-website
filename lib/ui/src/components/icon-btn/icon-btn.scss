@@ -1,0 +1,62 @@
+@import '~@cg/styles/common';
+
+$focus-ring-width: 3px;
+$focus-ring-color: $primary;
+$transition-duration: 0.2s;
+$transition-timing-function: ease-in-out;
+
+.icon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: initial;
+  line-height: initial;
+
+  height: size(10);
+  width: size(10);
+  border-radius: 50%;
+
+  color: $slate-900;
+  @include dark {
+    color: $slate-300;
+  }
+
+  transition: background-color $transition-duration $transition-timing-function;
+
+  &:hover {
+    background-color: $slate-200;
+
+    @include dark {
+      background-color: $slate-800;
+    }
+  }
+
+  &:active {
+    background-color: $slate-300;
+
+    @include dark {
+      background-color: $slate-700;
+    }
+  }
+}
+
+.icon-btn__focus-outline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+
+  border-radius: 50%;
+  box-shadow: 0 0 0 $focus-ring-width $focus-ring-color;
+
+  opacity: 0;
+  transition: opacity $transition-duration $transition-timing-function;
+}
+
+.icon-btn__focus-outline--visible {
+  opacity: 1;
+}

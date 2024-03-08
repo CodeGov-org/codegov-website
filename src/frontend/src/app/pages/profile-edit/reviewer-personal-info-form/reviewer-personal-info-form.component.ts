@@ -151,7 +151,7 @@ export interface ReviewerProfileForm {
         <button
           class="btn btn--outline"
           (click)="cancelEdits()"
-          [disabled]="profileForm.invalid || isSaving"
+          [disabled]="isSaving"
         >
           Cancel
         </button>

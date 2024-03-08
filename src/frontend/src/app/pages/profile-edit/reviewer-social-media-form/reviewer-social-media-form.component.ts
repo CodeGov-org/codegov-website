@@ -94,7 +94,7 @@ export type SocialMediaForm = {
         <button
           class="btn btn--outline"
           (click)="cancelEdits()"
-          [disabled]="socialMediaForm.invalid || isSaving"
+          [disabled]="isSaving"
         >
           Cancel
         </button>

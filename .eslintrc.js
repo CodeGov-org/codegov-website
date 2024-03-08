@@ -9,6 +9,7 @@ module.exports = {
     '**/build/**',
     '**/.docusaurus/**',
     '**/.dfx/**',
+    '**/loader/**',
     'eslint.config.js',
   ],
   settings: {

@@ -7,7 +7,7 @@ use chrono::{Datelike, NaiveDateTime, TimeZone, Timelike, Utc};
 use ic_stable_structures::{storable::Bound, Storable};
 use std::{borrow::Cow, str::FromStr};
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DateTime(chrono::DateTime<chrono::Utc>);
 
 const DATE_TIME_SIZE: u32 = 25;
@@ -30,6 +30,10 @@ impl DateTime {
             &format!("Failed to convert timestamp {} to date time", micros),
         ))?;
         Self::new(Utc.from_utc_datetime(&dt))
+    }
+
+    pub fn sub(&self, duration: chrono::Duration) -> Self {
+        Self(self.0 - duration)
     }
 
     pub fn min() -> Self {

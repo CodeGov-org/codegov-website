@@ -36,6 +36,15 @@ impl From<ReviewPeriodState> for backend_api::ReviewPeriodState {
     }
 }
 
+impl From<backend_api::ReviewPeriodState> for ReviewPeriodState {
+    fn from(value: backend_api::ReviewPeriodState) -> Self {
+        match value {
+            backend_api::ReviewPeriodState::InProgress => ReviewPeriodState::InProgress,
+            backend_api::ReviewPeriodState::Completed => ReviewPeriodState::Completed,
+        }
+    }
+}
+
 impl From<Proposal> for backend_api::Proposal {
     fn from(value: Proposal) -> Self {
         backend_api::Proposal {

@@ -34,7 +34,7 @@ import {
 } from '~core/ui';
 import { ComponentChanges } from '~core/utils';
 
-export interface AdminProfileForm {
+interface AdminProfileForm {
   username: FormControl<string>;
   bio: FormControl<string>;
 }
@@ -105,7 +105,7 @@ export interface AdminProfileForm {
         <button
           class="btn btn--outline"
           (click)="cancelEdits()"
-          [disabled]="profileForm.invalid || isSaving"
+          [disabled]="isSaving"
         >
           Cancel
         </button>

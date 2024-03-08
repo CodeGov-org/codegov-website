@@ -1,4 +1,8 @@
 **/build/**
 **/.docusaurus/**
 pnpm-lock.yaml
+
+/lib/ui/loader/
+
 /src/frontend/src/global-config.json
+

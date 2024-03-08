@@ -22,7 +22,11 @@ pub fn get_date_time() -> Result<chrono::DateTime<chrono::Utc>, ApiError> {
     };
 
     #[cfg(not(target_family = "wasm"))]
-    let date_time = chrono::DateTime::<chrono::Utc>::UNIX_EPOCH;
+    let date_time = {
+        use chrono::{TimeZone, Utc};
+
+        Utc.with_ymd_and_hms(2021, 5, 10, 0, 0, 0).unwrap()
+    };
 
     Ok(date_time)
 }

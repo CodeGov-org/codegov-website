@@ -1,0 +1,21 @@
+{
+  "name": "@cg/angular-ui",
+  "private": true,
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "scripts": {
+    "build": "ng build ui",
+    "test": "ng test ui --no-watch --no-progress --browsers=ChromeHeadless",
+    "test:watch": "ng test ui"
+  },
+  "peerDependencies": {
+    "@angular/common": "^17.1.0",
+    "@angular/core": "^17.1.0",
+    "@cg/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@cg/ui": "workspace:*"
+  },
+  "sideEffects": false
+}

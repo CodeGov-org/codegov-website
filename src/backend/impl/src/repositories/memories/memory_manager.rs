@@ -18,6 +18,6 @@ pub(super) const USER_PROFILE_HISTORY_ID_MEMORY_ID: MemoryId = MemoryId::new(3);
 pub(super) const PROPOSALS_MEMORY_ID: MemoryId = MemoryId::new(4);
 pub(super) const LOGS_INDEX_MEMORY_ID: MemoryId = MemoryId::new(5);
 pub(super) const LOGS_MEMORY_ID: MemoryId = MemoryId::new(6);
-pub(super) const PROPOSALS_SORTED_INDEX_MEMORY_ID: MemoryId = MemoryId::new(7);
+pub(super) const PROPOSALS_STATUS_TIMESTAMP_INDEX_MEMORY_ID: MemoryId = MemoryId::new(7);
 pub(super) const PROPOSAL_REVIEWS_MEMORY_ID: MemoryId = MemoryId::new(8);
 pub(super) const PROPOSAL_REVIEWS_PROPOSAL_ID_INDEX_MEMORY_ID: MemoryId = MemoryId::new(9);
