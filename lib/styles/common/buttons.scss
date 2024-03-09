@@ -1,0 +1,36 @@
+@mixin btn-common {
+  @include no-underline;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: initial;
+  line-height: initial;
+}
+
+@mixin transparent-btn {
+  color: $slate-900;
+  @include dark {
+    color: $slate-300;
+  }
+
+  @include transition(background-color);
+
+  &:hover {
+    background-color: $slate-200;
+
+    @include dark {
+      background-color: $slate-800;
+    }
+  }
+
+  &:active {
+    background-color: $slate-300;
+
+    @include dark {
+      background-color: $slate-700;
+    }
+  }
+}

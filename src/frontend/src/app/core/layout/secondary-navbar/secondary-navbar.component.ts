@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLinkActive, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 
-import { CgIconBtnComponent } from '@cg/angular-ui';
+import { IconBtnComponent } from '@cg/angular-ui';
 import {
   LoginIconComponent,
   LogoutIconComponent,
@@ -19,7 +19,7 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
   imports: [
     CommonModule,
     RouterModule,
-    CgIconBtnComponent,
+    IconBtnComponent,
     LoginIconComponent,
     LogoutIconComponent,
     ProfileIconComponent,

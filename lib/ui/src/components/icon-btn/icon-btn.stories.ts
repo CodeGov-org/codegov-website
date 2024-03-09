@@ -11,6 +11,9 @@ const meta: IconBtnMeta = {
       control: { type: 'text' },
     },
   },
+  args: {
+    label: 'Login',
+  },
   render: args => `
     <cg-icon-btn label="${args.label}">
       <cg-profile-icon/>
@@ -20,8 +23,4 @@ const meta: IconBtnMeta = {
 
 export default meta;
 
-export const Default: IconBtnStory = {
-  args: {
-    label: 'Login',
-  },
-};
+export const Default: IconBtnStory = {};
