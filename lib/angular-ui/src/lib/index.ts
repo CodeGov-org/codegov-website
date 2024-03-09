@@ -1,2 +1,2 @@
-export * from './cg-icon-btn/index';
-export * from './cg-profile-icon/index';
+export * from './icon-btn/index';
+export * from './profile-icon/index';

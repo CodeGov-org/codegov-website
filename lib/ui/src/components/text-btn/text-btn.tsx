@@ -1,18 +1,11 @@
-import { Component, ComponentInterface, Prop, State, h } from '@stencil/core';
-
-export interface IconBtnProps {
-  label: string;
-}
+import { Component, State, h } from '@stencil/core';
 
 @Component({
-  tag: 'cg-icon-btn',
-  styleUrl: 'icon-btn.scss',
+  tag: 'cg-text-btn',
+  styleUrl: 'text-btn.scss',
   scoped: true,
 })
-export class IconBtnComponent implements IconBtnProps, ComponentInterface {
-  @Prop()
-  public label!: string;
-
+export class TextBtnComponent {
   public onFocused(): void {
     this.isFocused = true;
   }
@@ -27,8 +20,7 @@ export class IconBtnComponent implements IconBtnProps, ComponentInterface {
   public render() {
     return (
       <button
-        class="icon-btn"
-        aria-label={this.label}
+        class="text-btn"
         onFocus={() => this.onFocused()}
         onBlur={() => this.onBlurred()}
       >

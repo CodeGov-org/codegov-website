@@ -20,7 +20,7 @@ import { DefineCustomElement } from '../define-custom-element';
     <ng-content />
   `,
 })
-export class CgIconBtnComponent {
+export class IconBtnComponent {
   @Input({ required: true })
   public set label(value: string) {
     this.ngZone.runOutsideAngular(() => {

@@ -2,7 +2,7 @@ import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 import { TooltipDirective } from '../tooltip';
-import { CgIconBtnComponent } from '@cg/angular-ui';
+import { IconBtnComponent } from '@cg/angular-ui';
 import { CopyIconComponent } from '~core/icons';
 
 const INITIAL_TOOLTIP_TEXT = 'Copy to clipboard';
@@ -10,7 +10,7 @@ const INITIAL_TOOLTIP_TEXT = 'Copy to clipboard';
 @Component({
   selector: 'app-copy-button',
   standalone: true,
-  imports: [CopyIconComponent, TooltipDirective, CgIconBtnComponent],
+  imports: [CopyIconComponent, TooltipDirective, IconBtnComponent],
   template: `
     <cg-icon-btn
       (click)="copyToClipboard()"

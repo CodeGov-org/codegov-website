@@ -9,3 +9,10 @@ $dark-ring-blur: 5px;
     box-shadow: 0 0 $dark-ring-blur $ring-width $color;
   }
 }
+
+$transition-duration: 0.2s;
+$transition-timing-function: ease-in-out;
+
+@mixin transition($property) {
+  transition: $property $transition-duration $transition-timing-function;
+}

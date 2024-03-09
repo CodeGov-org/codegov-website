@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CgIconBtnComponent } from './cg-icon-btn.component';
+import { ProfileIconComponent } from './profile-icon.component';
 
-describe('CgIconBtnComponent', () => {
-  let component: CgIconBtnComponent;
-  let fixture: ComponentFixture<CgIconBtnComponent>;
+describe('ProfileIconComponent', () => {
+  let component: ProfileIconComponent;
+  let fixture: ComponentFixture<ProfileIconComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CgIconBtnComponent],
+      imports: [ProfileIconComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CgIconBtnComponent);
+    fixture = TestBed.createComponent(ProfileIconComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
