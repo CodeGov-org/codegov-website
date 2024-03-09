@@ -3,11 +3,12 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 import { GLOBAL_CONFIG, isLinkCategory } from '../../../../global-config';
+import { CollapsibleComponent } from '@cg/angular-ui';
 import {
   HamburgerMenuIconComponent,
   MenuCloseIconComponent,
 } from '~core/icons';
-import { CollapsibleComponent, DropdownComponent } from '~core/ui';
+import { DropdownComponent } from '~core/ui';
 
 @Component({
   selector: 'app-primary-navbar',
@@ -114,19 +115,19 @@ import { CollapsibleComponent, DropdownComponent } from '~core/ui';
             <nav class="sidebar__nav">
               @for (item of globalConfig.headerLinks; track item.title) {
                 @if (isLinkCategory(item)) {
-                  <app-collapsible>
-                    <ng-container ngProjectAs="[header]">
+                  <cg-collapsible>
+                    <div slot="collapsibleTrigger">
                       {{ item.title }}
-                    </ng-container>
+                    </div>
 
-                    <ng-container ngProjectAs="[body]">
+                    <div slot="collapsibleContent">
                       @for (subItem of item.children; track subItem.title) {
                         <a [href]="subItem.url" class="sidenav__item">
                           {{ subItem.title }}
                         </a>
                       }
-                    </ng-container>
-                  </app-collapsible>
+                    </div>
+                  </cg-collapsible>
                 } @else {
                   <a [href]="item.url" class="sidenav__item">
                     {{ item.title }}
