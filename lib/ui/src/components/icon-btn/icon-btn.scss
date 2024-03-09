@@ -29,7 +29,7 @@ $transition-timing-function: ease-in-out;
     background-color: $slate-200;
 
     @include dark {
-      background-color: $slate-800;
+      background-color: $slate-700;
     }
   }
 
@@ -37,7 +37,7 @@ $transition-timing-function: ease-in-out;
     background-color: $slate-300;
 
     @include dark {
-      background-color: $slate-700;
+      background-color: $slate-600;
     }
   }
 }
