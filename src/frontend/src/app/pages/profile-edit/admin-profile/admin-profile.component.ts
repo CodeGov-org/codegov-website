@@ -3,10 +3,10 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 import { AdminPersonalInfoComponent } from '../admin-personal-info';
 import { AdminPersonalInfoFormComponent } from '../admin-personal-info-form';
+import { CardComponent } from '@cg/angular-ui';
 import { InfoIconComponent } from '~core/icons';
 import { AdminProfile } from '~core/state';
 import {
-  CardComponent,
   KeyColComponent,
   KeyValueGridComponent,
   TooltipDirective,
@@ -42,10 +42,10 @@ import {
     `,
   ],
   template: `
-    <app-card class="admin-profile-card">
-      <h2 class="h3" cardTitle>Profile</h2>
+    <cg-card class="admin-profile-card">
+      <h2 class="h3" slot="cardTitle">Profile</h2>
 
-      <app-key-value-grid>
+      <app-key-value-grid slot="cardContent">
         <app-key-col id="admin-id">ID</app-key-col>
         <app-value-col aria-labelledby="admin-id">
           {{ userProfile.id }}
@@ -67,23 +67,25 @@ import {
           {{ adminInfo }}
         </div>
       </app-key-value-grid>
-    </app-card>
+    </cg-card>
 
-    <app-card>
-      <h2 class="h3" cardTitle>Personal Info</h2>
+    <cg-card>
+      <h2 class="h3" slot="cardTitle">Personal Info</h2>
 
-      @if (isFormEditable) {
-        <app-admin-personal-info-form
-          [userProfile]="userProfile"
-          (formClose)="hideForm()"
-        />
-      } @else {
-        <app-admin-personal-info
-          [userProfile]="userProfile"
-          (edit)="showForm()"
-        />
-      }
-    </app-card>
+      <div slot="cardContent">
+        @if (isFormEditable) {
+          <app-admin-personal-info-form
+            [userProfile]="userProfile"
+            (formClose)="hideForm()"
+          />
+        } @else {
+          <app-admin-personal-info
+            [userProfile]="userProfile"
+            (edit)="showForm()"
+          />
+        }
+      </div>
+    </cg-card>
   `,
 })
 export class AdminProfileComponent {

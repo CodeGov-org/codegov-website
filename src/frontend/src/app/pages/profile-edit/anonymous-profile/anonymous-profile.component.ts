@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { GLOBAL_CONFIG } from 'src/global-config';
 
+import { CardComponent } from '@cg/angular-ui';
 import { AnonymousProfile } from '~core/state';
-import { CardComponent, CopyButtonComponent } from '~core/ui';
+import { CopyButtonComponent } from '~core/ui';
 
 @Component({
   selector: 'app-anonymous-profile',
@@ -41,29 +42,32 @@ import { CardComponent, CopyButtonComponent } from '~core/ui';
     `,
   ],
   template: `
-    <app-card>
-      <h2 class="h3" cardTitle>Welcome to the CodeGov organisation</h2>
+    <cg-card>
+      <h2 class="h3" slot="cardTitle">Welcome to the CodeGov organisation</h2>
 
-      <p>
-        If you would like to become a reviewer,
-        <a [href]="applyLink">apply now</a>
-        .
-      </p>
+      <div slot="cardContent">
+        <p>
+          If you would like to become a reviewer,
+          <a [href]="applyLink">apply now</a>
+          .
+        </p>
 
-      <p>When requested, provide this ID to a CodeGov admin:</p>
+        <p>When requested, provide this ID to a CodeGov admin:</p>
 
-      <div class="user-id">
-        <div class="user-id__value">
-          {{ userProfile.id }}
+        <div class="user-id">
+          <div class="user-id__value">
+            {{ userProfile.id }}
+          </div>
+
+          <app-copy-button [input]="userProfile.id"></app-copy-button>
         </div>
 
-        <app-copy-button [input]="userProfile.id"></app-copy-button>
+        <p>
+          If you're just here to look around, you don't need to do anything
+          else.
+        </p>
       </div>
-
-      <p>
-        If you're just here to look around, you don't need to do anything else.
-      </p>
-    </app-card>
+    </cg-card>
   `,
 })
 export class AnonymousProfileComponent {

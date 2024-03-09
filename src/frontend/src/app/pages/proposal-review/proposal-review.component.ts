@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { of } from 'rxjs';
 
-import { CardComponent } from '~core/ui';
+import { CardComponent } from '@cg/angular-ui';
 
 @Component({
   selector: 'app-proposal-review',
@@ -22,9 +22,9 @@ import { CardComponent } from '~core/ui';
     @if (currentReview$ | async; as proposal) {
       <h1 class="h1">Review for proposal {{ proposal.id }} by AnonReviewer</h1>
 
-      <app-card>
-        <h2 class="h3" cardTitle>{{ proposal.title }}</h2>
-      </app-card>
+      <cg-card>
+        <h2 class="h3" slot="cardTitle">{{ proposal.title }}</h2>
+      </cg-card>
     }
   `,
 })

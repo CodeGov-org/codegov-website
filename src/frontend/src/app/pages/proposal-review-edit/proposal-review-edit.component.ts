@@ -10,9 +10,9 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { filter, map } from 'rxjs';
 
+import { CardComponent } from '@cg/angular-ui';
 import { ProposalService, ProposalState } from '~core/state';
 import {
-  CardComponent,
   FormFieldComponent,
   InputDirective,
   InputErrorComponent,
@@ -76,66 +76,68 @@ interface ReviewCommitForm {
     @if (currentProposal$ | async; as proposal) {
       <h1 class="h1">Submit review for proposal {{ proposal.id }}</h1>
 
-      <app-card class="proposal-overview-card">
-        <h2 class="h3" cardTitle>{{ proposal.title }}</h2>
-      </app-card>
+      <cg-card class="proposal-overview-card">
+        <h2 class="h3" slot="cardTitle">{{ proposal.title }}</h2>
+      </cg-card>
 
       <h3 class="h4 commits-heading">Commits</h3>
       @for (commitForm of commitForms; track i; let i = $index) {
         <ng-container [formGroup]="commitForm">
-          <app-card class="commit-review-card">
-            <app-key-value-grid>
-              <app-key-col>
-                <label appLabel [for]="'id-' + i">Commit hash (Id)</label>
-              </app-key-col>
-              <app-value-col>
-                <app-form-field>
-                  <input appInput [id]="'id-' + i" formControlName="id" />
+          <cg-card class="commit-review-card">
+            <div slot="cardContent">
+              <app-key-value-grid>
+                <app-key-col>
+                  <label appLabel [for]="'id-' + i">Commit hash (Id)</label>
+                </app-key-col>
+                <app-value-col>
+                  <app-form-field>
+                    <input appInput [id]="'id-' + i" formControlName="id" />
 
-                  <app-input-error key="required">
-                    Commit hash (Id) cannot be empty
-                  </app-input-error>
-                </app-form-field>
-              </app-value-col>
+                    <app-input-error key="required">
+                      Commit hash (Id) cannot be empty
+                    </app-input-error>
+                  </app-form-field>
+                </app-value-col>
 
-              <app-key-col>
-                <div>Reviewed</div>
-              </app-key-col>
-              <app-value-col>
-                <app-form-field>
-                  <div class="radio-group">
-                    <input
-                      appInput
-                      [id]="'reviewed-yes-' + i"
-                      value="true"
-                      type="radio"
-                      formControlName="reviewed"
-                    />
-                    <label appLabel [for]="'reviewed-yes-' + i">Yes</label>
+                <app-key-col>
+                  <div>Reviewed</div>
+                </app-key-col>
+                <app-value-col>
+                  <app-form-field>
+                    <div class="radio-group">
+                      <input
+                        appInput
+                        [id]="'reviewed-yes-' + i"
+                        value="true"
+                        type="radio"
+                        formControlName="reviewed"
+                      />
+                      <label appLabel [for]="'reviewed-yes-' + i">Yes</label>
 
-                    <input
-                      appInput
-                      [id]="'reviewed-no-' + i"
-                      value="false"
-                      type="radio"
-                      formControlName="reviewed"
-                    />
-                    <label appLabel [for]="'reviewed-no-' + i">No</label>
-                  </div>
+                      <input
+                        appInput
+                        [id]="'reviewed-no-' + i"
+                        value="false"
+                        type="radio"
+                        formControlName="reviewed"
+                      />
+                      <label appLabel [for]="'reviewed-no-' + i">No</label>
+                    </div>
 
-                  <app-input-error key="required">
-                    Did you review the commit?
-                  </app-input-error>
-                </app-form-field>
-              </app-value-col>
-            </app-key-value-grid>
+                    <app-input-error key="required">
+                      Did you review the commit?
+                    </app-input-error>
+                  </app-form-field>
+                </app-value-col>
+              </app-key-value-grid>
 
-            <div class="btn-group">
-              <button class="btn btn--outline" (click)="removeCommitForm(i)">
-                Remove
-              </button>
+              <div class="btn-group">
+                <button class="btn btn--outline" (click)="removeCommitForm(i)">
+                  Remove
+                </button>
+              </div>
             </div>
-          </app-card>
+          </cg-card>
         </ng-container>
       }
 
