@@ -1,6 +1,7 @@
 @mixin btn-common {
   @include no-underline;
 
+  width: inherit;
   position: relative;
   display: inline-flex;
   align-items: center;

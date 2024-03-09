@@ -1,0 +1,33 @@
+@import '~@cg/styles/common';
+
+.collapsible {
+  display: block;
+}
+
+.collapsible__trigger {
+  width: 100%;
+}
+
+.collapsible__trigger-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.collapsible__trigger-chevron {
+  width: size(4);
+  height: size(4);
+
+  transform: rotate(0deg);
+  @include transition(transform);
+}
+
+.collapsible__trigger-chevron--open {
+  transform: rotate(180deg);
+}
+
+.collapsible__content {
+  margin-left: size(3);
+  overflow: hidden;
+}
