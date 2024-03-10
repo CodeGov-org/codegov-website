@@ -20,11 +20,12 @@ export class ProposalService {
   public currentProposalId$ = this.currentProposalIdSubject.asObservable();
 
   private openProposalList: Proposal[] = [];
-  private closedProposalList: Proposal[] = [];
-  private fullProposalList: Proposal[] = [];
-
   private openProposalListLastLoaded: number | null = null;
+
+  private closedProposalList: Proposal[] = [];
   private closedProposalListLastLoaded: number | null = null;
+
+  private fullProposalList: Proposal[] = [];
   private fullProposalListLastLoaded: number | null = null;
 
   public readonly currentProposal$ = this.currentProposalId$.pipe(
@@ -121,25 +122,4 @@ export class ProposalService {
       throw new Error(`${getResponse.err.code}: ${getResponse.err.message}`);
     }
   }
-
-  // public async loadClosedProposalList(): Promise<void> {
-  //   const closedProposalsList: ProposalResponse[] = [
-  //     {
-  //       id: '1234',
-  //       proposal: {
-  //         title: 'Test closed proposal',
-  //         review_completed_at: ['2/17/2024, 1:01:25 AM'],
-  //         state: { completed: null },
-  //         synced_at: '2/17/2024, 1:01:25 AM',
-  //         nervous_system: {
-  //           network: {
-  //             id: 12546n,
-  //             topic: { replica_version_management: null },
-  //           },
-  //         },
-  //         proposed_at: '2/14/2024, 1:01:25 AM',
-  //         proposed_by: 5465465465n,
-  //       },
-  //     },
-  //   ];
 }
