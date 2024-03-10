@@ -1,8 +1,12 @@
+import { Dialog } from '@angular/cdk/dialog';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 
 import { CardComponent } from '@cg/angular-ui';
+import { ReviewPeriodState } from '@cg/backend';
 import { FormatDatePipe } from '~core/pipes';
 import {
   ProposalLinkBaseUrl,
@@ -10,22 +14,40 @@ import {
   ProposalTopic,
 } from '~core/state';
 import {
-  KeyColComponent,
   KeyValueGridComponent,
+  KeyColComponent,
   ValueColComponent,
+  FormFieldComponent,
+  InputDirective,
+  LabelDirective,
+  CardComponent,
+  LoadingDialogComponent,
+  getLoadingDialogConfig,
+  LoadingDialogInput,
 } from '~core/ui';
+import { keysOf } from '~core/utils';
+
+enum FilterOptions {
+  InReview = 'In review',
+  Reviewed = 'Reviewed',
+  All = 'All',
+}
 
 @Component({
-  selector: 'app-open-proposal-list',
+  selector: 'app-proposal-list',
   standalone: true,
   imports: [
     CommonModule,
-    CardComponent,
+    ReactiveFormsModule,
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
-    RouterModule,
+    FormFieldComponent,
+    InputDirective,
+    LabelDirective,
+    CardComponent,
     FormatDatePipe,
+    RouterLink,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -48,11 +70,66 @@ import {
       .proposal__link {
         margin-right: size(4);
       }
+
+      .proposal__vote {
+        font-weight: bold;
+      }
+
+      .proposal__vote--adopt {
+        color: $success;
+      }
+
+      .proposal__vote--reject {
+        color: $error;
+      }
+
+      .filter {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: size(4);
+
+        @include sm {
+          flex-direction: row;
+        }
+      }
+
+      .filter__label {
+        margin-bottom: size(2);
+        margin-right: size(2);
+        width: 100%;
+
+        @include sm {
+          width: 50%;
+        }
+      }
     `,
   ],
   template: `
+    <h1 class="h3">Proposals</h1>
+    <form [formGroup]="filterForm">
+      <div class="filter">
+        <div class="filter__label">Select code review status:</div>
+        <app-form-field class="filter__value">
+          <div class="radio-group">
+            @for (key of filterOptionsKeys; track key) {
+              <input
+                appInput
+                [id]="key"
+                [value]="key"
+                type="radio"
+                formControlName="filter"
+                (change)="updateFilter()"
+              />
+              <label appLabel [for]="key">
+                {{ filterOptions[key].valueOf() }}
+              </label>
+            }
+          </div>
+        </app-form-field>
+      </div>
+    </form>
+
     @if (proposalList$ | async; as proposalList) {
-      <h1 class="h3">Proposals pending review</h1>
       @for (proposal of proposalList; track proposal.id; let i = $index) {
         <cg-card class="proposal">
           <h2 class="h4 proposal__title" slot="cardTitle">
@@ -149,6 +226,33 @@ import {
               >
                 {{ proposal.votingPeriodEnd | formatDate }}
               </app-value-col>
+
+              <app-key-col [id]="'closed-proposal-date-decided-' + i">
+                Date decided
+              </app-key-col>
+              <app-value-col
+                [attr.aria-labelledby]="'closed-proposal-date-decided-' + i"
+              >
+                {{
+                  proposal.decidedAt
+                    ? (proposal.decidedAt | formatDate)
+                    : 'Not yet decided'
+                }}
+              </app-value-col>
+
+              <app-key-col [id]="'closed-proposal-codegov-vote-' + i">
+                CodeGov vote
+              </app-key-col>
+              <app-value-col
+                [attr.aria-labelledby]="'closed-proposal-codegov-vote-' + i"
+                class="proposal__vote"
+                [ngClass]="{
+                  'proposal__vote--adopt': proposal.codeGovVote === 'ADOPT',
+                  'proposal__vote--reject': proposal.codeGovVote === 'REJECT'
+                }"
+              >
+                {{ proposal.codeGovVote }}
+              </app-value-col>
             </app-key-value-grid>
             <div class="btn-group">
               <a
@@ -167,14 +271,81 @@ import {
     }
   `,
 })
-export class OpenProposalListComponent implements OnInit {
-  public readonly proposalList$ = this.proposalService.openProposalList$;
+export class ProposalListComponent implements OnInit {
+  public proposalList$ = this.proposalService.currentProposalList$;
+
+  private selectedFilterSubject = new BehaviorSubject<
+    keyof typeof FilterOptions
+  >('InReview');
+  public selectedFilter$ = this.selectedFilterSubject.asObservable();
+
+  public readonly filterForm: FormGroup;
+  public readonly filterOptions = FilterOptions;
+  public readonly filterOptionsKeys = keysOf(FilterOptions);
+
   public readonly proposalTopic = ProposalTopic;
   public readonly linkBaseUrl = ProposalLinkBaseUrl;
 
-  constructor(private readonly proposalService: ProposalService) {}
+  private loadProposalsMessage: LoadingDialogInput = {
+    message: 'Loading data...',
+  };
+
+  constructor(
+    private readonly proposalService: ProposalService,
+    public readonly formBuilder: FormBuilder,
+    private readonly dialog: Dialog,
+  ) {
+    this.filterForm = this.formBuilder.group({
+      filter: ['InReview'],
+    });
+  }
 
   public ngOnInit(): void {
-    this.proposalService.loadOpenProposalList();
+    this.selectedFilter$.subscribe(value => {
+      let inputParam: ReviewPeriodState | undefined;
+      switch (value) {
+        case 'InReview':
+          inputParam = { in_progress: null };
+          break;
+        case 'Reviewed':
+          inputParam = { completed: null };
+          break;
+        case 'All':
+          inputParam = undefined;
+          break;
+      }
+
+      this.updateList(inputParam);
+    });
+  }
+
+  public updateFilter(): void {
+    const filterControl = this.filterForm.get('filter');
+
+    if (filterControl !== null) {
+      const filterValue = filterControl.value;
+      if (filterValue !== undefined) {
+        this.selectedFilterSubject.next(
+          Object.keys(FilterOptions).find(
+            key => key === filterValue,
+          ) as keyof typeof FilterOptions,
+        );
+      }
+    }
+  }
+
+  public async updateList(
+    inputParam: ReviewPeriodState | undefined,
+  ): Promise<void> {
+    const loadingDialog = this.dialog.open(
+      LoadingDialogComponent,
+      getLoadingDialogConfig(this.loadProposalsMessage),
+    );
+
+    try {
+      await this.proposalService.loadProposalList(inputParam);
+    } finally {
+      loadingDialog.close();
+    }
   }
 }

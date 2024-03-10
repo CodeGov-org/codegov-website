@@ -6,23 +6,23 @@ import {
   ProposalServiceMock,
   proposalServiceMockFactory,
 } from '~core/state/proposal/proposal.service.mock';
-import { OpenProposalListComponent } from './open-proposal-list.component';
+import { ProposalListComponent } from './proposal-list.component';
 
-describe('OpenProposalListComponent', () => {
-  let component: OpenProposalListComponent;
-  let fixture: ComponentFixture<OpenProposalListComponent>;
+describe('ProposalListComponent', () => {
+  let component: ProposalListComponent;
+  let fixture: ComponentFixture<ProposalListComponent>;
   let proposalServiceMock: ProposalServiceMock;
 
   beforeEach(async () => {
     proposalServiceMock = proposalServiceMockFactory();
-    proposalServiceMock.openProposalList$ = of([]);
+    proposalServiceMock.currentProposalList$ = of([]);
 
     await TestBed.configureTestingModule({
-      imports: [OpenProposalListComponent],
+      imports: [ProposalListComponent],
       providers: [{ provide: ProposalService, useValue: proposalServiceMock }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(OpenProposalListComponent);
+    fixture = TestBed.createComponent(ProposalListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
