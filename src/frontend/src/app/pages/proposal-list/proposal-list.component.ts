@@ -20,7 +20,6 @@ import {
   FormFieldComponent,
   InputDirective,
   LabelDirective,
-  CardComponent,
   LoadingDialogComponent,
   getLoadingDialogConfig,
   LoadingDialogInput,
@@ -45,9 +44,9 @@ enum FilterOptions {
     FormFieldComponent,
     InputDirective,
     LabelDirective,
-    CardComponent,
     FormatDatePipe,
     RouterLink,
+    CardComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -138,8 +137,8 @@ enum FilterOptions {
 
           <div slot="cardContent">
             <app-key-value-grid [columnNumber]="2">
-              <app-key-col [id]="'open-proposal-id-' + i">ID</app-key-col>
-              <app-value-col [attr.aria-labelledby]="'open-proposal-id-' + i">
+              <app-key-col [id]="'proposal-id-' + i">ID</app-key-col>
+              <app-value-col [attr.aria-labelledby]="'proposal-id-' + i">
                 <a
                   href="{{ linkBaseUrl.Proposal }}{{ proposal.id }}"
                   target="_blank"
@@ -149,12 +148,10 @@ enum FilterOptions {
                 </a>
               </app-value-col>
 
-              <app-key-col [id]="'open-proposal-links-' + i">
+              <app-key-col [id]="'proposal-links-' + i">
                 Voting links
               </app-key-col>
-              <app-value-col
-                [attr.aria-labelledby]="'open-proposal-links-' + i"
-              >
+              <app-value-col [attr.aria-labelledby]="'proposal-links-' + i">
                 @if (proposal.proposalLinks.length > 0) {
                   @for (
                     proposalLink of proposal.proposalLinks;
@@ -172,32 +169,26 @@ enum FilterOptions {
                 }
               </app-value-col>
 
-              <app-key-col [id]="'open-proposal-topic-' + i">Topic</app-key-col>
-              <app-value-col
-                [attr.aria-labelledby]="'open-proposal-topic-' + i"
-              >
+              <app-key-col [id]="'proposal-topic-' + i">Topic</app-key-col>
+              <app-value-col [attr.aria-labelledby]="'proposal-topic-' + i">
                 {{ proposal.topic }}
               </app-value-col>
 
-              <app-key-col [id]="'open-proposal-type-' + i">Type</app-key-col>
-              <app-value-col [attr.aria-labelledby]="'open-proposal-type-' + i">
+              <app-key-col [id]="'proposal-type-' + i">Type</app-key-col>
+              <app-value-col [attr.aria-labelledby]="'proposal-type-' + i">
                 {{ proposal.type }}
               </app-value-col>
 
-              <app-key-col [id]="'open-proposal-created-' + i">
-                Created
-              </app-key-col>
-              <app-value-col
-                [attr.aria-labelledby]="'open-proposal-created-' + i"
-              >
+              <app-key-col [id]="'proposal-created-' + i">Created</app-key-col>
+              <app-value-col [attr.aria-labelledby]="'proposal-created-' + i">
                 {{ proposal.proposedAt | formatDate }}
               </app-value-col>
 
-              <app-key-col [id]="'open-proposal-proposer-' + i">
+              <app-key-col [id]="'proposal-proposer-' + i">
                 Proposer
               </app-key-col>
               <app-value-col
-                [attr.aria-labelledby]="'open-proposal-proposer-' + i"
+                [attr.aria-labelledby]="'proposal-proposer-' + i"
                 class="proposal__proposer"
               >
                 <a
@@ -209,29 +200,29 @@ enum FilterOptions {
                 </a>
               </app-value-col>
 
-              <app-key-col [id]="'open-proposal-review-end-' + i">
+              <app-key-col [id]="'proposal-review-end-' + i">
                 Review period end
               </app-key-col>
               <app-value-col
-                [attr.aria-labelledby]="'open-proposal-review-end-' + i"
+                [attr.aria-labelledby]="'proposal-review-end-' + i"
               >
                 {{ proposal.reviewPeriodEnd | formatDate }}
               </app-value-col>
 
-              <app-key-col [id]="'open-proposal-voting-end-' + i">
+              <app-key-col [id]="'proposal-voting-end-' + i">
                 Voting period end
               </app-key-col>
               <app-value-col
-                [attr.aria-labelledby]="'open-proposal-voting-end-' + i"
+                [attr.aria-labelledby]="'proposal-voting-end-' + i"
               >
                 {{ proposal.votingPeriodEnd | formatDate }}
               </app-value-col>
 
-              <app-key-col [id]="'closed-proposal-date-decided-' + i">
+              <app-key-col [id]="'proposal-date-decided-' + i">
                 Date decided
               </app-key-col>
               <app-value-col
-                [attr.aria-labelledby]="'closed-proposal-date-decided-' + i"
+                [attr.aria-labelledby]="'proposal-date-decided-' + i"
               >
                 {{
                   proposal.decidedAt
@@ -240,11 +231,11 @@ enum FilterOptions {
                 }}
               </app-value-col>
 
-              <app-key-col [id]="'closed-proposal-codegov-vote-' + i">
+              <app-key-col [id]="'proposal-codegov-vote-' + i">
                 CodeGov vote
               </app-key-col>
               <app-value-col
-                [attr.aria-labelledby]="'closed-proposal-codegov-vote-' + i"
+                [attr.aria-labelledby]="'proposal-codegov-vote-' + i"
                 class="proposal__vote"
                 [ngClass]="{
                   'proposal__vote--adopt': proposal.codeGovVote === 'ADOPT',
@@ -334,7 +325,7 @@ export class ProposalListComponent implements OnInit {
     }
   }
 
-  public async updateList(
+  private async updateList(
     inputParam: ReviewPeriodState | undefined,
   ): Promise<void> {
     const loadingDialog = this.dialog.open(

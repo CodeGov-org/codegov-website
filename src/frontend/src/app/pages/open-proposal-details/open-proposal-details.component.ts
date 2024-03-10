@@ -141,7 +141,10 @@ import { isNotNil } from '~core/utils';
 
       <h2 class="h4">Proposal summary</h2>
       <cg-card>
-        <div [innerHTML]="convertMarkdownToHTML(proposal.summary)"></div>
+        <div
+          slot="cardContent"
+          [innerHTML]="convertMarkdownToHTML(proposal.summary)"
+        ></div>
       </cg-card>
     }
   `,
