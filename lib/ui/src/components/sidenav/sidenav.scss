@@ -1,3 +1,5 @@
+@import '~@cg/styles/common';
+
 .sidenav {
   @include layer-50;
   position: fixed;
@@ -21,10 +23,10 @@
   }
 }
 
-.sidenav__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.sidenav__close-btn {
+  position: absolute;
+  top: size(3);
+  right: size(4);
 }
 
 .sidenav__brand {
@@ -40,46 +42,23 @@
   }
 }
 
-.sidenav__logo {
-  height: size(10);
+.sidenav__brand-logo {
+  display: inline-block;
   width: size(10);
+  height: auto;
 }
 
-.sidenav__company {
+.sidenav__brand-company {
   margin-left: size(3);
   font-size: 1.125rem;
   font-weight: $font-weight-medium;
 }
 
 .sidebar__nav {
-  margin-top: size(6);
-
-  & > * {
-    @include my(2);
-  }
+  margin-top: size(3);
 }
 
 .sidenav__item {
   display: block;
-  border-radius: $border-radius;
-  @include px(3);
-  @include py(2);
-  font-weight: $font-weight-semibold;
-
-  color: $white;
-  &:hover {
-    color: $primary-900;
-    background-color: $white;
-  }
-
-  @include no-underline;
-
-  @include dark {
-    color: $slate-300;
-
-    &:hover {
-      background-color: $slate-200;
-      color: $slate-900;
-    }
-  }
+  width: 100%;
 }

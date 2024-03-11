@@ -16,11 +16,12 @@
 }
 
 .collapsible__trigger-chevron {
+  display: flex;
   width: size(4);
   height: size(4);
 
   transform: rotate(0deg);
-  @include transition(transform);
+  @include quick-transition(transform);
 }
 
 .collapsible__trigger-chevron--open {

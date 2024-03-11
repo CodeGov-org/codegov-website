@@ -4,6 +4,10 @@
   @include btn-common;
   @include transparent-btn;
 
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
   height: size(10);
   width: size(10);
   border-radius: 50%;

@@ -6,15 +6,15 @@ $focus-ring-color: $primary;
 :host-context(.focus-ring) {
   border-radius: inherit;
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: $focus-ring-width;
+  left: $focus-ring-width;
+  right: $focus-ring-width;
+  bottom: $focus-ring-width;
   pointer-events: none;
   box-shadow: 0 0 0 $focus-ring-width $focus-ring-color;
 
   opacity: 0;
-  @include transition(opacity);
+  @include quick-transition(opacity);
 }
 
 :host-context(.focus-ring--visible) {
