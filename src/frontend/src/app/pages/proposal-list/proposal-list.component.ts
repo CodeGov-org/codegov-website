@@ -1,9 +1,8 @@
-import { Dialog } from '@angular/cdk/dialog';
-import { CommonModule } from '@angular/common';
+import { CommonModule, KeyValuePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
 
 import { CardComponent } from '@cg/angular-ui';
 import { ReviewPeriodState } from '@cg/backend';
@@ -20,17 +19,13 @@ import {
   FormFieldComponent,
   InputDirective,
   LabelDirective,
-  LoadingDialogComponent,
-  getLoadingDialogConfig,
-  LoadingDialogInput,
 } from '~core/ui';
-import { keysOf } from '~core/utils';
 
-enum FilterOptions {
-  InReview = 'In review',
-  Reviewed = 'Reviewed',
-  All = 'All',
-}
+const LIST_FILTER = {
+  InReview: 'In Review',
+  Reviewed: 'Reviewed',
+  All: 'All',
+};
 
 @Component({
   selector: 'app-proposal-list',
@@ -47,6 +42,7 @@ enum FilterOptions {
     FormatDatePipe,
     RouterLink,
     CardComponent,
+    KeyValuePipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -110,17 +106,16 @@ enum FilterOptions {
         <div class="filter__label">Select code review status:</div>
         <app-form-field class="filter__value">
           <div class="radio-group">
-            @for (key of filterOptionsKeys; track key) {
+            @for (property of listFilter | keyvalue; track property.key) {
               <input
                 appInput
-                [id]="key"
-                [value]="key"
+                [id]="property.key"
+                [value]="property.key"
                 type="radio"
                 formControlName="filter"
-                (change)="updateFilter()"
               />
-              <label appLabel [for]="key">
-                {{ filterOptions[key].valueOf() }}
+              <label appLabel [for]="property.key">
+                {{ property.value }}
               </label>
             }
           </div>
@@ -152,20 +147,18 @@ enum FilterOptions {
                 Voting links
               </app-key-col>
               <app-value-col [attr.aria-labelledby]="'proposal-links-' + i">
-                @if (proposal.proposalLinks.length > 0) {
-                  @for (
-                    proposalLink of proposal.proposalLinks;
-                    track proposalLink.type
-                  ) {
-                    <a
-                      class="proposal__link"
-                      href="{{ proposalLink.link }}"
-                      target="_blank"
-                      rel="nofollow noreferrer"
-                    >
-                      {{ proposalLink.type }}
-                    </a>
-                  }
+                @for (
+                  proposalLink of proposal.proposalLinks;
+                  track proposalLink.type
+                ) {
+                  <a
+                    class="proposal__link"
+                    href="{{ proposalLink.link }}"
+                    target="_blank"
+                    rel="nofollow noreferrer"
+                  >
+                    {{ proposalLink.type }}
+                  </a>
                 }
               </app-value-col>
 
@@ -265,26 +258,15 @@ enum FilterOptions {
 export class ProposalListComponent implements OnInit {
   public proposalList$ = this.proposalService.currentProposalList$;
 
-  private selectedFilterSubject = new BehaviorSubject<
-    keyof typeof FilterOptions
-  >('InReview');
-  public selectedFilter$ = this.selectedFilterSubject.asObservable();
-
   public readonly filterForm: FormGroup;
-  public readonly filterOptions = FilterOptions;
-  public readonly filterOptionsKeys = keysOf(FilterOptions);
+  public readonly listFilter = LIST_FILTER;
 
   public readonly proposalTopic = ProposalTopic;
   public readonly linkBaseUrl = ProposalLinkBaseUrl;
 
-  private loadProposalsMessage: LoadingDialogInput = {
-    message: 'Loading data...',
-  };
-
   constructor(
     private readonly proposalService: ProposalService,
     public readonly formBuilder: FormBuilder,
-    private readonly dialog: Dialog,
   ) {
     this.filterForm = this.formBuilder.group({
       filter: ['InReview'],
@@ -292,51 +274,30 @@ export class ProposalListComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.selectedFilter$.subscribe(value => {
-      let inputParam: ReviewPeriodState | undefined;
-      switch (value) {
-        case 'InReview':
-          inputParam = { in_progress: null };
-          break;
-        case 'Reviewed':
-          inputParam = { completed: null };
-          break;
-        case 'All':
-          inputParam = undefined;
-          break;
-      }
+    this.proposalService.loadProposalList({ in_progress: null });
 
-      this.updateList(inputParam);
-    });
-  }
-
-  public updateFilter(): void {
-    const filterControl = this.filterForm.get('filter');
-
-    if (filterControl !== null) {
-      const filterValue = filterControl.value;
-      if (filterValue !== undefined) {
-        this.selectedFilterSubject.next(
-          Object.keys(FilterOptions).find(
-            key => key === filterValue,
-          ) as keyof typeof FilterOptions,
-        );
-      }
-    }
+    this.filterForm.controls['filter'].valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        let inputParam: ReviewPeriodState | undefined;
+        switch (this.filterForm.controls['filter'].value) {
+          case 'InReview':
+            inputParam = { in_progress: null };
+            break;
+          case 'Reviewed':
+            inputParam = { completed: null };
+            break;
+          case 'All':
+            inputParam = undefined;
+            break;
+        }
+        this.updateList(inputParam);
+      });
   }
 
   private async updateList(
     inputParam: ReviewPeriodState | undefined,
   ): Promise<void> {
-    const loadingDialog = this.dialog.open(
-      LoadingDialogComponent,
-      getLoadingDialogConfig(this.loadProposalsMessage),
-    );
-
-    try {
-      await this.proposalService.loadProposalList(inputParam);
-    } finally {
-      loadingDialog.close();
-    }
+    await this.proposalService.loadProposalList(inputParam);
   }
 }

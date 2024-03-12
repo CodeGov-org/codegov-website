@@ -5,7 +5,7 @@ export const ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'proposal',
+    redirectTo: 'list',
   },
   {
     path: 'profile/edit',
@@ -14,7 +14,7 @@ export const ROUTES: Routes = [
     canActivate: [isAuthenticatedGuard],
   },
   {
-    path: 'proposal',
+    path: 'list',
     loadComponent: () =>
       import('./pages/proposal-list').then(m => m.ProposalListComponent),
   },
