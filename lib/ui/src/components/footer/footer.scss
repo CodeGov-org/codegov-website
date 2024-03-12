@@ -1,0 +1,51 @@
+@import '~@cg/styles/common';
+
+.footer {
+  background-color: $white;
+
+  @include dark {
+    background-color: $slate-900;
+  }
+}
+
+.footer__main {
+  @include container;
+  @include px(4);
+  @include py(6);
+  margin: auto;
+
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  @include md {
+    flex-direction: row;
+  }
+}
+
+.footer__copyright {
+  background-color: $slate-100;
+
+  @include dark {
+    background-color: $slate-800;
+  }
+}
+
+.footer__copyright-content {
+  @include container;
+  @include px(4);
+  @include py(6);
+  margin: auto;
+
+  @include md {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.footer__copyright-text {
+  font-size: 0.875rem;
+
+  @include dark {
+    color: $slate-300;
+  }
+}
