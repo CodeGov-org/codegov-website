@@ -1,9 +1,5 @@
 import { Component, Host, State, h } from '@stencil/core';
-
-const animationOptions: KeyframeAnimationOptions = {
-  duration: 200,
-  easing: 'ease-in-out',
-};
+import { quickAnimation } from '../../animations';
 
 @Component({
   tag: 'cg-collapsible',
@@ -14,46 +10,19 @@ export class CollapsibleComponent {
   @State()
   public isOpen = false;
 
-  public onTriggerClicked(): void {
+  private contentElem!: HTMLDivElement;
+
+  public async onTriggerClicked(): Promise<void> {
     this.isOpen = !this.isOpen;
 
     if (this.isOpen) {
-      this.contentElem.hidden = false;
-      this.contentElem.animate(
-        {
-          maxHeight: ['0', `${this.contentElem.scrollHeight}px`],
-        },
-        animationOptions,
-      ).onfinish = () => {
-        this.contentElem.style.maxHeight = `${this.contentElem.scrollHeight}px`;
-      };
+      await this.openAnimation();
     } else {
-      this.contentElem.animate(
-        {
-          maxHeight: [`${this.contentElem.scrollHeight}px`, '0'],
-        },
-        animationOptions,
-      ).onfinish = () => {
-        this.contentElem.hidden = true;
-        this.contentElem.style.maxHeight = '0';
-      };
+      await this.closeAnimation();
     }
   }
 
-  private setContentElem(elem?: HTMLDivElement): void {
-    if (!elem) {
-      throw new Error('Content element not found');
-    }
-
-    if (elem !== this.contentElem) {
-      this.contentElem = elem;
-      this.contentElem.style.maxHeight = '0';
-      this.contentElem.hidden = true;
-    }
-  }
-  private contentElem!: HTMLDivElement;
-
-  render() {
+  public render() {
     return (
       <Host class="collapsible">
         <cg-text-btn
@@ -81,5 +50,46 @@ export class CollapsibleComponent {
         </div>
       </Host>
     );
+  }
+
+  private setContentElem(elem?: HTMLDivElement): void {
+    if (!elem) {
+      throw new Error('Content element not found');
+    }
+
+    if (elem !== this.contentElem) {
+      this.contentElem = elem;
+
+      this.contentElem.style.display = 'none';
+      this.contentElem.hidden = true;
+      this.contentElem.style.maxHeight = '0';
+    }
+  }
+
+  private async openAnimation(): Promise<void> {
+    this.contentElem.style.display = 'block';
+    this.contentElem.hidden = false;
+
+    await this.contentElem.animate(
+      {
+        maxHeight: ['0', `${this.contentElem.scrollHeight}px`],
+      },
+      quickAnimation,
+    ).finished;
+
+    this.contentElem.style.maxHeight = `${this.contentElem.scrollHeight}px`;
+  }
+
+  private async closeAnimation(): Promise<void> {
+    await this.contentElem.animate(
+      {
+        maxHeight: [`${this.contentElem.scrollHeight}px`, '0'],
+      },
+      quickAnimation,
+    ).finished;
+
+    this.contentElem.style.display = 'none';
+    this.contentElem.hidden = true;
+    this.contentElem.style.maxHeight = '0';
   }
 }

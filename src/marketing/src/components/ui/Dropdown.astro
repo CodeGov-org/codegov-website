@@ -67,12 +67,10 @@ const { menuTriggerClassName, ariaLabel, id } = Astro.props;
       }
 
       menuTriggerBtn.addEventListener('click', () => {
-        console.log('Toggling dropdown', isOpen);
         isOpen = !isOpen;
 
         menuWrapper.classList.toggle('dropdown__menu--closed');
         menuTriggerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        console.log('isExpanded', menuTriggerBtn.getAttribute('aria-expanded'));
         menuChevron.classList.toggle('dropdown__chevron--open');
       });
 

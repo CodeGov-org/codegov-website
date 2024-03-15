@@ -5,7 +5,8 @@ export const ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'open',
+    loadComponent: () =>
+      import('./pages/proposal-list').then(m => m.ProposalListComponent),
   },
   {
     path: 'profile/edit',
@@ -14,24 +15,10 @@ export const ROUTES: Routes = [
     canActivate: [isAuthenticatedGuard],
   },
   {
-    path: 'open',
-    loadComponent: () =>
-      import('./pages/open-proposal-list').then(
-        m => m.OpenProposalListComponent,
-      ),
-  },
-  {
     path: 'open/:id',
     loadComponent: () =>
       import('./pages/open-proposal-details').then(
         m => m.OpenProposalDetailsComponent,
-      ),
-  },
-  {
-    path: 'closed',
-    loadComponent: () =>
-      import('./pages/closed-proposal-list').then(
-        m => m.ClosedProposalListComponent,
       ),
   },
   {
