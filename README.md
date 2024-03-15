@@ -331,15 +331,15 @@ To list open replica version management proposals:
 9. Verify that the proposals are synced
    - List all proposals
      ```bash
-     dfx canister call backend list_proposals '(opt record {})'
+     dfx canister call backend list_proposals '(record {})'
      ```
    - List only pending proposals:
      ```bash
-     dfx canister call backend list_proposals '(opt record { state = opt variant { in_progress }})'
+     dfx canister call backend list_proposals '(record { state = opt variant { in_progress }})'
      ```
    - List only completed proposals:
      ```bash
-     dfx canister call backend list_proposals '(opt record { state = opt variant { completed }})'
+     dfx canister call backend list_proposals '(record { state = opt variant { completed }})'
      ```
 10. You can also optionally verify the logs with:
     ```bash
@@ -371,15 +371,15 @@ To list open replica version management proposals:
 6. Verify that the proposals are synced
    - List all proposals
      ```bash
-     dfx canister call backend list_proposals '(opt record {})'
+     dfx canister call backend list_proposals '(record {})'
      ```
    - List only pending proposals:
      ```bash
-     dfx canister call backend list_proposals '(opt record { state = opt variant { in_progress }})'
+     dfx canister call backend list_proposals '(record { state = opt variant { in_progress }})'
      ```
    - List only completed proposals:
      ```bash
-     dfx canister call backend list_proposals '(opt record { state = opt variant { completed }})'
+     dfx canister call backend list_proposals '(record { state = opt variant { completed }})'
      ```
 7. You can also optionally verify the logs with:
    ```bash
