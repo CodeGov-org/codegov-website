@@ -1,8 +1,13 @@
 import { CommonModule, KeyValuePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 import { CardComponent } from '@cg/angular-ui';
 import { ReviewPeriodState } from '@cg/backend';
@@ -255,7 +260,7 @@ const LIST_FILTER = {
     }
   `,
 })
-export class ProposalListComponent implements OnInit {
+export class ProposalListComponent implements OnInit, OnDestroy {
   public proposalList$ = this.proposalService.currentProposalList$;
 
   public readonly filterForm: FormGroup;
@@ -263,6 +268,8 @@ export class ProposalListComponent implements OnInit {
 
   public readonly proposalTopic = ProposalTopic;
   public readonly linkBaseUrl = ProposalLinkBaseUrl;
+
+  private formSubscription?: Subscription;
 
   constructor(
     private readonly proposalService: ProposalService,
@@ -276,23 +283,29 @@ export class ProposalListComponent implements OnInit {
   public ngOnInit(): void {
     this.proposalService.loadProposalList({ in_progress: null });
 
-    this.filterForm.controls['filter'].valueChanges
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => {
-        let inputParam: ReviewPeriodState | undefined;
-        switch (this.filterForm.controls['filter'].value) {
-          case 'InReview':
-            inputParam = { in_progress: null };
-            break;
-          case 'Reviewed':
-            inputParam = { completed: null };
-            break;
-          case 'All':
-            inputParam = undefined;
-            break;
-        }
-        this.updateList(inputParam);
-      });
+    this.formSubscription = this.filterForm.controls[
+      'filter'
+    ].valueChanges.subscribe(() => {
+      let inputParam: ReviewPeriodState | undefined;
+      switch (this.filterForm.controls['filter'].value) {
+        case 'InReview':
+          inputParam = { in_progress: null };
+          break;
+        case 'Reviewed':
+          inputParam = { completed: null };
+          break;
+        case 'All':
+          inputParam = undefined;
+          break;
+      }
+      this.updateList(inputParam);
+    });
+  }
+
+  public ngOnDestroy(): void {
+    if (this.formSubscription) {
+      this.formSubscription.unsubscribe();
+    }
   }
 
   private async updateList(

@@ -5,18 +5,14 @@ export const ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'list',
+    loadComponent: () =>
+      import('./pages/proposal-list').then(m => m.ProposalListComponent),
   },
   {
     path: 'profile/edit',
     loadComponent: () =>
       import('./pages/profile-edit').then(m => m.ProfileEditComponent),
     canActivate: [isAuthenticatedGuard],
-  },
-  {
-    path: 'list',
-    loadComponent: () =>
-      import('./pages/proposal-list').then(m => m.ProposalListComponent),
   },
   {
     path: 'open/:id',
