@@ -1,20 +1,15 @@
 import { CommonModule, KeyValuePipe } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Subscription } from 'rxjs';
 
 import { CardComponent } from '@cg/angular-ui';
-import { ReviewPeriodState } from '@cg/backend';
 import { FormatDatePipe } from '~core/pipes';
 import {
   ProposalLinkBaseUrl,
   ProposalService,
+  ProposalState,
   ProposalTopic,
 } from '~core/state';
 import {
@@ -26,11 +21,21 @@ import {
   LabelDirective,
 } from '~core/ui';
 
-const LIST_FILTER = {
-  InReview: 'In Review',
-  Reviewed: 'Reviewed',
-  All: 'All',
+enum ReviewPeriodStateFilter {
+  InReview = 'InReview',
+  Reviewed = 'Reviewed',
+  All = 'All',
+}
+
+const reviewPeriodStateFilter = {
+  [ReviewPeriodStateFilter.InReview]: 'In Review',
+  [ReviewPeriodStateFilter.Reviewed]: 'Reviewed',
+  [ReviewPeriodStateFilter.All]: 'All',
 };
+
+interface FilterForm {
+  reviewPeriodState: FormControl<ReviewPeriodStateFilter>;
+}
 
 @Component({
   selector: 'app-proposal-list',
@@ -117,7 +122,7 @@ const LIST_FILTER = {
                 [id]="property.key"
                 [value]="property.key"
                 type="radio"
-                formControlName="filter"
+                formControlName="reviewPeriodState"
               />
               <label appLabel [for]="property.key">
                 {{ property.value }}
@@ -260,57 +265,46 @@ const LIST_FILTER = {
     }
   `,
 })
-export class ProposalListComponent implements OnInit, OnDestroy {
+export class ProposalListComponent {
   public proposalList$ = this.proposalService.currentProposalList$;
 
-  public readonly filterForm: FormGroup;
-  public readonly listFilter = LIST_FILTER;
+  public readonly filterForm: FormGroup<FilterForm>;
+  public readonly listFilter = reviewPeriodStateFilter;
 
   public readonly proposalTopic = ProposalTopic;
   public readonly linkBaseUrl = ProposalLinkBaseUrl;
 
-  private formSubscription?: Subscription;
-
-  constructor(
-    private readonly proposalService: ProposalService,
-    public readonly formBuilder: FormBuilder,
-  ) {
-    this.filterForm = this.formBuilder.group({
-      filter: ['InReview'],
+  constructor(private readonly proposalService: ProposalService) {
+    this.filterForm = new FormGroup<FilterForm>({
+      reviewPeriodState: new FormControl(ReviewPeriodStateFilter.InReview, {
+        nonNullable: true,
+      }),
     });
+
+    this.proposalService.loadProposalList(ProposalState.InProgress);
+
+    this.filterForm.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(formValue => {
+        this.onFilterFormUpdated(formValue.reviewPeriodState);
+      });
   }
 
-  public ngOnInit(): void {
-    this.proposalService.loadProposalList({ in_progress: null });
-
-    this.formSubscription = this.filterForm.controls[
-      'filter'
-    ].valueChanges.subscribe(() => {
-      let inputParam: ReviewPeriodState | undefined;
-      switch (this.filterForm.controls['filter'].value) {
-        case 'InReview':
-          inputParam = { in_progress: null };
-          break;
-        case 'Reviewed':
-          inputParam = { completed: null };
-          break;
-        case 'All':
-          inputParam = undefined;
-          break;
-      }
-      this.updateList(inputParam);
-    });
-  }
-
-  public ngOnDestroy(): void {
-    if (this.formSubscription) {
-      this.formSubscription.unsubscribe();
-    }
-  }
-
-  private async updateList(
-    inputParam: ReviewPeriodState | undefined,
+  private async onFilterFormUpdated(
+    formValue: ReviewPeriodStateFilter | undefined,
   ): Promise<void> {
+    let inputParam: ProposalState | undefined;
+
+    switch (formValue) {
+      case ReviewPeriodStateFilter.InReview:
+        inputParam = ProposalState.InProgress;
+        break;
+
+      case ReviewPeriodStateFilter.Reviewed:
+        inputParam = ProposalState.Completed;
+        break;
+    }
+
     await this.proposalService.loadProposalList(inputParam);
   }
 }

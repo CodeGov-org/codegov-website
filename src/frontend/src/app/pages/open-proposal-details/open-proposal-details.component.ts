@@ -187,7 +187,7 @@ export class OpenProposalDetailsComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.proposalService.loadProposalList({ in_progress: null });
+    this.proposalService.loadProposalList(ProposalState.InProgress);
   }
 
   public convertMarkdownToHTML(proposalSummary: string): string | null {

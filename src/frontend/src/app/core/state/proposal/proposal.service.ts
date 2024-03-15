@@ -1,15 +1,11 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, switchMap } from 'rxjs';
 
-import {
-  ListProposalsResponse,
-  ProposalResponse,
-  ReviewPeriodState,
-} from '@cg/backend';
+import { ListProposalsResponse } from '@cg/backend';
 import { BackendActorService } from '~core/services';
-import { isNil, optional } from '~core/utils';
+import { extractOkResponse, isNil, optional } from '~core/utils';
 import { mapProposalListResponse } from './proposal.mapper';
-import { Proposal } from './proposal.model';
+import { Proposal, ProposalState } from './proposal.model';
 
 const CACHE_TTL = 5_000;
 
@@ -45,16 +41,16 @@ export class ProposalService {
 
   constructor(private readonly actorService: BackendActorService) {}
 
-  public async loadProposalList(state?: ReviewPeriodState): Promise<void> {
+  public async loadProposalList(state?: ProposalState): Promise<void> {
     if (isNil(state)) {
       return await this.loadAllProposals();
     }
 
-    if ('in_progress' in state) {
+    if (ProposalState.InProgress) {
       return await this.loadOpenProposals();
     }
 
-    if ('completed' in state) {
+    if (ProposalState.Completed) {
       return await this.loadClosedProposals();
     }
   }
@@ -72,9 +68,7 @@ export class ProposalService {
     const getResponse = await this.actorService.list_proposals({
       state: optional({ in_progress: null }),
     });
-    this.currentProposalListSubject.next(
-      mapProposalListResponse(this.getProposalList(getResponse)),
-    );
+    this.currentProposalListSubject.next(this.getProposalList(getResponse));
     this.openProposalList = this.currentProposalListSubject.getValue();
     this.openProposalListLastLoaded = Date.now();
   }
@@ -87,9 +81,7 @@ export class ProposalService {
     const getResponse = await this.actorService.list_proposals({
       state: optional({ completed: null }),
     });
-    this.currentProposalListSubject.next(
-      mapProposalListResponse(this.getProposalList(getResponse)),
-    );
+    this.currentProposalListSubject.next(this.getProposalList(getResponse));
     this.closedProposalList = this.currentProposalListSubject.getValue();
     this.closedProposalListLastLoaded = Date.now();
   }
@@ -103,9 +95,7 @@ export class ProposalService {
     const getResponse = await this.actorService.list_proposals({
       state: [],
     });
-    this.currentProposalListSubject.next(
-      mapProposalListResponse(this.getProposalList(getResponse)),
-    );
+    this.currentProposalListSubject.next(this.getProposalList(getResponse));
     this.fullProposalList = this.currentProposalListSubject.getValue();
     this.fullProposalListLastLoaded = Date.now();
   }
@@ -121,13 +111,7 @@ export class ProposalService {
     return currentTime > cacheExpiryTime;
   }
 
-  private getProposalList(
-    getResponse: ListProposalsResponse,
-  ): ProposalResponse[] {
-    if ('err' in getResponse) {
-      throw new Error(`${getResponse.err.code}: ${getResponse.err.message}`);
-    }
-
-    return getResponse.ok.proposals;
+  private getProposalList(getResponse: ListProposalsResponse): Proposal[] {
+    return mapProposalListResponse(extractOkResponse(getResponse).proposals);
   }
 }
