@@ -10,9 +10,9 @@ $dark-ring-blur: 5px;
   }
 }
 
-$transition-duration: 0.2s;
-$transition-timing-function: ease-in-out;
+$transition-duration: 0.175s;
+$transition-timing-function: cubic-bezier(0, 0, 1, 1);
 
-@mixin transition($property) {
+@mixin quick-transition($property) {
   transition: $property $transition-duration $transition-timing-function;
 }

@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MenuCloseIconComponent } from './menu-close-icon.component';
+import { SidenavComponent } from './sidenav.component';
 
-describe('MenuCloseIconComponent', () => {
-  let component: MenuCloseIconComponent;
-  let fixture: ComponentFixture<MenuCloseIconComponent>;
+describe('SidenavComponent', () => {
+  let component: SidenavComponent;
+  let fixture: ComponentFixture<SidenavComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MenuCloseIconComponent],
+      imports: [SidenavComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(MenuCloseIconComponent);
+    fixture = TestBed.createComponent(SidenavComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -2,12 +2,18 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { GLOBAL_CONFIG, isLinkCategory } from '../../../../global-config';
-import { CollapsibleComponent } from '@cg/angular-ui';
 import {
-  HamburgerMenuIconComponent,
-  MenuCloseIconComponent,
-} from '~core/icons';
+  GLOBAL_CONFIG,
+  Link,
+  LinkCategory,
+  isLinkCategory,
+} from '../../../../global-config';
+import {
+  CollapsibleComponent,
+  SidenavComponent,
+  SidenavLink,
+  SidenavLinkCategory,
+} from '@cg/angular-ui';
 import { DropdownComponent } from '~core/ui';
 
 @Component({
@@ -19,8 +25,18 @@ import { DropdownComponent } from '~core/ui';
     RouterModule,
     DropdownComponent,
     CollapsibleComponent,
-    HamburgerMenuIconComponent,
-    MenuCloseIconComponent,
+    SidenavComponent,
+  ],
+  styles: [
+    `
+      @import '@cg/styles/common';
+
+      .sidenav {
+        @include lg {
+          display: none;
+        }
+      }
+    `,
   ],
   template: `
     <header class="navbar">
@@ -71,78 +87,18 @@ import { DropdownComponent } from '~core/ui';
             }
           </div>
 
-          <div class="navbar__mobile-nav-trigger">
-            <button
-              type="button"
-              class="navbar__mobile-nav-button"
-              (click)="onSidenavOpenClicked()"
-              aria-label="Open main menu"
-            >
-              <app-hamburger-menu-icon />
-            </button>
-          </div>
+          <cg-sidenav class="sidenav" homeUrl="/" [links]="sidenavLinks" />
         </nav>
-
-        <div
-          class="navbar__mobile-nav"
-          [ngClass]="{ 'navbar__mobile-nav--closed': !isSidenavOpen }"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div class="backdrop" (click)="onSidenavCloseClicked()"></div>
-
-          <div class="sidenav">
-            <div class="sidenav__header">
-              <a href="/" class="sidenav__brand">
-                <img
-                  class="sidenav__logo"
-                  src="assets/codegov-logo.png"
-                  alt="CodeGov Logo"
-                />
-
-                <span class="sidenav__company">codegov.org</span>
-              </a>
-
-              <button
-                type="button"
-                (click)="onSidenavCloseClicked()"
-                aria-label="Close menu"
-              >
-                <app-menu-close-icon />
-              </button>
-            </div>
-
-            <nav class="sidebar__nav">
-              @for (item of globalConfig.headerLinks; track item.title) {
-                @if (isLinkCategory(item)) {
-                  <cg-collapsible>
-                    <div slot="collapsibleTrigger">
-                      {{ item.title }}
-                    </div>
-
-                    <div slot="collapsibleContent">
-                      @for (subItem of item.children; track subItem.title) {
-                        <a [href]="subItem.url" class="sidenav__item">
-                          {{ subItem.title }}
-                        </a>
-                      }
-                    </div>
-                  </cg-collapsible>
-                } @else {
-                  <a [href]="item.url" class="sidenav__item">
-                    {{ item.title }}
-                  </a>
-                }
-              }
-            </nav>
-          </div>
-        </div>
       </div>
     </header>
   `,
 })
 export class PrimaryNavbarComponent {
   public globalConfig = GLOBAL_CONFIG;
+
+  public sidenavLinks = GLOBAL_CONFIG.headerLinks.map(
+    mapToSidenavLinkOrCategory,
+  );
 
   public isSidenavOpen = false;
 
@@ -155,4 +111,22 @@ export class PrimaryNavbarComponent {
   public onSidenavCloseClicked(): void {
     this.isSidenavOpen = false;
   }
+}
+
+function mapToSidenavLinkOrCategory(
+  link: Link | LinkCategory,
+): SidenavLink | SidenavLinkCategory {
+  return isLinkCategory(link)
+    ? {
+        title: link.title,
+        children: link.children.map(mapToSidenavLink),
+      }
+    : mapToSidenavLink(link);
+}
+
+function mapToSidenavLink(link: Link): SidenavLink {
+  return {
+    title: link.title,
+    url: link.url,
+  };
 }

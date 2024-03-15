@@ -1,17 +1,42 @@
 ---
 import codegovLogo from '../assets/codegov-logo.png';
-import MenuCloseIcon from './icons/MenuCloseIcon.astro';
-import HamburgerMenuIcon from './icons/HamburgerMenuIcon.astro';
-import Collapsible from './ui/Collapsible.astro';
 import Dropdown from './ui/Dropdown.astro';
 import { getGlobalConfigStory, isLinkCategory } from '../storyblok/api';
+import type {
+  LinkBlok,
+  LinkCategoryBlok,
+} from '../storyblok/types/bloks/navigation';
+import type {
+  SidenavLink,
+  SidenavLinkCategory,
+} from '@cg/ui/dist/types/components/sidenav/sidenav';
 
 const {
   content: { header_links },
 } = await getGlobalConfigStory();
+
+function mapToSidenavLinkOrCategory(
+  link: LinkCategoryBlok | LinkBlok,
+): SidenavLink | SidenavLinkCategory {
+  return isLinkCategory(link)
+    ? {
+        title: link.title,
+        children: link.children.map(mapToSidenavLink),
+      }
+    : mapToSidenavLink(link);
+}
+
+function mapToSidenavLink(link: LinkBlok): SidenavLink {
+  return {
+    title: link.title,
+    url: link.content.cached_url,
+  };
+}
+
+const sidenavLinks = header_links.map(mapToSidenavLinkOrCategory);
 ---
 
-<header class="navbar">
+<header class="navbar" data-sidenav-links={JSON.stringify(sidenavLinks)}>
   <div class="navbar__inner">
     <nav class="navbar__nav">
       <a href="/" class="navbar__brand">
@@ -51,101 +76,36 @@ const {
         }
       </div>
 
-      <div class="navbar__mobile-nav-trigger">
-        <button type="button" data-menu-open aria-label="Open main menu">
-          <HamburgerMenuIcon />
-        </button>
-      </div>
+      <cg-sidenav class="sidenav"></cg-sidenav>
     </nav>
-
-    <div
-      data-menu
-      class="navbar__mobile-nav navbar__mobile-nav--closed"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div class="backdrop" data-sidenav-backdrop></div>
-
-      <div class="sidenav">
-        <div class="sidenav__header">
-          <a href="/" class="sidenav__brand">
-            <img
-              class="sidenav__logo"
-              src={codegovLogo.src}
-              alt="CodeGov Logo"
-            />
-
-            <span class="sidenav__company">codegov.org</span>
-          </a>
-
-          <button type="button" data-menu-close aria-label="Close menu">
-            <MenuCloseIcon />
-          </button>
-        </div>
-
-        <nav class="sidebar__nav">
-          {
-            header_links.map(item =>
-              isLinkCategory(item) ? (
-                <div>
-                  <Collapsible>
-                    <Fragment slot="header">{item.title}</Fragment>
-
-                    <Fragment slot="body">
-                      {item.children.map(subItem => (
-                        <a
-                          href={subItem.content.cached_url}
-                          class="sidenav__item"
-                        >
-                          {subItem.title}
-                        </a>
-                      ))}
-                    </Fragment>
-                  </Collapsible>
-                </div>
-              ) : (
-                <a href={item.content.cached_url} class="sidenav__item">
-                  {item.title}
-                </a>
-              ),
-            )
-          }
-        </nav>
-      </div>
-    </div>
   </div>
 </header>
 
 <script>
-  const menuOpenBtn = document.querySelector('[data-menu-open]');
-  if (!menuOpenBtn) {
-    throw new Error('Could not find menu trigger');
+  const sidenavLinksElem = document.querySelector('[data-sidenav-links]');
+  if (!sidenavLinksElem) {
+    throw new Error('sidenav links element not found');
   }
 
-  const menuCloseBtn = document.querySelector('[data-menu-close]');
-  if (!menuCloseBtn) {
-    throw new Error('Could not find menu trigger');
+  const sidenavLinks = sidenavLinksElem.getAttribute('data-sidenav-links');
+  if (!sidenavLinks) {
+    throw new Error('sidenav links attribute not found');
   }
 
-  const menu = document.querySelector('[data-menu]');
-  if (!menu) {
-    throw new Error('Could not find menu');
+  const sidenav = document.querySelector('cg-sidenav');
+  if (!sidenav) {
+    throw new Error('sidenav element not found');
   }
 
-  const sidenavBackdrop = document.querySelector('[data-sidenav-backdrop]');
-  if (!sidenavBackdrop) {
-    throw new Error('Could not find sidenav backdrop');
-  }
-
-  menuOpenBtn.addEventListener('click', () => {
-    menu.classList.remove('navbar__mobile-nav--closed');
-  });
-
-  sidenavBackdrop.addEventListener('click', () => {
-    menu.classList.add('navbar__mobile-nav--closed');
-  });
-
-  menuCloseBtn.addEventListener('click', () => {
-    menu.classList.add('navbar__mobile-nav--closed');
-  });
+  sidenav.links = JSON.parse(sidenavLinks);
 </script>
+
+<style lang="scss">
+  @import '@cg/styles/common';
+
+  .sidenav {
+    @include lg {
+      display: none;
+    }
+  }
+</style>
