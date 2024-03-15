@@ -10,6 +10,8 @@ export class CollapsibleComponent {
   @State()
   public isOpen = false;
 
+  private contentElem!: HTMLDivElement;
+
   public async onTriggerClicked(): Promise<void> {
     this.isOpen = !this.isOpen;
 
@@ -19,8 +21,6 @@ export class CollapsibleComponent {
       await this.closeAnimation();
     }
   }
-
-  private contentElem!: HTMLDivElement;
 
   public render() {
     return (
