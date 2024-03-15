@@ -197,7 +197,7 @@ export class ProposalReviewEditComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.proposalService.loadOpenProposalList();
+    this.proposalService.loadProposalList(ProposalState.InProgress);
   }
 
   public canAddCommitForm(): boolean {

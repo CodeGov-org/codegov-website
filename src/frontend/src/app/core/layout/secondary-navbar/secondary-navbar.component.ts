@@ -110,24 +110,7 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
   template: `
     <nav class="secondary-navbar">
       <div class="secondary-navbar__inner">
-        <div class="secondary-navbar__left">
-          <a
-            class="secondary-navbar__link"
-            [routerLink]="['/open']"
-            routerLinkActive="active-link"
-            [routerLinkActiveOptions]="{ exact: false }"
-          >
-            Review period open
-          </a>
-          <a
-            class="secondary-navbar__link"
-            [routerLink]="['/closed']"
-            routerLinkActive="active-link"
-            [routerLinkActiveOptions]="{ exact: false }"
-          >
-            Review period closed
-          </a>
-        </div>
+        <div class="secondary-navbar__left"></div>
 
         <div class="secondary-navbar__right">
           @if (isAuthenticated$ | async) {
