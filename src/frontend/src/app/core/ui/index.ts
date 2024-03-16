@@ -1,5 +1,4 @@
 export * from './collapsible';
-export * from './copy-button';
 export * from './dropdown';
 export * from './form-field';
 export * from './form-validation-info';
