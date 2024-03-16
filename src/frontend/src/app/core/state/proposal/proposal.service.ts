@@ -46,11 +46,11 @@ export class ProposalService {
       return await this.loadAllProposals();
     }
 
-    if (ProposalState.InProgress) {
+    if (state === ProposalState.InProgress) {
       return await this.loadOpenProposals();
     }
 
-    if (ProposalState.Completed) {
+    if (state === ProposalState.Completed) {
       return await this.loadClosedProposals();
     }
   }
@@ -74,6 +74,7 @@ export class ProposalService {
   }
 
   private async loadClosedProposals(): Promise<void> {
+    console.log('load closed');
     if (this.isCached(this.closedProposalListLastLoaded)) {
       this.currentProposalListSubject.next(this.closedProposalList);
       return;
