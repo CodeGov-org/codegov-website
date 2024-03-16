@@ -1,46 +1,14 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { GLOBAL_CONFIG } from 'src/global-config';
 
-import { CardComponent } from '@cg/angular-ui';
+import { CardComponent, CopyToClipboardComponent } from '@cg/angular-ui';
 import { AnonymousProfile } from '~core/state';
-import { CopyButtonComponent } from '~core/ui';
 
 @Component({
   selector: 'app-anonymous-profile',
   standalone: true,
-  imports: [CopyButtonComponent, CardComponent],
+  imports: [CopyToClipboardComponent, CardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @import '@cg/styles/common';
-
-      .user-id {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-      }
-
-      .user-id__value {
-        overflow-x: auto;
-        white-space: nowrap;
-        border-radius: $border-radius;
-
-        margin-right: size(3);
-        @include px(3);
-        @include py(2);
-
-        border: $border-sm-size solid $slate-300;
-        color: $slate-900;
-        background-color: $white;
-
-        @include dark {
-          border-color: $slate-700;
-          background-color: $slate-950;
-          color: $slate-200;
-        }
-      }
-    `,
-  ],
   template: `
     <cg-card>
       <h2 class="h3" slot="cardTitle">Welcome to the CodeGov organisation</h2>
@@ -54,13 +22,7 @@ import { CopyButtonComponent } from '~core/ui';
 
         <p>When requested, provide this ID to a CodeGov admin:</p>
 
-        <div class="user-id">
-          <div class="user-id__value">
-            {{ userProfile.id }}
-          </div>
-
-          <app-copy-button [input]="userProfile.id"></app-copy-button>
-        </div>
+        <cg-copy-to-clipboard [value]="userProfile.id" />
 
         <p>
           If you're just here to look around, you don't need to do anything
