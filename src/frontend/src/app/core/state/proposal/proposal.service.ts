@@ -42,16 +42,13 @@ export class ProposalService {
   constructor(private readonly actorService: BackendActorService) {}
 
   public async loadProposalList(state?: ProposalState): Promise<void> {
-    if (isNil(state)) {
-      return await this.loadAllProposals();
-    }
-
-    if (ProposalState.InProgress) {
-      return await this.loadOpenProposals();
-    }
-
-    if (ProposalState.Completed) {
-      return await this.loadClosedProposals();
+    switch (state) {
+      case ProposalState.InProgress:
+        return await this.loadOpenProposals();
+      case ProposalState.Completed:
+        return await this.loadClosedProposals();
+      default:
+        return await this.loadAllProposals();
     }
   }
 
