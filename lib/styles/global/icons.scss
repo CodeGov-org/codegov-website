@@ -3,3 +3,27 @@
   height: 100%;
   fill: currentColor;
 }
+
+.icon-xs {
+  @extend %icon-xs;
+}
+
+.icon-sm {
+  @extend %icon-sm;
+}
+
+.icon-md {
+  @extend %icon-md;
+}
+
+.icon-lg {
+  @extend %icon-lg;
+}
+
+.icon-xl {
+  @extend %icon-xl;
+}
+
+.icon-xxl {
+  @extend %icon-xxl;
+}
