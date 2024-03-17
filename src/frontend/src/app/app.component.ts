@@ -46,7 +46,6 @@ import { SecondaryNavbarComponent } from '~core/layout';
       <main class="content-container">
         <router-outlet />
       </main>
-
       <cg-footer [links]="footerLinks" />
     </div>
   `,

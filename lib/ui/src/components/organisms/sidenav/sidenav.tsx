@@ -9,13 +9,7 @@ import {
   h,
 } from '@stencil/core';
 import { animation, reverseAnimation } from '../../../animations';
-import { NavLink, NavLinkCategory } from '../../../types';
-
-function isLinkCategory(
-  link: NavLinkCategory | NavLink,
-): link is NavLinkCategory {
-  return 'children' in link;
-}
+import { NavLink, NavLinkCategory, isLinkCategory } from '../../../types';
 
 const sidenavAnimation: PropertyIndexedKeyframes = {
   transform: ['translate3d(100%, 0, 0)', 'translate3d(0, 0, 0)'],

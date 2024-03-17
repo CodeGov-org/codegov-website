@@ -1,8 +1,5 @@
 ---
-import type {
-  FooterLink,
-  FooterLinkCategory,
-} from '@cg/ui/dist/types/components/organisms/footer/footer';
+import type { NavLink, NavLinkCategory } from '@cg/ui/dist/types';
 import { getGlobalConfigStory } from '../storyblok/api';
 import type {
   LinkBlok,
@@ -15,14 +12,14 @@ const {
 
 function mapToFooterLinkCategory(
   footerLink: LinkCategoryBlok,
-): FooterLinkCategory {
+): NavLinkCategory {
   return {
     title: footerLink.title,
     children: footerLink.children.map(link => mapToFooterLink(link)),
   };
 }
 
-function mapToFooterLink(footerLink: LinkBlok): FooterLink {
+function mapToFooterLink(footerLink: LinkBlok): NavLink {
   return {
     title: footerLink.title,
     url: footerLink.content.url,

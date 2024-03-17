@@ -7,7 +7,7 @@ const meta: Meta = {
 
   <script>
     document
-      .getElementById('navbar)
+      .getElementById('navbar')
       .links = [
         {
           title: 'URL #1',

@@ -43,7 +43,7 @@
 }
 
 .navbar__logo {
-  @extend %icon-xxl;
+  @include icon-xxl;
   margin-right: size(3);
 }
 
@@ -59,6 +59,8 @@
 .navbar__nav-item {
   color: $white;
   border-radius: $border-radius;
+  align-self: center;
+
   @include px(1);
   @include py(0);
 
