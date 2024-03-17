@@ -1,0 +1,29 @@
+@mixin dropdown-menu-item {
+  position: relative;
+  display: block;
+  text-align: left;
+  width: 100%;
+  white-space: nowrap;
+
+  @include px(4);
+  @include py(1);
+  font-weight: $font-weight-normal;
+
+  @include no-underline;
+
+  color: $slate-900;
+  @include dark {
+    color: $slate-300;
+  }
+
+  &:hover {
+    color: $white;
+    background-color: $primary-800;
+    cursor: pointer;
+
+    @include dark {
+      color: $slate-900;
+      background-color: $slate-200;
+    }
+  }
+}

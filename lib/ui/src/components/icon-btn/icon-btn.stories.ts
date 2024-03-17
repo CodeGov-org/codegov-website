@@ -1,21 +1,17 @@
 import { Meta, StoryObj } from '@storybook/html';
-import { IconBtnProps } from './icon-btn';
 
-type IconBtnMeta = Meta<IconBtnProps>;
-type IconBtnStory = StoryObj<IconBtnProps>;
-
-const meta: IconBtnMeta = {
+const meta: Meta = {
   title: 'UI/Icon Buttons',
   argTypes: {
-    label: {
+    ariaLabel: {
       control: { type: 'text' },
     },
   },
   args: {
-    label: 'Login',
+    ariaLabel: 'Login',
   },
   render: args => `
-    <cg-icon-btn label="${args.label}">
+    <cg-icon-btn label="${args.ariaLabel}">
       <cg-profile-icon/>
     </cg-icon-btn>
   `,
@@ -23,4 +19,4 @@ const meta: IconBtnMeta = {
 
 export default meta;
 
-export const Default: IconBtnStory = {};
+export const Default: StoryObj = {};

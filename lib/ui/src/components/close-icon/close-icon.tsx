@@ -1,9 +1,10 @@
-import { Component, h } from '@stencil/core';
+import { Component, ComponentInterface, h } from '@stencil/core';
 
 @Component({
   tag: 'cg-close-icon',
+  scoped: true,
 })
-export class CloseIconComponent {
+export class CloseIconComponent implements ComponentInterface {
   public render() {
     return (
       <svg class="icon" viewBox="0 0 16 16">

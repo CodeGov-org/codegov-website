@@ -1,9 +1,10 @@
-import { Component, h } from '@stencil/core';
+import { Component, ComponentInterface, h } from '@stencil/core';
 
 @Component({
   tag: 'cg-hamburger-icon',
+  scoped: true,
 })
-export class HamburgerIconComponent {
+export class HamburgerIconComponent implements ComponentInterface {
   public render() {
     return (
       <svg class="icon" viewBox="0 0 16 16">

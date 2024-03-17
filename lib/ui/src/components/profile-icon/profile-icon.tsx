@@ -2,6 +2,7 @@ import { Component, ComponentInterface, h } from '@stencil/core';
 
 @Component({
   tag: 'cg-profile-icon',
+  scoped: true,
 })
 export class ProfileIconComponent implements ComponentInterface {
   public render() {

@@ -1,0 +1,17 @@
+@import '~@cg/styles/common';
+
+:host-context(.dropdown) {
+  display: inline-block;
+  position: relative;
+}
+
+.dropdown__menu-container {
+  position: absolute;
+  left: 0;
+  margin-top: size(1);
+}
+
+.dropdown__menu-container--right {
+  right: 0;
+  left: auto;
+}

@@ -1,9 +1,6 @@
 import { Meta, StoryObj } from '@storybook/html';
 
-type SidenavMeta = Meta;
-type SidenavStory = StoryObj;
-
-const meta: SidenavMeta = {
+const meta: Meta = {
   title: 'UI/Sidenav',
   render: () => `
     <cg-sidenav id="sidenav" />
@@ -53,4 +50,4 @@ const meta: SidenavMeta = {
 
 export default meta;
 
-export const Default: SidenavStory = {};
+export const Default: StoryObj = {};

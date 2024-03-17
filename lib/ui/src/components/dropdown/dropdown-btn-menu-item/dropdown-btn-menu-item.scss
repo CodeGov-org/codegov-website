@@ -1,0 +1,5 @@
+@import '~@cg/styles/common';
+
+.dropdown-btn-menu-item {
+  @include dropdown-menu-item;
+}

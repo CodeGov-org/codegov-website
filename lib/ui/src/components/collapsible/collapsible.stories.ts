@@ -1,9 +1,6 @@
 import { Meta, StoryObj } from '@storybook/html';
 
-type CollapsibleMeta = Meta;
-type CollapsibleStory = StoryObj;
-
-const meta: CollapsibleMeta = {
+const meta: Meta = {
   title: 'UI/Collapsible',
   argTypes: {
     content: {
@@ -24,4 +21,4 @@ const meta: CollapsibleMeta = {
 
 export default meta;
 
-export const Default: CollapsibleStory = {};
+export const Default: StoryObj = {};
