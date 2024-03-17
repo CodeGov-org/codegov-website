@@ -3,7 +3,14 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLinkActive, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 
-import { IconBtnComponent } from '@cg/angular-ui';
+import {
+  IconBtnComponent,
+  DropdownComponent,
+  DropdownBtnMenuItemComponent,
+  DropdownLinkMenuItemComponent,
+  DropdownMenuComponent,
+  DropdownTriggerComponent,
+} from '@cg/angular-ui';
 import {
   LoginIconComponent,
   LogoutIconComponent,
@@ -11,7 +18,6 @@ import {
   EditIconComponent,
 } from '~core/icons';
 import { UserAuthService } from '~core/services';
-import { DropdownComponent, TooltipDirective } from '~core/ui';
 
 @Component({
   selector: 'app-secondary-navbar',
@@ -25,7 +31,10 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
     ProfileIconComponent,
     EditIconComponent,
     DropdownComponent,
-    TooltipDirective,
+    DropdownBtnMenuItemComponent,
+    DropdownLinkMenuItemComponent,
+    DropdownMenuComponent,
+    DropdownTriggerComponent,
     RouterLinkActive,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -114,43 +123,34 @@ import { DropdownComponent, TooltipDirective } from '~core/ui';
 
         <div class="secondary-navbar__right">
           @if (isAuthenticated$ | async) {
-            <app-dropdown
-              [showChevron]="false"
-              menuTriggerClassName="btn btn--icon"
-              ariaLabel="Open profile menu"
-              id="profile-menu"
-            >
-              <ng-container ngProjectAs="[menuTrigger]">
-                <app-profile-icon aria-hidden="true" />
-              </ng-container>
+            <cg-dropdown anchorAlign="right">
+              <cg-dropdown-trigger
+                [isIconBtn]="true"
+                btnLabel="Open profile menu"
+                slot="dropdownTrigger"
+              >
+                <app-profile-icon />
+              </cg-dropdown-trigger>
 
-              <ng-container ngProjectAs="[menu]">
-                <a
-                  [routerLink]="'/profile/edit'"
-                  class="dropdown__menu-item profile-menu__item"
-                  role="menuitem"
-                >
+              <cg-dropdown-menu slot="dropdownMenu">
+                <cg-dropdown-link-menu-item [routerLink]="'/profile/edit'">
                   <app-edit-icon
                     class="profile-menu__item-icon"
                     aria-hidden="true"
                   />
 
                   Edit profile
-                </a>
+                </cg-dropdown-link-menu-item>
 
-                <button
-                  (click)="onLogoutButtonClicked()"
-                  class="dropdown__menu-item profile-menu__item"
-                  role="menuitem"
-                >
+                <cg-dropdown-btn-menu-item (click)="onLogoutButtonClicked()">
                   <app-logout-icon
                     class="profile-menu__item-icon"
                     aria-hidden="true"
                   />
                   Logout
-                </button>
-              </ng-container>
-            </app-dropdown>
+                </cg-dropdown-btn-menu-item>
+              </cg-dropdown-menu>
+            </cg-dropdown>
           } @else {
             <cg-icon-btn (click)="onLoginButtonClicked()" label="Log in">
               <app-login-icon />

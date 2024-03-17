@@ -1,6 +1,5 @@
 ---
 import codegovLogo from '../assets/codegov-logo.png';
-import Dropdown from './ui/Dropdown.astro';
 import { getGlobalConfigStory, isLinkCategory } from '../storyblok/api';
 import type {
   LinkBlok,
@@ -47,26 +46,23 @@ const sidenavLinks = header_links.map(mapToSidenavLinkOrCategory);
 
       <div class="navbar__desktop-nav">
         {
-          header_links.map((item, i) =>
+          header_links.map(item =>
             isLinkCategory(item) ? (
-              <Dropdown
-                menuTriggerClassName={['navbar__nav-item']}
-                id={'navbar-menu-' + i}
-              >
-                <Fragment slot="menuTrigger">{item.title}</Fragment>
+              <cg-dropdown>
+                <cg-dropdown-trigger slot="dropdownTrigger">
+                  {item.title}
+                </cg-dropdown-trigger>
 
-                <Fragment slot="menu">
+                <cg-dropdown-menu slot="dropdownMenu">
                   {item.children.map(subItem => (
-                    <a
-                      role="menuitem"
+                    <cg-dropdown-link-menu-item
                       href={subItem.content.cached_url}
-                      class="dropdown__menu-item"
                     >
                       {subItem.title}
-                    </a>
+                    </cg-dropdown-link-menu-item>
                   ))}
-                </Fragment>
-              </Dropdown>
+                </cg-dropdown-menu>
+              </cg-dropdown>
             ) : (
               <a href={item.content.cached_url} class="navbar__nav-item">
                 {item.title}

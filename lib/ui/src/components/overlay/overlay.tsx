@@ -1,4 +1,12 @@
-import { Component, Element, Host, Prop, Watch, h } from '@stencil/core';
+import {
+  Component,
+  ComponentInterface,
+  Element,
+  Host,
+  Prop,
+  Watch,
+  h,
+} from '@stencil/core';
 import { animation, reverseAnimation } from '../../animations';
 
 const overlayAnimation: PropertyIndexedKeyframes = {
@@ -10,7 +18,7 @@ const overlayAnimation: PropertyIndexedKeyframes = {
   styleUrl: 'overlay.scss',
   scoped: true,
 })
-export class OverlayComponent {
+export class OverlayComponent implements ComponentInterface {
   @Prop()
   public isOpen = false;
 

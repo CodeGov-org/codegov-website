@@ -13,8 +13,11 @@ import {
   SidenavComponent,
   SidenavLink,
   SidenavLinkCategory,
+  DropdownComponent,
+  DropdownTriggerComponent,
+  DropdownMenuComponent,
+  DropdownLinkMenuItemComponent,
 } from '@cg/angular-ui';
-import { DropdownComponent } from '~core/ui';
 
 @Component({
   selector: 'app-primary-navbar',
@@ -24,6 +27,9 @@ import { DropdownComponent } from '~core/ui';
     CommonModule,
     RouterModule,
     DropdownComponent,
+    DropdownTriggerComponent,
+    DropdownMenuComponent,
+    DropdownLinkMenuItemComponent,
     CollapsibleComponent,
     SidenavComponent,
   ],
@@ -59,26 +65,19 @@ import { DropdownComponent } from '~core/ui';
               let i = $index
             ) {
               @if (isLinkCategory(item)) {
-                <app-dropdown
-                  menuTriggerClassName="navbar__nav-item"
-                  [id]="'navbar-menu-' + i"
-                >
-                  <ng-container ngProjectAs="[menuTrigger]">
+                <cg-dropdown>
+                  <cg-dropdown-trigger slot="dropdownTrigger">
                     {{ item.title }}
-                  </ng-container>
+                  </cg-dropdown-trigger>
 
-                  <ng-container ngProjectAs="[menu]">
+                  <cg-dropdown-menu slot="dropdownMenu">
                     @for (subItem of item.children; track subItem.title) {
-                      <a
-                        role="menuitem"
-                        [href]="subItem.url"
-                        class="dropdown__menu-item"
-                      >
+                      <cg-dropdown-link-menu-item [href]="subItem.url">
                         {{ subItem.title }}
-                      </a>
+                      </cg-dropdown-link-menu-item>
                     }
-                  </ng-container>
-                </app-dropdown>
+                  </cg-dropdown-menu>
+                </cg-dropdown>
               } @else {
                 <a [href]="item.url" class="navbar__nav-item">
                   {{ item.title }}
