@@ -1,34 +1,29 @@
-%icon {
+@mixin icon($size) {
   display: inline-block;
   height: auto;
+  width: size($size);
 }
 
-%icon-xs {
-  @extend %icon;
-  width: size(5);
+@mixin icon-xs {
+  @include icon(5);
 }
 
-%icon-sm {
-  @extend %icon;
-  width: size(6);
+@mixin icon-sm {
+  @include icon(6);
 }
 
-%icon-md {
-  @extend %icon;
-  width: size(7);
+@mixin icon-md {
+  @include icon(7);
 }
 
-%icon-lg {
-  @extend %icon;
-  width: size(8);
+@mixin icon-lg {
+  @include icon(8);
 }
 
-%icon-xl {
-  @extend %icon;
-  width: size(9);
+@mixin icon-xl {
+  @include icon(9);
 }
 
-%icon-xxl {
-  @extend %icon;
-  width: size(10);
+@mixin icon-xxl {
+  @include icon(10);
 }
