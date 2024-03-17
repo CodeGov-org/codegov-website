@@ -53,22 +53,6 @@ $btn-disabled-color: rgba($primary, 0.45);
   }
 }
 
-.btn--icon {
-  @include layer-20;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  height: size(9);
-  width: size(9);
-
-  font-size: initial;
-  line-height: initial;
-
-  color: $white;
-  border-radius: 50%;
-}
-
 .btn-group {
   display: flex;
   flex-direction: row;
@@ -84,7 +68,6 @@ $btn-disabled-color: rgba($primary, 0.45);
   position: absolute;
   left: 50%;
   top: 50%;
-  height: size(9);
-  width: size(9);
+  @extend %icon-xl;
   transform: translate(-50%, -50%);
 }

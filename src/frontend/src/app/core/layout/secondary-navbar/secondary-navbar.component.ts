@@ -10,11 +10,11 @@ import {
   DropdownLinkMenuItemComponent,
   DropdownMenuComponent,
   DropdownTriggerComponent,
+  ProfileIconComponent,
 } from '@cg/angular-ui';
 import {
   LoginIconComponent,
   LogoutIconComponent,
-  ProfileIconComponent,
   EditIconComponent,
 } from '~core/icons';
 import { UserAuthService } from '~core/services';
@@ -129,7 +129,7 @@ import { UserAuthService } from '~core/services';
                 btnLabel="Open profile menu"
                 slot="dropdownTrigger"
               >
-                <app-profile-icon />
+                <cg-profile-icon />
               </cg-dropdown-trigger>
 
               <cg-dropdown-menu slot="dropdownMenu">

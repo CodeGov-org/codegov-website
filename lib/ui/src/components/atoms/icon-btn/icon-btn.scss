@@ -8,7 +8,6 @@
   align-items: center;
   justify-content: center;
 
-  height: size(10);
-  width: size(10);
+  @extend %icon-xxl;
   border-radius: 50%;
 }

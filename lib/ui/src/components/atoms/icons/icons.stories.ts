@@ -7,7 +7,14 @@ const meta: Meta = {
   },
   argTypes: {
     class: {
-      options: ['icon-xs', 'icon-sm', 'icon-md', 'icon-lg', 'icon-xl'],
+      options: [
+        'icon-xs',
+        'icon-sm',
+        'icon-md',
+        'icon-lg',
+        'icon-xl',
+        'icon-xxl',
+      ],
       control: { type: 'select' },
     },
   },

@@ -5,31 +5,25 @@
 }
 
 .icon-xs {
-  display: inline-block;
-  width: size(5);
-  height: size(5);
+  @extend %icon-xs;
 }
 
 .icon-sm {
-  display: inline-block;
-  width: size(6);
-  height: size(6);
+  @extend %icon-sm;
 }
 
 .icon-md {
-  display: inline-block;
-  width: size(7);
-  height: size(7);
+  @extend %icon-md;
 }
 
 .icon-lg {
-  display: inline-block;
-  width: size(8);
-  height: size(8);
+  @extend %icon-lg;
 }
 
 .icon-xl {
-  display: inline-block;
-  width: size(9);
-  height: size(9);
+  @extend %icon-xl;
+}
+
+.icon-xxl {
+  @extend %icon-xxl;
 }
