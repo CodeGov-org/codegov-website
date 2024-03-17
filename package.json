@@ -17,6 +17,7 @@
     "cloc": "pnpx cloc --exclude-dir=node_modules,target,build,dist,.dfx,.docusaurus --exclude-ext=yaml,yml,md,toml,json ."
   },
   "dependencies": {
+    "@angular/core": "^17.0.8",
     "@dfinity/agent": "^1.0.1",
     "@dfinity/auth-client": "^1.0.1",
     "@dfinity/candid": "^1.0.1",
@@ -25,11 +26,10 @@
     "date-fns": "^3.2.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
+    "rxjs": "~7.8.1",
     "sanitize.css": "^13.0.0",
     "tslib": "^2.6.2",
-    "zone.js": "~0.14.2",
-    "@angular/core": "^17.0.8",
-    "rxjs": "~7.8.1"
+    "zone.js": "~0.14.2"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^17.0.8",
@@ -39,7 +39,7 @@
     "@angular-eslint/template-parser": "^17.2.0",
     "@angular/cli": "^17.0.8",
     "@angular/compiler-cli": "^17.0.8",
-    "@hadronous/pic": "~0.5.0",
+    "@hadronous/pic": "0.7.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

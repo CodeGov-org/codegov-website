@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { SocialLink, type _SERVICE } from '@cg/backend';
 import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
 import {
@@ -23,6 +23,10 @@ describe('User Profile', () => {
     const fixture = await setupBackendCanister(pic, currentDate);
     actor = fixture.actor;
     canisterId = fixture.canisterId;
+  });
+
+  afterEach(async () => {
+    await pic.tearDown();
   });
 
   it('should not allow the anonymous principal', async () => {
