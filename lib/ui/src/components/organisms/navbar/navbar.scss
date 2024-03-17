@@ -1,0 +1,100 @@
+@import '~@cg/styles/common';
+
+.navbar {
+  @include px(4);
+  @include py(3);
+  @include layer-30;
+
+  color: $white;
+  background-color: $primary-900;
+
+  @include dark {
+    color: $slate-300;
+    background-color: $slate-800;
+  }
+}
+
+.navbar__inner {
+  @include container;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.navbar__nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar__brand {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+
+  @include text-lg;
+
+  @include no-underline;
+
+  color: $white;
+  @include dark {
+    color: $slate-300;
+  }
+}
+
+.navbar__logo {
+  @extend %icon-xxl;
+  margin-right: size(3);
+}
+
+.navbar__desktop-nav {
+  display: none;
+  @include px(2);
+
+  @include lg {
+    display: flex;
+  }
+}
+
+.navbar__nav-item {
+  color: $white;
+  border-radius: $border-radius;
+  @include px(1);
+  @include py(0);
+
+  @include mx(1);
+  @include no-underline;
+
+  &:hover {
+    color: $slate-300;
+  }
+
+  @include dark {
+    color: $slate-300;
+
+    &:hover {
+      color: $slate-400;
+    }
+  }
+}
+
+.navbar__mobile-nav,
+.navbar__mobile-nav-trigger {
+  @include lg {
+    display: none;
+  }
+}
+
+.navbar__mobile-nav--closed {
+  display: none;
+}
+
+.navbar__mobile-nav-button {
+  padding: 0px;
+}
+
+.sidenav {
+  @include lg {
+    display: none;
+  }
+}

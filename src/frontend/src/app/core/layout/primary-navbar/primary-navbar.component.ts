@@ -11,8 +11,8 @@ import {
 import {
   CollapsibleComponent,
   SidenavComponent,
-  SidenavLink,
-  SidenavLinkCategory,
+  NavLink,
+  NavLinkCategory,
   DropdownComponent,
   DropdownTriggerComponent,
   DropdownMenuComponent,
@@ -54,7 +54,6 @@ import {
               src="assets/codegov-logo.png"
               alt="CodeGov Logo"
             />
-
             codegov.org
           </a>
 
@@ -114,7 +113,7 @@ export class PrimaryNavbarComponent {
 
 function mapToSidenavLinkOrCategory(
   link: Link | LinkCategory,
-): SidenavLink | SidenavLinkCategory {
+): NavLink | NavLinkCategory {
   return isLinkCategory(link)
     ? {
         title: link.title,
@@ -123,7 +122,7 @@ function mapToSidenavLinkOrCategory(
     : mapToSidenavLink(link);
 }
 
-function mapToSidenavLink(link: Link): SidenavLink {
+function mapToSidenavLink(link: Link): NavLink {
   return {
     title: link.title,
     url: link.url,

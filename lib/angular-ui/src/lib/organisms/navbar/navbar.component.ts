@@ -1,3 +1,5 @@
+import { defineCustomElement } from '@cg/ui/dist/components/cg-navbar';
+import { DefineCustomElement } from '../../define-custom-element';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -6,49 +8,43 @@ import {
   Input,
   NgZone,
 } from '@angular/core';
-
 import { Components } from '@cg/ui';
-import { NavLink, NavLinkCategory } from '@cg/ui/dist/types/';
-import { defineCustomElement } from '@cg/ui/dist/components/cg-sidenav';
-import { DefineCustomElement } from '../../define-custom-element';
 
 @DefineCustomElement(defineCustomElement)
 @Component({
-  selector: 'cg-sidenav',
+  selector: 'cg-navbar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-content />
   `,
 })
-export class SidenavComponent {
+export class NavbarComponent {
   @Input({ required: true })
-  public set homeUrl(value: Components.CgSidenav['homeUrl']) {
+  public set homeUrl(value: Components.CgNavbar['homeUrl']) {
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.homeUrl = value;
     });
   }
-  public get homeUrl(): Components.CgSidenav['homeUrl'] {
+  public get homeUrl(): Components.CgNavbar['homeUrl'] {
     return this.elementRef.nativeElement.homeUrl;
   }
 
   @Input({ required: true })
-  public set links(value: Components.CgSidenav['links']) {
+  public set links(value: Components.CgNavbar['links']) {
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.links = value;
     });
   }
-  public get links(): Components.CgSidenav['links'] {
+  public get links(): Components.CgNavbar['links'] {
     return this.elementRef.nativeElement.links;
   }
 
   constructor(
     private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
-    private readonly elementRef: ElementRef<Components.CgSidenav>,
+    private readonly elementRef: ElementRef<Components.CgNavbar>,
   ) {
     this.changeDetectorRef.detach();
   }
 }
-
-export { NavLink, NavLinkCategory };

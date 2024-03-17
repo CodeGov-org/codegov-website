@@ -9,20 +9,11 @@ import {
   h,
 } from '@stencil/core';
 import { animation, reverseAnimation } from '../../../animations';
-
-export interface SidenavLinkCategory {
-  title: string;
-  children: SidenavLink[];
-}
-
-export interface SidenavLink {
-  title: string;
-  url: string;
-}
+import { NavLink, NavLinkCategory } from '../../../types';
 
 function isLinkCategory(
-  link: SidenavLinkCategory | SidenavLink,
-): link is SidenavLinkCategory {
+  link: NavLinkCategory | NavLink,
+): link is NavLinkCategory {
   return 'children' in link;
 }
 
@@ -40,7 +31,7 @@ export class SidenavComponent implements ComponentInterface {
   public homeUrl = '/';
 
   @Prop()
-  public links: Array<SidenavLink | SidenavLinkCategory> = [];
+  public links: Array<NavLink | NavLinkCategory> = [];
 
   @State()
   public isOpen = false;
