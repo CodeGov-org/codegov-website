@@ -8,7 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { filter, map } from 'rxjs';
+import { Subscription, filter, map } from 'rxjs';
 
 import { CardComponent } from '@cg/angular-ui';
 import { ProposalService, ProposalState } from '~core/state';
@@ -108,7 +108,7 @@ interface ReviewCommitForm {
                       <input
                         appInput
                         [id]="'reviewed-yes-' + i"
-                        value="true"
+                        [value]="true"
                         type="radio"
                         formControlName="reviewed"
                       />
@@ -117,7 +117,7 @@ interface ReviewCommitForm {
                       <input
                         appInput
                         [id]="'reviewed-no-' + i"
-                        value="false"
+                        [value]="false"
                         type="radio"
                         formControlName="reviewed"
                       />
@@ -129,6 +129,82 @@ interface ReviewCommitForm {
                     </app-input-error>
                   </app-form-field>
                 </app-value-col>
+
+                <ng-container>
+                  <ng-container
+                    *ngIf="commitForm.controls.reviewed.value === true"
+                  >
+                    <app-key-col>
+                      <div>Matches description</div>
+                    </app-key-col>
+                    <app-value-col>
+                      <app-form-field>
+                        <div class="radio-group">
+                          <input
+                            appInput
+                            [id]="'matches-description-yes-' + i"
+                            [value]="true"
+                            type="radio"
+                            formControlName="matchesDescription"
+                          />
+                          <label
+                            appLabel
+                            [for]="'matches-description-yes-' + i"
+                          >
+                            Yes
+                          </label>
+
+                          <input
+                            appInput
+                            [id]="'matches-description-no-' + i"
+                            [value]="false"
+                            type="radio"
+                            formControlName="matchesDescription"
+                          />
+                          <label appLabel [for]="'matches-description-no-' + i">
+                            No
+                          </label>
+                        </div>
+
+                        <app-input-error key="required">
+                          Did the commit match the description?
+                        </app-input-error>
+                      </app-form-field>
+                    </app-value-col>
+
+                    <app-key-col>
+                      <label appLabel [for]="'summary-' + i">Summary</label>
+                    </app-key-col>
+                    <app-value-col>
+                      <app-form-field>
+                        <textarea
+                          appInput
+                          [id]="'summary-' + i"
+                          formControlName="summary"
+                        ></textarea>
+
+                        <app-input-error key="required">
+                          Summary cannot be empty
+                        </app-input-error>
+                      </app-form-field>
+                    </app-value-col>
+
+                    <app-key-col>
+                      <label appLabel [for]="'highlights-' + i">
+                        Highlights
+                      </label>
+                    </app-key-col>
+                    <app-value-col>
+                      <app-form-field>
+                        <textarea
+                          appInput
+                          [id]="'highlights-' + i"
+                          formControlName="highlights"
+                        ></textarea>
+                      </app-form-field>
+                    </app-value-col>
+                  </ng-container>
+                </ng-container>
               </app-key-value-grid>
 
               <div class="btn-group">
@@ -156,6 +232,7 @@ interface ReviewCommitForm {
 export class ProposalReviewEditComponent implements OnInit {
   public readonly reviewForm: FormGroup<ReviewForm>;
   public readonly commitForms: Array<FormGroup<ReviewCommitForm>> = [];
+  public readonly commitFormSubscriptions: Subscription[] = [];
 
   public readonly currentProposal$ = this.proposalService.currentProposal$;
 
@@ -206,25 +283,55 @@ export class ProposalReviewEditComponent implements OnInit {
 
   public addCommitForm(): void {
     if (this.canAddCommitForm()) {
-      this.commitForms.push(
-        new FormGroup<ReviewCommitForm>({
-          id: new FormControl(null, {
-            validators: [Validators.required],
-          }),
-          reviewed: new FormControl(null, {
-            validators: [Validators.required],
-          }),
-          // [TODO]: required if `reviewed` is true
-          matchesDescription: new FormControl(null),
-          // [TODO]: required if `reviewed` is true
-          summary: new FormControl(null),
-          highlights: new FormControl(null),
+      const commitForm = new FormGroup<ReviewCommitForm>({
+        id: new FormControl(null, {
+          validators: [Validators.required],
         }),
+        reviewed: new FormControl(null, {
+          validators: [Validators.required],
+        }),
+        matchesDescription: new FormControl(null),
+        summary: new FormControl(null),
+        highlights: new FormControl(null),
+      });
+
+      this.commitForms.push(commitForm);
+
+      const subscription = commitForm.controls.reviewed.valueChanges.subscribe(
+        reviewed => {
+          this.onCommitReviewedChange(reviewed, commitForm);
+        },
       );
+      this.commitFormSubscriptions.push(subscription);
     }
   }
 
   public removeCommitForm(index: number): void {
     this.commitForms.splice(index, 1);
+
+    const [subscription] = this.commitFormSubscriptions.splice(index, 1);
+    subscription.unsubscribe();
+  }
+
+  private onCommitReviewedChange(
+    reviewed: boolean | null | undefined,
+    commitForm: FormGroup<ReviewCommitForm>,
+  ): void {
+    const matchesDescription = commitForm.controls.matchesDescription;
+    const summary = commitForm.controls.summary;
+
+    if (reviewed === true) {
+      matchesDescription.addValidators(Validators.required);
+      summary.addValidators(Validators.required);
+    } else {
+      matchesDescription.removeValidators(Validators.required);
+      summary.removeValidators(Validators.required);
+
+      matchesDescription.reset();
+      summary.reset();
+    }
+
+    matchesDescription.updateValueAndValidity();
+    summary.updateValueAndValidity();
   }
 }
