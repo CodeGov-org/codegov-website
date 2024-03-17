@@ -17,7 +17,9 @@ export interface FooterLink {
 })
 export class FooterComponent {
   @Prop()
-  public links: FooterLinkCategory[] = [];
+  public links!: FooterLinkCategory[];
+
+  public currentYear = new Date().getFullYear();
 
   public render() {
     return (
@@ -43,7 +45,7 @@ export class FooterComponent {
         <div class="footer__copyright">
           <div class="footer__copyright-content">
             <span class="footer__copyright-text">
-              <slot name="footerCopyright" />
+              © {this.currentYear} CodeGov™. All Rights Reserved.
             </span>
           </div>
         </div>

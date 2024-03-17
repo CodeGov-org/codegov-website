@@ -1,37 +1,54 @@
 ---
+import type {
+  FooterLink,
+  FooterLinkCategory,
+} from '@cg/ui/dist/types/components/footer/footer';
 import { getGlobalConfigStory } from '../storyblok/api';
+import type {
+  LinkBlok,
+  LinkCategoryBlok,
+} from 'src/storyblok/types/bloks/navigation';
 
 const {
   content: { footer_links },
 } = await getGlobalConfigStory();
+
+function mapToFooterLinkCategory(
+  footerLink: LinkCategoryBlok,
+): FooterLinkCategory {
+  return {
+    title: footerLink.title,
+    children: footerLink.children.map(link => mapToFooterLink(link)),
+  };
+}
+
+function mapToFooterLink(footerLink: LinkBlok): FooterLink {
+  return {
+    title: footerLink.title,
+    url: footerLink.content.url,
+  };
+}
+
+const footerLinks = footer_links.map(mapToFooterLinkCategory);
 ---
 
-<footer class="footer">
-  <div class="footer__main">
-    {
-      footer_links.map(linkCategory => (
-        <div class="footer__link-category-container">
-          <h2 class="footer__link-category-title">{linkCategory.title}</h2>
+<cg-footer data-footer-links={JSON.stringify(footerLinks)}></cg-footer>
 
-          <ul class="footer__link-category">
-            {linkCategory.children.map(link => (
-              <li>
-                <a href={link.content.cached_url} class="footer__link">
-                  {link.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))
-    }
-  </div>
+<script>
+  const footerLinksElem = document.querySelector('[data-footer-links]');
+  if (!footerLinksElem) {
+    throw new Error('footer links element not found');
+  }
 
-  <div class="footer__copyright">
-    <div class="footer__copyright-content">
-      <span class="footer__copyright-text">
-        © {new Date().getFullYear()} CodeGov™. All Rights Reserved.
-      </span>
-    </div>
-  </div>
-</footer>
+  const footerLinks = footerLinksElem.getAttribute('data-footer-links');
+  if (!footerLinks) {
+    throw new Error('footer links attribute not found');
+  }
+
+  const footer = document.querySelector('cg-footer');
+  if (!footer) {
+    throw new Error('footer element not found');
+  }
+
+  footer.links = JSON.parse(footerLinks);
+</script>

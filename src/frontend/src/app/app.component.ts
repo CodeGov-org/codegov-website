@@ -47,16 +47,11 @@ import { PrimaryNavbarComponent, SecondaryNavbarComponent } from '~core/layout';
         <router-outlet />
       </main>
 
-      <cg-footer [links]="footerLinks">
-        <div slot="footerCopyright">
-          © {{ currentYear }} CodeGov™. All Rights Reserved.
-        </div>
-      </cg-footer>
+      <cg-footer [links]="footerLinks" />
     </div>
   `,
 })
 export class AppComponent {
   public globalConfig = GLOBAL_CONFIG;
   public footerLinks = GLOBAL_CONFIG.footerLinks;
-  public currentYear = new Date().getFullYear();
 }

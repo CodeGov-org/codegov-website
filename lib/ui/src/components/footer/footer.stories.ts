@@ -2,17 +2,9 @@ import { Meta, StoryObj } from '@storybook/html';
 
 const meta: Meta = {
   title: 'UI/Footer',
-  args: {
-    copyright: '© 2024 CodeGov™. All Rights Reserved.',
-  },
-  argTypes: {
-    copyright: {
-      control: { type: 'text' },
-    },
-  },
-  render: args => `
+
+  render: () => `
     <cg-footer id="footer">
-      <div slot="footerCopyright">${args.copyright}</div>
     </cg-footer>
 
     <script>
