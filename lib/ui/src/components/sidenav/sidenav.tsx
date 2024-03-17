@@ -1,4 +1,13 @@
-import { Component, Element, Host, Prop, State, Watch, h } from '@stencil/core';
+import {
+  Component,
+  ComponentInterface,
+  Element,
+  Host,
+  Prop,
+  State,
+  Watch,
+  h,
+} from '@stencil/core';
 import { animation, reverseAnimation } from '../../animations';
 
 export interface SidenavLinkCategory {
@@ -18,7 +27,7 @@ function isLinkCategory(
 }
 
 const sidenavAnimation: PropertyIndexedKeyframes = {
-  right: ['-100%', '0'],
+  transform: ['translate3d(100%, 0, 0)', 'translate3d(0, 0, 0)'],
 };
 
 @Component({
@@ -26,7 +35,7 @@ const sidenavAnimation: PropertyIndexedKeyframes = {
   styleUrl: 'sidenav.scss',
   scoped: true,
 })
-export class SidenavComponent {
+export class SidenavComponent implements ComponentInterface {
   @Prop()
   public homeUrl = '/';
 
@@ -54,7 +63,7 @@ export class SidenavComponent {
     return (
       <Host>
         <cg-icon-btn
-          label="Open menu"
+          ariaLabel="Open menu"
           onClick={() => {
             this.isOpen = true;
           }}
@@ -70,7 +79,7 @@ export class SidenavComponent {
         <div class="sidenav" ref={elem => this.setSidenavElem(elem)}>
           <cg-icon-btn
             class="sidenav__close-btn"
-            label="Close menu"
+            ariaLabel="Close menu"
             onClick={() => {
               this.isOpen = false;
             }}
@@ -120,7 +129,7 @@ export class SidenavComponent {
 
       this.sidenavElem.style.display = 'none';
       this.sidenavElem.hidden = true;
-      this.sidenavElem.style.right = '-100%';
+      this.sidenavElem.style.transform = 'translate3d(100%, 0, 0)';
     }
   }
 
@@ -130,7 +139,7 @@ export class SidenavComponent {
 
     await this.sidenavElem.animate(sidenavAnimation, animation).finished;
 
-    this.sidenavElem.style.right = '0';
+    this.sidenavElem.style.transform = 'translate3d(0, 0, 0)';
   }
 
   private async closeAnimation(): Promise<void> {
@@ -138,6 +147,6 @@ export class SidenavComponent {
 
     this.sidenavElem.style.display = 'none';
     this.sidenavElem.hidden = true;
-    this.sidenavElem.style.right = '-100%';
+    this.sidenavElem.style.transform = 'translate3d(100%, 0, 0)';
   }
 }

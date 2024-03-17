@@ -1,11 +1,11 @@
-import { Component, Host, h } from '@stencil/core';
+import { Component, ComponentInterface, Host, h } from '@stencil/core';
 
 @Component({
   tag: 'cg-card',
   styleUrl: 'card.scss',
   scoped: true,
 })
-export class CardComponent {
+export class CardComponent implements ComponentInterface {
   public render() {
     return (
       <Host class="card">

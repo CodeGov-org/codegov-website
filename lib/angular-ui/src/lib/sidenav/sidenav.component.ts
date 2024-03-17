@@ -26,22 +26,22 @@ import { DefineCustomElement } from '../define-custom-element';
 })
 export class SidenavComponent {
   @Input({ required: true })
-  public set homeUrl(value: string) {
+  public set homeUrl(value: Components.CgSidenav['homeUrl']) {
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.homeUrl = value;
     });
   }
-  public get homeUrl(): string {
+  public get homeUrl(): Components.CgSidenav['homeUrl'] {
     return this.elementRef.nativeElement.homeUrl;
   }
 
   @Input({ required: true })
-  public set links(value: Array<SidenavLink | SidenavLinkCategory>) {
+  public set links(value: Components.CgSidenav['links']) {
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.links = value;
     });
   }
-  public get links(): Array<SidenavLink | SidenavLinkCategory> {
+  public get links(): Components.CgSidenav['links'] {
     return this.elementRef.nativeElement.links;
   }
 

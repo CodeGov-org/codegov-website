@@ -1,9 +1,6 @@
 import { Meta, StoryObj } from '@storybook/html';
 
-type CardMeta = Meta;
-type CardStory = StoryObj;
-
-const meta: CardMeta = {
+const meta: Meta = {
   title: 'UI/Card',
   args: {
     title: 'Hello, World!',
@@ -27,4 +24,4 @@ const meta: CardMeta = {
 
 export default meta;
 
-export const Default: CardStory = {};
+export const Default: StoryObj = {};

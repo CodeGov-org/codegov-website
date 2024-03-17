@@ -1,34 +1,39 @@
 import { Component, ComponentInterface, Prop, State, h } from '@stencil/core';
-
-export interface IconBtnProps {
-  label: string;
-}
+import { AriaHasPopup, ButtonType } from '../../types';
 
 @Component({
   tag: 'cg-icon-btn',
   styleUrl: 'icon-btn.scss',
   scoped: true,
 })
-export class IconBtnComponent implements IconBtnProps, ComponentInterface {
+export class IconBtnComponent implements ComponentInterface {
   @Prop()
-  public label!: string;
+  public type: ButtonType = 'button';
 
-  public onFocused(): void {
-    this.isFocused = true;
-  }
+  @Prop({ reflect: true, attribute: 'aria-label' })
+  public ariaLabel!: string;
 
-  public onBlurred(): void {
-    this.isFocused = false;
-  }
+  @Prop({ reflect: true, attribute: 'aria-haspopup' })
+  public ariaHasPopup?: AriaHasPopup;
+
+  @Prop({ reflect: true, attribute: 'aria-expanded' })
+  public ariaExpanded?: boolean;
+
+  @Prop({ reflect: true, attribute: 'aria-controls' })
+  public ariaControls?: string;
 
   @State()
-  public isFocused = false;
+  private isFocused = false;
 
   public render() {
     return (
       <button
         class="icon-btn"
-        aria-label={this.label}
+        type={this.type}
+        aria-label={this.ariaLabel}
+        aria-haspopup={this.ariaHasPopup}
+        aria-expanded={this.ariaExpanded}
+        aria-controls={this.ariaControls}
         onFocus={() => this.onFocused()}
         onBlur={() => this.onBlurred()}
       >
@@ -37,5 +42,13 @@ export class IconBtnComponent implements IconBtnProps, ComponentInterface {
         <slot />
       </button>
     );
+  }
+
+  private onFocused(): void {
+    this.isFocused = true;
+  }
+
+  private onBlurred(): void {
+    this.isFocused = false;
   }
 }

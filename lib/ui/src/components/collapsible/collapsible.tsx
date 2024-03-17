@@ -1,4 +1,4 @@
-import { Component, Host, State, h } from '@stencil/core';
+import { Component, ComponentInterface, Host, State, h } from '@stencil/core';
 import { quickAnimation } from '../../animations';
 
 @Component({
@@ -6,7 +6,7 @@ import { quickAnimation } from '../../animations';
   styleUrl: 'collapsible.scss',
   scoped: true,
 })
-export class CollapsibleComponent {
+export class CollapsibleComponent implements ComponentInterface {
   @State()
   public isOpen = false;
 

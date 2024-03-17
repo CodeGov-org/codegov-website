@@ -13,6 +13,13 @@ $dark-ring-blur: 5px;
 $transition-duration: 0.175s;
 $transition-timing-function: cubic-bezier(0, 0, 1, 1);
 
-@mixin quick-transition($property) {
-  transition: $property $transition-duration $transition-timing-function;
+@mixin quick-transition($properties...) {
+  $transition-properties: '';
+  @each $property in $properties {
+    $transition-properties: $transition-properties + $property + ', ';
+  }
+  // Remove the last comma and space
+  $transition-properties: str-slice($transition-properties, 1, -3);
+
+  transition: #{$transition-properties} $transition-duration $transition-timing-function;
 }

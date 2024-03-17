@@ -1,24 +1,19 @@
-import { Component, Prop, State, h } from '@stencil/core';
+import { Component, ComponentInterface, Prop, State, h } from '@stencil/core';
 
 @Component({
   tag: 'cg-link-text-btn',
   styleUrl: 'link-text-btn.scss',
   scoped: true,
 })
-export class TextBtnComponent {
+export class TextBtnComponent implements ComponentInterface {
   @Prop()
   public href!: string;
 
-  public onFocused(): void {
-    this.isFocused = true;
-  }
-
-  public onBlurred(): void {
-    this.isFocused = false;
-  }
+  @Prop()
+  public isExternal? = false;
 
   @State()
-  public isFocused = false;
+  private isFocused = false;
 
   public render() {
     return (
@@ -27,11 +22,21 @@ export class TextBtnComponent {
         href={this.href}
         onFocus={() => this.onFocused()}
         onBlur={() => this.onBlurred()}
+        target={this.isExternal ? '_blank' : undefined}
+        rel={this.isExternal ? 'nofollow noreferrer' : undefined}
       >
         <cg-focus-ring isFocused={this.isFocused} />
 
         <slot />
       </a>
     );
+  }
+
+  private onFocused(): void {
+    this.isFocused = true;
+  }
+
+  private onBlurred(): void {
+    this.isFocused = false;
   }
 }

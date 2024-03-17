@@ -1,9 +1,6 @@
 import { Meta, StoryObj } from '@storybook/html';
 
-type TextBtnMeta = Meta;
-type TextBtnStory = StoryObj;
-
-const meta: TextBtnMeta = {
+const meta: Meta = {
   title: 'UI/Text Buttons',
   argTypes: {
     content: {
@@ -20,4 +17,4 @@ const meta: TextBtnMeta = {
 
 export default meta;
 
-export const Default: TextBtnStory = {};
+export const Default: StoryObj = {};

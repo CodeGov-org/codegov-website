@@ -1,11 +1,11 @@
-import { Component, Host, Prop, h } from '@stencil/core';
+import { Component, ComponentInterface, Host, Prop, h } from '@stencil/core';
 
 @Component({
   tag: 'cg-focus-ring',
   styleUrl: 'focus-ring.scss',
   scoped: true,
 })
-export class FocusRingComponent {
+export class FocusRingComponent implements ComponentInterface {
   @Prop()
   public isFocused = false;
 
