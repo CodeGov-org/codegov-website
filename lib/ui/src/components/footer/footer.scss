@@ -1,3 +1,5 @@
+@import '~@cg/styles/common';
+
 .footer {
   background-color: $white;
 
@@ -17,6 +19,34 @@
   flex-direction: column;
   @include md {
     flex-direction: row;
+  }
+}
+
+.footer__copyright {
+  background-color: $slate-100;
+
+  @include dark {
+    background-color: $slate-800;
+  }
+}
+
+.footer__copyright-content {
+  @include container;
+  @include px(4);
+  @include py(6);
+  margin: auto;
+
+  @include md {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.footer__copyright-text {
+  font-size: 0.875rem;
+
+  @include dark {
+    color: $slate-300;
   }
 }
 
@@ -56,33 +86,5 @@
 
   &:hover {
     text-decoration: underline;
-  }
-}
-
-.footer__copyright {
-  background-color: $slate-100;
-
-  @include dark {
-    background-color: $slate-800;
-  }
-}
-
-.footer__copyright-content {
-  @include container;
-  @include px(4);
-  @include py(6);
-  margin: auto;
-
-  @include md {
-    display: flex;
-    justify-content: center;
-  }
-}
-
-.footer__copyright-text {
-  font-size: 0.875rem;
-
-  @include dark {
-    color: $slate-300;
   }
 }
