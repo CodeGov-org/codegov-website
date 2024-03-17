@@ -15,6 +15,6 @@
 }
 
 .copy-to-clipboard__btn-icon {
-  @extend %icon-xs;
+  @include icon-xs;
   margin-right: size(2);
 }

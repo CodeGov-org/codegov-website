@@ -68,6 +68,6 @@ $btn-disabled-color: rgba($primary, 0.45);
   position: absolute;
   left: 50%;
   top: 50%;
-  @extend %icon-xl;
+  @include icon-xl;
   transform: translate(-50%, -50%);
 }

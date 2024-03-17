@@ -8,7 +8,7 @@
 .dropdown-trigger__chevron {
   display: flex;
   margin-left: size(2);
-  @extend %icon-xs;
+  @include icon-xs;
 
   transform: rotate(0deg);
   @include quick-transition(transform);

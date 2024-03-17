@@ -44,7 +44,7 @@
 
 .sidenav__brand-logo {
   display: inline-block;
-  @extend %icon-xxl;
+  @include icon-xxl;
 }
 
 .sidenav__brand-company {
