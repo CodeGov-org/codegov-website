@@ -46,7 +46,11 @@ export class Navbar {
               )}
             </div>
 
-            <cg-sidenav class="sidenav" homeUrl={this.homeUrl} links={this.links} />
+            <cg-sidenav
+              class="sidenav"
+              homeUrl={this.homeUrl}
+              links={this.links}
+            />
           </nav>
         </div>
         <slot />

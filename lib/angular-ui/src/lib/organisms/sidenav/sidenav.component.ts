@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 
 import { Components } from '@cg/ui';
-import { NavLink, NavLinkCategory } from '@cg/ui/dist/types/';
+import { NavLink, NavLinkCategory } from '@cg/ui/dist/types';
 import { defineCustomElement } from '@cg/ui/dist/components/cg-sidenav';
 import { DefineCustomElement } from '../../define-custom-element';
 
