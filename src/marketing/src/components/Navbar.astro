@@ -1,107 +1,54 @@
 ---
-import codegovLogo from '../assets/codegov-logo.png';
 import { getGlobalConfigStory, isLinkCategory } from '../storyblok/api';
 import type {
   LinkBlok,
   LinkCategoryBlok,
 } from '../storyblok/types/bloks/navigation';
-import type {
-  SidenavLink,
-  SidenavLinkCategory,
-} from '@cg/ui/dist/types/components/organisms/sidenav/sidenav';
+import type { NavLink, NavLinkCategory } from '@cg/ui/dist/types';
 
 const {
   content: { header_links },
 } = await getGlobalConfigStory();
 
-function mapToSidenavLinkOrCategory(
+function mapToLinkOrCategory(
   link: LinkCategoryBlok | LinkBlok,
-): SidenavLink | SidenavLinkCategory {
+): NavLink | NavLinkCategory {
   return isLinkCategory(link)
     ? {
         title: link.title,
-        children: link.children.map(mapToSidenavLink),
+        children: link.children.map(mapToLink),
       }
-    : mapToSidenavLink(link);
+    : mapToLink(link);
 }
 
-function mapToSidenavLink(link: LinkBlok): SidenavLink {
+function mapToLink(link: LinkBlok): NavLink {
   return {
     title: link.title,
     url: link.content.cached_url,
   };
 }
 
-const sidenavLinks = header_links.map(mapToSidenavLinkOrCategory);
+const navbarLinks = header_links.map(mapToLinkOrCategory);
 ---
 
-<header class="navbar" data-sidenav-links={JSON.stringify(sidenavLinks)}>
-  <div class="navbar__inner">
-    <nav class="navbar__nav">
-      <a href="/" class="navbar__brand">
-        <img class="navbar__logo" src={codegovLogo.src} alt="CodeGov Logo" />
-
-        codegov.org
-      </a>
-
-      <div class="navbar__desktop-nav">
-        {
-          header_links.map(item =>
-            isLinkCategory(item) ? (
-              <cg-dropdown>
-                <cg-dropdown-trigger slot="dropdownTrigger">
-                  {item.title}
-                </cg-dropdown-trigger>
-
-                <cg-dropdown-menu slot="dropdownMenu">
-                  {item.children.map(subItem => (
-                    <cg-dropdown-link-menu-item
-                      href={subItem.content.cached_url}
-                    >
-                      {subItem.title}
-                    </cg-dropdown-link-menu-item>
-                  ))}
-                </cg-dropdown-menu>
-              </cg-dropdown>
-            ) : (
-              <a href={item.content.cached_url} class="navbar__nav-item">
-                {item.title}
-              </a>
-            ),
-          )
-        }
-      </div>
-
-      <cg-sidenav class="sidenav"></cg-sidenav>
-    </nav>
-  </div>
-</header>
+<cg-navbar class="navbar" data-navbar-links={JSON.stringify(navbarLinks)}
+></cg-navbar>
 
 <script>
-  const sidenavLinksElem = document.querySelector('[data-sidenav-links]');
-  if (!sidenavLinksElem) {
-    throw new Error('sidenav links element not found');
+  const navbarLinksElem = document.querySelector('[data-navbar-links]');
+  if (!navbarLinksElem) {
+    throw new Error('navbar links element not found');
   }
 
-  const sidenavLinks = sidenavLinksElem.getAttribute('data-sidenav-links');
-  if (!sidenavLinks) {
-    throw new Error('sidenav links attribute not found');
+  const navbarLinks = navbarLinksElem.getAttribute('data-navbar-links');
+  if (!navbarLinks) {
+    throw new Error('navbar links attribute not found');
   }
 
-  const sidenav = document.querySelector('cg-sidenav');
-  if (!sidenav) {
-    throw new Error('sidenav element not found');
+  const navbar = document.querySelector('cg-navbar');
+  if (!navbar) {
+    throw new Error('navbar element not found');
   }
 
-  sidenav.links = JSON.parse(sidenavLinks);
+  navbar.links = JSON.parse(navbarLinks);
 </script>
-
-<style lang="scss">
-  @import '@cg/styles/common';
-
-  .sidenav {
-    @include lg {
-      display: none;
-    }
-  }
-</style>

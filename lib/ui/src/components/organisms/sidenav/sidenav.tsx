@@ -9,22 +9,7 @@ import {
   h,
 } from '@stencil/core';
 import { animation, reverseAnimation } from '../../../animations';
-
-export interface SidenavLinkCategory {
-  title: string;
-  children: SidenavLink[];
-}
-
-export interface SidenavLink {
-  title: string;
-  url: string;
-}
-
-function isLinkCategory(
-  link: SidenavLinkCategory | SidenavLink,
-): link is SidenavLinkCategory {
-  return 'children' in link;
-}
+import { NavLink, NavLinkCategory, isLinkCategory } from '../../../types';
 
 const sidenavAnimation: PropertyIndexedKeyframes = {
   transform: ['translate3d(100%, 0, 0)', 'translate3d(0, 0, 0)'],
@@ -40,7 +25,7 @@ export class SidenavComponent implements ComponentInterface {
   public homeUrl = '/';
 
   @Prop()
-  public links: Array<SidenavLink | SidenavLinkCategory> = [];
+  public links: Array<NavLink | NavLinkCategory> = [];
 
   @State()
   public isOpen = false;
