@@ -41,7 +41,7 @@
 }
 
 .navbar__logo {
-  @extend %icon-xxl;
+  @include icon-xxl;
   margin-right: size(3);
 }
 

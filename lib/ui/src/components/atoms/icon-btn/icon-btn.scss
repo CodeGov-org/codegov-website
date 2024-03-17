@@ -8,6 +8,6 @@
   align-items: center;
   justify-content: center;
 
-  @extend %icon-xxl;
+  @include icon-xxl;
   border-radius: 50%;
 }

@@ -5,25 +5,25 @@
 }
 
 .icon-xs {
-  @extend %icon-xs;
+  @include icon-xs;
 }
 
 .icon-sm {
-  @extend %icon-sm;
+  @include icon-sm;
 }
 
 .icon-md {
-  @extend %icon-md;
+  @include icon-md;
 }
 
 .icon-lg {
-  @extend %icon-lg;
+  @include icon-lg;
 }
 
 .icon-xl {
-  @extend %icon-xl;
+  @include icon-xl;
 }
 
 .icon-xxl {
-  @extend %icon-xxl;
+  @include icon-xxl;
 }
