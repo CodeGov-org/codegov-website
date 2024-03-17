@@ -36,45 +36,6 @@ import { PrimaryNavbarComponent, SecondaryNavbarComponent } from '~core/layout';
         padding-top: size(6);
         padding-bottom: size(10);
       }
-
-      .footer__link-category-container {
-        @include py(3);
-
-        @include md {
-          @include py(5);
-        }
-      }
-
-      .footer__link-category-title {
-        @include text-md;
-        font-weight: $font-weight-medium;
-        text-transform: uppercase;
-
-        color: $slate-900;
-        @include dark {
-          color: $white;
-        }
-      }
-
-      .footer__link-category {
-        list-style: none;
-        font-weight: $font-weight-medium;
-        padding: 0;
-        margin: 0;
-
-        color: $slate-500;
-        @include dark {
-          color: $slate-400;
-        }
-      }
-
-      .footer__link {
-        text-decoration: none;
-
-        &:hover {
-          text-decoration: underline;
-        }
-      }
     `,
   ],
   template: `
@@ -86,25 +47,7 @@ import { PrimaryNavbarComponent, SecondaryNavbarComponent } from '~core/layout';
         <router-outlet />
       </main>
 
-      <cg-footer>
-        <div slot="footerMain">
-          @for (category of globalConfig.footerLinks; track category.title) {
-            <div class="footer__link-category-container">
-              <h2 class="footer__link-category-title">{{ category.title }}</h2>
-
-              <ul class="footer__link-category">
-                @for (link of category.children; track link.title) {
-                  <li>
-                    <a href="{link.content.cached_url}" class="footer__link">
-                      {{ link.title }}
-                    </a>
-                  </li>
-                }
-              </ul>
-            </div>
-          }
-        </div>
-
+      <cg-footer [links]="footerLinks">
         <div slot="footerCopyright">
           © {{ currentYear }} CodeGov™. All Rights Reserved.
         </div>
@@ -114,6 +57,6 @@ import { PrimaryNavbarComponent, SecondaryNavbarComponent } from '~core/layout';
 })
 export class AppComponent {
   public globalConfig = GLOBAL_CONFIG;
-
+  public footerLinks = GLOBAL_CONFIG.footerLinks;
   public currentYear = new Date().getFullYear();
 }

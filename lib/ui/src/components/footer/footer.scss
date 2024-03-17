@@ -49,3 +49,42 @@
     color: $slate-300;
   }
 }
+
+.footer__link-category-container {
+  @include py(3);
+
+  @include md {
+    @include py(5);
+  }
+}
+
+.footer__link-category-title {
+  @include text-md;
+  font-weight: $font-weight-medium;
+  text-transform: uppercase;
+
+  color: $slate-900;
+  @include dark {
+    color: $white;
+  }
+}
+
+.footer__link-category {
+  list-style: none;
+  font-weight: $font-weight-medium;
+  padding: 0;
+  margin: 0;
+
+  color: $slate-500;
+  @include dark {
+    color: $slate-400;
+  }
+}
+
+.footer__link {
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
