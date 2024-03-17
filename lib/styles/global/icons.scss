@@ -3,3 +3,33 @@
   height: 100%;
   fill: currentColor;
 }
+
+.icon-xs {
+  display: inline-block;
+  width: size(5);
+  height: size(5);
+}
+
+.icon-sm {
+  display: inline-block;
+  width: size(6);
+  height: size(6);
+}
+
+.icon-md {
+  display: inline-block;
+  width: size(7);
+  height: size(7);
+}
+
+.icon-lg {
+  display: inline-block;
+  width: size(8);
+  height: size(8);
+}
+
+.icon-xl {
+  display: inline-block;
+  width: size(9);
+  height: size(9);
+}

@@ -1,4 +1,3 @@
-export * from './collapsible';
 export * from './form-field';
 export * from './form-validation-info';
 export * from './input';
