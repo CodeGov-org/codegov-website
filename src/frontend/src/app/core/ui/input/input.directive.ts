@@ -1,13 +1,18 @@
 import {
   Directive,
   ElementRef,
+  EventEmitter,
   HostBinding,
+  HostListener,
   Input,
   OnInit,
   Optional,
+  Output,
   SkipSelf,
 } from '@angular/core';
 import { AbstractControl, ControlContainer } from '@angular/forms';
+
+import { formHasError } from '../form-utils';
 
 @Directive({
   selector: '[appInput]',
@@ -32,7 +37,7 @@ export class InputDirective implements OnInit {
   @HostBinding('attr.aria-invalid')
   @HostBinding('class.input--invalid')
   public get hasError(): boolean {
-    return this.formControl?.invalid ?? false;
+    return formHasError(this.formControl);
   }
 
   @HostBinding('attr.aria-describedby')
@@ -42,6 +47,14 @@ export class InputDirective implements OnInit {
 
   @Input({ required: true })
   public formControlName!: string;
+
+  @Output()
+  public touchChange = new EventEmitter<void>();
+
+  @HostListener('blur')
+  public onBlur(): void {
+    this.touchChange.emit();
+  }
 
   private formControl: AbstractControl | null | undefined;
 

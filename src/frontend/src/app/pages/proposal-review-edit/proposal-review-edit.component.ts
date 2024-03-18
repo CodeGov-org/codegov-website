@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnInit,
+  QueryList,
+  ViewChildren,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormControl,
@@ -16,6 +23,7 @@ import {
   FormFieldComponent,
   InputDirective,
   InputErrorComponent,
+  InputHintComponent,
   KeyColComponent,
   KeyValueGridComponent,
   LabelDirective,
@@ -37,6 +45,12 @@ interface ReviewCommitForm {
   highlights: FormControl<string | null>;
 }
 
+const commitShaRegex = /[0-9a-f]{7,40}/;
+
+function extractCommitSha(commitSha: string): string | null {
+  return commitShaRegex.exec(commitSha)?.[0] ?? null;
+}
+
 @Component({
   selector: 'app-proposal-review-edit',
   standalone: true,
@@ -51,6 +65,7 @@ interface ReviewCommitForm {
     FormFieldComponent,
     InputDirective,
     InputErrorComponent,
+    InputHintComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -87,15 +102,45 @@ interface ReviewCommitForm {
             <div slot="cardContent">
               <app-key-value-grid>
                 <app-key-col>
-                  <label appLabel [for]="'id-' + i">Commit hash (Id)</label>
+                  <label appLabel [for]="'id-' + i">Commit hash</label>
                 </app-key-col>
                 <app-value-col>
                   <app-form-field>
-                    <input appInput [id]="'id-' + i" formControlName="id" />
+                    <input
+                      appInput
+                      [id]="'id-' + i"
+                      formControlName="id"
+                      autocomplete="off"
+                      #commitShaInput
+                    />
 
                     <app-input-error key="required">
-                      Commit hash (Id) cannot be empty
+                      Commit hash cannot be empty.
                     </app-input-error>
+
+                    <app-input-error key="pattern">
+                      Please enter a valid commit hash.
+                    </app-input-error>
+
+                    <app-input-hint>
+                      @if (commitForm.controls.id.value) {
+                        <a
+                          [href]="
+                            'https://github.com/dfinity/ic/commit/' +
+                            commitForm.controls.id.value
+                          "
+                          target="_blank"
+                          rel="nofollow noreferrer"
+                        >
+                          https://github.com/dfinity/ic/commit/{{
+                            commitForm.controls.id.value
+                          }}
+                        </a>
+                      } @else {
+                        Enter a short or long commit hash/id/sha, or a GitHub
+                        URL to the commit.
+                      }
+                    </app-input-hint>
                   </app-form-field>
                 </app-value-col>
 
@@ -108,6 +153,7 @@ interface ReviewCommitForm {
                       <input
                         appInput
                         [id]="'reviewed-yes-' + i"
+                        [attr.name]="'reviewed-' + i"
                         [value]="true"
                         type="radio"
                         formControlName="reviewed"
@@ -117,6 +163,7 @@ interface ReviewCommitForm {
                       <input
                         appInput
                         [id]="'reviewed-no-' + i"
+                        [attr.name]="'reviewed-' + i"
                         [value]="false"
                         type="radio"
                         formControlName="reviewed"
@@ -143,6 +190,7 @@ interface ReviewCommitForm {
                           <input
                             appInput
                             [id]="'matches-description-yes-' + i"
+                            [attr.name]="'matches-description-' + i"
                             [value]="true"
                             type="radio"
                             formControlName="matchesDescription"
@@ -157,6 +205,7 @@ interface ReviewCommitForm {
                           <input
                             appInput
                             [id]="'matches-description-no-' + i"
+                            [attr.name]="'matches-description-' + i"
                             [value]="false"
                             type="radio"
                             formControlName="matchesDescription"
@@ -181,10 +230,11 @@ interface ReviewCommitForm {
                           appInput
                           [id]="'summary-' + i"
                           formControlName="summary"
+                          autocomplete="off"
                         ></textarea>
 
                         <app-input-error key="required">
-                          Summary cannot be empty
+                          Summary cannot be empty.
                         </app-input-error>
                       </app-form-field>
                     </app-value-col>
@@ -200,6 +250,7 @@ interface ReviewCommitForm {
                           appInput
                           [id]="'highlights-' + i"
                           formControlName="highlights"
+                          autocomplete="off"
                         ></textarea>
                       </app-form-field>
                     </app-value-col>
@@ -232,9 +283,13 @@ interface ReviewCommitForm {
 export class ProposalReviewEditComponent implements OnInit {
   public readonly reviewForm: FormGroup<ReviewForm>;
   public readonly commitForms: Array<FormGroup<ReviewCommitForm>> = [];
-  public readonly commitFormSubscriptions: Subscription[] = [];
+  public readonly commitFormReviewedSubscriptions: Subscription[] = [];
+  public readonly commitShaSubscriptions: Subscription[] = [];
 
   public readonly currentProposal$ = this.proposalService.currentProposal$;
+
+  @ViewChildren('commitShaInput')
+  public readonly commitShaInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   private readonly proposalIdFromRoute$ = this.route.params.pipe(
     map(params => {
@@ -285,7 +340,7 @@ export class ProposalReviewEditComponent implements OnInit {
     if (this.canAddCommitForm()) {
       const commitForm = new FormGroup<ReviewCommitForm>({
         id: new FormControl(null, {
-          validators: [Validators.required],
+          validators: [Validators.required, Validators.pattern(commitShaRegex)],
         }),
         reviewed: new FormControl(null, {
           validators: [Validators.required],
@@ -297,20 +352,38 @@ export class ProposalReviewEditComponent implements OnInit {
 
       this.commitForms.push(commitForm);
 
-      const subscription = commitForm.controls.reviewed.valueChanges.subscribe(
-        reviewed => {
+      const reviewedSubscription =
+        commitForm.controls.reviewed.valueChanges.subscribe(reviewed => {
           this.onCommitReviewedChange(reviewed, commitForm);
-        },
-      );
-      this.commitFormSubscriptions.push(subscription);
+        });
+      this.commitFormReviewedSubscriptions.push(reviewedSubscription);
+
+      const commitShaSubscription =
+        commitForm.controls.id.valueChanges.subscribe(commitSha => {
+          this.onCommitShaChange(commitSha, commitForm);
+        });
+      this.commitShaSubscriptions.push(commitShaSubscription);
+
+      this.focusCommitShaInput(this.commitForms.length - 1);
     }
   }
 
   public removeCommitForm(index: number): void {
     this.commitForms.splice(index, 1);
 
-    const [subscription] = this.commitFormSubscriptions.splice(index, 1);
-    subscription.unsubscribe();
+    const [reviewedSubscription] = this.commitFormReviewedSubscriptions.splice(
+      index,
+      1,
+    );
+    reviewedSubscription.unsubscribe();
+
+    const [commitShaSubscription] = this.commitShaSubscriptions.splice(
+      index,
+      1,
+    );
+    commitShaSubscription.unsubscribe();
+
+    this.focusCommitShaInput(Math.min(index, this.commitForms.length - 1));
   }
 
   private onCommitReviewedChange(
@@ -333,5 +406,28 @@ export class ProposalReviewEditComponent implements OnInit {
 
     matchesDescription.updateValueAndValidity();
     summary.updateValueAndValidity();
+  }
+
+  private onCommitShaChange(
+    commitSha: string | null | undefined,
+    commitForm: FormGroup<ReviewCommitForm>,
+  ): void {
+    if (!commitSha) {
+      return;
+    }
+
+    const result = extractCommitSha(commitSha);
+
+    if (!result) {
+      return;
+    }
+
+    commitForm.controls.id.setValue(result, { emitEvent: false });
+  }
+
+  private focusCommitShaInput(index: number): void {
+    setTimeout(() => {
+      this.commitShaInputs.get(index)?.nativeElement.focus();
+    }, 0);
   }
 }
