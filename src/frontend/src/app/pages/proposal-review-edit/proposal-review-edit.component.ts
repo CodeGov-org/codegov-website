@@ -17,7 +17,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, filter, map } from 'rxjs';
 
-import { CardComponent } from '@cg/angular-ui';
+import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
 import { ProposalService, ProposalState } from '~core/state';
 import {
   FormFieldComponent,
@@ -39,8 +39,8 @@ interface ReviewForm {
 
 interface ReviewCommitForm {
   id: FormControl<string | null>;
-  reviewed: FormControl<boolean | null>;
-  matchesDescription: FormControl<boolean | null>;
+  reviewed: FormControl<0 | 1 | null>;
+  matchesDescription: FormControl<0 | 1 | null>;
   summary: FormControl<string | null>;
   highlights: FormControl<string | null>;
 }
@@ -66,6 +66,7 @@ function extractCommitSha(commitSha: string): string | null {
     InputDirective,
     InputErrorComponent,
     InputHintComponent,
+    RadioInputComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -150,25 +151,23 @@ function extractCommitSha(commitSha: string): string | null {
                 <app-value-col>
                   <app-form-field>
                     <div class="radio-group">
-                      <input
+                      <cg-radio-input
                         appInput
-                        [id]="'reviewed-yes-' + i"
-                        [attr.name]="'reviewed-' + i"
-                        [value]="true"
-                        type="radio"
+                        [value]="1"
                         formControlName="reviewed"
-                      />
-                      <label appLabel [for]="'reviewed-yes-' + i">Yes</label>
+                        [attr.name]="'reviewed-' + i"
+                      >
+                        Yes
+                      </cg-radio-input>
 
-                      <input
+                      <cg-radio-input
                         appInput
-                        [id]="'reviewed-no-' + i"
-                        [attr.name]="'reviewed-' + i"
-                        [value]="false"
-                        type="radio"
+                        [value]="0"
                         formControlName="reviewed"
-                      />
-                      <label appLabel [for]="'reviewed-no-' + i">No</label>
+                        [attr.name]="'reviewed-' + i"
+                      >
+                        No
+                      </cg-radio-input>
                     </div>
 
                     <app-input-error key="required">
@@ -179,7 +178,7 @@ function extractCommitSha(commitSha: string): string | null {
 
                 <ng-container>
                   <ng-container
-                    *ngIf="commitForm.controls.reviewed.value === true"
+                    *ngIf="commitForm.controls.reviewed.value === 1"
                   >
                     <app-key-col>
                       <div>Matches description</div>
@@ -187,32 +186,23 @@ function extractCommitSha(commitSha: string): string | null {
                     <app-value-col>
                       <app-form-field>
                         <div class="radio-group">
-                          <input
+                          <cg-radio-input
                             appInput
-                            [id]="'matches-description-yes-' + i"
-                            [attr.name]="'matches-description-' + i"
-                            [value]="true"
-                            type="radio"
+                            [value]="1"
                             formControlName="matchesDescription"
-                          />
-                          <label
-                            appLabel
-                            [for]="'matches-description-yes-' + i"
+                            [attr.name]="'matches-description-' + i"
                           >
                             Yes
-                          </label>
+                          </cg-radio-input>
 
-                          <input
+                          <cg-radio-input
                             appInput
-                            [id]="'matches-description-no-' + i"
-                            [attr.name]="'matches-description-' + i"
-                            [value]="false"
-                            type="radio"
+                            [value]="0"
                             formControlName="matchesDescription"
-                          />
-                          <label appLabel [for]="'matches-description-no-' + i">
+                            [attr.name]="'matches-description-' + i"
+                          >
                             No
-                          </label>
+                          </cg-radio-input>
                         </div>
 
                         <app-input-error key="required">
@@ -354,7 +344,7 @@ export class ProposalReviewEditComponent implements OnInit {
 
       const reviewedSubscription =
         commitForm.controls.reviewed.valueChanges.subscribe(reviewed => {
-          this.onCommitReviewedChange(reviewed, commitForm);
+          this.onCommitReviewedChange(reviewed === 1, commitForm);
         });
       this.commitFormReviewedSubscriptions.push(reviewedSubscription);
 
@@ -387,13 +377,13 @@ export class ProposalReviewEditComponent implements OnInit {
   }
 
   private onCommitReviewedChange(
-    reviewed: boolean | null | undefined,
+    reviewed: boolean,
     commitForm: FormGroup<ReviewCommitForm>,
   ): void {
     const matchesDescription = commitForm.controls.matchesDescription;
     const summary = commitForm.controls.summary;
 
-    if (reviewed === true) {
+    if (reviewed) {
       matchesDescription.addValidators(Validators.required);
       summary.addValidators(Validators.required);
     } else {

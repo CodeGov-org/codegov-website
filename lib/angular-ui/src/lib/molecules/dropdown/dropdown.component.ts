@@ -9,7 +9,6 @@ import {
 
 import { defineCustomElement } from '@cg/ui/dist/components/cg-dropdown';
 import { DefineCustomElement } from '../../define-custom-element';
-import { Components } from '@cg/ui';
 
 @DefineCustomElement(defineCustomElement)
 @Component({
@@ -22,19 +21,19 @@ import { Components } from '@cg/ui';
 })
 export class DropdownComponent {
   @Input()
-  public set anchorAlign(value: Components.CgDropdown['anchorAlign']) {
+  public set anchorAlign(value: HTMLCgDropdownElement['anchorAlign']) {
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.anchorAlign = value;
     });
   }
-  public get anchorAlign(): Components.CgDropdown['anchorAlign'] {
+  public get anchorAlign(): HTMLCgDropdownElement['anchorAlign'] {
     return this.elementRef.nativeElement.anchorAlign;
   }
 
   constructor(
     private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
-    private readonly elementRef: ElementRef<Components.CgDropdown>,
+    private readonly elementRef: ElementRef<HTMLCgDropdownElement>,
   ) {
     this.changeDetectorRef.detach();
   }

@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { DefineCustomElement } from '../../define-custom-element';
 import { defineCustomElement } from '@cg/ui/dist/components/cg-footer';
-import { Components } from '@cg/ui';
 
 @DefineCustomElement(defineCustomElement)
 @Component({
@@ -21,19 +20,19 @@ import { Components } from '@cg/ui';
 })
 export class FooterComponent {
   @Input({ required: true })
-  public set links(value: Components.CgFooter['links']) {
+  public set links(value: HTMLCgFooterElement['links']) {
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.links = value;
     });
   }
-  public get links(): Components.CgFooter['links'] {
+  public get links(): HTMLCgFooterElement['links'] {
     return this.elementRef.nativeElement.links;
   }
 
   constructor(
     private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
-    private readonly elementRef: ElementRef<Components.CgFooter>,
+    private readonly elementRef: ElementRef<HTMLCgFooterElement>,
   ) {
     this.changeDetectorRef.detach();
   }

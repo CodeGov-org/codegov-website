@@ -72,10 +72,11 @@ export class SidenavComponent implements ComponentInterface {
             <cg-close-icon />
           </cg-icon-btn>
 
-          <cg-link-text-btn href={this.homeUrl} class="sidenav__brand">
-            <cg-logo-icon class="sidenav__brand-logo" aria-hidden />
-
-            <span class="sidenav__brand-company">codegov.org</span>
+          <cg-link-text-btn href={this.homeUrl}>
+            <span class="sidenav__brand">
+              <cg-logo-icon class="sidenav__brand-logo" aria-hidden />
+              codegov.org
+            </span>
           </cg-link-text-btn>
 
           <nav class="sidebar__nav">

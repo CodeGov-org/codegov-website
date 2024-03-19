@@ -1,0 +1,95 @@
+@import '~@cg/styles/common';
+
+$radio-border-gap: size(1.5);
+$radio-outer-size: size(6);
+
+:host-context(.input--invalid) {
+  .radio-input__input {
+    border-color: $error;
+
+    &:focus {
+      border-color: $error;
+    }
+  }
+
+  .radio-input__label {
+    color: $error;
+  }
+}
+
+.radio-input__input-container {
+  position: relative;
+  display: inline-block;
+  width: $radio-outer-size;
+  height: $radio-outer-size;
+}
+
+.radio-input__focus-ring-container {
+  position: absolute;
+  border-radius: 50%;
+  top: -$radio-border-gap;
+  left: -$radio-border-gap;
+  right: -$radio-border-gap;
+  bottom: -$radio-border-gap;
+}
+
+.radio-input__input {
+  appearance: none;
+  outline: none;
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+
+  border: $border-lg-size solid $slate-400;
+  @include dark {
+    border-color: $slate-500;
+  }
+
+  color: $slate-900;
+  @include dark {
+    color: $slate-200;
+  }
+
+  background-color: $white;
+  @include dark {
+    background-color: $slate-950;
+  }
+
+  &::after {
+    content: '';
+    display: block;
+    border-radius: 50%;
+    background-color: $primary;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    transform: scale3d(0, 0, 0);
+    @include quick-transition(transform);
+  }
+
+  &:checked {
+    border-color: $primary-800;
+
+    &::after {
+      transform: scale3d(1, 1, 1);
+    }
+  }
+}
+
+.radio-input__label {
+  padding-left: size(1.5);
+  padding-right: size(3);
+
+  color: $black;
+  @include dark {
+    color: $white;
+  }
+}

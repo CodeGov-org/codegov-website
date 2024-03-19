@@ -1,4 +1,5 @@
 export * from './card/index';
 export * from './icon-btn/index';
 export * from './icons/index';
+export * from './radio-input/index';
 export * from './text-btn/index';

@@ -33,24 +33,11 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  color: $white;
-
-  @include no-underline;
-
-  @include dark {
-    color: $slate-300;
-  }
 }
 
 .sidenav__brand-logo {
-  display: inline-block;
   @include icon-xxl;
-}
-
-.sidenav__brand-company {
-  margin-left: size(3);
-  font-size: 1.125rem;
-  font-weight: $font-weight-medium;
+  margin-right: size(3);
 }
 
 .sidebar__nav {
