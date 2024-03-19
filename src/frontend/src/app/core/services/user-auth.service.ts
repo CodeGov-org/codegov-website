@@ -3,9 +3,11 @@ import { Injectable } from '@angular/core';
 import { IcAuthService } from '@hadronous/ic-angular';
 import { Observable } from 'rxjs';
 
-import { ProfileService } from '~core/state';
+import { ProfileService, UserRole } from '~core/state';
 import { LoadingDialogComponent } from '~core/ui';
 import { LoadingDialogInput, getLoadingDialogConfig } from '~core/ui';
+import { extractOkResponse } from '~core/utils';
+import { BackendActorService } from './backend-actor.service';
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +23,7 @@ export class UserAuthService {
     private readonly icAuthService: IcAuthService,
     private readonly profileService: ProfileService,
     private readonly dialog: Dialog,
+    private readonly actorService: BackendActorService,
   ) {
     this.isAuthenticated$ = this.icAuthService.isAuthenticated$;
   }
@@ -43,5 +46,23 @@ export class UserAuthService {
   public async logout(): Promise<void> {
     await this.icAuthService.logout();
     window.location.reload();
+  }
+
+  public async isLoggedAs(role: UserRole): Promise<boolean> {
+    if (!(await this.icAuthService.isAuthenticated())) {
+      return false;
+    }
+
+    const getResponse = await this.actorService.get_my_user_profile();
+    const userConfig = extractOkResponse(getResponse).config;
+
+    switch (role) {
+      case UserRole.Reviewer:
+        return 'reviewer' in userConfig;
+      case UserRole.Admin:
+        return 'admin' in userConfig;
+      case UserRole.Anonymous:
+        return 'anonymous' in userConfig;
+    }
   }
 }

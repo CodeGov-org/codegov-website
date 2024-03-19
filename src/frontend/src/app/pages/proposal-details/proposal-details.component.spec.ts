@@ -19,11 +19,11 @@ import {
   activatedRouteMockFactory,
   defineProp,
 } from '~testing';
-import { OpenProposalDetailsComponent } from './open-proposal-details.component';
+import { ProposalDetailsComponent } from './proposal-details.component';
 
-describe('OpenProposalDetailsComponent', () => {
-  let component: OpenProposalDetailsComponent;
-  let fixture: ComponentFixture<OpenProposalDetailsComponent>;
+describe('ProposalDetailsComponent', () => {
+  let component: ProposalDetailsComponent;
+  let fixture: ComponentFixture<ProposalDetailsComponent>;
   let proposalServiceMock: ProposalServiceMock;
   let activatedRoute: ActivatedRouteMock;
 
@@ -56,7 +56,7 @@ describe('OpenProposalDetailsComponent', () => {
     activatedRoute.params = of([{ id: 1 }]);
 
     await TestBed.configureTestingModule({
-      imports: [OpenProposalDetailsComponent, RouterTestingModule],
+      imports: [ProposalDetailsComponent, RouterTestingModule],
       providers: [
         { provide: ProposalService, useValue: proposalServiceMock },
         {
@@ -66,7 +66,7 @@ describe('OpenProposalDetailsComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(OpenProposalDetailsComponent);
+    fixture = TestBed.createComponent(ProposalDetailsComponent);
     component = fixture.componentInstance;
 
     fixture.detectChanges();

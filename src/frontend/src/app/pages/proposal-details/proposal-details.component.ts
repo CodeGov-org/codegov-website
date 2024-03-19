@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { marked } from 'marked';
 import { filter, map } from 'rxjs';
 
@@ -20,7 +20,7 @@ import {
   KeyValueGridComponent,
   ValueColComponent,
 } from '~core/ui';
-import { isNotNil } from '~core/utils';
+import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
 
 @Component({
   selector: 'app-open-proposal-details',
@@ -32,6 +32,7 @@ import { isNotNil } from '~core/utils';
     KeyColComponent,
     ValueColComponent,
     FormatDatePipe,
+    ClosedProposalSummaryComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -54,6 +55,18 @@ import { isNotNil } from '~core/utils';
       .proposal__link {
         margin-right: size(4);
       }
+
+      .proposal__vote {
+        font-weight: bold;
+      }
+
+      .proposal__vote--adopt {
+        color: $success;
+      }
+
+      .proposal__vote--reject {
+        color: $error;
+      }
     `,
   ],
   template: `
@@ -63,8 +76,8 @@ import { isNotNil } from '~core/utils';
       <cg-card class="proposal">
         <div slot="cardContent">
           <app-key-value-grid [columnNumber]="2">
-            <app-key-col id="open-proposal-id">ID</app-key-col>
-            <app-value-col aria-labelledby="open-proposal-id">
+            <app-key-col id="proposal-id">ID</app-key-col>
+            <app-value-col aria-labelledby="proposal-id">
               <a
                 href="{{ linkBaseUrl.Proposal }}{{ proposal.id }}"
                 target="_blank"
@@ -74,43 +87,41 @@ import { isNotNil } from '~core/utils';
               </a>
             </app-value-col>
 
-            <app-key-col id="open-proposal-links">Voting links</app-key-col>
-            <app-value-col aria-labelledby="open-proposal-links">
-              @if (proposal.proposalLinks.length > 0) {
-                @for (
-                  proposalLink of proposal.proposalLinks;
-                  track proposalLink.type
-                ) {
-                  <a
-                    class="proposal__link"
-                    href="{{ proposalLink.link }}"
-                    target="_blank"
-                    rel="nofollow noreferrer"
-                  >
-                    {{ proposalLink.type }}
-                  </a>
-                }
+            <app-key-col id="proposal-links">Voting links</app-key-col>
+            <app-value-col aria-labelledby="proposal-links">
+              @for (
+                proposalLink of proposal.proposalLinks;
+                track proposalLink.type
+              ) {
+                <a
+                  class="proposal__link"
+                  href="{{ proposalLink.link }}"
+                  target="_blank"
+                  rel="nofollow noreferrer"
+                >
+                  {{ proposalLink.type }}
+                </a>
               }
             </app-value-col>
 
-            <app-key-col id="open-proposal-topic">Topic</app-key-col>
-            <app-value-col aria-labelledby="open-proposal-topic">
+            <app-key-col id="proposal-topic">Topic</app-key-col>
+            <app-value-col aria-labelledby="proposal-topic">
               {{ proposal.topic }}
             </app-value-col>
 
-            <app-key-col id="open-proposal-type">Type</app-key-col>
-            <app-value-col aria-labelledby="open-proposal-type">
+            <app-key-col id="proposal-type">Type</app-key-col>
+            <app-value-col aria-labelledby="proposal-type">
               {{ proposal.type }}
             </app-value-col>
 
-            <app-key-col id="open-proposal-created">Created</app-key-col>
-            <app-value-col aria-labelledby="open-proposal-created">
+            <app-key-col id="proposal-created">Created</app-key-col>
+            <app-value-col aria-labelledby="proposal-created">
               {{ proposal.proposedAt | formatDate }}
             </app-value-col>
 
-            <app-key-col id="open-proposal-proposer">Proposer</app-key-col>
+            <app-key-col id="proposal-proposer">Proposer</app-key-col>
             <app-value-col
-              aria-labelledby="open-proposal-proposer"
+              aria-labelledby="proposal-proposer"
               class="proposal__proposer"
             >
               <a
@@ -122,35 +133,61 @@ import { isNotNil } from '~core/utils';
               </a>
             </app-value-col>
 
-            <app-key-col id="open-proposal-review-end">
+            <app-key-col id="proposal-review-end">
               Review period end
             </app-key-col>
-            <app-value-col aria-labelledby="open-proposal-review-end">
+            <app-value-col aria-labelledby="proposal-review-end">
               {{ proposal.reviewPeriodEnd | formatDate }}
             </app-value-col>
 
-            <app-key-col id="open-proposal-voting-end">
+            <app-key-col id="proposal-voting-end">
               Voting period end
             </app-key-col>
-            <app-value-col aria-labelledby="open-proposal-voting-end">
+            <app-value-col aria-labelledby="proposal-voting-end">
               {{ proposal.votingPeriodEnd | formatDate }}
+            </app-value-col>
+
+            <app-key-col id="proposal-date-decided">Date decided</app-key-col>
+            <app-value-col aria-labelledby="proposal-date-decided">
+              {{
+                proposal.decidedAt
+                  ? (proposal.decidedAt | formatDate)
+                  : 'Not yet decided'
+              }}
+            </app-value-col>
+
+            <app-key-col id="proposal-codegov-vote">CodeGov vote</app-key-col>
+            <app-value-col
+              aria-labelledby="proposal-codegov-vote"
+              class="proposal__vote"
+              [ngClass]="{
+                'proposal__vote--adopt': proposal.codeGovVote === 'ADOPT',
+                'proposal__vote--reject': proposal.codeGovVote === 'REJECT'
+              }"
+            >
+              {{ proposal.codeGovVote }}
             </app-value-col>
           </app-key-value-grid>
         </div>
       </cg-card>
 
-      <h2 class="h4">Proposal summary</h2>
-      <cg-card>
-        <div
-          slot="cardContent"
-          [innerHTML]="convertMarkdownToHTML(proposal.summary)"
-        ></div>
-      </cg-card>
+      @if (proposal.state === proposalState.InProgress) {
+        <h2 class="h4">Proposal summary</h2>
+        <cg-card>
+          <div
+            slot="cardContent"
+            [innerHTML]="convertMarkdownToHTML(proposal.summary)"
+          ></div>
+        </cg-card>
+      } @else {
+        <app-closed-proposal-summary [proposal]="proposal" />
+      }
     }
   `,
 })
-export class OpenProposalDetailsComponent implements OnInit {
+export class ProposalDetailsComponent implements OnInit {
   public readonly proposalTopic = ProposalTopic;
+  public readonly proposalState = ProposalState;
   public readonly linkBaseUrl = ProposalLinkBaseUrl;
   public readonly currentProposal$ = this.proposalService.currentProposal$;
 
@@ -168,7 +205,6 @@ export class OpenProposalDetailsComponent implements OnInit {
   constructor(
     private readonly proposalService: ProposalService,
     private readonly route: ActivatedRoute,
-    private readonly router: Router,
     private readonly sanitizer: DomSanitizer,
   ) {
     this.proposalIdFromRoute$
@@ -176,18 +212,10 @@ export class OpenProposalDetailsComponent implements OnInit {
       .subscribe(proposalId => {
         this.proposalService.setCurrentProposalId(proposalId);
       });
-
-    this.currentProposal$
-      .pipe(takeUntilDestroyed(), filter(isNotNil))
-      .subscribe(proposal => {
-        if (proposal.state === ProposalState.Completed) {
-          this.router.navigate(['closed', { id: proposal.id }]);
-        }
-      });
   }
 
   public ngOnInit(): void {
-    this.proposalService.loadProposalList(ProposalState.InProgress);
+    this.proposalService.loadProposalList();
   }
 
   public convertMarkdownToHTML(proposalSummary: string): string | null {

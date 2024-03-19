@@ -6,11 +6,13 @@ import { RouterLink } from '@angular/router';
 
 import { CardComponent } from '@cg/angular-ui';
 import { FormatDatePipe } from '~core/pipes';
+import { UserAuthService } from '~core/services';
 import {
   ProposalLinkBaseUrl,
   ProposalService,
   ProposalState,
   ProposalTopic,
+  UserRole,
 } from '~core/state';
 import {
   KeyValueGridComponent,
@@ -249,13 +251,15 @@ interface FilterForm {
               </app-value-col>
             </app-key-value-grid>
             <div class="btn-group">
-              <a
-                class="btn btn--outline"
-                [routerLink]="['/review', proposal.id, 'edit']"
-              >
-                My review
-              </a>
-              <a class="btn btn--outline" [routerLink]="['/open', proposal.id]">
+              @if (isReviewer && proposal.state === proposalState.InProgress) {
+                <a
+                  class="btn btn--outline"
+                  [routerLink]="['/review', proposal.id, 'edit']"
+                >
+                  My review
+                </a>
+              }
+              <a class="btn btn--outline" [routerLink]="[proposal.id]">
                 View details
               </a>
             </div>
@@ -268,26 +272,47 @@ interface FilterForm {
 export class ProposalListComponent {
   public proposalList$ = this.proposalService.currentProposalList$;
 
+  public readonly isAuthenticated$ = this.authService.isAuthenticated$;
+  public isReviewer = false;
+
   public readonly filterForm: FormGroup<FilterForm>;
   public readonly listFilter = reviewPeriodStateFilter;
 
   public readonly proposalTopic = ProposalTopic;
+  public readonly proposalState = ProposalState;
   public readonly linkBaseUrl = ProposalLinkBaseUrl;
 
-  constructor(private readonly proposalService: ProposalService) {
+  constructor(
+    private readonly proposalService: ProposalService,
+    private readonly authService: UserAuthService,
+  ) {
     this.filterForm = new FormGroup<FilterForm>({
       reviewPeriodState: new FormControl(ReviewPeriodStateFilter.InReview, {
         nonNullable: true,
       }),
     });
 
-    this.proposalService.loadProposalList(ProposalState.InProgress);
-
     this.filterForm.valueChanges
       .pipe(takeUntilDestroyed())
       .subscribe(formValue => {
         this.onFilterFormUpdated(formValue.reviewPeriodState);
       });
+
+    this.isLoggedAsReviewer();
+
+    this.isAuthenticated$
+      .pipe(takeUntilDestroyed())
+      .subscribe(isAuthenticated => {
+        if (isAuthenticated) {
+          this.isLoggedAsReviewer();
+        }
+      });
+
+    this.proposalService.loadProposalList(ProposalState.InProgress);
+  }
+
+  private async isLoggedAsReviewer(): Promise<void> {
+    this.isReviewer = await this.authService.isLoggedAs(UserRole.Reviewer);
   }
 
   private async onFilterFormUpdated(
