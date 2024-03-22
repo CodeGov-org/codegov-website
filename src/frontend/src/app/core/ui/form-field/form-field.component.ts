@@ -14,6 +14,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, ControlContainer } from '@angular/forms';
 
+import { formHasError } from '../form-utils';
 import { InputDirective } from '../input';
 import { InputErrorComponent } from '../input-error';
 import { InputHintComponent } from '../input-hint';
@@ -98,10 +99,16 @@ export class FormFieldComponent implements AfterContentInit {
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
+
+    this.inputDirective.touchChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.changeDetectorRef.markForCheck();
+      });
   }
 
   public hasError(): boolean {
-    return this.formControl?.invalid ?? false;
+    return formHasError(this.formControl);
   }
 
   public getErrorTemplate(): TemplateRef<HTMLElement> | null {

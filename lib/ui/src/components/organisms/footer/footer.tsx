@@ -1,14 +1,5 @@
 import { Component, Prop, h } from '@stencil/core';
-
-export interface FooterLinkCategory {
-  title: string;
-  children: FooterLink[];
-}
-
-export interface FooterLink {
-  title: string;
-  url: string;
-}
+import { NavLinkCategory } from '../../../types';
 
 @Component({
   tag: 'cg-footer',
@@ -17,7 +8,7 @@ export interface FooterLink {
 })
 export class FooterComponent {
   @Prop()
-  public links!: FooterLinkCategory[];
+  public links!: NavLinkCategory[];
 
   public currentYear = new Date().getFullYear();
 
