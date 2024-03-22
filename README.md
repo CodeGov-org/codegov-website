@@ -23,6 +23,12 @@ To deploy all canisters at once:
 dfx deploy
 ```
 
+To deploy the canisters with backend `dev` features enabled:
+
+```bash
+FEATURES=dev dfx deploy
+```
+
 Else, refer to the following sections.
 
 ### Marketing
@@ -297,93 +303,29 @@ To list open replica version management proposals:
 
 ### Creating closed proposals
 
-#### Creating proposals in the past
-
-1. Check your current system time:
+1. Make sure the `backend` canister has been deployed with `dev` features enabled:
    ```bash
-   date
+   FEATURES=dev dfx deploy backend
    ```
-2. Set your system time to be at least 48 hours in the past:
+2. Check if there are any existing proposals:
    ```bash
-   sudo date -s "Feb 24 20:55:54 CET 2024"
+   dfx canister call backend list_proposals
    ```
-3. Verify the date is correct with:
+3. If needed, create additional proposals using the `nns-testing` tool:
    ```bash
-   date
+   pnpm -F nns-testing start
    ```
-4. Run DFX with a clean replica:
-   ```bash
-   dfx start --clean --background
-   ```
-5. Install NNS canisters:
-   ```bash
-   dfx extension run nns install
-   ```
-6. Deploy canisters:
-   ```bash
-   dfx deploy
-   ```
-7. Create proposals using the [NNS Testing tool](#nns-testing).
-8. Manually sync proposals with:
+4. Manually sync proposals:
    ```bash
    dfx canister call backend sync_proposals
    ```
-9. Verify that the proposals are synced
-   - List all proposals
-     ```bash
-     dfx canister call backend list_proposals '(record {})'
-     ```
-   - List only pending proposals:
-     ```bash
-     dfx canister call backend list_proposals '(record { state = opt variant { in_progress }})'
-     ```
-   - List only completed proposals:
-     ```bash
-     dfx canister call backend list_proposals '(record { state = opt variant { completed }})'
-     ```
-10. You can also optionally verify the logs with:
-    ```bash
-    dfx canister call backend list_logs '(record{})'
-    ```
-
-#### Back to the future
-
-1. Stop DFX:
+5. Check if the proposals have been created:
    ```bash
-   dfx stop
+   dfx canister call backend list_proposals
    ```
-2. Set your system time back to the current time:
+6. Close a proposal:
    ```bash
-   sudo date -s "Feb 26 21:55:54 CET 2024"
-   ```
-3. Verify the date is correct with:
-   ```bash
-   date
-   ```
-4. Start DFX
-   ```bash
-   dfx start --background
-   ```
-5. Manually sync proposals with:
-   ```bash
-   dfx canister call backend sync_proposals
-   ```
-6. Verify that the proposals are synced
-   - List all proposals
-     ```bash
-     dfx canister call backend list_proposals '(record {})'
-     ```
-   - List only pending proposals:
-     ```bash
-     dfx canister call backend list_proposals '(record { state = opt variant { in_progress }})'
-     ```
-   - List only completed proposals:
-     ```bash
-     dfx canister call backend list_proposals '(record { state = opt variant { completed }})'
-     ```
-7. You can also optionally verify the logs with:
-   ```bash
-   dfx canister call backend list_logs '(record{})'
+   dfx canister call backend close_proposal
    ```
 
 ### Creating proposals

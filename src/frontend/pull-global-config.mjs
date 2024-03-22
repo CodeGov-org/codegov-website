@@ -15,7 +15,7 @@ const __dirname = dirname(__filename);
 const dfxNetwork = process.env.DFX_NETWORK ?? 'local';
 const isMainnet = dfxNetwork === 'ic';
 
-const marketingCanisterId = process.env.MARKETING_CANISTER_ID ?? '';
+const marketingCanisterId = process.env.CANISTER_ID_MARKETING ?? '';
 const marketingUrl = isMainnet
   ? `https://${marketingCanisterId}.icp0.io`
   : `http://${marketingCanisterId}.localhost:8080`;

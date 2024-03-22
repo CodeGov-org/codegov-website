@@ -6,6 +6,9 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
+[features]
+dev = []
+
 [dependencies]
 backend_api = { path = "../api" }
 external_canisters = { path = "../external_canisters" }
