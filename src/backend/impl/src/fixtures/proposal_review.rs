@@ -2,13 +2,13 @@ use rstest::*;
 
 use crate::repositories::{ProposalReview, ProposalReviewStatus};
 
-use super::{date_time_a, uuid};
+use super::{date_time_a, proposal_id, user_id, uuid};
 
 #[fixture]
 pub fn proposal_review_draft() -> ProposalReview {
     ProposalReview {
-        proposal_id: uuid(),
-        user_id: uuid(),
+        proposal_id: proposal_id(),
+        user_id: user_id(),
         created_at: date_time_a(),
         status: ProposalReviewStatus::Draft,
         summary: "Proposal review summary".to_string(),
@@ -21,8 +21,8 @@ pub fn proposal_review_draft() -> ProposalReview {
 #[fixture]
 pub fn proposal_review_published() -> ProposalReview {
     ProposalReview {
-        proposal_id: uuid(),
-        user_id: uuid(),
+        proposal_id: proposal_id(),
+        user_id: user_id(),
         created_at: date_time_a(),
         status: ProposalReviewStatus::Published,
         summary: "Proposal review summary".to_string(),

@@ -201,6 +201,37 @@ type SyncProposalsResponse = variant {
   err : Err;
 };
 
+type ProposalReviewStatus = variant {
+  draft;
+  published;
+};
+
+type ProposalReview = record {
+  proposal_id : text;
+  user_id : text;
+  created_at : text;
+  status : ProposalReviewStatus;
+  summary : text;
+  review_duration_mins : nat16;
+  build_reproduced : bool;
+  reproduced_build_image_id : opt text;
+};
+
+type CreateProposalReviewRequest = record {
+  proposal_id : text;
+  summary : text;
+  review_duration_mins : nat16;
+  build_reproduced : bool;
+};
+
+type CreateProposalReviewResponse = variant {
+  ok : record {
+    id : text;
+    proposal_review : ProposalReview;
+  };
+  err : Err;
+};
+
 service : {
   get_my_user_profile : () -> (GetMyUserProfileResponse) query;
   get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;
@@ -210,4 +241,5 @@ service : {
   list_proposals : (ListProposalsRequest) -> (ListProposalsResponse) query;
   list_logs : (LogsFilterRequest) -> (ListLogsResponse) query;
   sync_proposals : () -> (SyncProposalsResponse);
+  create_proposal_review : (CreateProposalReviewRequest) -> (CreateProposalReviewResponse);
 };

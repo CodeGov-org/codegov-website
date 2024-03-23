@@ -2,6 +2,7 @@ use super::{DateTime, Uuid};
 use crate::system_api::get_date_time;
 use backend_api::ApiError;
 use candid::{CandidType, Decode, Deserialize, Encode};
+use chrono::Duration;
 use ic_nns_governance::pb::v1::{ProposalInfo, ProposalStatus, Topic};
 use ic_stable_structures::{
     storable::{Blob, Bound},
@@ -154,6 +155,20 @@ impl TryFrom<ProposalInfo> for Proposal {
     }
 }
 
+impl Proposal {
+    /// Checks if the proposal is in [ReviewPeriodState::InProgress] state
+    /// and was proposed more than **48 hours** ago.
+    pub fn is_pending(&self, current_time: &DateTime) -> bool {
+        self.state == ReviewPeriodState::InProgress
+            && self.proposed_at <= current_time.sub(Duration::hours(48))
+    }
+
+    /// Checks if the proposal is in [ReviewPeriodState::Completed] state.
+    pub fn is_completed(&self) -> bool {
+        self.state == ReviewPeriodState::Completed
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ProposalStatusTimestampKey(Blob<{ Self::MAX_SIZE as usize }>);
 
@@ -252,5 +267,76 @@ mod tests {
         let deserialized_key = ProposalStatusTimestampKey::from_bytes(serialized_key);
 
         assert_eq!(key, deserialized_key);
+    }
+
+    #[rstest]
+    fn proposal_is_pending_and_is_completed() {
+        let current_time = DateTime::new(get_date_time().unwrap()).unwrap();
+        let in_progress_proposals = in_progress_proposals();
+        let pending_proposals = pending_proposals();
+
+        for proposal in in_progress_proposals {
+            assert!(!proposal.is_pending(&current_time));
+            assert!(!proposal.is_completed());
+        }
+
+        for proposal in pending_proposals {
+            assert!(proposal.is_pending(&current_time));
+            assert!(!proposal.is_completed());
+        }
+
+        let completed_proposal = fixtures::nns_replica_version_management_proposal_completed();
+
+        assert!(!completed_proposal.is_pending(&current_time));
+        assert!(completed_proposal.is_completed());
+    }
+
+    #[fixture]
+    fn in_progress_proposals() -> Vec<Proposal> {
+        let current_time = get_date_time().unwrap();
+
+        vec![
+            Proposal {
+                proposed_at: DateTime::new(current_time).unwrap(),
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                proposed_at: DateTime::new(current_time - Duration::hours(12)).unwrap(),
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                proposed_at: DateTime::new(current_time - Duration::hours(24)).unwrap(),
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                proposed_at: DateTime::new(current_time - Duration::hours(36)).unwrap(),
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+        ]
+    }
+
+    #[fixture]
+    fn pending_proposals() -> Vec<Proposal> {
+        let current_time = get_date_time().unwrap();
+
+        vec![
+            Proposal {
+                proposed_at: DateTime::new(
+                    current_time - Duration::hours(48) - Duration::minutes(1),
+                )
+                .unwrap(),
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+            Proposal {
+                proposed_at: DateTime::new(current_time - Duration::hours(60)).unwrap(),
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal()
+            },
+        ]
     }
 }

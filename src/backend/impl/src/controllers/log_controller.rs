@@ -48,7 +48,7 @@ impl<A: AccessControlService, L: LogService> LogController<A, L> {
         request: LogsFilterRequest,
     ) -> Result<ListLogsResponse, ApiError> {
         self.access_control_service
-            .assert_principal_is_admin(calling_principal)?;
+            .assert_principal_is_admin(&calling_principal)?;
 
         let logs = self.log_service.list_logs(request);
 
