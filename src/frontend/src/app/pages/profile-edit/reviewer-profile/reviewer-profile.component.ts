@@ -5,10 +5,10 @@ import { ReviewerPersonalInfoComponent } from '../reviewer-personal-info';
 import { ReviewerPersonalInfoFormComponent } from '../reviewer-personal-info-form';
 import { ReviewerSocialMediaComponent } from '../reviewer-social-media';
 import { ReviewerSocialMediaFormComponent } from '../reviewer-social-media-form';
+import { CardComponent } from '@cg/angular-ui';
 import { InfoIconComponent } from '~core/icons';
 import { ReviewerProfile } from '~core/state';
 import {
-  CardComponent,
   KeyColComponent,
   KeyValueGridComponent,
   TooltipDirective,
@@ -47,10 +47,10 @@ import {
     `,
   ],
   template: `
-    <app-card class="reviewer-profile-card">
-      <h2 class="h3" cardTitle>Profile</h2>
+    <cg-card class="reviewer-profile-card">
+      <h2 class="h3" slot="cardTitle">Profile</h2>
 
-      <app-key-value-grid>
+      <app-key-value-grid slot="cardContent">
         <app-key-col id="reviewer-id">ID</app-key-col>
         <app-value-col aria-labelledby="reviewer-id">
           {{ userProfile.id }}
@@ -97,39 +97,43 @@ import {
           {{ nonEditableInfo }}
         </div>
       </app-key-value-grid>
-    </app-card>
+    </cg-card>
 
-    <app-card class="reviewer-personal-info-card">
-      <h2 class="h3" cardTitle>Personal info</h2>
+    <cg-card class="reviewer-personal-info-card">
+      <h2 class="h3" slot="cardTitle">Personal info</h2>
 
-      @if (isPersonalInfoEditable) {
-        <app-reviewer-personal-info-form
-          [userProfile]="userProfile"
-          (formClose)="hidePersonalInfoForm()"
-        />
-      } @else {
-        <app-reviewer-personal-info
-          [userProfile]="userProfile"
-          (edit)="showPersonalInfoForm()"
-        />
-      }
-    </app-card>
+      <div slot="cardContent">
+        @if (isPersonalInfoEditable) {
+          <app-reviewer-personal-info-form
+            [userProfile]="userProfile"
+            (formClose)="hidePersonalInfoForm()"
+          />
+        } @else {
+          <app-reviewer-personal-info
+            [userProfile]="userProfile"
+            (edit)="showPersonalInfoForm()"
+          />
+        }
+      </div>
+    </cg-card>
 
-    <app-card>
-      <h2 class="h3" cardTitle>Social media</h2>
+    <cg-card>
+      <h2 class="h3" slot="cardTitle">Social media</h2>
 
-      @if (isSocialMediaEditable) {
-        <app-reviewer-social-media-form
-          [userProfile]="userProfile"
-          (formClose)="hideSocialMediaForm()"
-        />
-      } @else {
-        <app-reviewer-social-media
-          [userProfile]="userProfile"
-          (edit)="showSocialMediaForm()"
-        />
-      }
-    </app-card>
+      <div slot="cardContent">
+        @if (isSocialMediaEditable) {
+          <app-reviewer-social-media-form
+            [userProfile]="userProfile"
+            (formClose)="hideSocialMediaForm()"
+          />
+        } @else {
+          <app-reviewer-social-media
+            [userProfile]="userProfile"
+            (edit)="showSocialMediaForm()"
+          />
+        }
+      </div>
+    </cg-card>
   `,
 })
 export class ReviewerProfileComponent {

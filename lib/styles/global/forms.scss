@@ -44,52 +44,6 @@
   resize: vertical;
 }
 
-.input--radio {
-  $radio-size: size(2.5);
-  $radio-border-gap: 2.5px;
-
-  appearance: none;
-  display: inline-block;
-
-  width: $radio-size;
-  height: $radio-size;
-  border-radius: 50%;
-  vertical-align: top;
-
-  position: relative;
-
-  &::after {
-    content: '';
-    display: block;
-    border-radius: 50%;
-    position: absolute;
-
-    width: calc(100% - #{$radio-border-gap * 2});
-    left: 50%;
-    height: calc(100% - #{$radio-border-gap * 2});
-    top: 50%;
-    transform: translate3d(-50%, -50%, 0);
-  }
-
-  &:checked {
-    border-color: $primary;
-
-    &::after {
-      background-color: $primary;
-    }
-  }
-
-  &.input--invalid {
-    border-color: $error;
-  }
-}
-
-.radio-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: size(2);
-}
-
 .label {
   color: $black;
 

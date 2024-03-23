@@ -70,8 +70,8 @@ importers:
         specifier: ^17.0.8
         version: 17.1.0(@angular/compiler@17.1.0)(typescript@5.2.2)
       '@hadronous/pic':
-        specifier: ~0.5.0
-        version: 0.5.0(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/identity@1.0.1)(@dfinity/principal@1.0.1)
+        specifier: 0.7.0
+        version: 0.7.0(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/identity@1.0.1)(@dfinity/principal@1.0.1)
       '@types/node':
         specifier: ^20.0.0
         version: 20.10.5
@@ -306,6 +306,9 @@ importers:
       '@cg/styles':
         specifier: workspace:*
         version: link:../../lib/styles
+      '@cg/ui':
+        specifier: workspace:*
+        version: link:../../lib/ui
       '@storyblok/astro':
         specifier: ^4.0.1
         version: 4.0.1(astro@4.2.3)
@@ -2202,7 +2205,7 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.23.2
-      '@babel/helper-plugin-utils': 7.24.0
+      '@babel/helper-plugin-utils': 7.22.5
     dev: true
 
   /@babel/plugin-syntax-dynamic-import@7.8.3(@babel/core@7.23.6):
@@ -2220,7 +2223,7 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.23.9
-      '@babel/helper-plugin-utils': 7.24.0
+      '@babel/helper-plugin-utils': 7.22.5
     dev: true
 
   /@babel/plugin-syntax-dynamic-import@7.8.3(@babel/core@7.24.0):
@@ -2229,7 +2232,7 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.24.0
-      '@babel/helper-plugin-utils': 7.24.0
+      '@babel/helper-plugin-utils': 7.22.5
     dev: true
 
   /@babel/plugin-syntax-export-namespace-from@7.8.3(@babel/core@7.23.2):
@@ -2773,7 +2776,7 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.24.0
-      '@babel/helper-plugin-utils': 7.24.0
+      '@babel/helper-plugin-utils': 7.22.5
     dev: true
 
   /@babel/plugin-syntax-unicode-sets-regex@7.18.6(@babel/core@7.23.2):
@@ -7803,8 +7806,8 @@ packages:
       rxjs: 7.8.1
     dev: true
 
-  /@hadronous/pic@0.5.0(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/identity@1.0.1)(@dfinity/principal@1.0.1):
-    resolution: {integrity: sha512-rQwHMJgWHEamPSehRKMMws7zvBb0SM6tcL9N4D1zYNvoU+79VljMXgmQrD5herinYlY9+YcJxYp5DXfIsOYeWw==}
+  /@hadronous/pic@0.7.0(@dfinity/agent@1.0.1)(@dfinity/candid@1.0.1)(@dfinity/identity@1.0.1)(@dfinity/principal@1.0.1):
+    resolution: {integrity: sha512-539btzwvSF74RTUQHGfOCoUiRyeV8nlZHnJMFlJC8eWPJ4wJrs/O6od2dvlvQquTJNHmHKARe1E4hnfW5oiBhw==}
     requiresBuild: true
     peerDependencies:
       '@dfinity/agent': ^1.0.1
@@ -9739,7 +9742,7 @@ packages:
       express: 4.18.2
       find-cache-dir: 3.3.2
       fs-extra: 11.2.0
-      magic-string: 0.30.5
+      magic-string: 0.30.7
       rollup: 3.29.4
       typescript: 5.2.2
       vite: 5.0.12(@types/node@20.10.5)(less@4.2.0)(sass@1.70.0)(terser@5.27.0)
@@ -9947,7 +9950,7 @@ packages:
       pretty-hrtime: 1.0.3
       prompts: 2.4.2
       read-pkg-up: 7.0.1
-      semver: 7.5.4
+      semver: 7.6.0
       telejson: 7.2.0
       tiny-invariant: 1.3.3
       ts-dedent: 2.2.0
@@ -10027,7 +10030,7 @@ packages:
       '@storybook/html': 7.6.17(@babel/core@7.24.0)
       '@storybook/node-logger': 7.6.17
       '@storybook/preview-web': 7.6.17
-      magic-string: 0.30.5
+      magic-string: 0.30.7
     transitivePeerDependencies:
       - '@babel/core'
       - '@preact/preset-vite'
@@ -23096,31 +23099,6 @@ packages:
       unique-string: 2.0.0
     dev: true
 
-  /terser-webpack-plugin@5.3.10(esbuild@0.19.5)(webpack@5.90.1):
-    resolution: {integrity: sha512-BKFPWlPDndPs+NGGCr1U59t0XScL5317Y0UReNrHaw9/FwhPENlq6bfgs+4yPfyP51vqC1bQ4rp1EfXW5ZSH9w==}
-    engines: {node: '>= 10.13.0'}
-    peerDependencies:
-      '@swc/core': '*'
-      esbuild: '*'
-      uglify-js: '*'
-      webpack: ^5.1.0
-    peerDependenciesMeta:
-      '@swc/core':
-        optional: true
-      esbuild:
-        optional: true
-      uglify-js:
-        optional: true
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.20
-      esbuild: 0.19.5
-      jest-worker: 27.5.1
-      schema-utils: 3.3.0
-      serialize-javascript: 6.0.1
-      terser: 5.27.0
-      webpack: 5.90.1(esbuild@0.19.5)
-    dev: true
-
   /terser-webpack-plugin@5.3.10(esbuild@0.20.0)(webpack@5.90.1):
     resolution: {integrity: sha512-BKFPWlPDndPs+NGGCr1U59t0XScL5317Y0UReNrHaw9/FwhPENlq6bfgs+4yPfyP51vqC1bQ4rp1EfXW5ZSH9w==}
     engines: {node: '>= 10.13.0'}
@@ -24497,7 +24475,7 @@ packages:
       mime-types: 2.1.35
       range-parser: 1.2.1
       schema-utils: 4.2.0
-      webpack: 5.90.1(esbuild@0.19.5)
+      webpack: 5.90.1(esbuild@0.20.0)
     dev: true
 
   /webpack-dev-middleware@6.1.1(webpack@5.89.0):
@@ -24626,7 +24604,7 @@ packages:
       serve-index: 1.9.1
       sockjs: 0.3.24
       spdy: 4.0.2
-      webpack: 5.90.1(esbuild@0.19.5)
+      webpack: 5.90.1(esbuild@0.20.0)
       webpack-dev-middleware: 5.3.3(webpack@5.90.1)
       ws: 8.15.1
     transitivePeerDependencies:
@@ -24751,46 +24729,6 @@ packages:
       schema-utils: 3.3.0
       tapable: 2.2.1
       terser-webpack-plugin: 5.3.9(esbuild@0.19.5)(webpack@5.89.0)
-      watchpack: 2.4.0
-      webpack-sources: 3.2.3
-    transitivePeerDependencies:
-      - '@swc/core'
-      - esbuild
-      - uglify-js
-    dev: true
-
-  /webpack@5.90.1(esbuild@0.19.5):
-    resolution: {integrity: sha512-SstPdlAC5IvgFnhiRok8hqJo/+ArAbNv7rhU4fnWGHNVfN59HSQFaxZDSAL3IFG2YmqxuRs+IU33milSxbPlog==}
-    engines: {node: '>=10.13.0'}
-    hasBin: true
-    peerDependencies:
-      webpack-cli: '*'
-    peerDependenciesMeta:
-      webpack-cli:
-        optional: true
-    dependencies:
-      '@types/eslint-scope': 3.7.7
-      '@types/estree': 1.0.5
-      '@webassemblyjs/ast': 1.11.6
-      '@webassemblyjs/wasm-edit': 1.11.6
-      '@webassemblyjs/wasm-parser': 1.11.6
-      acorn: 8.11.3
-      acorn-import-assertions: 1.9.0(acorn@8.11.3)
-      browserslist: 4.22.2
-      chrome-trace-event: 1.0.3
-      enhanced-resolve: 5.15.0
-      es-module-lexer: 1.4.1
-      eslint-scope: 5.1.1
-      events: 3.3.0
-      glob-to-regexp: 0.4.1
-      graceful-fs: 4.2.11
-      json-parse-even-better-errors: 2.3.1
-      loader-runner: 4.3.0
-      mime-types: 2.1.35
-      neo-async: 2.6.2
-      schema-utils: 3.3.0
-      tapable: 2.2.1
-      terser-webpack-plugin: 5.3.10(esbuild@0.19.5)(webpack@5.90.1)
       watchpack: 2.4.0
       webpack-sources: 3.2.3
     transitivePeerDependencies:

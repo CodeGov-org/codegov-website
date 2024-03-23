@@ -1,0 +1,7 @@
+@import '~@cg/styles/common';
+
+.text-btn {
+  @include btn-common;
+  @include transparent-btn;
+  @include rectangular-btn;
+}

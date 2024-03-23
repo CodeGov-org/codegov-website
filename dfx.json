@@ -1,5 +1,5 @@
 {
-  "dfx": "0.16.1",
+  "dfx": "0.18.0",
   "output_env_file": ".env",
   "version": 1,
   "networks": {
@@ -13,10 +13,11 @@
   },
   "canisters": {
     "backend": {
-      "type": "rust",
+      "type": "custom",
       "gzip": true,
       "optimize": "cycles",
-      "package": "backend_impl",
+      "wasm": "./target/wasm32-unknown-unknown/release/backend_impl.wasm",
+      "build": ["./scripts/build-canister.sh backend_impl"],
       "candid": "src/backend/api/backend.did",
       "declarations": {
         "bindings": ["js", "ts", "did"],

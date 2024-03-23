@@ -39,8 +39,14 @@ const { seo_metadata } = Astro.props;
   </body>
 </html>
 
+<script>
+  import { defineCustomElements } from '@cg/ui/loader';
+
+  defineCustomElements();
+</script>
+
 <style lang="scss">
-  @import '@cg/styles/common.scss';
+  @import '@cg/styles/common';
 
   .body {
     display: flex;

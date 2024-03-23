@@ -10,6 +10,7 @@
   "dependencies": {
     "@astrojs/netlify": "^5.0.0",
     "@cg/styles": "workspace:*",
+    "@cg/ui": "workspace:*",
     "@storyblok/astro": "^4.0.1",
     "astro": "^4.2.3"
   },

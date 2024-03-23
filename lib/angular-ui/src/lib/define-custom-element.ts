@@ -1,14 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Type } from '@angular/core';
 
-type CustomElementFn = () => void;
-
-interface Constructor {
-  new (...args: any[]): any;
-  [key: string]: any;
-}
-
-export function DefineCustomElement(defineCustomElementFn: CustomElementFn) {
-  return function (cls: Constructor) {
+export function DefineCustomElement<T>(defineCustomElementFn: () => void) {
+  return function (cls: Type<T>) {
     defineCustomElementFn();
     return cls;
   };

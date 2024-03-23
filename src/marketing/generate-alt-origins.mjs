@@ -9,7 +9,7 @@ const __dirname = dirname(__filename);
 const dfxNetwork = process.env.DFX_NETWORK ?? 'local';
 const isMainnet = dfxNetwork === 'ic';
 
-const frontendCanisterId = process.env.FRONTEND_CANISTER_ID ?? '';
+const frontendCanisterId = process.env.CANISTER_ID_FRONTEND ?? '';
 const frontedUrl = isMainnet
   ? `https://${frontendCanisterId}.icp0.io`
   : `http://${frontendCanisterId}.localhost:8080`;

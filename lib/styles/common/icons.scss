@@ -1,0 +1,29 @@
+@mixin icon($size) {
+  display: inline-block;
+  height: size($size);
+  width: size($size);
+}
+
+@mixin icon-xs {
+  @include icon(4);
+}
+
+@mixin icon-sm {
+  @include icon(5);
+}
+
+@mixin icon-md {
+  @include icon(6);
+}
+
+@mixin icon-lg {
+  @include icon(7);
+}
+
+@mixin icon-xl {
+  @include icon(8);
+}
+
+@mixin icon-xxl {
+  @include icon(9);
+}

@@ -1,69 +1,35 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { GLOBAL_CONFIG } from 'src/global-config';
 
+import { CardComponent, CopyToClipboardComponent } from '@cg/angular-ui';
 import { AnonymousProfile } from '~core/state';
-import { CardComponent, CopyButtonComponent } from '~core/ui';
 
 @Component({
   selector: 'app-anonymous-profile',
   standalone: true,
-  imports: [CopyButtonComponent, CardComponent],
+  imports: [CopyToClipboardComponent, CardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @import '@cg/styles/common';
-
-      .user-id {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-      }
-
-      .user-id__value {
-        overflow-x: auto;
-        white-space: nowrap;
-        border-radius: $border-radius;
-
-        margin-right: size(3);
-        @include px(3);
-        @include py(2);
-
-        border: $border-sm-size solid $slate-300;
-        color: $slate-900;
-        background-color: $white;
-
-        @include dark {
-          border-color: $slate-700;
-          background-color: $slate-950;
-          color: $slate-200;
-        }
-      }
-    `,
-  ],
   template: `
-    <app-card>
-      <h2 class="h3" cardTitle>Welcome to the CodeGov organisation</h2>
+    <cg-card>
+      <h2 class="h3" slot="cardTitle">Welcome to the CodeGov organisation</h2>
 
-      <p>
-        If you would like to become a reviewer,
-        <a [href]="applyLink">apply now</a>
-        .
-      </p>
+      <div slot="cardContent">
+        <p>
+          If you would like to become a reviewer,
+          <a [href]="applyLink">apply now</a>
+          .
+        </p>
 
-      <p>When requested, provide this ID to a CodeGov admin:</p>
+        <p>When requested, provide this ID to a CodeGov admin:</p>
 
-      <div class="user-id">
-        <div class="user-id__value">
-          {{ userProfile.id }}
-        </div>
+        <cg-copy-to-clipboard [value]="userProfile.id" />
 
-        <app-copy-button [input]="userProfile.id"></app-copy-button>
+        <p>
+          If you're just here to look around, you don't need to do anything
+          else.
+        </p>
       </div>
-
-      <p>
-        If you're just here to look around, you don't need to do anything else.
-      </p>
-    </app-card>
+    </cg-card>
   `,
 })
 export class AnonymousProfileComponent {

@@ -1,0 +1,13 @@
+@import '~@cg/styles/common';
+
+.icon-btn {
+  @include btn-common;
+  @include transparent-btn;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  @include icon-xxl;
+  border-radius: 50%;
+}

@@ -7,5 +7,5 @@ import { ENV } from '~env';
 @Injectable({ providedIn: 'root' })
 export class BackendActorService extends createIcActorService<_SERVICE>({
   idlFactory,
-  canisterId: ENV.BACKEND_CANISTER_ID,
+  canisterId: ENV.CANISTER_ID_BACKEND,
 }) {}

@@ -4,19 +4,19 @@ export const API_GATEWAY = IS_MAINNET
   ? 'https://icp-api.io'
   : window.location.origin;
 
-export const BACKEND_CANISTER_ID = import.meta.BACKEND_CANISTER_ID ?? '';
-export const MARKETING_CANISTER_ID = import.meta.MARKETING_CANISTER_ID ?? '';
+export const CANISTER_ID_BACKEND = import.meta.CANISTER_ID_BACKEND ?? '';
+export const CANISTER_ID_MARKETING = import.meta.CANISTER_ID_MARKETING ?? '';
 
-export const INTERNET_IDENTITY_CANISTER_ID =
-  import.meta.INTERNET_IDENTITY_CANISTER_ID ?? '';
+export const CANISTER_ID_INTERNET_IDENTITY =
+  import.meta.CANISTER_ID_INTERNET_IDENTITY ?? '';
 
 export const IDENTITY_PROVIDER = IS_MAINNET
   ? 'https://identity.ic0.app'
-  : `http://${INTERNET_IDENTITY_CANISTER_ID}.localhost:8080`;
+  : `http://${CANISTER_ID_INTERNET_IDENTITY}.localhost:8080`;
 
 // don't use derivation origins locally because II rejects them as invalid
 // this can be enabled locally once II supports it
-// Use this value for local support: `http://${MARKETING_CANISTER_ID}.localhost:8000`;
+// Use this value for local support: `http://${CANISTER_ID_MARKETING}.localhost:8000`;
 export const DERIVATION_ORIGIN = IS_MAINNET
-  ? `https://${MARKETING_CANISTER_ID}.icp0.io`
+  ? `https://${CANISTER_ID_MARKETING}.icp0.io`
   : undefined;

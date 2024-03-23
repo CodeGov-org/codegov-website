@@ -1,2 +1,3 @@
-export * from './cg-icon-btn/index';
-export * from './cg-profile-icon/index';
+export * from './atoms/index';
+export * from './molecules/index';
+export * from './organisms/index';

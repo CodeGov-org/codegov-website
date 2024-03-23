@@ -1,12 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { GLOBAL_CONFIG } from 'src/global-config';
 
-import {
-  FooterComponent,
-  PrimaryNavbarComponent,
-  SecondaryNavbarComponent,
-} from '~core/layout';
+import { FooterComponent, NavbarComponent } from '@cg/angular-ui';
+import { SecondaryNavbarComponent } from '~core/layout';
 
 @Component({
   standalone: true,
@@ -14,7 +12,7 @@ import {
   imports: [
     CommonModule,
     RouterOutlet,
-    PrimaryNavbarComponent,
+    NavbarComponent,
     SecondaryNavbarComponent,
     FooterComponent,
   ],
@@ -42,15 +40,18 @@ import {
   ],
   template: `
     <div class="app-container">
-      <app-primary-navbar />
+      <cg-navbar [homeUrl]="'/'" [links]="navbarLinks" />
       <app-secondary-navbar />
 
       <main class="content-container">
         <router-outlet />
       </main>
-
-      <app-footer />
+      <cg-footer [links]="footerLinks" />
     </div>
   `,
 })
-export class AppComponent {}
+export class AppComponent {
+  public globalConfig = GLOBAL_CONFIG;
+  public footerLinks = GLOBAL_CONFIG.footerLinks;
+  public navbarLinks = GLOBAL_CONFIG.headerLinks;
+}
