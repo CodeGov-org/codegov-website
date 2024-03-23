@@ -9,7 +9,6 @@ import {
   NgZone,
 } from '@angular/core';
 
-import { Components } from '@cg/ui';
 import { defineCustomElement } from '@cg/ui/dist/components/cg-dropdown-link-menu-item';
 import { DefineCustomElement } from '../../../define-custom-element';
 
@@ -26,7 +25,7 @@ export class DropdownLinkMenuItemComponent {
   // when `routerLink` is set, proxy the value to the `href` attribute
   // for accessibility.
   @Input()
-  public set routerLink(value: Components.CgDropdownLinkMenuItem['href']) {
+  public set routerLink(value: HTMLCgDropdownLinkMenuItemElement['href']) {
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.href = value;
     });
@@ -47,26 +46,26 @@ export class DropdownLinkMenuItemComponent {
   public tabIndex = -1;
 
   @Input()
-  public set href(value: Components.CgDropdownLinkMenuItem['href']) {
+  public set href(value: HTMLCgDropdownLinkMenuItemElement['href']) {
     this.hasExplicitHref = true;
 
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.href = value;
     });
   }
-  public get href(): Components.CgDropdownLinkMenuItem['href'] {
+  public get href(): HTMLCgDropdownLinkMenuItemElement['href'] {
     return this.elementRef.nativeElement.href;
   }
 
   @Input()
   public set isExternal(
-    value: Components.CgDropdownLinkMenuItem['isExternal'],
+    value: HTMLCgDropdownLinkMenuItemElement['isExternal'],
   ) {
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.isExternal = value;
     });
   }
-  public get isExternal(): Components.CgDropdownLinkMenuItem['isExternal'] {
+  public get isExternal(): HTMLCgDropdownLinkMenuItemElement['isExternal'] {
     return this.elementRef.nativeElement.isExternal;
   }
 
@@ -75,7 +74,7 @@ export class DropdownLinkMenuItemComponent {
   constructor(
     private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
-    private readonly elementRef: ElementRef<Components.CgDropdownLinkMenuItem>,
+    private readonly elementRef: ElementRef<HTMLCgDropdownLinkMenuItemElement>,
   ) {
     this.changeDetectorRef.detach();
   }

@@ -5,25 +5,25 @@
 }
 
 @mixin icon-xs {
-  @include icon(5);
+  @include icon(4);
 }
 
 @mixin icon-sm {
-  @include icon(6);
+  @include icon(5);
 }
 
 @mixin icon-md {
-  @include icon(7);
+  @include icon(6);
 }
 
 @mixin icon-lg {
-  @include icon(8);
+  @include icon(7);
 }
 
 @mixin icon-xl {
-  @include icon(9);
+  @include icon(8);
 }
 
 @mixin icon-xxl {
-  @include icon(10);
+  @include icon(9);
 }

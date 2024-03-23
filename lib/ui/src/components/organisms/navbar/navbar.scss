@@ -29,17 +29,8 @@
 
 .navbar__brand {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  font-weight: 600;
-
-  @include text-lg;
-
-  @include no-underline;
-
-  color: $white;
-  @include dark {
-    color: $slate-300;
-  }
 }
 
 .navbar__logo {
@@ -56,46 +47,7 @@
   }
 }
 
-.navbar__nav-item {
-  color: $white;
-  border-radius: $border-radius;
-  align-self: center;
-
-  @include px(1);
-  @include py(0);
-
-  @include mx(1);
-  @include no-underline;
-
-  &:hover {
-    color: $slate-300;
-  }
-
-  @include dark {
-    color: $slate-300;
-
-    &:hover {
-      color: $slate-400;
-    }
-  }
-}
-
-.navbar__mobile-nav,
-.navbar__mobile-nav-trigger {
-  @include lg {
-    display: none;
-  }
-}
-
-.navbar__mobile-nav--closed {
-  display: none;
-}
-
-.navbar__mobile-nav-button {
-  padding: 0px;
-}
-
-.sidenav {
+.navbar__sidenav-trigger {
   @include lg {
     display: none;
   }

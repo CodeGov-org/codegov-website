@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
-import { CardComponent } from '@cg/angular-ui';
+import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
 import { FormatDatePipe } from '~core/pipes';
 import {
   ProposalLinkBaseUrl,
@@ -53,6 +53,7 @@ interface FilterForm {
     RouterLink,
     CardComponent,
     KeyValuePipe,
+    RadioInputComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -117,16 +118,14 @@ interface FilterForm {
         <app-form-field class="filter__value">
           <div class="radio-group">
             @for (property of listFilter | keyvalue; track property.key) {
-              <input
+              <cg-radio-input
                 appInput
-                [id]="property.key"
                 [value]="property.key"
-                type="radio"
                 formControlName="reviewPeriodState"
-              />
-              <label appLabel [for]="property.key">
+                name="reviewPeriodState"
+              >
                 {{ property.value }}
-              </label>
+              </cg-radio-input>
             }
           </div>
         </app-form-field>

@@ -8,7 +8,6 @@ import {
   Input,
   NgZone,
 } from '@angular/core';
-import { Components } from '@cg/ui';
 
 @DefineCustomElement(defineCustomElement)
 @Component({
@@ -21,29 +20,29 @@ import { Components } from '@cg/ui';
 })
 export class NavbarComponent {
   @Input({ required: true })
-  public set homeUrl(value: Components.CgNavbar['homeUrl']) {
+  public set homeUrl(value: HTMLCgNavbarElement['homeUrl']) {
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.homeUrl = value;
     });
   }
-  public get homeUrl(): Components.CgNavbar['homeUrl'] {
+  public get homeUrl(): HTMLCgNavbarElement['homeUrl'] {
     return this.elementRef.nativeElement.homeUrl;
   }
 
   @Input({ required: true })
-  public set links(value: Components.CgNavbar['links']) {
+  public set links(value: HTMLCgNavbarElement['links']) {
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.links = value;
     });
   }
-  public get links(): Components.CgNavbar['links'] {
+  public get links(): HTMLCgNavbarElement['links'] {
     return this.elementRef.nativeElement.links;
   }
 
   constructor(
     private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
-    private readonly elementRef: ElementRef<Components.CgNavbar>,
+    private readonly elementRef: ElementRef<HTMLCgNavbarElement>,
   ) {
     this.changeDetectorRef.detach();
   }
