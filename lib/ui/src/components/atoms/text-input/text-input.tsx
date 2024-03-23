@@ -14,8 +14,8 @@ import {
   formAssociated: true,
   scoped: true,
 })
-export class CustomTextInput {
-  @Prop({ mutable: true })
+export class TextInput {
+  @Prop({ reflect: true })
   public value?: string;
 
   @Prop()

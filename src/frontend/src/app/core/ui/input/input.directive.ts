@@ -27,8 +27,10 @@ export class InputDirective implements OnInit {
       return classes + ' input--textarea';
     }
 
-    if (this.elementRef.nativeElement.type === 'radio') {
-      return classes + ' input--radio';
+    if (
+      this.elementRef.nativeElement.tagName.toLowerCase() === 'cg-radio-input'
+    ) {
+      return '';
     }
 
     return classes;

@@ -20,6 +20,8 @@ pub trait ProposalRepository {
     async fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError>;
 
     fn complete_pending_proposals(&self, current_time: DateTime) -> Result<(), ApiError>;
+
+    fn complete_proposal_by_id(&self, proposal_id: ProposalId) -> Result<(), ApiError>;
 }
 
 pub struct ProposalRepositoryImpl {}
@@ -54,42 +56,63 @@ impl ProposalRepository for ProposalRepositoryImpl {
     fn complete_pending_proposals(&self, current_time: DateTime) -> Result<(), ApiError> {
         let range = ProposalStatusTimestampRange::new(ReviewPeriodState::InProgress.into())?;
 
-        STATE.with_borrow_mut(|s| {
-            let pending_proposals: Vec<_> = s
-                .proposals_status_timestamp_index
+        let pending_proposals = STATE.with_borrow_mut(|s| {
+            s.proposals_status_timestamp_index
                 .range(range)
                 .filter_map(|(_, id)| {
                     s.proposals.get(&id).and_then(|proposal| {
                         self.is_proposal_pending(&proposal, &current_time)
-                            .then_some((id, proposal))
+                            .then_some(id)
                     })
                 })
-                .collect();
+                .collect::<Vec<_>>()
+        });
 
-            for (proposal_id, proposal) in pending_proposals {
-                let old_key = ProposalStatusTimestampKey::new(
-                    ReviewPeriodState::InProgress.into(),
-                    proposal.proposed_at,
-                    proposal_id,
-                )?;
-                let new_key = ProposalStatusTimestampKey::new(
-                    ReviewPeriodState::Completed.into(),
-                    proposal.proposed_at,
-                    proposal_id,
-                )?;
+        for proposal_id in pending_proposals {
+            self.complete_proposal_by_id(proposal_id)?;
+        }
 
-                s.proposals_status_timestamp_index.remove(&old_key);
-                s.proposals_status_timestamp_index
-                    .insert(new_key, proposal_id);
+        Ok(())
+    }
 
-                s.proposals.insert(
-                    proposal_id,
-                    Proposal {
-                        state: ReviewPeriodState::Completed,
-                        ..proposal
-                    },
-                );
-            }
+    fn complete_proposal_by_id(&self, proposal_id: ProposalId) -> Result<(), ApiError> {
+        let proposal = self.get_proposal_by_id(&proposal_id).ok_or_else(|| {
+            ApiError::not_found(&format!(
+                "Proposal with Id {} not found",
+                proposal_id.to_string()
+            ))
+        })?;
+
+        if matches!(proposal.state, ReviewPeriodState::Completed) {
+            return Err(ApiError::conflict(&format!(
+                "Proposal with Id {} is already completed",
+                proposal_id.to_string()
+            )));
+        }
+
+        STATE.with_borrow_mut(|s| {
+            let old_key = ProposalStatusTimestampKey::new(
+                ReviewPeriodState::InProgress.into(),
+                proposal.proposed_at,
+                proposal_id,
+            )?;
+            let new_key = ProposalStatusTimestampKey::new(
+                ReviewPeriodState::Completed.into(),
+                proposal.proposed_at,
+                proposal_id,
+            )?;
+
+            s.proposals_status_timestamp_index.remove(&old_key);
+            s.proposals_status_timestamp_index
+                .insert(new_key, proposal_id);
+
+            s.proposals.insert(
+                proposal_id,
+                Proposal {
+                    state: ReviewPeriodState::Completed,
+                    ..proposal
+                },
+            );
 
             Ok(())
         })

@@ -18,9 +18,11 @@ export class Navbar {
       <header class="navbar">
         <div class="navbar__inner">
           <nav class="navbar__nav">
-            <cg-link-text-btn href={this.homeUrl} class="navbar__brand">
-              <cg-logo-icon class="navbar__logo" aria-hidden />
-              codegov.org
+            <cg-link-text-btn href={this.homeUrl}>
+              <span class="navbar__brand">
+                <cg-logo-icon class="navbar__logo" aria-hidden />
+                codegov.org
+              </span>
             </cg-link-text-btn>
 
             <div class="navbar__desktop-nav">
@@ -39,7 +41,7 @@ export class Navbar {
                     </cg-dropdown-menu>
                   </cg-dropdown>
                 ) : (
-                  <cg-link-text-btn href={item.url} class="navbar__nav">
+                  <cg-link-text-btn href={item.url}>
                     {item.title}
                   </cg-link-text-btn>
                 ),
@@ -47,7 +49,7 @@ export class Navbar {
             </div>
 
             <cg-sidenav
-              class="sidenav"
+              class="navbar__sidenav-trigger"
               homeUrl={this.homeUrl}
               links={this.links}
             />

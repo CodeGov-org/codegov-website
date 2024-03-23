@@ -7,7 +7,6 @@ import {
   NgZone,
 } from '@angular/core';
 
-import { Components } from '@cg/ui';
 import { defineCustomElement } from '@cg/ui/dist/components/cg-dropdown-trigger';
 import { DefineCustomElement } from '../../../define-custom-element';
 
@@ -22,29 +21,29 @@ import { DefineCustomElement } from '../../../define-custom-element';
 })
 export class DropdownTriggerComponent {
   @Input()
-  public set isIconBtn(value: Components.CgDropdownTrigger['isIconBtn']) {
+  public set isIconBtn(value: HTMLCgDropdownTriggerElement['isIconBtn']) {
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.isIconBtn = value;
     });
   }
-  public get isIconBtn(): Components.CgDropdownTrigger['isIconBtn'] {
+  public get isIconBtn(): HTMLCgDropdownTriggerElement['isIconBtn'] {
     return this.elementRef.nativeElement.isIconBtn;
   }
 
   @Input()
-  public set btnLabel(value: Components.CgDropdownTrigger['btnLabel']) {
+  public set btnLabel(value: HTMLCgDropdownTriggerElement['btnLabel']) {
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.btnLabel = value;
     });
   }
-  public get btnLabel(): Components.CgDropdownTrigger['btnLabel'] {
+  public get btnLabel(): HTMLCgDropdownTriggerElement['btnLabel'] {
     return this.elementRef.nativeElement.btnLabel;
   }
 
   constructor(
     private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
-    private readonly elementRef: ElementRef<Components.CgDropdownTrigger>,
+    private readonly elementRef: ElementRef<HTMLCgDropdownTriggerElement>,
   ) {
     this.changeDetectorRef.detach();
   }

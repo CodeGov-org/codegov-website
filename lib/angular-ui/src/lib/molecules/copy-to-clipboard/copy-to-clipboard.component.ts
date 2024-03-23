@@ -7,7 +7,6 @@ import {
   NgZone,
 } from '@angular/core';
 
-import { Components } from '@cg/ui';
 import { defineCustomElement } from '@cg/ui/dist/components/cg-copy-to-clipboard';
 import { DefineCustomElement } from '../../define-custom-element';
 
@@ -22,19 +21,19 @@ import { DefineCustomElement } from '../../define-custom-element';
 })
 export class CopyToClipboardComponent {
   @Input({ required: true })
-  public set value(value: string) {
+  public set value(value: HTMLCgCopyToClipboardElement['value']) {
     this.ngZone.runOutsideAngular(() => {
       this.elementRef.nativeElement.value = value;
     });
   }
-  public get value(): string {
+  public get value(): HTMLCgCopyToClipboardElement['value'] {
     return this.elementRef.nativeElement.value;
   }
 
   constructor(
     private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
-    private readonly elementRef: ElementRef<Components.CgCopyToClipboard>,
+    private readonly elementRef: ElementRef<HTMLCgCopyToClipboardElement>,
   ) {
     this.changeDetectorRef.detach();
   }
