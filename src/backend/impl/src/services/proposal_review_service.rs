@@ -161,9 +161,9 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
         match self.proposal_repository.get_proposal_by_id(&proposal_id) {
             Some(proposal) => {
                 if proposal.is_completed() {
-                    return Err(ApiError::conflict(&format!(
+                    return Err(ApiError::conflict(
                         "The proposal associated with this review is already completed",
-                    )));
+                    ));
                 }
             }
             None => {
