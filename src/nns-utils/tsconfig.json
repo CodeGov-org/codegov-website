@@ -5,6 +5,6 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "target": "ESNext",
-    "outDir": "./dist"
+    "noEmit": true
   }
 }

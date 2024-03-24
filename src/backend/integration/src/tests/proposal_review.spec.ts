@@ -456,7 +456,7 @@ describe('Proposal Review', () => {
 
       const res = await actor.update_proposal_review({
         id: proposalReviewId,
-        status: [{ published: null }],
+        status: [{ draft: null }],
         summary: ['updated summary'],
         review_duration_mins: [1],
         build_reproduced: [false],
