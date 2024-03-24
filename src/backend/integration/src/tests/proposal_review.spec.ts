@@ -16,7 +16,7 @@ import {
 import { Identity } from '@dfinity/agent';
 
 const NNS_SUBNET_ID =
-  'obnwq-g6y3e-wqyyh-zynet-hcurj-vsra3-muuwz-s63k4-eqmrp-izamo-dae';
+  '42beh-62j2h-gq2ve-pcnpv-3bnc7-deuau-n3fik-uqlvq-adbto-naxcl-pae';
 
 const NNS_STATE_PATH = resolve(
   import.meta.dir,
