@@ -57,7 +57,7 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
         calling_principal: Principal,
         request: CreateProposalReviewRequest,
     ) -> Result<CreateProposalReviewResponse, ApiError> {
-        self.validate_request(&request.summary, &request.review_duration_mins)?;
+        self.validate_request(&request.summary, request.review_duration_mins)?;
 
         let user_id = self
             .user_profile_repository
@@ -128,7 +128,7 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
     fn validate_request(
         &self,
         summary: &Option<String>,
-        review_duration_mins: &Option<u16>,
+        review_duration_mins: Option<u16>,
     ) -> Result<(), ApiError> {
         if let Some(summary) = summary {
             if summary.is_empty() {
@@ -143,7 +143,7 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
             }
         }
 
-        if let Some(review_duration_mins) = *review_duration_mins {
+        if let Some(review_duration_mins) = review_duration_mins {
             if review_duration_mins == 0 {
                 return Err(ApiError::invalid_argument("Review duration cannot be 0"));
             }
