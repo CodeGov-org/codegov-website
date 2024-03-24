@@ -66,6 +66,12 @@ impl ApiError {
     }
 }
 
+impl ApiError {
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+}
+
 impl<T> From<Result<T, ApiError>> for ApiResult<T> {
     fn from(result: Result<T, ApiError>) -> Self {
         match result {

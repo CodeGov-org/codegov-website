@@ -233,6 +233,20 @@ type CreateProposalReviewResponse = variant {
   err : Err;
 };
 
+type UpdateProposalReviewRequest = record {
+  id : text;
+  status : opt ProposalReviewStatus;
+  summary : opt text;
+  review_duration_mins : opt nat16;
+  build_reproduced : opt bool;
+  reproduced_build_image_id : opt text;
+};
+
+type UpdateProposalReviewResponse = variant {
+  ok;
+  err : Err;
+};
+
 service : {
   get_my_user_profile : () -> (GetMyUserProfileResponse) query;
   get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;
@@ -243,4 +257,5 @@ service : {
   list_logs : (LogsFilterRequest) -> (ListLogsResponse) query;
   sync_proposals : () -> (SyncProposalsResponse);
   create_proposal_review : (CreateProposalReviewRequest) -> (CreateProposalReviewResponse);
+  update_proposal_review : (UpdateProposalReviewRequest) -> (UpdateProposalReviewResponse);
 };

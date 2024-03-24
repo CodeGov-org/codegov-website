@@ -284,6 +284,299 @@ describe('Proposal Review', () => {
       });
     });
   });
+
+  describe('update proposal review', () => {
+    it('should not allow anonymous principals', async () => {
+      actor.setIdentity(anonymousIdentity);
+
+      const res = await actor.update_proposal_review({
+        id: 'proposal-review-id',
+        status: [{ draft: null }],
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 404,
+        message: `Principal ${anonymousIdentity
+          .getPrincipal()
+          .toText()} must have a profile to call this endpoint`,
+      });
+    });
+
+    it('should not allow non-reviewer principals', async () => {
+      // as anonymous user
+      const alice = generateRandomIdentity();
+      actor.setIdentity(alice);
+
+      await actor.create_my_user_profile();
+
+      const resAnonymous = await actor.update_proposal_review({
+        id: 'proposal-review-id',
+        status: [{ draft: null }],
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      const resAnonymousErr = extractErrResponse(resAnonymous);
+
+      expect(resAnonymousErr).toEqual({
+        code: 403,
+        message: `Principal ${alice
+          .getPrincipal()
+          .toText()} must be a reviewer to call this endpoint`,
+      });
+
+      // as admin
+      actor.setIdentity(controllerIdentity);
+
+      const resAdmin = await actor.update_proposal_review({
+        id: 'proposal-review-id',
+        status: [{ draft: null }],
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      const resAdminErr = extractErrResponse(resAdmin);
+
+      expect(resAdminErr).toEqual({
+        code: 403,
+        message: `Principal ${controllerIdentity
+          .getPrincipal()
+          .toText()} must be a reviewer to call this endpoint`,
+      });
+    });
+
+    it('should not allow to update a proposal review that does not exist', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const nonExistentProposalReviewId =
+        'c61d2984-16c6-4918-9e8b-ed8ee1b05680';
+
+      actor.setIdentity(reviewer);
+
+      const res = await actor.update_proposal_review({
+        id: nonExistentProposalReviewId,
+        status: [{ draft: null }],
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 404,
+        message: `Proposal review with Id ${nonExistentProposalReviewId} not found`,
+      });
+    });
+
+    it('should not allow a reviewer to update a proposal review that belongs to another reviewer', async () => {
+      const alice = generateRandomIdentity();
+      const bob = generateRandomIdentity();
+      await createReviewer(actor, alice);
+      await createReviewer(actor, bob);
+
+      const proposalReviewId = await createProposalReview(
+        actor,
+        governance,
+        alice,
+      );
+
+      actor.setIdentity(bob);
+
+      const res = await actor.update_proposal_review({
+        id: proposalReviewId,
+        status: [{ draft: null }],
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 403,
+        message: 'User is not allowed to update this proposal review',
+      });
+    });
+
+    it('should allow a reviewer to update a proposal review', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const proposalReviewId = await createProposalReview(
+        actor,
+        governance,
+        reviewer,
+      );
+
+      actor.setIdentity(reviewer);
+
+      const res = await actor.update_proposal_review({
+        id: proposalReviewId,
+        status: [{ draft: null }],
+        summary: ['updated summary'],
+        review_duration_mins: [120],
+        build_reproduced: [false],
+        reproduced_build_image_id: [],
+      });
+      const resOk = extractOkResponse(res);
+
+      expect(resOk).toBe(null);
+    });
+
+    it('should not allow a reviewer to update a proposal review that is already published', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const proposalReviewId = await createProposalReview(
+        actor,
+        governance,
+        reviewer,
+      );
+
+      actor.setIdentity(reviewer);
+
+      const resPublished = await actor.update_proposal_review({
+        id: proposalReviewId,
+        status: [{ published: null }],
+        summary: [],
+        review_duration_mins: [],
+        build_reproduced: [],
+        reproduced_build_image_id: [],
+      });
+      extractOkResponse(resPublished);
+
+      const res = await actor.update_proposal_review({
+        id: proposalReviewId,
+        status: [{ published: null }],
+        summary: ['updated summary'],
+        review_duration_mins: [1],
+        build_reproduced: [false],
+        reproduced_build_image_id: [],
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 409,
+        message: `Proposal review with Id ${proposalReviewId} is already published`,
+      });
+    });
+
+    it('should not allow to update a review with invalid fields', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const proposalReviewId = await createProposalReview(
+        actor,
+        governance,
+        reviewer,
+      );
+
+      actor.setIdentity(reviewer);
+
+      const resEmptySummary = await actor.update_proposal_review({
+        id: proposalReviewId,
+        status: [],
+        summary: [''],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      const resEmptySummaryErr = extractErrResponse(resEmptySummary);
+
+      expect(resEmptySummaryErr).toEqual({
+        code: 400,
+        message: 'Summary cannot be empty',
+      });
+
+      const resLongSummary = await actor.update_proposal_review({
+        id: proposalReviewId,
+        status: [],
+        summary: ['a'.repeat(1501)],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      const resLongSummaryErr = extractErrResponse(resLongSummary);
+
+      expect(resLongSummaryErr).toEqual({
+        code: 400,
+        message: 'Summary must be less than 1500 characters',
+      });
+
+      const resZeroDuration = await actor.update_proposal_review({
+        id: proposalReviewId,
+        status: [],
+        summary: ['summary'],
+        review_duration_mins: [0],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      const resZeroDurationErr = extractErrResponse(resZeroDuration);
+
+      expect(resZeroDurationErr).toEqual({
+        code: 400,
+        message: 'Review duration cannot be 0',
+      });
+
+      const resLongDuration = await actor.update_proposal_review({
+        id: proposalReviewId,
+        status: [],
+        summary: ['summary'],
+        review_duration_mins: [3 * 60 + 1],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      const resLongDurationErr = extractErrResponse(resLongDuration);
+
+      expect(resLongDurationErr).toEqual({
+        code: 400,
+        message: 'Review duration must be less than 180 minutes',
+      });
+    });
+
+    it('should not allow to publish a review that has invalid fields', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const proposalId = await createProposal(actor, governance);
+
+      actor.setIdentity(reviewer);
+
+      const resProposalReview = await actor.create_proposal_review({
+        proposal_id: proposalId,
+        summary: [],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      const { id: proposalReviewId } = extractOkResponse(resProposalReview);
+
+      const res = await actor.update_proposal_review({
+        id: proposalReviewId,
+        status: [{ published: null }],
+        summary: [],
+        review_duration_mins: [],
+        build_reproduced: [],
+        reproduced_build_image_id: [],
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 409,
+        message:
+          'Proposal review cannot be published due to invalid field: Summary cannot be empty',
+      });
+    });
+  });
 });
 
 async function createReviewer(
@@ -366,4 +659,24 @@ async function createCompletedProposal(
   }
 
   return completedProposal.id;
+}
+
+async function createProposalReview(
+  actor: BackendActorService,
+  governance: Governance,
+  reviewer: Identity,
+): Promise<string> {
+  const proposalId = await createProposal(actor, governance);
+
+  actor.setIdentity(reviewer);
+  const res = await actor.create_proposal_review({
+    proposal_id: proposalId,
+    summary: ['summary'],
+    review_duration_mins: [60],
+    build_reproduced: [true],
+    reproduced_build_image_id: [],
+  });
+  const { id } = extractOkResponse(res);
+
+  return id;
 }

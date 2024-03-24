@@ -33,7 +33,7 @@ pub trait ProposalReviewRepository {
 
     fn update_proposal_review(
         &self,
-        proposal_review_id: &ProposalReviewId,
+        proposal_review_id: ProposalReviewId,
         proposal_review: ProposalReview,
     ) -> Result<(), ApiError>;
 }
@@ -117,10 +117,10 @@ impl ProposalReviewRepository for ProposalReviewRepositoryImpl {
 
     fn update_proposal_review(
         &self,
-        proposal_review_id: &ProposalReviewId,
+        proposal_review_id: ProposalReviewId,
         proposal_review: ProposalReview,
     ) -> Result<(), ApiError> {
-        self.get_proposal_review_by_id(proposal_review_id)
+        self.get_proposal_review_by_id(&proposal_review_id)
             .ok_or_else(|| {
                 ApiError::not_found(&format!(
                     "Proposal review with id {} not found",
@@ -130,7 +130,7 @@ impl ProposalReviewRepository for ProposalReviewRepositoryImpl {
 
         STATE.with_borrow_mut(|s| {
             s.proposal_reviews
-                .insert(*proposal_review_id, proposal_review);
+                .insert(proposal_review_id, proposal_review);
 
             Ok(())
         })
@@ -273,7 +273,7 @@ mod tests {
             .unwrap();
 
         repository
-            .update_proposal_review(&proposal_review_id, updated_proposal_review.clone())
+            .update_proposal_review(proposal_review_id, updated_proposal_review.clone())
             .unwrap();
 
         let result = repository

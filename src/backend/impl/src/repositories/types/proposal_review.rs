@@ -29,6 +29,16 @@ pub struct ProposalReview {
     pub reproduced_build_image_id: Option<Uuid>,
 }
 
+impl ProposalReview {
+    pub fn is_draft(&self) -> bool {
+        self.status == ProposalReviewStatus::Draft
+    }
+
+    pub fn is_published(&self) -> bool {
+        self.status == ProposalReviewStatus::Published
+    }
+}
+
 impl Storable for ProposalReview {
     fn to_bytes(&self) -> Cow<[u8]> {
         Cow::Owned(Encode!(self).unwrap())

@@ -34,3 +34,13 @@ pub struct CreateProposalReviewResponse {
     pub id: String,
     pub proposal_review: ProposalReview,
 }
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub struct UpdateProposalReviewRequest {
+    pub id: String,
+    pub status: Option<ProposalReviewStatus>,
+    pub summary: Option<String>,
+    pub review_duration_mins: Option<u16>,
+    pub build_reproduced: Option<bool>,
+    pub reproduced_build_image_id: Option<String>,
+}
