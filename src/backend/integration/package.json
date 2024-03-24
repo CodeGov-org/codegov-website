@@ -5,6 +5,7 @@
     "test": "tsc && bun test --timeout 30000"
   },
   "devDependencies": {
-    "@cg/backend": "workspace:*"
+    "@cg/backend": "workspace:*",
+    "@cg/nns-utils": "workspace:*"
   }
 }

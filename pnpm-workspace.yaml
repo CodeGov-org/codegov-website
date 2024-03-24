@@ -8,3 +8,4 @@ packages:
   - src/frontend
   - src/marketing
   - src/nns-testing
+  - src/nns-utils
