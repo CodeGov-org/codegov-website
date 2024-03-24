@@ -157,6 +157,24 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
             )));
         }
 
+        let proposal_id = current_proposal_review.proposal_id;
+        match self.proposal_repository.get_proposal_by_id(&proposal_id) {
+            Some(proposal) => {
+                if proposal.is_completed() {
+                    return Err(ApiError::conflict(&format!(
+                        "The proposal associated with this review is already completed",
+                    )));
+                }
+            }
+            None => {
+                // this should never happen
+                return Err(ApiError::not_found(&format!(
+                    "Proposal with Id {} not found",
+                    proposal_id.to_string()
+                )));
+            }
+        }
+
         if let Some(summary) = request.summary {
             current_proposal_review.summary = summary;
         }
@@ -601,13 +619,18 @@ mod tests {
             .expect_get_proposal_review_by_id()
             .once()
             .with(eq(id))
-            .return_const(Some(original_proposal_review));
+            .return_const(Some(original_proposal_review.clone()));
         pr_repository_mock
             .expect_update_proposal_review()
             .once()
             .with(eq(id), eq(updated_proposal_review.clone()))
             .return_const(Ok(()));
-        let p_repository_mock = MockProposalRepository::new();
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock
+            .expect_get_proposal_by_id()
+            .once()
+            .with(eq(original_proposal_review.proposal_id))
+            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -636,7 +659,8 @@ mod tests {
             .expect_get_proposal_review_by_id()
             .never();
         pr_repository_mock.expect_update_proposal_review().never();
-        let p_repository_mock = MockProposalRepository::new();
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock.expect_get_proposal_by_id().never();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -675,7 +699,8 @@ mod tests {
             .with(eq(id))
             .return_const(None);
         pr_repository_mock.expect_update_proposal_review().never();
-        let p_repository_mock = MockProposalRepository::new();
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock.expect_get_proposal_by_id().never();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -716,7 +741,8 @@ mod tests {
             .with(eq(id))
             .return_const(Some(original_proposal_review));
         pr_repository_mock.expect_update_proposal_review().never();
-        let p_repository_mock = MockProposalRepository::new();
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock.expect_get_proposal_by_id().never();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -732,6 +758,49 @@ mod tests {
             result,
             ApiError::permission_denied("User is not allowed to update this proposal review")
         )
+    }
+
+    #[rstest]
+    fn update_proposal_review_proposal_already_completed() {
+        let calling_principal = fixtures::principal();
+        let user_id = fixtures::uuid_a();
+        let (id, original_proposal_review, request, _) = proposal_review_update();
+
+        let mut u_repository_mock = MockUserProfileRepository::new();
+        u_repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(user_id));
+        let mut pr_repository_mock = MockProposalReviewRepository::new();
+        pr_repository_mock
+            .expect_get_proposal_review_by_id()
+            .with(eq(id))
+            .return_const(Some(original_proposal_review.clone()));
+        pr_repository_mock.expect_update_proposal_review().never();
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock
+            .expect_get_proposal_by_id()
+            .once()
+            .with(eq(original_proposal_review.proposal_id))
+            .return_const(Some(
+                fixtures::nns_replica_version_management_proposal_completed(),
+            ));
+
+        let service = ProposalReviewServiceImpl::new(
+            pr_repository_mock,
+            u_repository_mock,
+            p_repository_mock,
+        );
+
+        let result = service
+            .update_proposal_review(calling_principal, request)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::conflict("The proposal associated with this review is already completed")
+        );
     }
 
     #[rstest]
@@ -757,7 +826,8 @@ mod tests {
             .with(eq(id))
             .return_const(Some(original_proposal_review));
         pr_repository_mock.expect_update_proposal_review().never();
-        let p_repository_mock = MockProposalRepository::new();
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock.expect_get_proposal_by_id().never();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -794,7 +864,8 @@ mod tests {
             .expect_get_proposal_review_by_id()
             .never();
         pr_repository_mock.expect_update_proposal_review().never();
-        let p_repository_mock = MockProposalRepository::new();
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock.expect_get_proposal_by_id().never();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -837,9 +908,14 @@ mod tests {
             .expect_get_proposal_review_by_id()
             .once()
             .with(eq(id))
-            .return_const(Some(original_proposal_review));
+            .return_const(Some(original_proposal_review.clone()));
         pr_repository_mock.expect_update_proposal_review().never();
-        let p_repository_mock = MockProposalRepository::new();
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock
+            .expect_get_proposal_by_id()
+            .once()
+            .with(eq(original_proposal_review.proposal_id))
+            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,

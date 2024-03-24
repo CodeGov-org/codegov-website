@@ -201,7 +201,8 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const proposalId = await createCompletedProposal(pic, actor, governance);
+      const proposalId = await createProposal(actor, governance);
+      await completeProposal(pic, actor, proposalId);
 
       actor.setIdentity(reviewer);
       const res = await actor.create_proposal_review({
@@ -432,6 +433,66 @@ describe('Proposal Review', () => {
       expect(resOk).toBe(null);
     });
 
+    it('should allow a reviewer to publish a proposal review', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const proposalReviewId = await createProposalReview(
+        actor,
+        governance,
+        reviewer,
+      );
+
+      actor.setIdentity(reviewer);
+
+      const res = await actor.update_proposal_review({
+        id: proposalReviewId,
+        status: [{ published: null }],
+        summary: [],
+        review_duration_mins: [],
+        build_reproduced: [],
+        reproduced_build_image_id: [],
+      });
+      const resOk = extractOkResponse(res);
+
+      expect(resOk).toBe(null);
+    });
+
+    it('should not allow a reviewer to update a proposal review for a completed proposal', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const proposalId = await createProposal(actor, governance);
+
+      actor.setIdentity(reviewer);
+      const resProposalReview = await actor.create_proposal_review({
+        proposal_id: proposalId,
+        summary: [],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      const { id: proposalReviewId } = extractOkResponse(resProposalReview);
+
+      await completeProposal(pic, actor, proposalId);
+
+      const res = await actor.update_proposal_review({
+        id: proposalReviewId,
+        status: [{ draft: null }],
+        summary: ['updated summary'],
+        review_duration_mins: [1],
+        build_reproduced: [false],
+        reproduced_build_image_id: [],
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 409,
+        message:
+          'The proposal associated with this review is already completed',
+      });
+    });
+
     it('should not allow a reviewer to update a proposal review that is already published', async () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
@@ -634,13 +695,11 @@ async function createProposal(
   return proposals[0].id;
 }
 
-async function createCompletedProposal(
+async function completeProposal(
   pic: PocketIc,
   actor: BackendActorService,
-  governance: Governance,
-): Promise<string> {
-  const proposalId = await createProposal(actor, governance);
-
+  proposalId: string,
+) {
   // advance time to make the proposal expire
   await pic.advanceTime(48 * 60 * 60 * 1000); // 48 hours
   // ensure timers run
@@ -657,8 +716,6 @@ async function createCompletedProposal(
       `Expected proposal id ${proposalId} but got ${completedProposal.id}`,
     );
   }
-
-  return completedProposal.id;
 }
 
 async function createProposalReview(
