@@ -23,9 +23,10 @@ pub struct ProposalReview {
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
 pub struct CreateProposalReviewRequest {
     pub proposal_id: String,
-    pub summary: String,
-    pub review_duration_mins: u16,
-    pub build_reproduced: bool,
+    pub summary: Option<String>,
+    pub review_duration_mins: Option<u16>,
+    pub build_reproduced: Option<bool>,
+    pub reproduced_build_image_id: Option<String>,
 }
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]

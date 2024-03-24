@@ -57,7 +57,7 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
         calling_principal: Principal,
         request: CreateProposalReviewRequest,
     ) -> Result<CreateProposalReviewResponse, ApiError> {
-        self.validate_create_proposal_review_request(&request)?;
+        self.validate_request(&request.summary, &request.review_duration_mins)?;
 
         let user_id = self
             .user_profile_repository
@@ -95,9 +95,9 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
             user_id,
             status: ProposalReviewStatus::Draft,
             created_at: DateTime::new(date_time)?,
-            summary: request.summary,
-            review_duration_mins: request.review_duration_mins,
-            build_reproduced: request.build_reproduced,
+            summary: request.summary.unwrap_or("".to_string()),
+            review_duration_mins: request.review_duration_mins.unwrap_or(0),
+            build_reproduced: request.build_reproduced.unwrap_or(false),
             reproduced_build_image_id: None,
         };
 
@@ -125,30 +125,35 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
         }
     }
 
-    fn validate_create_proposal_review_request(
+    fn validate_request(
         &self,
-        request: &CreateProposalReviewRequest,
+        summary: &Option<String>,
+        review_duration_mins: &Option<u16>,
     ) -> Result<(), ApiError> {
-        if request.summary.is_empty() {
-            return Err(ApiError::invalid_argument("Summary cannot be empty"));
+        if let Some(summary) = summary {
+            if summary.is_empty() {
+                return Err(ApiError::invalid_argument("Summary cannot be empty"));
+            }
+
+            if summary.chars().count() > MAX_PROPOSAL_REVIEW_SUMMARY_CHARS {
+                return Err(ApiError::invalid_argument(&format!(
+                    "Summary must be less than {} characters",
+                    MAX_PROPOSAL_REVIEW_SUMMARY_CHARS
+                )));
+            }
         }
 
-        if request.summary.chars().count() > MAX_PROPOSAL_REVIEW_SUMMARY_CHARS {
-            return Err(ApiError::invalid_argument(&format!(
-                "Summary must be less than {} characters",
-                MAX_PROPOSAL_REVIEW_SUMMARY_CHARS
-            )));
-        }
+        if let Some(review_duration_mins) = *review_duration_mins {
+            if review_duration_mins == 0 {
+                return Err(ApiError::invalid_argument("Review duration cannot be 0"));
+            }
 
-        if request.review_duration_mins == 0 {
-            return Err(ApiError::invalid_argument("Review duration cannot be 0"));
-        }
-
-        if request.review_duration_mins > MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS {
-            return Err(ApiError::invalid_argument(&format!(
-                "Review duration must be less than {} minutes",
-                MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS
-            )));
+            if review_duration_mins > MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS {
+                return Err(ApiError::invalid_argument(&format!(
+                    "Review duration must be less than {} minutes",
+                    MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS
+                )));
+            }
         }
 
         Ok(())
@@ -168,10 +173,14 @@ mod tests {
     use rstest::*;
 
     #[rstest]
-    async fn create_proposal_review() {
+    #[case::empty(proposal_review_create_empty())]
+    #[case::full(proposal_review_create())]
+    async fn create_proposal_review(
+        #[case] fixture: (ProposalReview, CreateProposalReviewRequest),
+    ) {
         let calling_principal = fixtures::principal();
         let user_id = fixtures::user_id();
-        let (proposal_review, request) = proposal_review_create();
+        let (proposal_review, request) = fixture;
         let proposal_id = Uuid::try_from(request.proposal_id.as_str()).unwrap();
         let id = fixtures::proposal_review_id();
 
@@ -380,9 +389,33 @@ mod tests {
             proposal_review.clone(),
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
-                summary: proposal_review.summary.clone(),
-                review_duration_mins: proposal_review.review_duration_mins,
-                build_reproduced: proposal_review.build_reproduced,
+                summary: Some(proposal_review.summary.clone()),
+                review_duration_mins: Some(proposal_review.review_duration_mins),
+                build_reproduced: Some(proposal_review.build_reproduced),
+                reproduced_build_image_id: None,
+            },
+        )
+    }
+
+    #[fixture]
+    fn proposal_review_create_empty() -> (ProposalReview, CreateProposalReviewRequest) {
+        let date_time = get_date_time().unwrap();
+        let proposal_review = ProposalReview {
+            created_at: DateTime::new(date_time).unwrap(),
+            summary: "".to_string(),
+            review_duration_mins: 0,
+            build_reproduced: false,
+            ..fixtures::proposal_review_draft()
+        };
+
+        (
+            proposal_review.clone(),
+            CreateProposalReviewRequest {
+                proposal_id: proposal_review.proposal_id.to_string(),
+                summary: None,
+                review_duration_mins: None,
+                build_reproduced: None,
+                reproduced_build_image_id: None,
             },
         )
     }
@@ -394,9 +427,10 @@ mod tests {
         (
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
-                summary: "".to_string(),
-                review_duration_mins: proposal_review.review_duration_mins,
-                build_reproduced: proposal_review.build_reproduced,
+                summary: Some("".to_string()),
+                review_duration_mins: Some(proposal_review.review_duration_mins),
+                build_reproduced: Some(proposal_review.build_reproduced),
+                reproduced_build_image_id: None,
             },
             ApiError::invalid_argument("Summary cannot be empty"),
         )
@@ -409,9 +443,10 @@ mod tests {
         (
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
-                summary: "a".repeat(MAX_PROPOSAL_REVIEW_SUMMARY_CHARS + 1),
-                review_duration_mins: proposal_review.review_duration_mins,
-                build_reproduced: proposal_review.build_reproduced,
+                summary: Some("a".repeat(MAX_PROPOSAL_REVIEW_SUMMARY_CHARS + 1)),
+                review_duration_mins: Some(proposal_review.review_duration_mins),
+                build_reproduced: Some(proposal_review.build_reproduced),
+                reproduced_build_image_id: None,
             },
             ApiError::invalid_argument(&format!(
                 "Summary must be less than {} characters",
@@ -427,9 +462,10 @@ mod tests {
         (
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
-                summary: proposal_review.summary,
-                review_duration_mins: 0,
-                build_reproduced: proposal_review.build_reproduced,
+                summary: Some(proposal_review.summary),
+                review_duration_mins: Some(0),
+                build_reproduced: Some(proposal_review.build_reproduced),
+                reproduced_build_image_id: None,
             },
             ApiError::invalid_argument("Review duration cannot be 0"),
         )
@@ -443,9 +479,10 @@ mod tests {
         (
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
-                summary: proposal_review.summary,
-                review_duration_mins: MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS + 1,
-                build_reproduced: proposal_review.build_reproduced,
+                summary: Some(proposal_review.summary),
+                review_duration_mins: Some(MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS + 1),
+                build_reproduced: Some(proposal_review.build_reproduced),
+                reproduced_build_image_id: None,
             },
             ApiError::invalid_argument(&format!(
                 "Review duration must be less than {} minutes",

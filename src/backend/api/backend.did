@@ -219,9 +219,10 @@ type ProposalReview = record {
 
 type CreateProposalReviewRequest = record {
   proposal_id : text;
-  summary : text;
-  review_duration_mins : nat16;
-  build_reproduced : bool;
+  summary : opt text;
+  review_duration_mins : opt nat16;
+  build_reproduced : opt bool;
+  reproduced_build_image_id : opt text;
 };
 
 type CreateProposalReviewResponse = variant {

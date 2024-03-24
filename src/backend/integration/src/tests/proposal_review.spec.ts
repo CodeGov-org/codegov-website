@@ -62,9 +62,10 @@ describe('Proposal Review', () => {
 
       const res = await actor.create_proposal_review({
         proposal_id: 'proposal-id',
-        summary: 'summary',
-        review_duration_mins: 60,
-        build_reproduced: true,
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
       });
       const resErr = extractErrResponse(res);
 
@@ -83,15 +84,16 @@ describe('Proposal Review', () => {
 
       await actor.create_my_user_profile();
 
-      let res = await actor.create_proposal_review({
+      const resAnonymous = await actor.create_proposal_review({
         proposal_id: 'proposal-id',
-        summary: 'summary',
-        review_duration_mins: 60,
-        build_reproduced: true,
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
       });
-      let resErr = extractErrResponse(res);
+      const resAnonymousErr = extractErrResponse(resAnonymous);
 
-      expect(resErr).toEqual({
+      expect(resAnonymousErr).toEqual({
         code: 403,
         message: `Principal ${alice
           .getPrincipal()
@@ -101,15 +103,16 @@ describe('Proposal Review', () => {
       // as admin
       actor.setIdentity(controllerIdentity);
 
-      res = await actor.create_proposal_review({
+      const resAdmin = await actor.create_proposal_review({
         proposal_id: 'proposal-id',
-        summary: 'summary',
-        review_duration_mins: 60,
-        build_reproduced: true,
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
       });
-      resErr = extractErrResponse(res);
+      const resAdminErr = extractErrResponse(resAdmin);
 
-      expect(resErr).toEqual({
+      expect(resAdminErr).toEqual({
         code: 403,
         message: `Principal ${controllerIdentity
           .getPrincipal()
@@ -124,15 +127,17 @@ describe('Proposal Review', () => {
       const proposalId = await createProposal(actor, governance);
 
       actor.setIdentity(reviewer);
-      const res = await actor.create_proposal_review({
-        proposal_id: proposalId,
-        summary: 'summary',
-        review_duration_mins: 60,
-        build_reproduced: true,
-      });
-      const resOk = extractOkResponse(res);
 
-      expect(resOk).toEqual({
+      const resFull = await actor.create_proposal_review({
+        proposal_id: proposalId,
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      const resFullOk = extractOkResponse(resFull);
+
+      expect(resFullOk).toEqual({
         id: expect.any(String),
         proposal_review: {
           proposal_id: proposalId,
@@ -142,6 +147,29 @@ describe('Proposal Review', () => {
           summary: 'summary',
           review_duration_mins: 60,
           build_reproduced: true,
+          reproduced_build_image_id: [],
+        },
+      });
+
+      const resEmpty = await actor.create_proposal_review({
+        proposal_id: proposalId,
+        summary: [],
+        review_duration_mins: [],
+        build_reproduced: [],
+        reproduced_build_image_id: [],
+      });
+      const resEmptyOk = extractOkResponse(resEmpty);
+
+      expect(resEmptyOk).toEqual({
+        id: expect.any(String),
+        proposal_review: {
+          proposal_id: proposalId,
+          user_id: reviewerId,
+          status: { draft: null },
+          created_at: dateToRfc3339(currentDate),
+          summary: '',
+          review_duration_mins: 0,
+          build_reproduced: false,
           reproduced_build_image_id: [],
         },
       });
@@ -156,9 +184,10 @@ describe('Proposal Review', () => {
       actor.setIdentity(reviewer);
       const res = await actor.create_proposal_review({
         proposal_id: nonExistentProposalId,
-        summary: 'summary',
-        review_duration_mins: 60,
-        build_reproduced: true,
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
       });
       const resErr = extractErrResponse(res);
 
@@ -177,9 +206,10 @@ describe('Proposal Review', () => {
       actor.setIdentity(reviewer);
       const res = await actor.create_proposal_review({
         proposal_id: proposalId,
-        summary: 'summary',
-        review_duration_mins: 60,
-        build_reproduced: true,
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
       });
       const resErr = extractErrResponse(res);
 
@@ -197,58 +227,58 @@ describe('Proposal Review', () => {
 
       actor.setIdentity(reviewer);
 
-      // empty summary
-      let res = await actor.create_proposal_review({
+      const resEmptySummary = await actor.create_proposal_review({
         proposal_id: proposalId,
-        summary: '',
-        review_duration_mins: 60,
-        build_reproduced: true,
+        summary: [''],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
       });
-      let resErr = extractErrResponse(res);
+      const resEmptySummaryErr = extractErrResponse(resEmptySummary);
 
-      expect(resErr).toEqual({
+      expect(resEmptySummaryErr).toEqual({
         code: 400,
         message: 'Summary cannot be empty',
       });
 
-      // too long summary
-      res = await actor.create_proposal_review({
+      const resLongSummary = await actor.create_proposal_review({
         proposal_id: proposalId,
-        summary: 'a'.repeat(1501),
-        review_duration_mins: 60,
-        build_reproduced: true,
+        summary: ['a'.repeat(1501)],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
       });
-      resErr = extractErrResponse(res);
+      const resLongSummaryErr = extractErrResponse(resLongSummary);
 
-      expect(resErr).toEqual({
+      expect(resLongSummaryErr).toEqual({
         code: 400,
         message: 'Summary must be less than 1500 characters',
       });
 
-      // zero duration
-      res = await actor.create_proposal_review({
+      const resZeroDuration = await actor.create_proposal_review({
         proposal_id: proposalId,
-        summary: 'summary',
-        review_duration_mins: 0,
-        build_reproduced: true,
+        summary: ['summary'],
+        review_duration_mins: [0],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
       });
-      resErr = extractErrResponse(res);
+      const resZeroDurationErr = extractErrResponse(resZeroDuration);
 
-      expect(resErr).toEqual({
+      expect(resZeroDurationErr).toEqual({
         code: 400,
         message: 'Review duration cannot be 0',
       });
 
-      // too long duration
-      res = await actor.create_proposal_review({
+      const resLongDuration = await actor.create_proposal_review({
         proposal_id: proposalId,
-        summary: 'summary',
-        review_duration_mins: 3 * 60 + 1,
-        build_reproduced: true,
+        summary: ['summary'],
+        review_duration_mins: [3 * 60 + 1],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
       });
-      resErr = extractErrResponse(res);
+      const resLongDurationErr = extractErrResponse(resLongDuration);
 
-      expect(resErr).toEqual({
+      expect(resLongDurationErr).toEqual({
         code: 400,
         message: 'Review duration must be less than 180 minutes',
       });

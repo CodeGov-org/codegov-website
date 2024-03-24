@@ -87,9 +87,10 @@ mod tests {
         let calling_principal = fixtures::principal();
         let request = CreateProposalReviewRequest {
             proposal_id: "proposal_id".to_string(),
-            summary: "summary".to_string(),
-            review_duration_mins: 10,
-            build_reproduced: true,
+            summary: Some("summary".to_string()),
+            review_duration_mins: Some(10),
+            build_reproduced: Some(true),
+            reproduced_build_image_id: None,
         };
         let response = CreateProposalReviewResponse {
             id: "id".to_string(),
@@ -126,9 +127,10 @@ mod tests {
         let calling_principal = fixtures::principal();
         let request = CreateProposalReviewRequest {
             proposal_id: "proposal_id".to_string(),
-            summary: "summary".to_string(),
-            review_duration_mins: 10,
-            build_reproduced: true,
+            summary: Some("summary".to_string()),
+            review_duration_mins: Some(10),
+            build_reproduced: Some(true),
+            reproduced_build_image_id: None,
         };
         let error = ApiError::permission_denied(&format!(
             "Principal {} must be an admin to call this endpoint",
