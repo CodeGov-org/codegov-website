@@ -188,6 +188,71 @@ describe('Proposal Review', () => {
         message: `Proposal with Id ${proposalId} is already completed`,
       });
     });
+
+    it('should not allow to create an invalid review', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const proposalId = await createProposal(actor, governance);
+
+      actor.setIdentity(reviewer);
+
+      // empty summary
+      let res = await actor.create_proposal_review({
+        proposal_id: proposalId,
+        summary: '',
+        review_duration_mins: 60,
+        build_reproduced: true,
+      });
+      let resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 400,
+        message: 'Summary cannot be empty',
+      });
+
+      // too long summary
+      res = await actor.create_proposal_review({
+        proposal_id: proposalId,
+        summary: 'a'.repeat(1501),
+        review_duration_mins: 60,
+        build_reproduced: true,
+      });
+      resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 400,
+        message: 'Summary must be less than 1500 characters',
+      });
+
+      // zero duration
+      res = await actor.create_proposal_review({
+        proposal_id: proposalId,
+        summary: 'summary',
+        review_duration_mins: 0,
+        build_reproduced: true,
+      });
+      resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 400,
+        message: 'Review duration cannot be 0',
+      });
+
+      // too long duration
+      res = await actor.create_proposal_review({
+        proposal_id: proposalId,
+        summary: 'summary',
+        review_duration_mins: 3 * 60 + 1,
+        build_reproduced: true,
+      });
+      resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 400,
+        message: 'Review duration must be less than 180 minutes',
+      });
+    });
   });
 });
 
