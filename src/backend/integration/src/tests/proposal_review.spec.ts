@@ -47,7 +47,6 @@ describe('Proposal Review', () => {
     });
     const fixture = await setupBackendCanister(pic, currentDate);
     actor = fixture.actor;
-    console.log('canisterId', fixture.canisterId.toText());
 
     governance = new Governance(pic);
   });
