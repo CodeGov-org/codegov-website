@@ -1,10 +1,10 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["./**/*.ts"],
+  "include": ["./**/*.ts", "./**/*.d.ts"],
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Node",
     "target": "ESNext",
-    "noEmit": true
+    "allowJs": true
   }
 }

@@ -1,5 +1,4 @@
 import { resolve } from 'path';
-import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { type _SERVICE } from '@cg/backend';
 import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
 import { Principal } from '@dfinity/principal';
@@ -19,7 +18,7 @@ const NNS_SUBNET_ID =
   '2o3zy-oo4hc-r3mtq-ylrpf-g6qge-qmuzn-2bsuv-d3yhd-e4qjc-6ff2b-6ae';
 
 const NNS_STATE_PATH = resolve(
-  import.meta.dir,
+  __dirname,
   '..',
   '..',
   'state',

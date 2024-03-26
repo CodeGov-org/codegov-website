@@ -2,10 +2,14 @@
   "name": "backend-integration",
   "private": true,
   "scripts": {
-    "test": "tsc && bun test --timeout 30000"
+    "test": "tsc && jest --testTimeout 30000"
   },
   "devDependencies": {
     "@cg/backend": "workspace:*",
-    "@cg/nns-utils": "workspace:*"
+    "@cg/nns-utils": "workspace:*",
+    "@types/jest": "^29.5.12",
+    "date-fns-tz": "^2.0.1",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.2"
   }
 }

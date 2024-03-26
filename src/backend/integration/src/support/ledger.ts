@@ -2,11 +2,13 @@ import { AnonymousIdentity, Identity } from '@dfinity/agent';
 import { Principal } from '@dfinity/principal';
 import { Actor, PocketIc } from '@hadronous/pic';
 import {
-  _SERVICE as LedgerService,
-  SubAccount,
-  idlFactory as ledgerIdlFactory,
-} from '@cg/nns-utils/src/canisters/ledger';
+  LedgerDeclarations
+} from '@cg/nns-utils';
 import { ICP_LEDGER_CANISTER_ID, minterIdentity } from '@cg/nns-utils';
+
+type LedgerService = LedgerDeclarations._SERVICE;
+type SubAccount = LedgerDeclarations.SubAccount;
+const ledgerIdlFactory = LedgerDeclarations.idlFactory;
 
 const DEFAULT_FEE = 10_000n;
 

@@ -1,9 +1,8 @@
 import { Actor, PocketIc } from '@hadronous/pic';
 import { AnonymousIdentity, Identity } from '@dfinity/agent';
 import {
-  _SERVICE as GovernanceService,
-  idlFactory as governanceIdlFactory,
-} from '@cg/nns-utils/src/canisters/governance';
+  GovernanceDeclarations,
+} from '@cg/nns-utils';
 import { Ledger } from './ledger';
 import {
   GOVERNANCE_CANISTER_ID,
@@ -14,6 +13,9 @@ import {
   bigEndianU64,
   icpToE8s,
 } from '@cg/nns-utils';
+
+type GovernanceService = GovernanceDeclarations._SERVICE;
+const governanceIdlFactory = GovernanceDeclarations.idlFactory;
 
 export interface CreateRvmProposalRequest {
   neuronId: bigint;

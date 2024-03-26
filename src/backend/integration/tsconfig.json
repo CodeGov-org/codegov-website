@@ -4,8 +4,13 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Node",
+    "esModuleInterop": true,
     "target": "ESNext",
     "noEmit": true,
-    "types": ["bun-types"]
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "@cg/*": ["../../../lib/*"]
+    }
   }
 }

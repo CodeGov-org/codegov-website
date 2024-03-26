@@ -1,6 +1,7 @@
 packages:
   - lib/angular-ui
   - lib/backend
+  - lib/nns-utils
   - lib/styles
   - lib/ui
   - src/backend/integration
@@ -8,4 +9,3 @@ packages:
   - src/frontend
   - src/marketing
   - src/nns-testing
-  - src/nns-utils

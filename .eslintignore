@@ -1,2 +1,2 @@
 # candid generated files for NNS
-src/nns-utils/src/canisters/*
+lib/nns-utils/src/canisters/*
