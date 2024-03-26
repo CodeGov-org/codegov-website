@@ -1,9 +1,7 @@
 import { AnonymousIdentity, Identity } from '@dfinity/agent';
 import { Principal } from '@dfinity/principal';
 import { Actor, PocketIc } from '@hadronous/pic';
-import {
-  LedgerDeclarations
-} from '@cg/nns-utils';
+import { LedgerDeclarations } from '@cg/nns-utils';
 import { ICP_LEDGER_CANISTER_ID, minterIdentity } from '@cg/nns-utils';
 
 type LedgerService = LedgerDeclarations._SERVICE;

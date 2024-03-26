@@ -1,8 +1,6 @@
 import { Actor, PocketIc } from '@hadronous/pic';
 import { AnonymousIdentity, Identity } from '@dfinity/agent';
-import {
-  GovernanceDeclarations,
-} from '@cg/nns-utils';
+import { GovernanceDeclarations } from '@cg/nns-utils';
 import { Ledger } from './ledger';
 import {
   GOVERNANCE_CANISTER_ID,
