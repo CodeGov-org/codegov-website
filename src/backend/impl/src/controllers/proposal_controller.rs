@@ -57,7 +57,7 @@ impl<A: AccessControlService, L: LogService, P: ProposalService> ProposalControl
 
     async fn sync_proposals(&self, calling_principal: Principal) -> Result<(), ApiError> {
         self.access_control_service
-            .assert_principal_is_admin(calling_principal)?;
+            .assert_principal_is_admin(&calling_principal)?;
 
         self.proposal_service.fetch_and_save_nns_proposals().await
     }

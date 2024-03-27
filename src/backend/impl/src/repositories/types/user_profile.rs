@@ -74,6 +74,14 @@ impl UserProfile {
             },
         }
     }
+
+    pub fn is_admin(&self) -> bool {
+        matches!(self.config, UserConfig::Admin { .. })
+    }
+
+    pub fn is_reviewer(&self) -> bool {
+        matches!(self.config, UserConfig::Reviewer { .. })
+    }
 }
 
 impl Storable for UserProfile {

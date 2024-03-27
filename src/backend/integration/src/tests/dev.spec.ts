@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it } from 'bun:test';
 import { Principal } from '@dfinity/principal';
 import { PocketIc } from '@hadronous/pic';
 import { BACKEND_WASM_PATH, controllerIdentity } from '../support';
@@ -24,14 +23,14 @@ describe('Dev features', () => {
   });
 
   it('should not allow closing proposals', async () => {
-    expect(
+    await expect(
       async () =>
         await pic.updateCall({
           canisterId,
           method: 'close_proposal',
           arg: IDL.encode([IDL.Text], ['e716b277-cea0-40ba-b458-2e4585bc2a2f']),
         }),
-    ).toThrow(
+    ).rejects.toThrow(
       `Canister ${canisterId.toText()} has no update method 'close_proposal'`,
     );
   });

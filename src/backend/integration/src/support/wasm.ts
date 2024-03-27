@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { controllerIdentity } from './identity';
 
 export const BACKEND_WASM_PATH = resolve(
-  import.meta.dir,
+  __dirname,
   '..',
   '..',
   '..',

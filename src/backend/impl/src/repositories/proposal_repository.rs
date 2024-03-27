@@ -5,7 +5,6 @@ use super::{
     ProposalStatusTimestampRange, ReviewPeriodState,
 };
 use backend_api::ApiError;
-use chrono::Duration;
 use std::cell::RefCell;
 
 #[cfg_attr(test, mockall::automock)]
@@ -60,10 +59,9 @@ impl ProposalRepository for ProposalRepositoryImpl {
             s.proposals_status_timestamp_index
                 .range(range)
                 .filter_map(|(_, id)| {
-                    s.proposals.get(&id).and_then(|proposal| {
-                        self.is_proposal_pending(&proposal, &current_time)
-                            .then_some(id)
-                    })
+                    s.proposals
+                        .get(&id)
+                        .and_then(|proposal| proposal.is_pending(&current_time).then_some(id))
                 })
                 .collect::<Vec<_>>()
         });
@@ -83,7 +81,7 @@ impl ProposalRepository for ProposalRepositoryImpl {
             ))
         })?;
 
-        if matches!(proposal.state, ReviewPeriodState::Completed) {
+        if proposal.is_completed() {
             return Err(ApiError::conflict(&format!(
                 "Proposal with Id {} is already completed",
                 proposal_id.to_string()
@@ -137,12 +135,6 @@ impl ProposalRepository for ProposalRepositoryImpl {
 }
 
 impl ProposalRepositoryImpl {
-    fn is_proposal_pending(&self, proposal: &Proposal, current_time: &DateTime) -> bool {
-        proposal.proposed_at <= current_time.sub(Duration::hours(48))
-    }
-}
-
-impl ProposalRepositoryImpl {
     pub fn new() -> Self {
         Self {}
     }
@@ -174,6 +166,7 @@ mod tests {
         repositories::ReviewPeriodState,
         system_api::get_date_time,
     };
+    use chrono::Duration;
     use rstest::*;
 
     #[rstest]

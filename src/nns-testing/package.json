@@ -5,6 +5,7 @@
     "start": "bun run ./src/index.ts"
   },
   "dependencies": {
+    "@cg/nns-utils": "workspace:*",
     "@dfinity/ledger-icp": "^2.2.1",
     "@dfinity/nns": "^4.0.1",
     "@dfinity/nns-proto": "^1.0.1",

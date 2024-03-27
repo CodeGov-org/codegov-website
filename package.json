@@ -14,7 +14,8 @@
     "lint:fix": "eslint -c .eslintrc.js --fix .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "cloc": "pnpx cloc --exclude-dir=node_modules,target,build,dist,.dfx,.docusaurus --exclude-ext=yaml,yml,md,toml,json ."
+    "cloc": "pnpx cloc --exclude-dir=node_modules,target,build,dist,.dfx,.docusaurus --exclude-ext=yaml,yml,md,toml,json .",
+    "postinstall": "./scripts/postinstall.sh"
   },
   "dependencies": {
     "@angular/core": "^17.0.8",

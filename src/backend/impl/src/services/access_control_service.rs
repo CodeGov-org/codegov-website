@@ -1,4 +1,4 @@
-use crate::repositories::{UserConfig, UserProfileRepository, UserProfileRepositoryImpl};
+use crate::repositories::{UserProfileRepository, UserProfileRepositoryImpl};
 use backend_api::ApiError;
 use candid::Principal;
 
@@ -7,7 +7,9 @@ pub trait AccessControlService {
     fn assert_principal_not_anonymous(&self, calling_principal: &Principal)
         -> Result<(), ApiError>;
 
-    fn assert_principal_is_admin(&self, calling_principal: Principal) -> Result<(), ApiError>;
+    fn assert_principal_is_admin(&self, calling_principal: &Principal) -> Result<(), ApiError>;
+
+    fn assert_principal_is_reviewer(&self, calling_principal: &Principal) -> Result<(), ApiError>;
 }
 
 pub struct AccessControlServiceImpl<T: UserProfileRepository> {
@@ -32,21 +34,42 @@ impl<T: UserProfileRepository> AccessControlService for AccessControlServiceImpl
         Ok(())
     }
 
-    fn assert_principal_is_admin(&self, calling_principal: Principal) -> Result<(), ApiError> {
+    fn assert_principal_is_admin(&self, calling_principal: &Principal) -> Result<(), ApiError> {
         let (_id, profile) = self
             .user_profile_repository
-            .get_user_profile_by_principal(&calling_principal)
+            .get_user_profile_by_principal(calling_principal)
             .ok_or_else(|| {
                 ApiError::not_found(&format!(
                     "Principal {} must have a profile to call this endpoint",
-                    &calling_principal.to_text()
+                    calling_principal.to_text()
                 ))
             })?;
 
-        if !matches!(profile.config, UserConfig::Admin { .. }) {
+        if !profile.is_admin() {
             return Err(ApiError::permission_denied(&format!(
                 "Principal {} must be an admin to call this endpoint",
-                &calling_principal.to_text()
+                calling_principal.to_text()
+            )));
+        }
+
+        Ok(())
+    }
+
+    fn assert_principal_is_reviewer(&self, calling_principal: &Principal) -> Result<(), ApiError> {
+        let (_id, profile) = self
+            .user_profile_repository
+            .get_user_profile_by_principal(calling_principal)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "Principal {} must have a profile to call this endpoint",
+                    calling_principal.to_text()
+                ))
+            })?;
+
+        if !profile.is_reviewer() {
+            return Err(ApiError::permission_denied(&format!(
+                "Principal {} must be a reviewer to call this endpoint",
+                calling_principal.to_text()
             )));
         }
 
@@ -96,7 +119,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn assert_principal_is_admin() {
+    fn assert_principal_is_admin() {
         let calling_principal = fixtures::principal();
         let id = fixtures::user_id();
         let profile = fixtures::admin_user_profile();
@@ -111,12 +134,12 @@ mod tests {
         let service = AccessControlServiceImpl::new(repository_mock);
 
         service
-            .assert_principal_is_admin(calling_principal)
+            .assert_principal_is_admin(&calling_principal)
             .unwrap();
     }
 
     #[rstest]
-    async fn assert_principal_is_admin_no_profile() {
+    fn assert_principal_is_admin_no_profile() {
         let calling_principal = fixtures::principal();
 
         let mut repository_mock = MockUserProfileRepository::new();
@@ -129,7 +152,7 @@ mod tests {
         let service = AccessControlServiceImpl::new(repository_mock);
 
         let result = service
-            .assert_principal_is_admin(calling_principal)
+            .assert_principal_is_admin(&calling_principal)
             .unwrap_err();
 
         assert_eq!(
@@ -142,7 +165,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn assert_principal_anonymous_user() {
+    fn assert_principal_is_admin_anonymous_user() {
         let calling_principal = fixtures::principal();
         let id = fixtures::user_id();
         let profile = fixtures::anonymous_user_profile();
@@ -157,7 +180,7 @@ mod tests {
         let service = AccessControlServiceImpl::new(repository_mock);
 
         let result = service
-            .assert_principal_is_admin(calling_principal)
+            .assert_principal_is_admin(&calling_principal)
             .unwrap_err();
 
         assert_eq!(
@@ -170,7 +193,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn assert_principal_reviewer() {
+    fn assert_principal_is_admin_reviewer() {
         let calling_principal = fixtures::principal();
         let id = fixtures::user_id();
         let profile = fixtures::reviewer_user_profile();
@@ -185,13 +208,115 @@ mod tests {
         let service = AccessControlServiceImpl::new(repository_mock);
 
         let result = service
-            .assert_principal_is_admin(calling_principal)
+            .assert_principal_is_admin(&calling_principal)
             .unwrap_err();
 
         assert_eq!(
             result,
             ApiError::permission_denied(&format!(
                 "Principal {} must be an admin to call this endpoint",
+                &calling_principal.to_text()
+            ))
+        );
+    }
+
+    #[rstest]
+    fn assert_principal_is_reviewer() {
+        let calling_principal = fixtures::principal();
+        let id = fixtures::user_id();
+        let profile = fixtures::reviewer_user_profile();
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_profile_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some((id, profile)));
+
+        let service = AccessControlServiceImpl::new(repository_mock);
+
+        service
+            .assert_principal_is_reviewer(&calling_principal)
+            .unwrap();
+    }
+
+    #[rstest]
+    fn assert_principal_is_reviewer_no_profile() {
+        let calling_principal = fixtures::principal();
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_profile_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(None);
+
+        let service = AccessControlServiceImpl::new(repository_mock);
+
+        let result = service
+            .assert_principal_is_reviewer(&calling_principal)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::not_found(&format!(
+                "Principal {} must have a profile to call this endpoint",
+                &calling_principal.to_text()
+            ))
+        );
+    }
+
+    #[rstest]
+    fn assert_principal_is_reviewer_anonymous_user() {
+        let calling_principal = fixtures::principal();
+        let id = fixtures::user_id();
+        let profile = fixtures::anonymous_user_profile();
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_profile_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some((id, profile)));
+
+        let service = AccessControlServiceImpl::new(repository_mock);
+
+        let result = service
+            .assert_principal_is_reviewer(&calling_principal)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::permission_denied(&format!(
+                "Principal {} must be a reviewer to call this endpoint",
+                &calling_principal.to_text()
+            ))
+        );
+    }
+
+    #[rstest]
+    fn assert_principal_is_reviewer_admin() {
+        let calling_principal = fixtures::principal();
+        let id = fixtures::user_id();
+        let profile = fixtures::admin_user_profile();
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_user_profile_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some((id, profile)));
+
+        let service = AccessControlServiceImpl::new(repository_mock);
+
+        let result = service
+            .assert_principal_is_reviewer(&calling_principal)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::permission_denied(&format!(
+                "Principal {} must be a reviewer to call this endpoint",
                 &calling_principal.to_text()
             ))
         );

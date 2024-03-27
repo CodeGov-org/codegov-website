@@ -1,13 +1,12 @@
 import { AnonymousIdentity, HttpAgent, Identity } from '@dfinity/agent';
 import { AccountIdentifier, LedgerCanister } from '@dfinity/ledger-icp';
-import { Principal } from '@dfinity/principal';
 
 import { CreateAgentOptions, createAgent } from '../agent';
-import { icpToE8s, minterIdentity } from './util';
-
-const ICP_LEDGER_CANISTER_ID = Principal.fromText(
-  'ryjl3-tyaaa-aaaaa-aaaba-cai',
-);
+import {
+  ICP_LEDGER_CANISTER_ID,
+  icpToE8s,
+  minterIdentity,
+} from '@cg/nns-utils';
 
 export class Ledger {
   private readonly ledgerCanister: LedgerCanister;

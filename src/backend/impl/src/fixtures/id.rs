@@ -1,4 +1,4 @@
-use crate::repositories::{ProposalId, UserId, Uuid};
+use crate::repositories::{ProposalId, ProposalReviewId, UserId, Uuid};
 use candid::Principal;
 use rstest::*;
 
@@ -13,11 +13,26 @@ pub fn uuid() -> Uuid {
 }
 
 #[fixture]
+pub fn uuid_a() -> Uuid {
+    Uuid::try_from("1149d10b-cf9b-4e4c-9d3f-30d5ecc4928d").unwrap()
+}
+
+#[fixture]
+pub fn uuid_b() -> Uuid {
+    Uuid::try_from("fd83c44f-0892-4d3c-a619-10674346d338").unwrap()
+}
+
+#[fixture]
 pub fn user_id() -> UserId {
     uuid()
 }
 
 #[fixture]
 pub fn proposal_id() -> ProposalId {
+    uuid()
+}
+
+#[fixture]
+pub fn proposal_review_id() -> ProposalReviewId {
     uuid()
 }
