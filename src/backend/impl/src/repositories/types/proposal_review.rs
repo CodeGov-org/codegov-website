@@ -52,21 +52,22 @@ impl Storable for ProposalReview {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ProposalReviewProposalKey(Blob<{ Self::MAX_SIZE as usize }>);
+pub struct ProposalReviewProposalUserKey(Blob<{ Self::MAX_SIZE as usize }>);
 
-impl ProposalReviewProposalKey {
-    const MAX_SIZE: u32 = <(ProposalId, ProposalReviewId)>::BOUND.max_size();
+impl ProposalReviewProposalUserKey {
+    const MAX_SIZE: u32 = <((ProposalId, UserId), ProposalReviewId)>::BOUND.max_size();
 
     pub fn new(
         proposal_id: ProposalId,
+        user_id: UserId,
         proposal_review_id: ProposalReviewId,
     ) -> Result<Self, ApiError> {
         Ok(Self(
-            Blob::try_from((proposal_id, proposal_review_id).to_bytes().as_ref()).map_err(
+            Blob::try_from(((proposal_id, user_id), proposal_review_id).to_bytes().as_ref()).map_err(
                 |_| {
                     ApiError::internal(&format!(
-                        "Failed to convert proposal id {:?} and proposal review id {:?} to bytes.",
-                        proposal_id, proposal_review_id
+                        "Failed to convert proposal id {:?}, user id {:?} and proposal review id {:?} to bytes.",
+                        proposal_id, user_id, proposal_review_id
                     ))
                 },
             )?,
@@ -74,7 +75,7 @@ impl ProposalReviewProposalKey {
     }
 }
 
-impl Storable for ProposalReviewProposalKey {
+impl Storable for ProposalReviewProposalUserKey {
     fn to_bytes(&self) -> Cow<[u8]> {
         self.0.to_bytes()
     }
@@ -89,26 +90,34 @@ impl Storable for ProposalReviewProposalKey {
     };
 }
 
-pub struct ProposalReviewProposalRange {
-    start_bound: ProposalReviewProposalKey,
-    end_bound: ProposalReviewProposalKey,
+pub struct ProposalReviewProposalUserRange {
+    start_bound: ProposalReviewProposalUserKey,
+    end_bound: ProposalReviewProposalUserKey,
 }
 
-impl ProposalReviewProposalRange {
-    pub fn new(proposal_id: ProposalId) -> Result<Self, ApiError> {
+impl ProposalReviewProposalUserRange {
+    pub fn new(proposal_id: ProposalId, user_id: Option<UserId>) -> Result<Self, ApiError> {
         Ok(Self {
-            start_bound: ProposalReviewProposalKey::new(proposal_id, Uuid::min())?,
-            end_bound: ProposalReviewProposalKey::new(proposal_id, Uuid::max())?,
+            start_bound: ProposalReviewProposalUserKey::new(
+                proposal_id,
+                user_id.unwrap_or(Uuid::min()),
+                Uuid::min(),
+            )?,
+            end_bound: ProposalReviewProposalUserKey::new(
+                proposal_id,
+                user_id.unwrap_or(Uuid::max()),
+                Uuid::max(),
+            )?,
         })
     }
 }
 
-impl RangeBounds<ProposalReviewProposalKey> for ProposalReviewProposalRange {
-    fn start_bound(&self) -> std::ops::Bound<&ProposalReviewProposalKey> {
+impl RangeBounds<ProposalReviewProposalUserKey> for ProposalReviewProposalUserRange {
+    fn start_bound(&self) -> std::ops::Bound<&ProposalReviewProposalUserKey> {
         std::ops::Bound::Included(&self.start_bound)
     }
 
-    fn end_bound(&self) -> std::ops::Bound<&ProposalReviewProposalKey> {
+    fn end_bound(&self) -> std::ops::Bound<&ProposalReviewProposalUserKey> {
         std::ops::Bound::Included(&self.end_bound)
     }
 }
@@ -187,13 +196,15 @@ mod tests {
     }
 
     #[rstest]
-    fn proposal_review_proposal_key_storable_impl() {
+    fn proposal_review_proposal_user_key_storable_impl() {
         let proposal_id = fixtures::proposal_id();
+        let user_id = fixtures::user_id();
         let proposal_review_id = fixtures::proposal_review_id();
 
-        let key = ProposalReviewProposalKey::new(proposal_id, proposal_review_id).unwrap();
+        let key =
+            ProposalReviewProposalUserKey::new(proposal_id, user_id, proposal_review_id).unwrap();
         let serialized_key = key.to_bytes();
-        let deserialized_key = ProposalReviewProposalKey::from_bytes(serialized_key);
+        let deserialized_key = ProposalReviewProposalUserKey::from_bytes(serialized_key);
 
         assert_eq!(key, deserialized_key);
     }

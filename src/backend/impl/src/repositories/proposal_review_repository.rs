@@ -3,10 +3,11 @@ use std::cell::RefCell;
 use backend_api::ApiError;
 
 use super::{
-    init_proposal_review_proposal_id_index, init_proposal_review_user_id_index,
+    init_proposal_review_proposal_id_user_id_index, init_proposal_review_user_id_index,
     init_proposal_reviews, ProposalId, ProposalReview, ProposalReviewId, ProposalReviewMemory,
-    ProposalReviewProposalIdIndexMemory, ProposalReviewProposalKey, ProposalReviewProposalRange,
-    ProposalReviewUserIdIndexMemory, ProposalReviewUserKey, ProposalReviewUserRange, UserId,
+    ProposalReviewProposalIdUserIdIndexMemory, ProposalReviewProposalUserKey,
+    ProposalReviewProposalUserRange, ProposalReviewUserIdIndexMemory, ProposalReviewUserKey,
+    ProposalReviewUserRange, UserId,
 };
 
 #[cfg_attr(test, mockall::automock)]
@@ -15,6 +16,12 @@ pub trait ProposalReviewRepository {
         &self,
         proposal_review_id: &ProposalReviewId,
     ) -> Option<ProposalReview>;
+
+    fn get_proposal_review_by_proposal_id_and_user_id(
+        &self,
+        proposal_id: ProposalId,
+        user_id: UserId,
+    ) -> Option<(ProposalReviewId, ProposalReview)>;
 
     fn get_proposal_reviews_by_proposal_id(
         &self,
@@ -54,14 +61,36 @@ impl ProposalReviewRepository for ProposalReviewRepositoryImpl {
         STATE.with_borrow(|s| s.proposal_reviews.get(proposal_review_id))
     }
 
+    fn get_proposal_review_by_proposal_id_and_user_id(
+        &self,
+        proposal_id: ProposalId,
+        user_id: UserId,
+    ) -> Option<(ProposalReviewId, ProposalReview)> {
+        let range = ProposalReviewProposalUserRange::new(proposal_id, Some(user_id)).ok()?;
+
+        STATE.with_borrow(|s| {
+            s.proposal_id_user_id_index
+                .range(range)
+                .filter_map(|(_, proposal_review_id)| {
+                    // the None case should never happen
+                    s.proposal_reviews
+                        .get(&proposal_review_id)
+                        .map(|p_r| (proposal_review_id, p_r))
+                })
+                .collect::<Vec<_>>()
+                .first()
+                .cloned()
+        })
+    }
+
     fn get_proposal_reviews_by_proposal_id(
         &self,
         proposal_id: ProposalId,
     ) -> Result<Vec<(ProposalReviewId, ProposalReview)>, ApiError> {
-        let range = ProposalReviewProposalRange::new(proposal_id)?;
+        let range = ProposalReviewProposalUserRange::new(proposal_id, None)?;
 
         let proposal_reviews = STATE.with_borrow(|s| {
-            s.proposal_id_index
+            s.proposal_id_user_id_index
                 .range(range)
                 .filter_map(|(_, proposal_review_id)| {
                     // the None case should never happen
@@ -101,14 +130,18 @@ impl ProposalReviewRepository for ProposalReviewRepositoryImpl {
         proposal_review: ProposalReview,
     ) -> Result<ProposalReviewId, ApiError> {
         let proposal_review_id = ProposalReviewId::new().await?;
-        let proposal_key =
-            ProposalReviewProposalKey::new(proposal_review.proposal_id, proposal_review_id)?;
+        let proposal_user_key = ProposalReviewProposalUserKey::new(
+            proposal_review.proposal_id,
+            proposal_review.user_id,
+            proposal_review_id,
+        )?;
         let user_key = ProposalReviewUserKey::new(proposal_review.user_id, proposal_review_id)?;
 
         STATE.with_borrow_mut(|s| {
             s.proposal_reviews
                 .insert(proposal_review_id, proposal_review.clone());
-            s.proposal_id_index.insert(proposal_key, proposal_review_id);
+            s.proposal_id_user_id_index
+                .insert(proposal_user_key, proposal_review_id);
             s.user_id_index.insert(user_key, proposal_review_id);
         });
 
@@ -145,7 +178,7 @@ impl ProposalReviewRepositoryImpl {
 
 struct ProposalReviewState {
     proposal_reviews: ProposalReviewMemory,
-    proposal_id_index: ProposalReviewProposalIdIndexMemory,
+    proposal_id_user_id_index: ProposalReviewProposalIdUserIdIndexMemory,
     user_id_index: ProposalReviewUserIdIndexMemory,
 }
 
@@ -153,7 +186,7 @@ impl Default for ProposalReviewState {
     fn default() -> Self {
         Self {
             proposal_reviews: init_proposal_reviews(),
-            proposal_id_index: init_proposal_review_proposal_id_index(),
+            proposal_id_user_id_index: init_proposal_review_proposal_id_user_id_index(),
             user_id_index: init_proposal_review_user_id_index(),
         }
     }
@@ -222,6 +255,42 @@ mod tests {
                 },
             ]
         );
+    }
+
+    #[rstest]
+    async fn get_proposal_reviews_by_proposal_id_and_user_id() {
+        STATE.set(ProposalReviewState::default());
+
+        let proposal_reviews = proposal_reviews_fixed_proposal_id_and_user_id();
+
+        let repository = ProposalReviewRepositoryImpl::default();
+
+        for proposal_review in proposal_reviews {
+            repository
+                .create_proposal_review(proposal_review)
+                .await
+                .unwrap();
+        }
+
+        for (proposal_id, user_id) in [
+            (uuid_a(), uuid_a()),
+            (uuid_a(), uuid_b()),
+            (uuid_b(), uuid_a()),
+            (uuid_b(), uuid_b()),
+        ] {
+            let (_, proposal_review) = repository
+                .get_proposal_review_by_proposal_id_and_user_id(proposal_id, user_id)
+                .unwrap();
+
+            assert_eq!(
+                proposal_review,
+                ProposalReview {
+                    proposal_id,
+                    user_id,
+                    ..fixtures::proposal_review_draft()
+                },
+            );
+        }
     }
 
     #[rstest]
@@ -301,6 +370,32 @@ mod tests {
             ProposalReview {
                 proposal_id: uuid_b(),
                 ..fixtures::proposal_review_published()
+            },
+        ]
+    }
+
+    #[fixture]
+    fn proposal_reviews_fixed_proposal_id_and_user_id() -> Vec<ProposalReview> {
+        vec![
+            ProposalReview {
+                proposal_id: uuid_a(),
+                user_id: uuid_a(),
+                ..fixtures::proposal_review_draft()
+            },
+            ProposalReview {
+                proposal_id: uuid_a(),
+                user_id: uuid_b(),
+                ..fixtures::proposal_review_draft()
+            },
+            ProposalReview {
+                proposal_id: uuid_b(),
+                user_id: uuid_a(),
+                ..fixtures::proposal_review_draft()
+            },
+            ProposalReview {
+                proposal_id: uuid_b(),
+                user_id: uuid_b(),
+                ..fixtures::proposal_review_draft()
             },
         ]
     }

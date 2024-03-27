@@ -148,6 +148,15 @@ describe('Proposal Review', () => {
           reproduced_build_image_id: [],
         },
       });
+    });
+
+    it('should allow reviewers to create an empty proposal review', async () => {
+      const reviewer = generateRandomIdentity();
+      const reviewerId = await createReviewer(actor, reviewer);
+
+      const proposalId = await createProposal(actor, governance);
+
+      actor.setIdentity(reviewer);
 
       const resEmpty = await actor.create_proposal_review({
         proposal_id: proposalId,
@@ -216,6 +225,49 @@ describe('Proposal Review', () => {
         code: 409,
         message: `Proposal with Id ${proposalId} is already completed`,
       });
+    });
+
+    it('should not allow to create multiple reviews for the same reviewer and proposal', async () => {
+      const alice = generateRandomIdentity();
+      const aliceId = await createReviewer(actor, alice);
+
+      const proposalId = await createProposal(actor, governance);
+
+      actor.setIdentity(alice);
+
+      const resAliceCreated = await actor.create_proposal_review({
+        proposal_id: proposalId,
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      extractOkResponse(resAliceCreated);
+
+      const res = await actor.create_proposal_review({
+        proposal_id: proposalId,
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      const resErr = extractErrResponse(res);
+      expect(resErr).toEqual({
+        code: 409,
+        message: `User with Id ${aliceId} has already submitted a review for proposal with Id ${proposalId}`,
+      });
+
+      const bob = generateRandomIdentity();
+      await createReviewer(actor, bob);
+      actor.setIdentity(bob);
+      const resBobCreated = await actor.create_proposal_review({
+        proposal_id: proposalId,
+        summary: ['summary'],
+        review_duration_mins: [60],
+        build_reproduced: [true],
+        reproduced_build_image_id: [],
+      });
+      extractOkResponse(resBobCreated);
     });
 
     it('should not allow to create an invalid review', async () => {
@@ -289,7 +341,7 @@ describe('Proposal Review', () => {
       actor.setIdentity(anonymousIdentity);
 
       const res = await actor.update_proposal_review({
-        id: 'proposal-review-id',
+        proposal_id: 'proposal-id',
         status: [{ draft: null }],
         summary: ['summary'],
         review_duration_mins: [60],
@@ -314,7 +366,7 @@ describe('Proposal Review', () => {
       await actor.create_my_user_profile();
 
       const resAnonymous = await actor.update_proposal_review({
-        id: 'proposal-review-id',
+        proposal_id: 'proposal-id',
         status: [{ draft: null }],
         summary: ['summary'],
         review_duration_mins: [60],
@@ -334,7 +386,7 @@ describe('Proposal Review', () => {
       actor.setIdentity(controllerIdentity);
 
       const resAdmin = await actor.update_proposal_review({
-        id: 'proposal-review-id',
+        proposal_id: 'proposal-id',
         status: [{ draft: null }],
         summary: ['summary'],
         review_duration_mins: [60],
@@ -355,13 +407,12 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const nonExistentProposalReviewId =
-        'c61d2984-16c6-4918-9e8b-ed8ee1b05680';
+      const nonExistentProposalId = 'c61d2984-16c6-4918-9e8b-ed8ee1b05680';
 
       actor.setIdentity(reviewer);
 
       const res = await actor.update_proposal_review({
-        id: nonExistentProposalReviewId,
+        proposal_id: nonExistentProposalId,
         status: [{ draft: null }],
         summary: ['summary'],
         review_duration_mins: [60],
@@ -372,7 +423,7 @@ describe('Proposal Review', () => {
 
       expect(resErr).toEqual({
         code: 404,
-        message: `Proposal review with Id ${nonExistentProposalReviewId} not found`,
+        message: `Proposal review for proposal with Id ${nonExistentProposalId} not found`,
       });
     });
 
@@ -382,16 +433,12 @@ describe('Proposal Review', () => {
       await createReviewer(actor, alice);
       await createReviewer(actor, bob);
 
-      const proposalReviewId = await createProposalReview(
-        actor,
-        governance,
-        alice,
-      );
+      const [proposalId] = await createProposalReview(actor, governance, alice);
 
       actor.setIdentity(bob);
 
       const res = await actor.update_proposal_review({
-        id: proposalReviewId,
+        proposal_id: proposalId,
         status: [{ draft: null }],
         summary: ['summary'],
         review_duration_mins: [60],
@@ -401,8 +448,8 @@ describe('Proposal Review', () => {
       const resErr = extractErrResponse(res);
 
       expect(resErr).toEqual({
-        code: 403,
-        message: 'User is not allowed to update this proposal review',
+        code: 404,
+        message: `Proposal review for proposal with Id ${proposalId} not found`,
       });
     });
 
@@ -410,7 +457,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const proposalReviewId = await createProposalReview(
+      const [proposalId] = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -419,7 +466,7 @@ describe('Proposal Review', () => {
       actor.setIdentity(reviewer);
 
       const res = await actor.update_proposal_review({
-        id: proposalReviewId,
+        proposal_id: proposalId,
         status: [{ draft: null }],
         summary: ['updated summary'],
         review_duration_mins: [120],
@@ -435,7 +482,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const proposalReviewId = await createProposalReview(
+      const [proposalId] = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -444,7 +491,7 @@ describe('Proposal Review', () => {
       actor.setIdentity(reviewer);
 
       const res = await actor.update_proposal_review({
-        id: proposalReviewId,
+        proposal_id: proposalId,
         status: [{ published: null }],
         summary: [],
         review_duration_mins: [],
@@ -470,12 +517,12 @@ describe('Proposal Review', () => {
         build_reproduced: [true],
         reproduced_build_image_id: [],
       });
-      const { id: proposalReviewId } = extractOkResponse(resProposalReview);
+      extractOkResponse(resProposalReview);
 
       await completeProposal(pic, actor, proposalId);
 
       const res = await actor.update_proposal_review({
-        id: proposalReviewId,
+        proposal_id: proposalId,
         status: [{ draft: null }],
         summary: ['updated summary'],
         review_duration_mins: [1],
@@ -495,7 +542,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const proposalReviewId = await createProposalReview(
+      const [proposalId] = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -504,7 +551,7 @@ describe('Proposal Review', () => {
       actor.setIdentity(reviewer);
 
       const resPublished = await actor.update_proposal_review({
-        id: proposalReviewId,
+        proposal_id: proposalId,
         status: [{ published: null }],
         summary: [],
         review_duration_mins: [],
@@ -514,7 +561,7 @@ describe('Proposal Review', () => {
       extractOkResponse(resPublished);
 
       const res = await actor.update_proposal_review({
-        id: proposalReviewId,
+        proposal_id: proposalId,
         status: [{ draft: null }],
         summary: ['updated summary'],
         review_duration_mins: [1],
@@ -525,7 +572,7 @@ describe('Proposal Review', () => {
 
       expect(resErr).toEqual({
         code: 409,
-        message: `Proposal review with Id ${proposalReviewId} is already published`,
+        message: `Proposal review for proposal with Id ${proposalId} is already published`,
       });
     });
 
@@ -533,7 +580,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const proposalReviewId = await createProposalReview(
+      const [proposalId] = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -542,7 +589,7 @@ describe('Proposal Review', () => {
       actor.setIdentity(reviewer);
 
       const resEmptySummary = await actor.update_proposal_review({
-        id: proposalReviewId,
+        proposal_id: proposalId,
         status: [],
         summary: [''],
         review_duration_mins: [60],
@@ -557,7 +604,7 @@ describe('Proposal Review', () => {
       });
 
       const resLongSummary = await actor.update_proposal_review({
-        id: proposalReviewId,
+        proposal_id: proposalId,
         status: [],
         summary: ['a'.repeat(1501)],
         review_duration_mins: [60],
@@ -572,7 +619,7 @@ describe('Proposal Review', () => {
       });
 
       const resZeroDuration = await actor.update_proposal_review({
-        id: proposalReviewId,
+        proposal_id: proposalId,
         status: [],
         summary: ['summary'],
         review_duration_mins: [0],
@@ -587,7 +634,7 @@ describe('Proposal Review', () => {
       });
 
       const resLongDuration = await actor.update_proposal_review({
-        id: proposalReviewId,
+        proposal_id: proposalId,
         status: [],
         summary: ['summary'],
         review_duration_mins: [3 * 60 + 1],
@@ -617,10 +664,10 @@ describe('Proposal Review', () => {
         build_reproduced: [true],
         reproduced_build_image_id: [],
       });
-      const { id: proposalReviewId } = extractOkResponse(resProposalReview);
+      extractOkResponse(resProposalReview);
 
       const res = await actor.update_proposal_review({
-        id: proposalReviewId,
+        proposal_id: proposalId,
         status: [{ published: null }],
         summary: [],
         review_duration_mins: [],
@@ -720,7 +767,7 @@ async function createProposalReview(
   actor: BackendActorService,
   governance: Governance,
   reviewer: Identity,
-): Promise<string> {
+): Promise<[string, string]> {
   const proposalId = await createProposal(actor, governance);
 
   actor.setIdentity(reviewer);
@@ -733,5 +780,5 @@ async function createProposalReview(
   });
   const { id } = extractOkResponse(res);
 
-  return id;
+  return [proposalId, id];
 }

@@ -234,7 +234,7 @@ type CreateProposalReviewResponse = variant {
 };
 
 type UpdateProposalReviewRequest = record {
-  id : text;
+  proposal_id : text;
   status : opt ProposalReviewStatus;
   summary : opt text;
   review_duration_mins : opt nat16;

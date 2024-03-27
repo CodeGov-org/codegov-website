@@ -185,7 +185,7 @@ mod tests {
     fn update_proposal_review() {
         let calling_principal = fixtures::principal();
         let request = UpdateProposalReviewRequest {
-            id: fixtures::proposal_review_id().to_string(),
+            proposal_id: fixtures::proposal_id().to_string(),
             status: None,
             summary: Some("summary".to_string()),
             review_duration_mins: Some(10),
@@ -218,7 +218,7 @@ mod tests {
     fn update_proposal_review_unauthorized() {
         let calling_principal = fixtures::principal();
         let request = UpdateProposalReviewRequest {
-            id: fixtures::proposal_review_id().to_string(),
+            proposal_id: fixtures::proposal_id().to_string(),
             status: None,
             summary: Some("summary".to_string()),
             review_duration_mins: Some(10),
