@@ -560,6 +560,59 @@ describe('Proposal Review', () => {
       });
       extractOkResponse(resPublished);
 
+      const resNoStatus = await actor.update_proposal_review({
+        proposal_id: proposalId,
+        status: [],
+        summary: ['updated summary'],
+        review_duration_mins: [1],
+        build_reproduced: [false],
+        reproduced_build_image_id: [],
+      });
+      const resNoStatusErr = extractErrResponse(resNoStatus);
+
+      expect(resNoStatusErr).toEqual({
+        code: 409,
+        message: `Proposal review for proposal with Id ${proposalId} is already published`,
+      });
+
+      const resPublish = await actor.update_proposal_review({
+        proposal_id: proposalId,
+        status: [{ published: null }],
+        summary: ['updated summary'],
+        review_duration_mins: [1],
+        build_reproduced: [false],
+        reproduced_build_image_id: [],
+      });
+      const resPublishErr = extractErrResponse(resPublish);
+
+      expect(resPublishErr).toEqual({
+        code: 409,
+        message: `Proposal review for proposal with Id ${proposalId} is already published`,
+      });
+    });
+
+    it('should allow a reviewer to set a published proposal review back to draft', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const [proposalId] = await createProposalReview(
+        actor,
+        governance,
+        reviewer,
+      );
+
+      actor.setIdentity(reviewer);
+
+      const resPublished = await actor.update_proposal_review({
+        proposal_id: proposalId,
+        status: [{ published: null }],
+        summary: [],
+        review_duration_mins: [],
+        build_reproduced: [],
+        reproduced_build_image_id: [],
+      });
+      extractOkResponse(resPublished);
+
       const res = await actor.update_proposal_review({
         proposal_id: proposalId,
         status: [{ draft: null }],
@@ -568,12 +621,9 @@ describe('Proposal Review', () => {
         build_reproduced: [false],
         reproduced_build_image_id: [],
       });
-      const resErr = extractErrResponse(res);
+      const resOk = extractOkResponse(res);
 
-      expect(resErr).toEqual({
-        code: 409,
-        message: `Proposal review for proposal with Id ${proposalId} is already published`,
-      });
+      expect(resOk).toBe(null);
     });
 
     it('should not allow to update a review with invalid fields', async () => {

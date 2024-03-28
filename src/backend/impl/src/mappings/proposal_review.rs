@@ -11,6 +11,15 @@ impl From<ProposalReviewStatus> for backend_api::ProposalReviewStatus {
     }
 }
 
+impl From<backend_api::ProposalReviewStatus> for ProposalReviewStatus {
+    fn from(proposal_review_status: backend_api::ProposalReviewStatus) -> Self {
+        match proposal_review_status {
+            backend_api::ProposalReviewStatus::Draft => ProposalReviewStatus::Draft,
+            backend_api::ProposalReviewStatus::Published => ProposalReviewStatus::Published,
+        }
+    }
+}
+
 impl From<ProposalReview> for backend_api::ProposalReview {
     fn from(proposal_review: ProposalReview) -> Self {
         backend_api::ProposalReview {

@@ -159,7 +159,12 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
                 ))
             })?;
 
-        if current_proposal_review.is_published() {
+        if current_proposal_review.is_published()
+            && !request
+                .status
+                .as_ref()
+                .is_some_and(|s| s == &backend_api::ProposalReviewStatus::Draft)
+        {
             return Err(ApiError::conflict(&format!(
                 "Proposal review for proposal with Id {} is already published",
                 request.proposal_id
@@ -195,24 +200,23 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
         }
         // TODO: use reproduced_build_image_id from request
 
-        // if the status is set to Published, validate the fields again
-        // since it won't be possible to update them anymore
-        if request
-            .status
-            .is_some_and(|status| status == backend_api::ProposalReviewStatus::Published)
-        {
-            self.validate_fields(
-                Some(&current_proposal_review.summary),
-                Some(current_proposal_review.review_duration_mins),
-            )
-            .map_err(|e| {
-                ApiError::conflict(&format!(
-                    "Proposal review cannot be published due to invalid field: {}",
-                    e.message()
-                ))
-            })?;
+        if let Some(status) = request.status {
+            if status == backend_api::ProposalReviewStatus::Published {
+                // validate the fields again since it won't be possible to update them anymore
+                // unless the review is set back to draft
+                self.validate_fields(
+                    Some(&current_proposal_review.summary),
+                    Some(current_proposal_review.review_duration_mins),
+                )
+                .map_err(|e| {
+                    ApiError::conflict(&format!(
+                        "Proposal review cannot be published due to invalid field: {}",
+                        e.message()
+                    ))
+                })?;
+            }
 
-            current_proposal_review.status = ProposalReviewStatus::Published;
+            current_proposal_review.status = status.into();
         }
 
         self.proposal_review_repository
@@ -459,7 +463,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn create_proposal_review_already_completed() {
+    async fn create_proposal_review_proposal_already_completed() {
         let calling_principal = fixtures::principal();
         let user_id = fixtures::user_id();
         let (_, request) = proposal_review_create();
@@ -842,10 +846,19 @@ mod tests {
     }
 
     #[rstest]
-    fn update_proposal_review_already_published() {
+    #[case::update(proposal_review_update())]
+    #[case::publish(proposal_review_update_publish())]
+    fn update_proposal_review_already_published(
+        #[case] fixture: (
+            ProposalReviewId,
+            ProposalReview,
+            UpdateProposalReviewRequest,
+            ProposalReview,
+        ),
+    ) {
         let calling_principal = fixtures::principal();
         let user_id = fixtures::uuid_a();
-        let (id, original_proposal_review, request, _) = proposal_review_update();
+        let (id, original_proposal_review, request, _) = fixture;
 
         let original_proposal_review = ProposalReview {
             status: ProposalReviewStatus::Published,
@@ -885,6 +898,48 @@ mod tests {
                 request.proposal_id
             ))
         )
+    }
+
+    #[rstest]
+    fn update_proposal_review_already_published_to_draft() {
+        let calling_principal = fixtures::principal();
+        let user_id = fixtures::uuid_a();
+        let (id, original_proposal_review, request, updated_proposal_review) =
+            proposal_review_update_draft();
+
+        let mut u_repository_mock = MockUserProfileRepository::new();
+        u_repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(user_id));
+        let mut pr_repository_mock = MockProposalReviewRepository::new();
+        pr_repository_mock
+            .expect_get_proposal_review_by_proposal_id_and_user_id()
+            .once()
+            .with(eq(original_proposal_review.proposal_id), eq(user_id))
+            .return_const(Some((id, original_proposal_review.clone())));
+        pr_repository_mock
+            .expect_update_proposal_review()
+            .once()
+            .with(eq(id), eq(updated_proposal_review.clone()))
+            .return_const(Ok(()));
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock
+            .expect_get_proposal_by_id()
+            .once()
+            .with(eq(original_proposal_review.proposal_id))
+            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+
+        let service = ProposalReviewServiceImpl::new(
+            pr_repository_mock,
+            u_repository_mock,
+            p_repository_mock,
+        );
+
+        service
+            .update_proposal_review(calling_principal, request.clone())
+            .unwrap();
     }
 
     #[rstest]
@@ -997,6 +1052,44 @@ mod tests {
                 reproduced_build_image_id: None,
             },
             ProposalReview {
+                summary,
+                review_duration_mins,
+                build_reproduced,
+                ..original_proposal_review
+            },
+        )
+    }
+
+    #[fixture]
+    fn proposal_review_update_draft() -> (
+        ProposalReviewId,
+        ProposalReview,
+        UpdateProposalReviewRequest,
+        ProposalReview,
+    ) {
+        let id = fixtures::proposal_review_id();
+        let original_proposal_review = ProposalReview {
+            user_id: fixtures::uuid_a(),
+            ..fixtures::proposal_review_published()
+        };
+        let status = ProposalReviewStatus::Draft;
+        let summary = "Updated summary".to_string();
+        let review_duration_mins = 120;
+        let build_reproduced = false;
+
+        (
+            id,
+            original_proposal_review.clone(),
+            UpdateProposalReviewRequest {
+                proposal_id: original_proposal_review.proposal_id.to_string(),
+                status: Some(status.clone().into()),
+                summary: Some(summary.clone()),
+                review_duration_mins: Some(review_duration_mins),
+                build_reproduced: Some(build_reproduced),
+                reproduced_build_image_id: None,
+            },
+            ProposalReview {
+                status,
                 summary,
                 review_duration_mins,
                 build_reproduced,
