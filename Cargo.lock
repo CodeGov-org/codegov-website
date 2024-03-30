@@ -343,6 +343,7 @@ dependencies = [
  "candid_parser",
  "chrono",
  "external_canisters",
+ "hex",
  "ic-cdk",
  "ic-cdk-macros",
  "ic-cdk-timers",

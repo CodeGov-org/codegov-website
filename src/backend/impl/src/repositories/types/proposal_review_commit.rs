@@ -7,20 +7,37 @@ use ic_stable_structures::{
     Storable,
 };
 
-use super::{DateTime, ProposalReviewId, UserId, Uuid};
+use super::{CommitSha, DateTime, ProposalReviewId, UserId, Uuid};
 
 pub type ProposalReviewCommitId = Uuid;
+
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+pub enum ReviewCommitState {
+    Reviewed {
+        matches_description: bool,
+        comment: Option<String>,
+        highlights: Vec<String>,
+    },
+    NotReviewed,
+}
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub struct ProposalReviewCommit {
     pub proposal_review_id: Uuid,
     pub user_id: Uuid,
     pub created_at: DateTime,
-    pub commit_sha: String,
-    pub is_reviewed: bool,
-    pub matches_description: bool,
-    pub comment: Option<String>,
-    pub highlights: Vec<String>,
+    pub commit_sha: CommitSha,
+    pub state: ReviewCommitState,
+}
+
+impl ProposalReviewCommit {
+    pub fn is_reviewed(&self) -> bool {
+        matches!(&self.state, ReviewCommitState::Reviewed { .. })
+    }
+
+    pub fn is_not_reviewed(&self) -> bool {
+        matches!(&self.state, ReviewCommitState::NotReviewed)
+    }
 }
 
 impl Storable for ProposalReviewCommit {

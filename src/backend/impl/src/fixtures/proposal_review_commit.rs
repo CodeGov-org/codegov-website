@@ -1,8 +1,8 @@
 use rstest::*;
 
-use crate::repositories::ProposalReviewCommit;
+use crate::repositories::{ProposalReviewCommit, ReviewCommitState};
 
-use super::{date_time_a, proposal_review_id, user_id};
+use super::{commit_sha_a, commit_sha_b, date_time_a, proposal_review_id, user_id};
 
 #[fixture]
 pub fn proposal_review_commit_reviewed() -> ProposalReviewCommit {
@@ -10,11 +10,12 @@ pub fn proposal_review_commit_reviewed() -> ProposalReviewCommit {
         proposal_review_id: proposal_review_id(),
         user_id: user_id(),
         created_at: date_time_a(),
-        commit_sha: "28111ed23e35353ce852a0ae939eb2bd131ede49".to_string(),
-        is_reviewed: true,
-        matches_description: true,
-        comment: Some("Review commit comment".to_string()),
-        highlights: vec![],
+        commit_sha: commit_sha_a(),
+        state: ReviewCommitState::Reviewed {
+            matches_description: true,
+            comment: Some("Review commit comment".to_string()),
+            highlights: vec![],
+        },
     }
 }
 
@@ -24,10 +25,7 @@ pub fn proposal_review_commit_not_reviewed() -> ProposalReviewCommit {
         proposal_review_id: proposal_review_id(),
         user_id: user_id(),
         created_at: date_time_a(),
-        commit_sha: "fb2d88ec72a78233cfc0333bbddbd8880a0d584a".to_string(),
-        is_reviewed: false,
-        matches_description: false,
-        comment: None,
-        highlights: vec![],
+        commit_sha: commit_sha_b(),
+        state: ReviewCommitState::NotReviewed,
     }
 }

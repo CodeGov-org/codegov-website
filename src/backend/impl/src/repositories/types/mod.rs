@@ -1,3 +1,4 @@
+mod commit_sha;
 mod date_time;
 mod history;
 mod log;
@@ -8,6 +9,7 @@ mod user_profile;
 mod user_profile_history;
 mod uuid;
 
+pub use commit_sha::*;
 pub use date_time::*;
 pub use history::*;
 pub use log::*;

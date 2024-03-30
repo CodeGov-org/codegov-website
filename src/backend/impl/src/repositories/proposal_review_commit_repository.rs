@@ -170,7 +170,10 @@ thread_local! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::fixtures::{self, uuid_a, uuid_b};
+    use crate::{
+        fixtures::{self, uuid_a, uuid_b},
+        repositories::ReviewCommitState,
+    };
     use rstest::*;
 
     #[rstest]
@@ -348,7 +351,11 @@ mod tests {
     #[fixture]
     fn updated_proposal_review_commit() -> ProposalReviewCommit {
         ProposalReviewCommit {
-            is_reviewed: true,
+            state: ReviewCommitState::Reviewed {
+                matches_description: false,
+                comment: Some("Updated comment".to_string()),
+                highlights: vec![],
+            },
             ..fixtures::proposal_review_commit_not_reviewed()
         }
     }
