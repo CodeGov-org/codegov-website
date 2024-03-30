@@ -7,7 +7,7 @@ use super::{
     ProposalReviewCommit, ProposalReviewCommitId, ProposalReviewCommitMemory,
     ProposalReviewCommitProposalReviewIdUserIdIndexMemory,
     ProposalReviewCommitProposalReviewUserKey, ProposalReviewCommitProposalReviewUserRange,
-    ProposalReviewId,
+    ProposalReviewId, UserId,
 };
 
 #[cfg_attr(test, mockall::automock)]
@@ -16,6 +16,12 @@ pub trait ProposalReviewCommitRepository {
         &self,
         proposal_review_commit_id: &ProposalReviewCommitId,
     ) -> Option<ProposalReviewCommit>;
+
+    fn get_proposal_review_commit_by_proposal_review_id_and_user_id(
+        &self,
+        proposal_review_id: ProposalReviewId,
+        user_id: UserId,
+    ) -> Option<(ProposalReviewCommitId, ProposalReviewCommit)>;
 
     fn get_proposal_review_commits_by_proposal_review_id(
         &self,
@@ -48,6 +54,29 @@ impl ProposalReviewCommitRepository for ProposalReviewCommitRepositoryImpl {
         proposal_review_commit_id: &ProposalReviewCommitId,
     ) -> Option<ProposalReviewCommit> {
         STATE.with_borrow(|s| s.proposal_review_commits.get(proposal_review_commit_id))
+    }
+
+    fn get_proposal_review_commit_by_proposal_review_id_and_user_id(
+        &self,
+        proposal_review_id: ProposalReviewId,
+        user_id: UserId,
+    ) -> Option<(ProposalReviewCommitId, ProposalReviewCommit)> {
+        let range =
+            ProposalReviewCommitProposalReviewUserRange::new(proposal_review_id, Some(user_id))
+                .ok()?;
+
+        STATE.with_borrow(|s| {
+            s.proposal_review_id_user_id_index
+                .range(range)
+                .next()
+                .map(|(_, proposal_review_commit_id)| {
+                    s.proposal_review_commits
+                        .get(&proposal_review_commit_id)
+                        // the None case should never happen
+                        .map(|el| (proposal_review_commit_id, el))
+                })
+                .flatten()
+        })
     }
 
     fn get_proposal_review_commits_by_proposal_review_id(
@@ -202,6 +231,46 @@ mod tests {
     }
 
     #[rstest]
+    async fn get_proposal_review_commits_by_proposal_review_id_and_user_id() {
+        STATE.set(ProposalReviewCommitState::default());
+
+        let proposal_review_commits =
+            proposal_review_commits_fixed_proposal_review_id_and_user_id();
+
+        let repository = ProposalReviewCommitRepositoryImpl::default();
+
+        for proposal_review_commit in proposal_review_commits {
+            repository
+                .create_proposal_review_commit(proposal_review_commit)
+                .await
+                .unwrap();
+        }
+
+        for (proposal_review_id, user_id) in [
+            (uuid_a(), uuid_a()),
+            (uuid_a(), uuid_b()),
+            (uuid_b(), uuid_a()),
+            (uuid_b(), uuid_b()),
+        ] {
+            let (_, proposal_review_commit) = repository
+                .get_proposal_review_commit_by_proposal_review_id_and_user_id(
+                    proposal_review_id,
+                    user_id,
+                )
+                .unwrap();
+
+            assert_eq!(
+                proposal_review_commit,
+                ProposalReviewCommit {
+                    proposal_review_id,
+                    user_id,
+                    ..fixtures::proposal_review_commit_reviewed()
+                },
+            );
+        }
+    }
+
+    #[rstest]
     async fn update_proposal_review_commit() {
         STATE.set(ProposalReviewCommitState::default());
 
@@ -246,6 +315,32 @@ mod tests {
             ProposalReviewCommit {
                 proposal_review_id: uuid_b(),
                 ..fixtures::proposal_review_commit_not_reviewed()
+            },
+        ]
+    }
+
+    #[fixture]
+    fn proposal_review_commits_fixed_proposal_review_id_and_user_id() -> Vec<ProposalReviewCommit> {
+        vec![
+            ProposalReviewCommit {
+                proposal_review_id: uuid_a(),
+                user_id: uuid_a(),
+                ..fixtures::proposal_review_commit_reviewed()
+            },
+            ProposalReviewCommit {
+                proposal_review_id: uuid_a(),
+                user_id: uuid_b(),
+                ..fixtures::proposal_review_commit_reviewed()
+            },
+            ProposalReviewCommit {
+                proposal_review_id: uuid_b(),
+                user_id: uuid_a(),
+                ..fixtures::proposal_review_commit_reviewed()
+            },
+            ProposalReviewCommit {
+                proposal_review_id: uuid_b(),
+                user_id: uuid_b(),
+                ..fixtures::proposal_review_commit_reviewed()
             },
         ]
     }
