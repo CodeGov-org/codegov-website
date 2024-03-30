@@ -54,7 +54,7 @@ impl ProposalReviewCommitRepository for ProposalReviewCommitRepositoryImpl {
         &self,
         proposal_review_id: ProposalReviewId,
     ) -> Result<Vec<(ProposalReviewCommitId, ProposalReviewCommit)>, ApiError> {
-        let range = ProposalReviewCommitProposalReviewUserRange::new(proposal_review_id)?;
+        let range = ProposalReviewCommitProposalReviewUserRange::new(proposal_review_id, None)?;
 
         let proposal_review_commits = STATE.with_borrow(|s| {
             s.proposal_review_id_user_id_index
@@ -77,6 +77,7 @@ impl ProposalReviewCommitRepository for ProposalReviewCommitRepositoryImpl {
         let proposal_review_commit_id = ProposalReviewCommitId::new().await?;
         let proposal_review_user_key = ProposalReviewCommitProposalReviewUserKey::new(
             proposal_review_commit.proposal_review_id,
+            proposal_review_commit.user_id,
             proposal_review_commit_id,
         )?;
 

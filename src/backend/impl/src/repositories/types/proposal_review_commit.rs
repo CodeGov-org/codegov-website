@@ -7,7 +7,7 @@ use ic_stable_structures::{
     Storable,
 };
 
-use super::{DateTime, ProposalReviewId, Uuid};
+use super::{DateTime, ProposalReviewId, UserId, Uuid};
 
 pub type ProposalReviewCommitId = Uuid;
 
@@ -39,18 +39,19 @@ impl Storable for ProposalReviewCommit {
 pub struct ProposalReviewCommitProposalReviewUserKey(Blob<{ Self::MAX_SIZE as usize }>);
 
 impl ProposalReviewCommitProposalReviewUserKey {
-    const MAX_SIZE: u32 = <(ProposalReviewId, ProposalReviewCommitId)>::BOUND.max_size();
+    const MAX_SIZE: u32 = <((ProposalReviewId, UserId), ProposalReviewCommitId)>::BOUND.max_size();
 
     pub fn new(
         proposal_review_id: ProposalReviewId,
+        user_id: UserId,
         proposal_review_commit_id: ProposalReviewCommitId,
     ) -> Result<Self, ApiError> {
         Ok(Self(
-            Blob::try_from((proposal_review_id, proposal_review_commit_id).to_bytes().as_ref()).map_err(
+            Blob::try_from(((proposal_review_id, user_id), proposal_review_commit_id).to_bytes().as_ref()).map_err(
                 |_| {
                     ApiError::internal(&format!(
-                        "Failed to convert proposal review id {:?} and proposal review commit id {:?} to bytes.",
-                        proposal_review_id, proposal_review_commit_id
+                        "Failed to convert proposal review id {:?}, user id {:?} and proposal review commit id {:?} to bytes.",
+                        proposal_review_id, user_id, proposal_review_commit_id
                     ))
                 },
             )?,
@@ -64,14 +65,19 @@ pub struct ProposalReviewCommitProposalReviewUserRange {
 }
 
 impl ProposalReviewCommitProposalReviewUserRange {
-    pub fn new(proposal_review_id: ProposalReviewId) -> Result<Self, ApiError> {
+    pub fn new(
+        proposal_review_id: ProposalReviewId,
+        user_id: Option<UserId>,
+    ) -> Result<Self, ApiError> {
         Ok(Self {
             start_bound: ProposalReviewCommitProposalReviewUserKey::new(
                 proposal_review_id,
+                user_id.unwrap_or(Uuid::min()),
                 Uuid::min(),
             )?,
             end_bound: ProposalReviewCommitProposalReviewUserKey::new(
                 proposal_review_id,
+                user_id.unwrap_or(Uuid::max()),
                 Uuid::max(),
             )?,
         })
@@ -125,10 +131,12 @@ mod tests {
     #[rstest]
     fn proposal_review_commit_proposal_review_user_key_storable_impl() {
         let proposal_review_id = fixtures::proposal_review_id();
+        let user_id = fixtures::user_id();
         let proposal_review_commit_id = fixtures::proposal_review_commit_id();
 
         let key = ProposalReviewCommitProposalReviewUserKey::new(
             proposal_review_id,
+            user_id,
             proposal_review_commit_id,
         )
         .unwrap();
