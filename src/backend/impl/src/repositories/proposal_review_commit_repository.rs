@@ -85,13 +85,12 @@ impl ProposalReviewCommitRepository for ProposalReviewCommitRepositoryImpl {
             s.proposal_review_id_user_id_index
                 .range(range)
                 .next()
-                .map(|(_, proposal_review_commit_id)| {
+                .and_then(|(_, proposal_review_commit_id)| {
                     s.proposal_review_commits
                         .get(&proposal_review_commit_id)
                         // the None case should never happen
                         .map(|el| (proposal_review_commit_id, el))
                 })
-                .flatten()
         })
     }
 
@@ -188,7 +187,7 @@ impl ProposalReviewCommitRepository for ProposalReviewCommitRepositoryImpl {
         &self,
         proposal_review_commit_id: &ProposalReviewCommitId,
     ) -> Result<(), ApiError> {
-        self.get_proposal_review_commit_by_id(&proposal_review_commit_id)
+        self.get_proposal_review_commit_by_id(proposal_review_commit_id)
             .ok_or_else(|| {
                 ApiError::not_found(&format!(
                     "Proposal review commit with id {} not found",

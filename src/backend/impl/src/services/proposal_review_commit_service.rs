@@ -269,7 +269,7 @@ impl<
     ) -> Result<ProposalReviewCommit, ApiError> {
         let proposal_review_commit = self
             .proposal_review_commit_repository
-            .get_proposal_review_commit_by_id(&proposal_review_commit_id)
+            .get_proposal_review_commit_by_id(proposal_review_commit_id)
             .ok_or(ApiError::not_found(&format!(
                 "Proposal review commit with Id {} not found",
                 proposal_review_commit_id.to_string()
