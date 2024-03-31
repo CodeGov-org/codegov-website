@@ -56,15 +56,20 @@ impl Storable for ProposalReviewCommit {
 pub struct ProposalReviewCommitProposalReviewUserKey(Blob<{ Self::MAX_SIZE as usize }>);
 
 impl ProposalReviewCommitProposalReviewUserKey {
-    const MAX_SIZE: u32 = <((ProposalReviewId, UserId), ProposalReviewCommitId)>::BOUND.max_size();
+    const MAX_SIZE: u32 = <(
+        (ProposalReviewId, (UserId, CommitSha)),
+        ProposalReviewCommitId,
+    )>::BOUND
+        .max_size();
 
     pub fn new(
         proposal_review_id: ProposalReviewId,
         user_id: UserId,
+        commit_sha: CommitSha,
         proposal_review_commit_id: ProposalReviewCommitId,
     ) -> Result<Self, ApiError> {
         Ok(Self(
-            Blob::try_from(((proposal_review_id, user_id), proposal_review_commit_id).to_bytes().as_ref()).map_err(
+            Blob::try_from(((proposal_review_id, (user_id, commit_sha)), proposal_review_commit_id).to_bytes().as_ref()).map_err(
                 |_| {
                     ApiError::internal(&format!(
                         "Failed to convert proposal review id {:?}, user id {:?} and proposal review commit id {:?} to bytes.",
@@ -85,16 +90,19 @@ impl ProposalReviewCommitProposalReviewUserRange {
     pub fn new(
         proposal_review_id: ProposalReviewId,
         user_id: Option<UserId>,
+        commit_sha: Option<CommitSha>,
     ) -> Result<Self, ApiError> {
         Ok(Self {
             start_bound: ProposalReviewCommitProposalReviewUserKey::new(
                 proposal_review_id,
                 user_id.unwrap_or(Uuid::min()),
+                commit_sha.unwrap_or(CommitSha::min()),
                 Uuid::min(),
             )?,
             end_bound: ProposalReviewCommitProposalReviewUserKey::new(
                 proposal_review_id,
                 user_id.unwrap_or(Uuid::max()),
+                commit_sha.unwrap_or(CommitSha::max()),
                 Uuid::max(),
             )?,
         })
@@ -149,11 +157,13 @@ mod tests {
     fn proposal_review_commit_proposal_review_user_key_storable_impl() {
         let proposal_review_id = fixtures::proposal_review_id();
         let user_id = fixtures::user_id();
+        let commit_sha = fixtures::commit_sha_a();
         let proposal_review_commit_id = fixtures::proposal_review_commit_id();
 
         let key = ProposalReviewCommitProposalReviewUserKey::new(
             proposal_review_id,
             user_id,
+            commit_sha,
             proposal_review_commit_id,
         )
         .unwrap();

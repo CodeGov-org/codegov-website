@@ -4,7 +4,7 @@ use backend_api::ApiError;
 
 use super::{
     init_proposal_review_commit_proposal_review_id_user_id_index, init_proposal_review_commits,
-    ProposalReviewCommit, ProposalReviewCommitId, ProposalReviewCommitMemory,
+    CommitSha, ProposalReviewCommit, ProposalReviewCommitId, ProposalReviewCommitMemory,
     ProposalReviewCommitProposalReviewIdUserIdIndexMemory,
     ProposalReviewCommitProposalReviewUserKey, ProposalReviewCommitProposalReviewUserRange,
     ProposalReviewId, UserId,
@@ -17,11 +17,18 @@ pub trait ProposalReviewCommitRepository {
         proposal_review_commit_id: &ProposalReviewCommitId,
     ) -> Option<ProposalReviewCommit>;
 
-    fn get_proposal_review_commit_by_proposal_review_id_and_user_id(
+    fn get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha(
         &self,
         proposal_review_id: ProposalReviewId,
         user_id: UserId,
+        commit_sha: CommitSha,
     ) -> Option<(ProposalReviewCommitId, ProposalReviewCommit)>;
+
+    fn get_proposal_review_commits_by_proposal_review_id_and_user_id(
+        &self,
+        proposal_review_id: ProposalReviewId,
+        user_id: UserId,
+    ) -> Result<Vec<(ProposalReviewCommitId, ProposalReviewCommit)>, ApiError>;
 
     fn get_proposal_review_commits_by_proposal_review_id(
         &self,
@@ -56,14 +63,18 @@ impl ProposalReviewCommitRepository for ProposalReviewCommitRepositoryImpl {
         STATE.with_borrow(|s| s.proposal_review_commits.get(proposal_review_commit_id))
     }
 
-    fn get_proposal_review_commit_by_proposal_review_id_and_user_id(
+    fn get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha(
         &self,
         proposal_review_id: ProposalReviewId,
         user_id: UserId,
+        commit_sha: CommitSha,
     ) -> Option<(ProposalReviewCommitId, ProposalReviewCommit)> {
-        let range =
-            ProposalReviewCommitProposalReviewUserRange::new(proposal_review_id, Some(user_id))
-                .ok()?;
+        let range = ProposalReviewCommitProposalReviewUserRange::new(
+            proposal_review_id,
+            Some(user_id),
+            Some(commit_sha),
+        )
+        .ok()?;
 
         STATE.with_borrow(|s| {
             s.proposal_review_id_user_id_index
@@ -79,11 +90,37 @@ impl ProposalReviewCommitRepository for ProposalReviewCommitRepositoryImpl {
         })
     }
 
+    fn get_proposal_review_commits_by_proposal_review_id_and_user_id(
+        &self,
+        proposal_review_id: ProposalReviewId,
+        user_id: UserId,
+    ) -> Result<Vec<(ProposalReviewCommitId, ProposalReviewCommit)>, ApiError> {
+        let range = ProposalReviewCommitProposalReviewUserRange::new(
+            proposal_review_id,
+            Some(user_id),
+            None,
+        )?;
+
+        let proposal_review_commits = STATE.with_borrow(|s| {
+            s.proposal_review_id_user_id_index
+                .range(range)
+                .filter_map(|(_, proposal_review_commit_id)| {
+                    s.proposal_review_commits
+                        .get(&proposal_review_commit_id)
+                        .map(|el| (proposal_review_commit_id, el))
+                })
+                .collect()
+        });
+
+        Ok(proposal_review_commits)
+    }
+
     fn get_proposal_review_commits_by_proposal_review_id(
         &self,
         proposal_review_id: ProposalReviewId,
     ) -> Result<Vec<(ProposalReviewCommitId, ProposalReviewCommit)>, ApiError> {
-        let range = ProposalReviewCommitProposalReviewUserRange::new(proposal_review_id, None)?;
+        let range =
+            ProposalReviewCommitProposalReviewUserRange::new(proposal_review_id, None, None)?;
 
         let proposal_review_commits = STATE.with_borrow(|s| {
             s.proposal_review_id_user_id_index
@@ -107,6 +144,7 @@ impl ProposalReviewCommitRepository for ProposalReviewCommitRepositoryImpl {
         let proposal_review_user_key = ProposalReviewCommitProposalReviewUserKey::new(
             proposal_review_commit.proposal_review_id,
             proposal_review_commit.user_id,
+            proposal_review_commit.commit_sha,
             proposal_review_commit_id,
         )?;
 
@@ -171,7 +209,7 @@ thread_local! {
 mod tests {
     use super::*;
     use crate::{
-        fixtures::{self, uuid_a, uuid_b},
+        fixtures::{self, commit_sha_a, commit_sha_b, uuid_a, uuid_b},
         repositories::ReviewCommitState,
     };
     use rstest::*;
@@ -249,16 +287,58 @@ mod tests {
                 .unwrap();
         }
 
-        for (proposal_review_id, user_id) in [
-            (uuid_a(), uuid_a()),
-            (uuid_a(), uuid_b()),
-            (uuid_b(), uuid_a()),
-            (uuid_b(), uuid_b()),
+        let result = repository
+            .get_proposal_review_commits_by_proposal_review_id_and_user_id(uuid_a(), uuid_a())
+            .unwrap();
+        let filtered_proposal_review_commits = result
+            .into_iter()
+            .map(|(_, p_r_c)| p_r_c)
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            filtered_proposal_review_commits,
+            vec![
+                ProposalReviewCommit {
+                    proposal_review_id: uuid_a(),
+                    user_id: uuid_a(),
+                    ..fixtures::proposal_review_commit_reviewed()
+                },
+                ProposalReviewCommit {
+                    proposal_review_id: uuid_a(),
+                    user_id: uuid_a(),
+                    ..fixtures::proposal_review_commit_not_reviewed()
+                },
+            ]
+        );
+    }
+
+    #[rstest]
+    async fn get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha() {
+        STATE.set(ProposalReviewCommitState::default());
+
+        let proposal_review_commits =
+            proposal_review_commits_fixed_proposal_review_id_user_id_commit_sha();
+
+        let repository = ProposalReviewCommitRepositoryImpl::default();
+
+        for proposal_review_commit in proposal_review_commits {
+            repository
+                .create_proposal_review_commit(proposal_review_commit)
+                .await
+                .unwrap();
+        }
+
+        for (proposal_review_id, user_id, commit_sha) in [
+            (uuid_a(), uuid_a(), commit_sha_a()),
+            (uuid_a(), uuid_a(), commit_sha_b()),
+            (uuid_a(), uuid_b(), commit_sha_a()),
+            (uuid_a(), uuid_b(), commit_sha_b()),
         ] {
             let (_, proposal_review_commit) = repository
-                .get_proposal_review_commit_by_proposal_review_id_and_user_id(
+                .get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha(
                     proposal_review_id,
                     user_id,
+                    commit_sha,
                 )
                 .unwrap();
 
@@ -267,6 +347,7 @@ mod tests {
                 ProposalReviewCommit {
                     proposal_review_id,
                     user_id,
+                    commit_sha,
                     ..fixtures::proposal_review_commit_reviewed()
                 },
             );
@@ -332,17 +413,48 @@ mod tests {
             },
             ProposalReviewCommit {
                 proposal_review_id: uuid_a(),
-                user_id: uuid_b(),
-                ..fixtures::proposal_review_commit_reviewed()
-            },
-            ProposalReviewCommit {
-                proposal_review_id: uuid_b(),
                 user_id: uuid_a(),
+                ..fixtures::proposal_review_commit_not_reviewed()
+            },
+            ProposalReviewCommit {
+                proposal_review_id: uuid_a(),
+                user_id: uuid_b(),
                 ..fixtures::proposal_review_commit_reviewed()
             },
             ProposalReviewCommit {
-                proposal_review_id: uuid_b(),
+                proposal_review_id: uuid_a(),
                 user_id: uuid_b(),
+                ..fixtures::proposal_review_commit_not_reviewed()
+            },
+        ]
+    }
+
+    #[fixture]
+    fn proposal_review_commits_fixed_proposal_review_id_user_id_commit_sha(
+    ) -> Vec<ProposalReviewCommit> {
+        vec![
+            ProposalReviewCommit {
+                proposal_review_id: uuid_a(),
+                user_id: uuid_a(),
+                commit_sha: commit_sha_a(),
+                ..fixtures::proposal_review_commit_reviewed()
+            },
+            ProposalReviewCommit {
+                proposal_review_id: uuid_a(),
+                user_id: uuid_a(),
+                commit_sha: commit_sha_b(),
+                ..fixtures::proposal_review_commit_reviewed()
+            },
+            ProposalReviewCommit {
+                proposal_review_id: uuid_a(),
+                user_id: uuid_b(),
+                commit_sha: commit_sha_a(),
+                ..fixtures::proposal_review_commit_reviewed()
+            },
+            ProposalReviewCommit {
+                proposal_review_id: uuid_a(),
+                user_id: uuid_b(),
+                commit_sha: commit_sha_b(),
                 ..fixtures::proposal_review_commit_reviewed()
             },
         ]
