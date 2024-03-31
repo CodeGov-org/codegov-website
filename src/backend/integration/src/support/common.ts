@@ -146,3 +146,47 @@ export async function publishProposalReview(
   });
   extractOkResponse(res);
 }
+
+/**
+ * Creates a new proposal review commit with the given commit sha.
+ * Uses the {@link createProposalReview} function to create the proposal review.
+ *
+ * @returns the backend canister id of the created proposal,
+ * the id of the created review and the id of the created proposal review commit
+ */
+export async function createProposalReviewCommit(
+  actor: BackendActorService,
+  governance: Governance,
+  reviewer: Identity,
+  commitSha: string,
+): Promise<{
+  proposalId: string;
+  proposalReviewId: string;
+  proposalReviewCommitId: string;
+}> {
+  const { proposalId, proposalReviewId } = await createProposalReview(
+    actor,
+    governance,
+    reviewer,
+  );
+
+  actor.setIdentity(reviewer);
+  const res = await actor.create_proposal_review_commit({
+    proposal_review_id: proposalReviewId,
+    commit_sha: commitSha,
+    state: {
+      reviewed: {
+        matches_description: true,
+        comment: ['comment'],
+        highlights: [],
+      },
+    },
+  });
+  const { id: proposalReviewCommitId } = extractOkResponse(res);
+
+  return {
+    proposalId,
+    proposalReviewId,
+    proposalReviewCommitId,
+  };
+}

@@ -8,6 +8,7 @@ import {
   completeProposal,
   controllerIdentity,
   createProposalReview,
+  createProposalReviewCommit,
   createReviewer,
   dateToRfc3339,
   extractErrResponse,
@@ -615,6 +616,486 @@ describe('Proposal Review Commit', () => {
       expect(resLongHighlightErr).toEqual({
         code: 400,
         message: 'Each highlight must be less than 100 characters',
+      });
+    });
+  });
+
+  describe('update proposal review commit', () => {
+    it('should not allow anonymous principals', async () => {
+      actor.setIdentity(anonymousIdentity);
+
+      const res = await actor.update_proposal_review_commit({
+        id: 'proposal-review-commit-id',
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: [],
+            highlights: [],
+          },
+        },
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 404,
+        message: `Principal ${anonymousIdentity
+          .getPrincipal()
+          .toText()} must have a profile to call this endpoint`,
+      });
+    });
+
+    it('should not allow non-reviewer principals', async () => {
+      // as anonymous user
+      const alice = generateRandomIdentity();
+      actor.setIdentity(alice);
+
+      await actor.create_my_user_profile();
+
+      const resAnonymous = await actor.update_proposal_review_commit({
+        id: 'proposal-review-commit-id',
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['comment'],
+            highlights: [],
+          },
+        },
+      });
+      const resAnonymousErr = extractErrResponse(resAnonymous);
+
+      expect(resAnonymousErr).toEqual({
+        code: 403,
+        message: `Principal ${alice
+          .getPrincipal()
+          .toText()} must be a reviewer to call this endpoint`,
+      });
+
+      // as admin
+      actor.setIdentity(controllerIdentity);
+
+      const resAdmin = await actor.update_proposal_review_commit({
+        id: 'proposal-review-commit-id',
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['comment'],
+            highlights: [],
+          },
+        },
+      });
+      const resAdminErr = extractErrResponse(resAdmin);
+
+      expect(resAdminErr).toEqual({
+        code: 403,
+        message: `Principal ${controllerIdentity
+          .getPrincipal()
+          .toText()} must be a reviewer to call this endpoint`,
+      });
+    });
+
+    it('should allow a reviewer to update a proposal review commit', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const { proposalReviewCommitId } = await createProposalReviewCommit(
+        actor,
+        governance,
+        reviewer,
+        VALID_COMMIT_SHA_A,
+      );
+
+      actor.setIdentity(reviewer);
+      const res = await actor.update_proposal_review_commit({
+        id: proposalReviewCommitId,
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['comment'],
+            highlights: ['highlight a', 'highlight b'],
+          },
+        },
+      });
+      const resOk = extractOkResponse(res);
+
+      expect(resOk).toBe(null);
+    });
+
+    it('should not allow a reviewer to update a non-existent proposal review commit', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const nonExistentProposalReviewCommitId =
+        '57bb5dbd-77b4-41c2-abde-1b48a512f420';
+
+      actor.setIdentity(reviewer);
+      const res = await actor.update_proposal_review_commit({
+        id: nonExistentProposalReviewCommitId,
+        state: {
+          not_reviewed: null,
+        },
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 404,
+        message: `Proposal review commit with Id ${nonExistentProposalReviewCommitId} not found`,
+      });
+    });
+
+    it("should not allow a reviewer to update another reviewer's proposal review commit", async () => {
+      const alice = generateRandomIdentity();
+      const bob = generateRandomIdentity();
+      await createReviewer(actor, alice);
+      const bobId = await createReviewer(actor, bob);
+
+      const { proposalReviewCommitId } = await createProposalReviewCommit(
+        actor,
+        governance,
+        alice,
+        VALID_COMMIT_SHA_A,
+      );
+
+      actor.setIdentity(bob);
+      const res = await actor.update_proposal_review_commit({
+        id: proposalReviewCommitId,
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['comment'],
+            highlights: ['highlight a', 'highlight b'],
+          },
+        },
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 403,
+        message: `Proposal review commit with Id ${proposalReviewCommitId} does not belong to user with Id ${bobId}`,
+      });
+    });
+
+    it('should not allow a reviewer to update a review commit associated to an already published review', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const { proposalId, proposalReviewId, proposalReviewCommitId } =
+        await createProposalReviewCommit(
+          actor,
+          governance,
+          reviewer,
+          VALID_COMMIT_SHA_A,
+        );
+      await publishProposalReview(actor, reviewer, proposalId);
+
+      actor.setIdentity(reviewer);
+      const res = await actor.update_proposal_review_commit({
+        id: proposalReviewCommitId,
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['comment'],
+            highlights: ['highlight a', 'highlight b'],
+          },
+        },
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 409,
+        message: `Proposal review with Id ${proposalReviewId} is already published`,
+      });
+    });
+
+    it('should not allow a reviewer to update a review commit associated to an already completed proposal', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const { proposalId, proposalReviewCommitId } =
+        await createProposalReviewCommit(
+          actor,
+          governance,
+          reviewer,
+          VALID_COMMIT_SHA_A,
+        );
+      await completeProposal(pic, actor, proposalId);
+
+      actor.setIdentity(reviewer);
+      const res = await actor.update_proposal_review_commit({
+        id: proposalReviewCommitId,
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['comment'],
+            highlights: ['highlight a', 'highlight b'],
+          },
+        },
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 409,
+        message: `Proposal with Id ${proposalId} is already completed`,
+      });
+    });
+
+    it('should not allow to update with invalid input', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const { proposalReviewCommitId } = await createProposalReviewCommit(
+        actor,
+        governance,
+        reviewer,
+        VALID_COMMIT_SHA_A,
+      );
+
+      actor.setIdentity(reviewer);
+
+      const resEmptyComment = await actor.update_proposal_review_commit({
+        id: proposalReviewCommitId,
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: [''],
+            highlights: [],
+          },
+        },
+      });
+      const resEmptyCommentErr = extractErrResponse(resEmptyComment);
+      expect(resEmptyCommentErr).toEqual({
+        code: 400,
+        message: 'Comment cannot be empty',
+      });
+
+      const resLongComment = await actor.update_proposal_review_commit({
+        id: proposalReviewCommitId,
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['a'.repeat(1001)],
+            highlights: [],
+          },
+        },
+      });
+      const resLongCommentErr = extractErrResponse(resLongComment);
+      expect(resLongCommentErr).toEqual({
+        code: 400,
+        message: 'Comment must be less than 1000 characters',
+      });
+
+      const resTooManyHighlights = await actor.update_proposal_review_commit({
+        id: proposalReviewCommitId,
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['comment'],
+            highlights: Array(6).fill('highlight'),
+          },
+        },
+      });
+      const resTooManyHighlightsErr = extractErrResponse(resTooManyHighlights);
+      expect(resTooManyHighlightsErr).toEqual({
+        code: 400,
+        message: 'Number of highlights must be less than 5',
+      });
+
+      const resEmptyHighlight = await actor.update_proposal_review_commit({
+        id: proposalReviewCommitId,
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['comment'],
+            highlights: ['valid highlight', ''],
+          },
+        },
+      });
+      const resEmptyHighlightErr = extractErrResponse(resEmptyHighlight);
+      expect(resEmptyHighlightErr).toEqual({
+        code: 400,
+        message: 'Highlight cannot be empty',
+      });
+
+      const resLongHighlight = await actor.update_proposal_review_commit({
+        id: proposalReviewCommitId,
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['comment'],
+            highlights: ['a'.repeat(101), 'valid highlight'],
+          },
+        },
+      });
+      const resLongHighlightErr = extractErrResponse(resLongHighlight);
+      expect(resLongHighlightErr).toEqual({
+        code: 400,
+        message: 'Each highlight must be less than 100 characters',
+      });
+    });
+  });
+
+  describe('delete proposal review commit', () => {
+    it('should not allow anonymous principals', async () => {
+      actor.setIdentity(anonymousIdentity);
+
+      const res = await actor.delete_proposal_review_commit({
+        id: 'proposal-review-commit-id',
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 404,
+        message: `Principal ${anonymousIdentity
+          .getPrincipal()
+          .toText()} must have a profile to call this endpoint`,
+      });
+    });
+
+    it('should not allow non-reviewer principals', async () => {
+      // as anonymous user
+      const alice = generateRandomIdentity();
+      actor.setIdentity(alice);
+
+      await actor.create_my_user_profile();
+
+      const resAnonymous = await actor.delete_proposal_review_commit({
+        id: 'proposal-review-commit-id',
+      });
+      const resAnonymousErr = extractErrResponse(resAnonymous);
+
+      expect(resAnonymousErr).toEqual({
+        code: 403,
+        message: `Principal ${alice
+          .getPrincipal()
+          .toText()} must be a reviewer to call this endpoint`,
+      });
+
+      // as admin
+      actor.setIdentity(controllerIdentity);
+
+      const resAdmin = await actor.delete_proposal_review_commit({
+        id: 'proposal-review-commit-id',
+      });
+      const resAdminErr = extractErrResponse(resAdmin);
+
+      expect(resAdminErr).toEqual({
+        code: 403,
+        message: `Principal ${controllerIdentity
+          .getPrincipal()
+          .toText()} must be a reviewer to call this endpoint`,
+      });
+    });
+
+    it('should allow a reviewer to delete a proposal review commit', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const { proposalReviewCommitId } = await createProposalReviewCommit(
+        actor,
+        governance,
+        reviewer,
+        VALID_COMMIT_SHA_A,
+      );
+
+      actor.setIdentity(reviewer);
+      const res = await actor.delete_proposal_review_commit({
+        id: proposalReviewCommitId,
+      });
+      const resOk = extractOkResponse(res);
+
+      expect(resOk).toBe(null);
+    });
+
+    it('should not allow a reviewer to delete a non-existent proposal review commit', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const nonExistentProposalReviewCommitId =
+        '57bb5dbd-77b4-41c2-abde-1b48a512f420';
+
+      actor.setIdentity(reviewer);
+      const res = await actor.delete_proposal_review_commit({
+        id: nonExistentProposalReviewCommitId,
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 404,
+        message: `Proposal review commit with Id ${nonExistentProposalReviewCommitId} not found`,
+      });
+    });
+
+    it("should not allow a reviewer to delete another reviewer's proposal review commit", async () => {
+      const alice = generateRandomIdentity();
+      const bob = generateRandomIdentity();
+      await createReviewer(actor, alice);
+      const bobId = await createReviewer(actor, bob);
+
+      const { proposalReviewCommitId } = await createProposalReviewCommit(
+        actor,
+        governance,
+        alice,
+        VALID_COMMIT_SHA_A,
+      );
+
+      actor.setIdentity(bob);
+      const res = await actor.delete_proposal_review_commit({
+        id: proposalReviewCommitId,
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 403,
+        message: `Proposal review commit with Id ${proposalReviewCommitId} does not belong to user with Id ${bobId}`,
+      });
+    });
+
+    it('should not allow a reviewer to delete a review commit associated to an already published review', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const { proposalId, proposalReviewId, proposalReviewCommitId } =
+        await createProposalReviewCommit(
+          actor,
+          governance,
+          reviewer,
+          VALID_COMMIT_SHA_A,
+        );
+      await publishProposalReview(actor, reviewer, proposalId);
+
+      actor.setIdentity(reviewer);
+      const res = await actor.delete_proposal_review_commit({
+        id: proposalReviewCommitId,
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 409,
+        message: `Proposal review with Id ${proposalReviewId} is already published`,
+      });
+    });
+
+    it('should not allow a reviewer to delete a review commit associated to an already completed proposal', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const { proposalId, proposalReviewCommitId } =
+        await createProposalReviewCommit(
+          actor,
+          governance,
+          reviewer,
+          VALID_COMMIT_SHA_A,
+        );
+      await completeProposal(pic, actor, proposalId);
+
+      actor.setIdentity(reviewer);
+      const res = await actor.delete_proposal_review_commit({
+        id: proposalReviewCommitId,
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 409,
+        message: `Proposal with Id ${proposalId} is already completed`,
       });
     });
   });
