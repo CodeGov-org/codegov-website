@@ -39,3 +39,8 @@ pub struct UpdateProposalReviewCommitRequest {
     pub id: String,
     pub state: ReviewCommitState,
 }
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub struct DeleteProposalReviewCommitRequest {
+    pub id: String,
+}

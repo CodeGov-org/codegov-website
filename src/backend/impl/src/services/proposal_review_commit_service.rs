@@ -1,6 +1,6 @@
 use backend_api::{
     ApiError, CreateProposalReviewCommitRequest, CreateProposalReviewCommitResponse,
-    UpdateProposalReviewCommitRequest,
+    DeleteProposalReviewCommitRequest, UpdateProposalReviewCommitRequest,
 };
 use candid::Principal;
 
@@ -8,7 +8,7 @@ use crate::{
     mappings::map_create_proposal_review_commit_response,
     repositories::{
         CommitSha, DateTime, ProposalRepository, ProposalRepositoryImpl, ProposalReviewCommit,
-        ProposalReviewCommitRepository, ProposalReviewCommitRepositoryImpl, ProposalReviewId,
+        ProposalReviewCommitRepository, ProposalReviewCommitRepositoryImpl,
         ProposalReviewRepository, ProposalReviewRepositoryImpl, UserProfileRepository,
         UserProfileRepositoryImpl, Uuid,
     },
@@ -36,7 +36,7 @@ pub trait ProposalReviewCommitService {
     fn delete_proposal_review_commit(
         &self,
         calling_principal: Principal,
-        proposal_review_commit_id: &ProposalReviewId,
+        request: DeleteProposalReviewCommitRequest,
     ) -> Result<(), ApiError>;
 }
 
@@ -173,8 +173,10 @@ impl<
     fn delete_proposal_review_commit(
         &self,
         calling_principal: Principal,
-        proposal_review_commit_id: &ProposalReviewId,
+        request: DeleteProposalReviewCommitRequest,
     ) -> Result<(), ApiError> {
+        let proposal_review_commit_id = Uuid::try_from(request.id.as_str())?;
+
         let user_id = self
             .user_profile_repository
             .get_user_id_by_principal(&calling_principal)
@@ -186,13 +188,13 @@ impl<
             })?;
 
         let proposal_review_id = self
-            .get_proposal_review_commit_with_check_user_id(proposal_review_commit_id, &user_id)?
+            .get_proposal_review_commit_with_check_user_id(&proposal_review_commit_id, &user_id)?
             .proposal_review_id;
 
         self.check_proposal_review_and_proposal(&user_id, &proposal_review_id)?;
 
         self.proposal_review_commit_repository
-            .delete_proposal_review_commit(proposal_review_commit_id)
+            .delete_proposal_review_commit(&proposal_review_commit_id)
     }
 }
 
@@ -1641,7 +1643,10 @@ mod tests {
         );
 
         service
-            .delete_proposal_review_commit(calling_principal, &id)
+            .delete_proposal_review_commit(
+                calling_principal,
+                DeleteProposalReviewCommitRequest { id: id.to_string() },
+            )
             .unwrap();
     }
 
@@ -1679,7 +1684,10 @@ mod tests {
         );
 
         let result = service
-            .delete_proposal_review_commit(calling_principal, &id)
+            .delete_proposal_review_commit(
+                calling_principal,
+                DeleteProposalReviewCommitRequest { id: id.to_string() },
+            )
             .unwrap_err();
 
         assert_eq!(
@@ -1728,7 +1736,10 @@ mod tests {
         );
 
         let result = service
-            .delete_proposal_review_commit(calling_principal, &id)
+            .delete_proposal_review_commit(
+                calling_principal,
+                DeleteProposalReviewCommitRequest { id: id.to_string() },
+            )
             .unwrap_err();
 
         assert_eq!(
@@ -1781,7 +1792,10 @@ mod tests {
         );
 
         let result = service
-            .delete_proposal_review_commit(calling_principal, &id)
+            .delete_proposal_review_commit(
+                calling_principal,
+                DeleteProposalReviewCommitRequest { id: id.to_string() },
+            )
             .unwrap_err();
 
         assert_eq!(
@@ -1842,7 +1856,10 @@ mod tests {
         );
 
         let result = service
-            .delete_proposal_review_commit(calling_principal, &id)
+            .delete_proposal_review_commit(
+                calling_principal,
+                DeleteProposalReviewCommitRequest { id: id.to_string() },
+            )
             .unwrap_err();
 
         assert_eq!(result, expected_error)
@@ -1896,7 +1913,10 @@ mod tests {
         );
 
         let result = service
-            .delete_proposal_review_commit(calling_principal, &id)
+            .delete_proposal_review_commit(
+                calling_principal,
+                DeleteProposalReviewCommitRequest { id: id.to_string() },
+            )
             .unwrap_err();
 
         assert_eq!(
