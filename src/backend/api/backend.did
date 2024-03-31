@@ -261,6 +261,7 @@ type ProposalReviewCommit = record {
   proposal_review_id : text;
   user_id : text;
   created_at : text;
+  last_updated_at : opt text;
   commit_sha : text;
   state : ReviewCommitState;
 };
