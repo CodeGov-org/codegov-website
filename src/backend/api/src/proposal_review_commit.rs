@@ -33,3 +33,9 @@ pub struct CreateProposalReviewCommitResponse {
     pub id: String,
     pub proposal_review_commit: ProposalReviewCommit,
 }
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub struct UpdateProposalReviewCommitRequest {
+    pub id: String,
+    pub state: ReviewCommitState,
+}
