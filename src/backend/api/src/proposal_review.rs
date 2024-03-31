@@ -13,6 +13,7 @@ pub struct ProposalReview {
     pub proposal_id: String,
     pub user_id: String,
     pub created_at: String,
+    pub last_updated_at: Option<String>,
     pub status: ProposalReviewStatus,
     pub summary: String,
     pub review_duration_mins: u16,
