@@ -247,6 +247,56 @@ type UpdateProposalReviewResponse = variant {
   err : Err;
 };
 
+type ReviewCommitState = variant {
+  reviewed : record {
+    matches_description : bool;
+    comment : opt text;
+    highlights : vec text;
+  };
+  not_reviewed;
+};
+
+type ProposalReviewCommit = record {
+  proposal_review_id : text;
+  user_id : text;
+  created_at : text;
+  commit_sha : text;
+  state : ReviewCommitState;
+};
+
+type CreateProposalReviewCommitRequest = record {
+  proposal_review_id : text;
+  commit_sha : text;
+  state : ReviewCommitState;
+};
+
+type CreateProposalReviewCommitResponse = variant {
+  ok : record {
+    id : text;
+    proposal_review_commit : ProposalReviewCommit;
+  };
+  err : Err;
+};
+
+type UpdateProposalReviewCommitRequest = record {
+  id : text;
+  state : ReviewCommitState;
+};
+
+type UpdateProposalReviewCommitResponse = variant {
+  ok;
+  err : Err;
+};
+
+type DeleteProposalReviewCommitRequest = record {
+  id : text;
+};
+
+type DeleteProposalReviewCommitResponse = variant {
+  ok;
+  err : Err;
+};
+
 service : {
   get_my_user_profile : () -> (GetMyUserProfileResponse) query;
   get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;
@@ -258,4 +308,7 @@ service : {
   sync_proposals : () -> (SyncProposalsResponse);
   create_proposal_review : (CreateProposalReviewRequest) -> (CreateProposalReviewResponse);
   update_proposal_review : (UpdateProposalReviewRequest) -> (UpdateProposalReviewResponse);
+  create_proposal_review_commit : (CreateProposalReviewCommitRequest) -> (CreateProposalReviewCommitResponse);
+  update_proposal_review_commit : (UpdateProposalReviewCommitRequest) -> (UpdateProposalReviewCommitResponse);
+  delete_proposal_review_commit : (DeleteProposalReviewCommitRequest) -> (DeleteProposalReviewCommitResponse);
 };
