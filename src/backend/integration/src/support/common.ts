@@ -7,6 +7,9 @@ import { Identity } from '@dfinity/agent';
 
 type BackendActorService = Actor<_SERVICE>;
 
+/**
+ * Creates a user profile and sets the role to reviewer using the {@link controllerIdentity} identity.
+ */
 export async function createReviewer(
   actor: BackendActorService,
   reviewer: Identity,
@@ -35,8 +38,9 @@ export async function createReviewer(
 }
 
 /**
- * Creates an RVM proposal, syncs the proposals on the backend canister
- * and returns the backend proposal id.
+ * Creates an RVM proposal and syncs the proposals on the backend canister.
+ *
+ * @returns {Promise<string>} the backend canister id of created proposal
  */
 export async function createProposal(
   actor: BackendActorService,
@@ -62,6 +66,9 @@ export async function createProposal(
   return proposals[0].id;
 }
 
+/**
+ * Advances PIC's time in order to make the proposal complete.
+ */
 export async function completeProposal(
   pic: PocketIc,
   actor: BackendActorService,
@@ -85,12 +92,24 @@ export async function completeProposal(
   }
 }
 
+/**
+ * Creates an RVM proposal using the {@link createProposal} function
+ * and creates a review for that proposal.
+ *
+ * Skips creating the RVM proposal if a proposal id is specified as last parameter.
+ *
+ * @returns {Promise<[string, string]>} the backend canister id of created proposal and the backend canister id of created review
+ */
 export async function createProposalReview(
   actor: BackendActorService,
   governance: Governance,
   reviewer: Identity,
+  existingProposalId?: string,
 ): Promise<[string, string]> {
-  const proposalId = await createProposal(actor, governance);
+  let proposalId = existingProposalId;
+  if (!proposalId) {
+    proposalId = await createProposal(actor, governance);
+  }
 
   actor.setIdentity(reviewer);
   const res = await actor.create_proposal_review({
@@ -103,4 +122,24 @@ export async function createProposalReview(
   const { id } = extractOkResponse(res);
 
   return [proposalId, id];
+}
+
+/**
+ * Publishes the proposal review associated to the given proposal id and reviewer identity.
+ */
+export async function publishProposalReview(
+  actor: BackendActorService,
+  reviewer: Identity,
+  proposalId: string,
+) {
+  actor.setIdentity(reviewer);
+  const res = await actor.update_proposal_review({
+    proposal_id: proposalId,
+    status: [{ published: null }],
+    summary: [],
+    review_duration_mins: [],
+    build_reproduced: [],
+    reproduced_build_image_id: [],
+  });
+  extractOkResponse(res);
 }
