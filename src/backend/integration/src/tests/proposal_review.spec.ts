@@ -433,7 +433,11 @@ describe('Proposal Review', () => {
       await createReviewer(actor, alice);
       await createReviewer(actor, bob);
 
-      const [proposalId] = await createProposalReview(actor, governance, alice);
+      const { proposalId } = await createProposalReview(
+        actor,
+        governance,
+        alice,
+      );
 
       actor.setIdentity(bob);
 
@@ -457,7 +461,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const [proposalId] = await createProposalReview(
+      const { proposalId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -482,7 +486,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const [proposalId] = await createProposalReview(
+      const { proposalId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -542,7 +546,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const [proposalId] = await createProposalReview(
+      const { proposalId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -595,7 +599,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const [proposalId] = await createProposalReview(
+      const { proposalId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -630,7 +634,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const [proposalId] = await createProposalReview(
+      const { proposalId } = await createProposalReview(
         actor,
         governance,
         reviewer,

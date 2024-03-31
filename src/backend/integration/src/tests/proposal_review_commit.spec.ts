@@ -137,7 +137,7 @@ describe('Proposal Review Commit', () => {
       const reviewer = generateRandomIdentity();
       const reviewerId = await createReviewer(actor, reviewer);
 
-      const [, proposalReviewId] = await createProposalReview(
+      const { proposalReviewId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -203,7 +203,7 @@ describe('Proposal Review Commit', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const [proposalId, proposalReviewId] = await createProposalReview(
+      const { proposalId, proposalReviewId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -236,7 +236,7 @@ describe('Proposal Review Commit', () => {
       await createReviewer(actor, alice);
       const bobId = await createReviewer(actor, bob);
 
-      const [, proposalReviewId] = await createProposalReview(
+      const { proposalReviewId } = await createProposalReview(
         actor,
         governance,
         alice,
@@ -266,7 +266,7 @@ describe('Proposal Review Commit', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const [proposalId, proposalReviewId] = await createProposalReview(
+      const { proposalId, proposalReviewId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -297,7 +297,7 @@ describe('Proposal Review Commit', () => {
       const reviewer = generateRandomIdentity();
       const reviewerId = await createReviewer(actor, reviewer);
 
-      const [, proposalReviewId] = await createProposalReview(
+      const { proposalReviewId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -340,7 +340,7 @@ describe('Proposal Review Commit', () => {
       const reviewer = generateRandomIdentity();
       const reviewerId = await createReviewer(actor, reviewer);
 
-      const [, proposalReviewId] = await createProposalReview(
+      const { proposalReviewId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -412,11 +412,8 @@ describe('Proposal Review Commit', () => {
       const aliceId = await createReviewer(actor, alice);
       const bobId = await createReviewer(actor, bob);
 
-      const [proposalId, aliceProposalReviewId] = await createProposalReview(
-        actor,
-        governance,
-        alice,
-      );
+      const { proposalId, proposalReviewId: aliceProposalReviewId } =
+        await createProposalReview(actor, governance, alice);
 
       actor.setIdentity(alice);
       const resAlice = await actor.create_proposal_review_commit({
@@ -448,12 +445,8 @@ describe('Proposal Review Commit', () => {
         },
       });
 
-      const [, bobProposalReviewId] = await createProposalReview(
-        actor,
-        governance,
-        bob,
-        proposalId,
-      );
+      const { proposalReviewId: bobProposalReviewId } =
+        await createProposalReview(actor, governance, bob, proposalId);
 
       actor.setIdentity(bob);
       const resBob = await actor.create_proposal_review_commit({
@@ -490,7 +483,7 @@ describe('Proposal Review Commit', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const [, proposalReviewId] = await createProposalReview(
+      const { proposalReviewId } = await createProposalReview(
         actor,
         governance,
         reviewer,

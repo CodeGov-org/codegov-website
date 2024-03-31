@@ -98,14 +98,17 @@ export async function completeProposal(
  *
  * Skips creating the RVM proposal if a proposal id is specified as last parameter.
  *
- * @returns {Promise<[string, string]>} the backend canister id of created proposal and the backend canister id of created review
+ * @returns the backend canister id of created proposal and the backend canister id of created review
  */
 export async function createProposalReview(
   actor: BackendActorService,
   governance: Governance,
   reviewer: Identity,
   existingProposalId?: string,
-): Promise<[string, string]> {
+): Promise<{
+  proposalId: string;
+  proposalReviewId: string;
+}> {
   let proposalId = existingProposalId;
   if (!proposalId) {
     proposalId = await createProposal(actor, governance);
@@ -119,9 +122,9 @@ export async function createProposalReview(
     build_reproduced: [true],
     reproduced_build_image_id: [],
   });
-  const { id } = extractOkResponse(res);
+  const { id: proposalReviewId } = extractOkResponse(res);
 
-  return [proposalId, id];
+  return { proposalId, proposalReviewId };
 }
 
 /**
