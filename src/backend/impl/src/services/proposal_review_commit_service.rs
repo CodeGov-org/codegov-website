@@ -8,7 +8,7 @@ use crate::{
     mappings::map_create_proposal_review_commit_response,
     repositories::{
         CommitSha, DateTime, ProposalRepository, ProposalRepositoryImpl, ProposalReviewCommit,
-        ProposalReviewCommitRepository, ProposalReviewCommitRepositoryImpl,
+        ProposalReviewCommitRepository, ProposalReviewCommitRepositoryImpl, ProposalReviewId,
         ProposalReviewRepository, ProposalReviewRepositoryImpl, UserProfileRepository,
         UserProfileRepositoryImpl, Uuid,
     },
@@ -31,6 +31,12 @@ pub trait ProposalReviewCommitService {
         &self,
         calling_principal: Principal,
         request: UpdateProposalReviewCommitRequest,
+    ) -> Result<(), ApiError>;
+
+    fn delete_proposal_review_commit(
+        &self,
+        calling_principal: Principal,
+        proposal_review_commit_id: &ProposalReviewId,
     ) -> Result<(), ApiError>;
 }
 
@@ -150,21 +156,8 @@ impl<
             })?;
 
         let id = Uuid::try_from(request.id.as_str())?;
-        let mut current_proposal_review_commit = self
-            .proposal_review_commit_repository
-            .get_proposal_review_commit_by_id(&id)
-            .ok_or(ApiError::not_found(&format!(
-                "Proposal review commit with Id {} not found",
-                request.id
-            )))?;
-
-        if current_proposal_review_commit.user_id != user_id {
-            return Err(ApiError::permission_denied(&format!(
-                "Proposal review commit with Id {} does not belong to user with Id {}",
-                request.id,
-                user_id.to_string(),
-            )));
-        }
+        let mut current_proposal_review_commit =
+            self.get_proposal_review_commit_with_check_user_id(&id, &user_id)?;
 
         self.check_proposal_review_and_proposal(
             &user_id,
@@ -174,9 +167,32 @@ impl<
         current_proposal_review_commit.state = request.state.into();
 
         self.proposal_review_commit_repository
-            .update_proposal_review_commit(id, current_proposal_review_commit)?;
+            .update_proposal_review_commit(id, current_proposal_review_commit)
+    }
 
-        Ok(())
+    fn delete_proposal_review_commit(
+        &self,
+        calling_principal: Principal,
+        proposal_review_commit_id: &ProposalReviewId,
+    ) -> Result<(), ApiError> {
+        let user_id = self
+            .user_profile_repository
+            .get_user_id_by_principal(&calling_principal)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "User id for principal {} not found",
+                    calling_principal.to_text()
+                ))
+            })?;
+
+        let proposal_review_id = self
+            .get_proposal_review_commit_with_check_user_id(proposal_review_commit_id, &user_id)?
+            .proposal_review_id;
+
+        self.check_proposal_review_and_proposal(&user_id, &proposal_review_id)?;
+
+        self.proposal_review_commit_repository
+            .delete_proposal_review_commit(proposal_review_commit_id)
     }
 }
 
@@ -242,6 +258,30 @@ impl<
         }
 
         Ok(())
+    }
+
+    fn get_proposal_review_commit_with_check_user_id(
+        &self,
+        proposal_review_commit_id: &Uuid,
+        user_id: &Uuid,
+    ) -> Result<ProposalReviewCommit, ApiError> {
+        let proposal_review_commit = self
+            .proposal_review_commit_repository
+            .get_proposal_review_commit_by_id(&proposal_review_commit_id)
+            .ok_or(ApiError::not_found(&format!(
+                "Proposal review commit with Id {} not found",
+                proposal_review_commit_id.to_string()
+            )))?;
+
+        if proposal_review_commit.user_id.ne(user_id) {
+            return Err(ApiError::permission_denied(&format!(
+                "Proposal review commit with Id {} does not belong to user with Id {}",
+                proposal_review_commit_id.to_string(),
+                user_id.to_string(),
+            )));
+        }
+
+        Ok(proposal_review_commit)
     }
 
     fn check_proposal_review_and_proposal(
@@ -479,66 +519,13 @@ mod tests {
     }
 
     #[rstest]
-    async fn create_proposal_review_commit_no_proposal_review() {
-        let calling_principal = fixtures::principal();
-        let (proposal_review_commit, _, _, request) = proposal_review_commit_create_not_reviewed();
-        let user_id = proposal_review_commit.user_id;
-        let proposal_review_id = Uuid::try_from(request.proposal_review_id.as_str()).unwrap();
-        let commit_sha = CommitSha::try_from(request.commit_sha.as_str()).unwrap();
-
-        let mut u_repository_mock = MockUserProfileRepository::new();
-        u_repository_mock
-            .expect_get_user_id_by_principal()
-            .once()
-            .with(eq(calling_principal))
-            .return_const(Some(user_id));
-        let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
-        prc_repository_mock
-            .expect_get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha()
-            .once()
-            .with(eq(proposal_review_id), eq(user_id), eq(commit_sha))
-            .return_const(None);
-        let mut pr_repository_mock = MockProposalReviewRepository::new();
-        pr_repository_mock
-            .expect_get_proposal_review_by_id()
-            .once()
-            .with(eq(proposal_review_id))
-            .return_const(None);
-        let mut p_repository_mock = MockProposalRepository::new();
-        p_repository_mock.expect_get_proposal_by_id().never();
-
-        prc_repository_mock
-            .expect_create_proposal_review_commit()
-            .never();
-
-        let service = ProposalReviewCommitServiceImpl::new(
-            prc_repository_mock,
-            u_repository_mock,
-            pr_repository_mock,
-            p_repository_mock,
-        );
-
-        let result = service
-            .create_proposal_review_commit(calling_principal, request)
-            .await
-            .unwrap_err();
-
-        assert_eq!(
-            result,
-            ApiError::not_found(&format!(
-                "Proposal review with Id {} not found",
-                proposal_review_id.to_string()
-            ))
-        );
-    }
-
-    #[rstest]
+    #[case::not_found(proposal_review_commit_create_proposal_review_not_found())]
     #[case::published(proposal_review_commit_create_proposal_review_published())]
     #[case::another_user(proposal_review_commit_create_proposal_review_another_user())]
     async fn create_proposal_review_proposal_review_invalid(
         #[case] fixture: (
             ProposalReviewCommit,
-            ProposalReview,
+            Option<ProposalReview>,
             Proposal,
             CreateProposalReviewCommitRequest,
             ApiError,
@@ -567,7 +554,7 @@ mod tests {
             .expect_get_proposal_review_by_id()
             .once()
             .with(eq(proposal_review_id))
-            .return_const(Some(proposal_review));
+            .return_const(proposal_review);
         let mut p_repository_mock = MockProposalRepository::new();
         p_repository_mock.expect_get_proposal_by_id().never();
 
@@ -758,9 +745,32 @@ mod tests {
     }
 
     #[fixture]
+    fn proposal_review_commit_create_proposal_review_not_found() -> (
+        ProposalReviewCommit,
+        Option<ProposalReview>,
+        Proposal,
+        CreateProposalReviewCommitRequest,
+        ApiError,
+    ) {
+        let (prc, _, p, request) = proposal_review_commit_create_reviewed();
+        let proposal_review_id = Uuid::try_from(request.proposal_review_id.as_str()).unwrap();
+
+        (
+            prc,
+            None,
+            p,
+            request,
+            ApiError::not_found(&format!(
+                "Proposal review with Id {} not found",
+                proposal_review_id.to_string()
+            )),
+        )
+    }
+
+    #[fixture]
     fn proposal_review_commit_create_proposal_review_published() -> (
         ProposalReviewCommit,
-        ProposalReview,
+        Option<ProposalReview>,
         Proposal,
         CreateProposalReviewCommitRequest,
         ApiError,
@@ -770,10 +780,10 @@ mod tests {
 
         (
             prc,
-            ProposalReview {
+            Some(ProposalReview {
                 status: ProposalReviewStatus::Published,
                 ..pr
-            },
+            }),
             p,
             request,
             ApiError::conflict(&format!(
@@ -786,7 +796,7 @@ mod tests {
     #[fixture]
     fn proposal_review_commit_create_proposal_review_another_user() -> (
         ProposalReviewCommit,
-        ProposalReview,
+        Option<ProposalReview>,
         Proposal,
         CreateProposalReviewCommitRequest,
         ApiError,
@@ -796,7 +806,7 @@ mod tests {
 
         (
             prc.clone(),
-            ProposalReview { user_id, ..pr },
+            Some(ProposalReview { user_id, ..pr }),
             p,
             request,
             ApiError::permission_denied(&format!(
@@ -1152,13 +1162,14 @@ mod tests {
     }
 
     #[rstest]
+    #[case::not_found(proposal_review_commit_update_proposal_review_not_found())]
     #[case::published(proposal_review_commit_update_proposal_review_published())]
     #[case::another_user(proposal_review_commit_update_proposal_review_another_user())]
     async fn update_proposal_review_proposal_review_invalid(
         #[case] fixture: (
             ProposalReviewCommitId,
             ProposalReviewCommit,
-            ProposalReview,
+            Option<ProposalReview>,
             UpdateProposalReviewCommitRequest,
             ApiError,
         ),
@@ -1185,7 +1196,7 @@ mod tests {
             .expect_get_proposal_review_by_id()
             .once()
             .with(eq(original_proposal_review_commit.proposal_review_id))
-            .return_const(Some(proposal_review.clone()));
+            .return_const(proposal_review);
         let mut p_repository_mock = MockProposalRepository::new();
         p_repository_mock.expect_get_proposal_by_id().never();
 
@@ -1387,10 +1398,32 @@ mod tests {
     }
 
     #[fixture]
+    fn proposal_review_commit_update_proposal_review_not_found() -> (
+        ProposalReviewCommitId,
+        ProposalReviewCommit,
+        Option<ProposalReview>,
+        UpdateProposalReviewCommitRequest,
+        ApiError,
+    ) {
+        let (id, prc, _, _, request, _) = proposal_review_commit_update_reviewed();
+
+        (
+            id,
+            prc.clone(),
+            None,
+            request,
+            ApiError::not_found(&format!(
+                "Proposal review with Id {} not found",
+                prc.proposal_review_id.to_string(),
+            )),
+        )
+    }
+
+    #[fixture]
     fn proposal_review_commit_update_proposal_review_published() -> (
         ProposalReviewCommitId,
         ProposalReviewCommit,
-        ProposalReview,
+        Option<ProposalReview>,
         UpdateProposalReviewCommitRequest,
         ApiError,
     ) {
@@ -1399,10 +1432,10 @@ mod tests {
         (
             id,
             prc.clone(),
-            ProposalReview {
+            Some(ProposalReview {
                 status: ProposalReviewStatus::Published,
                 ..pr
-            },
+            }),
             request,
             ApiError::conflict(&format!(
                 "Proposal review with Id {} is already published",
@@ -1415,7 +1448,7 @@ mod tests {
     fn proposal_review_commit_update_proposal_review_another_user() -> (
         ProposalReviewCommitId,
         ProposalReviewCommit,
-        ProposalReview,
+        Option<ProposalReview>,
         UpdateProposalReviewCommitRequest,
         ApiError,
     ) {
@@ -1425,7 +1458,7 @@ mod tests {
         (
             id,
             prc.clone(),
-            ProposalReview { user_id, ..pr },
+            Some(ProposalReview { user_id, ..pr }),
             request,
             ApiError::permission_denied(&format!(
                 "Proposal review with Id {} does not belong to user with Id {}",
@@ -1554,6 +1587,399 @@ mod tests {
             ApiError::invalid_argument(&format!(
                 "Each highlight must be less than {} characters",
                 MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHT_CHARS
+            )),
+        )
+    }
+
+    #[rstest]
+    fn delete_proposal_review_commit() {
+        let calling_principal = fixtures::principal();
+        let id = fixtures::proposal_review_commit_id();
+        let proposal_review_commit = fixtures::proposal_review_commit_reviewed();
+        let proposal_review = ProposalReview {
+            user_id: proposal_review_commit.user_id,
+            ..fixtures::proposal_review_draft()
+        };
+        let proposal = fixtures::nns_replica_version_management_proposal();
+
+        let mut u_repository_mock = MockUserProfileRepository::new();
+        u_repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(proposal_review_commit.user_id));
+        let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
+        prc_repository_mock
+            .expect_get_proposal_review_commit_by_id()
+            .once()
+            .with(eq(id))
+            .return_const(Some(proposal_review_commit.clone()));
+        let mut pr_repository_mock = MockProposalReviewRepository::new();
+        pr_repository_mock
+            .expect_get_proposal_review_by_id()
+            .once()
+            .with(eq(proposal_review_commit.proposal_review_id))
+            .return_const(Some(proposal_review.clone()));
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock
+            .expect_get_proposal_by_id()
+            .once()
+            .with(eq(proposal_review.proposal_id))
+            .return_const(Some(proposal));
+
+        prc_repository_mock
+            .expect_delete_proposal_review_commit()
+            .once()
+            .with(eq(id))
+            .return_const(Ok(()));
+
+        let service = ProposalReviewCommitServiceImpl::new(
+            prc_repository_mock,
+            u_repository_mock,
+            pr_repository_mock,
+            p_repository_mock,
+        );
+
+        service
+            .delete_proposal_review_commit(calling_principal, &id)
+            .unwrap();
+    }
+
+    #[rstest]
+    fn delete_proposal_review_commit_no_user() {
+        let calling_principal = fixtures::principal();
+        let id = fixtures::proposal_review_commit_id();
+
+        let mut u_repository_mock = MockUserProfileRepository::new();
+        u_repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(None);
+        let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
+        prc_repository_mock
+            .expect_get_proposal_review_commit_by_id()
+            .never();
+        let mut pr_repository_mock = MockProposalReviewRepository::new();
+        pr_repository_mock
+            .expect_get_proposal_review_by_id()
+            .never();
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock.expect_get_proposal_by_id().never();
+
+        prc_repository_mock
+            .expect_delete_proposal_review_commit()
+            .never();
+
+        let service = ProposalReviewCommitServiceImpl::new(
+            prc_repository_mock,
+            u_repository_mock,
+            pr_repository_mock,
+            p_repository_mock,
+        );
+
+        let result = service
+            .delete_proposal_review_commit(calling_principal, &id)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::not_found(&format!(
+                "User id for principal {} not found",
+                calling_principal.to_text()
+            ))
+        );
+    }
+
+    #[rstest]
+    fn delete_proposal_review_commit_not_found() {
+        let calling_principal = fixtures::principal();
+        let id = fixtures::proposal_review_commit_id();
+        let user_id = fixtures::user_id();
+
+        let mut u_repository_mock = MockUserProfileRepository::new();
+        u_repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(user_id));
+        let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
+        prc_repository_mock
+            .expect_get_proposal_review_commit_by_id()
+            .once()
+            .with(eq(id))
+            .return_const(None);
+        let mut pr_repository_mock = MockProposalReviewRepository::new();
+        pr_repository_mock
+            .expect_get_proposal_review_by_id()
+            .never();
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock.expect_get_proposal_by_id().never();
+
+        prc_repository_mock
+            .expect_delete_proposal_review_commit()
+            .never();
+
+        let service = ProposalReviewCommitServiceImpl::new(
+            prc_repository_mock,
+            u_repository_mock,
+            pr_repository_mock,
+            p_repository_mock,
+        );
+
+        let result = service
+            .delete_proposal_review_commit(calling_principal, &id)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::not_found(&format!(
+                "Proposal review commit with Id {} not found",
+                id.to_string()
+            ))
+        )
+    }
+
+    #[rstest]
+    fn delete_proposal_review_commit_another_user() {
+        let calling_principal = fixtures::principal();
+        let id = fixtures::proposal_review_commit_id();
+        let user_id = fixtures::uuid_a();
+        let proposal_review_commit = ProposalReviewCommit {
+            user_id: fixtures::uuid_b(),
+            ..fixtures::proposal_review_commit_reviewed()
+        };
+
+        let mut u_repository_mock = MockUserProfileRepository::new();
+        u_repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(user_id));
+        let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
+        prc_repository_mock
+            .expect_get_proposal_review_commit_by_id()
+            .once()
+            .with(eq(id))
+            .return_const(Some(proposal_review_commit.clone()));
+        let mut pr_repository_mock = MockProposalReviewRepository::new();
+        pr_repository_mock
+            .expect_get_proposal_review_by_id()
+            .never();
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock.expect_get_proposal_by_id().never();
+
+        prc_repository_mock
+            .expect_delete_proposal_review_commit()
+            .never();
+
+        let service = ProposalReviewCommitServiceImpl::new(
+            prc_repository_mock,
+            u_repository_mock,
+            pr_repository_mock,
+            p_repository_mock,
+        );
+
+        let result = service
+            .delete_proposal_review_commit(calling_principal, &id)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::permission_denied(&format!(
+                "Proposal review commit with Id {} does not belong to user with Id {}",
+                id.to_string(),
+                user_id.to_string(),
+            ))
+        )
+    }
+
+    #[rstest]
+    #[case::not_found(proposal_review_commit_delete_proposal_review_not_found())]
+    #[case::published(proposal_review_commit_delete_proposal_review_published())]
+    #[case::another_user(proposal_review_commit_delete_proposal_review_another_user())]
+    fn delete_proposal_review_commit_proposal_review_invalid(
+        #[case] fixture: (
+            ProposalReviewCommitId,
+            ProposalReviewCommit,
+            Option<ProposalReview>,
+            ApiError,
+        ),
+    ) {
+        let calling_principal = fixtures::principal();
+        let (id, proposal_review_commit, proposal_review, expected_error) = fixture;
+
+        let mut u_repository_mock = MockUserProfileRepository::new();
+        u_repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(proposal_review_commit.user_id));
+        let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
+        prc_repository_mock
+            .expect_get_proposal_review_commit_by_id()
+            .once()
+            .with(eq(id))
+            .return_const(Some(proposal_review_commit.clone()));
+        let mut pr_repository_mock = MockProposalReviewRepository::new();
+        pr_repository_mock
+            .expect_get_proposal_review_by_id()
+            .once()
+            .with(eq(proposal_review_commit.proposal_review_id))
+            .return_const(proposal_review);
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock.expect_get_proposal_by_id().never();
+
+        prc_repository_mock
+            .expect_delete_proposal_review_commit()
+            .never();
+
+        let service = ProposalReviewCommitServiceImpl::new(
+            prc_repository_mock,
+            u_repository_mock,
+            pr_repository_mock,
+            p_repository_mock,
+        );
+
+        let result = service
+            .delete_proposal_review_commit(calling_principal, &id)
+            .unwrap_err();
+
+        assert_eq!(result, expected_error)
+    }
+
+    #[rstest]
+    fn delete_proposal_review_commit_proposal_completed() {
+        let calling_principal = fixtures::principal();
+        let id = fixtures::proposal_review_commit_id();
+        let proposal_review_commit = fixtures::proposal_review_commit_reviewed();
+        let proposal_review = ProposalReview {
+            user_id: proposal_review_commit.user_id,
+            ..fixtures::proposal_review_draft()
+        };
+        let proposal = fixtures::nns_replica_version_management_proposal_completed();
+
+        let mut u_repository_mock = MockUserProfileRepository::new();
+        u_repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(proposal_review_commit.user_id));
+        let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
+        prc_repository_mock
+            .expect_get_proposal_review_commit_by_id()
+            .once()
+            .with(eq(id))
+            .return_const(Some(proposal_review_commit.clone()));
+        let mut pr_repository_mock = MockProposalReviewRepository::new();
+        pr_repository_mock
+            .expect_get_proposal_review_by_id()
+            .once()
+            .with(eq(proposal_review_commit.proposal_review_id))
+            .return_const(Some(proposal_review.clone()));
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock
+            .expect_get_proposal_by_id()
+            .once()
+            .with(eq(proposal_review.proposal_id))
+            .return_const(Some(proposal));
+
+        prc_repository_mock
+            .expect_delete_proposal_review_commit()
+            .never();
+
+        let service = ProposalReviewCommitServiceImpl::new(
+            prc_repository_mock,
+            u_repository_mock,
+            pr_repository_mock,
+            p_repository_mock,
+        );
+
+        let result = service
+            .delete_proposal_review_commit(calling_principal, &id)
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::conflict(&format!(
+                "Proposal with Id {} is already completed",
+                proposal_review.proposal_id.to_string()
+            ))
+        )
+    }
+
+    #[fixture]
+    fn proposal_review_commit_delete_proposal_review_not_found() -> (
+        ProposalReviewCommitId,
+        ProposalReviewCommit,
+        Option<ProposalReview>,
+        ApiError,
+    ) {
+        let id = fixtures::proposal_review_commit_id();
+        let proposal_review_commit = fixtures::proposal_review_commit_reviewed();
+
+        (
+            id,
+            proposal_review_commit.clone(),
+            None,
+            ApiError::not_found(&format!(
+                "Proposal review with Id {} not found",
+                proposal_review_commit.proposal_review_id.to_string(),
+            )),
+        )
+    }
+
+    #[fixture]
+    fn proposal_review_commit_delete_proposal_review_published() -> (
+        ProposalReviewCommitId,
+        ProposalReviewCommit,
+        Option<ProposalReview>,
+        ApiError,
+    ) {
+        let id = fixtures::proposal_review_commit_id();
+        let proposal_review_commit = fixtures::proposal_review_commit_reviewed();
+        let proposal_review = ProposalReview {
+            status: ProposalReviewStatus::Published,
+            ..fixtures::proposal_review_draft()
+        };
+
+        (
+            id,
+            proposal_review_commit.clone(),
+            Some(proposal_review),
+            ApiError::conflict(&format!(
+                "Proposal review with Id {} is already published",
+                proposal_review_commit.proposal_review_id.to_string(),
+            )),
+        )
+    }
+
+    #[fixture]
+    fn proposal_review_commit_delete_proposal_review_another_user() -> (
+        ProposalReviewCommitId,
+        ProposalReviewCommit,
+        Option<ProposalReview>,
+        ApiError,
+    ) {
+        let id = fixtures::proposal_review_commit_id();
+        let user_id = fixtures::uuid_a();
+        let proposal_review_commit = ProposalReviewCommit {
+            user_id,
+            ..fixtures::proposal_review_commit_reviewed()
+        };
+        let proposal_review = ProposalReview {
+            user_id: fixtures::uuid_b(),
+            ..fixtures::proposal_review_draft()
+        };
+
+        (
+            id,
+            proposal_review_commit.clone(),
+            Some(proposal_review),
+            ApiError::permission_denied(&format!(
+                "Proposal review with Id {} does not belong to user with Id {}",
+                proposal_review_commit.proposal_review_id.to_string(),
+                user_id.to_string(),
             )),
         )
     }

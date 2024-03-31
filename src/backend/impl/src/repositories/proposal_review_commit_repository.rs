@@ -45,6 +45,11 @@ pub trait ProposalReviewCommitRepository {
         proposal_review_commit_id: ProposalReviewCommitId,
         proposal_review_commit: ProposalReviewCommit,
     ) -> Result<(), ApiError>;
+
+    fn delete_proposal_review_commit(
+        &self,
+        proposal_review_commit_id: &ProposalReviewCommitId,
+    ) -> Result<(), ApiError>;
 }
 
 pub struct ProposalReviewCommitRepositoryImpl {}
@@ -174,6 +179,25 @@ impl ProposalReviewCommitRepository for ProposalReviewCommitRepositoryImpl {
         STATE.with_borrow_mut(|s| {
             s.proposal_review_commits
                 .insert(proposal_review_commit_id, proposal_review_commit);
+        });
+
+        Ok(())
+    }
+
+    fn delete_proposal_review_commit(
+        &self,
+        proposal_review_commit_id: &ProposalReviewCommitId,
+    ) -> Result<(), ApiError> {
+        self.get_proposal_review_commit_by_id(&proposal_review_commit_id)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "Proposal review commit with id {} not found",
+                    proposal_review_commit_id.to_string()
+                ))
+            })?;
+
+        STATE.with_borrow_mut(|s| {
+            s.proposal_review_commits.remove(proposal_review_commit_id);
         });
 
         Ok(())
@@ -379,6 +403,27 @@ mod tests {
             .unwrap();
 
         assert_eq!(result, updated_proposal_review_commit);
+    }
+
+    #[rstest]
+    async fn delete_proposal_review_commit() {
+        STATE.set(ProposalReviewCommitState::default());
+
+        let original_proposal_review_commit = fixtures::proposal_review_commit_reviewed();
+
+        let repository = ProposalReviewCommitRepositoryImpl::default();
+        let proposal_review_commit_id = repository
+            .create_proposal_review_commit(original_proposal_review_commit)
+            .await
+            .unwrap();
+
+        repository
+            .delete_proposal_review_commit(&proposal_review_commit_id)
+            .unwrap();
+
+        let result = repository.get_proposal_review_commit_by_id(&proposal_review_commit_id);
+
+        assert!(result.is_none());
     }
 
     #[fixture]
