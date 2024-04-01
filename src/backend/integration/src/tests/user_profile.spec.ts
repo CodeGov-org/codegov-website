@@ -1,4 +1,3 @@
-import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { SocialLink, type _SERVICE } from '@cg/backend';
 import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
 import {
@@ -153,7 +152,7 @@ describe('User Profile', () => {
     const bobGetHistoryRes = await actor.get_my_user_profile_history();
     const bobGetHistory = extractOkResponse(bobGetHistoryRes);
 
-    expect(aliceCreate.id).toBeString();
+    expect(typeof aliceCreate.id).toBe('string');
     expect(aliceCreate.username).toBe('Anonymous');
     expect(aliceCreate.config).toEqual({ anonymous: null });
     expect(aliceGetHistory.history).toHaveLength(1);
@@ -167,7 +166,7 @@ describe('User Profile', () => {
       },
     });
 
-    expect(bobCreate.id).toBeString();
+    expect(typeof bobCreate.id).toBe('string');
     expect(bobCreate.username).toBe('Anonymous');
     expect(bobCreate.config).toEqual({ anonymous: null });
     expect(bobGetHistory.history).toHaveLength(1);
@@ -202,7 +201,7 @@ describe('User Profile', () => {
     const aliceGetHistoryRes = await actor.get_my_user_profile_history();
     const aliceGetHistory = extractOkResponse(aliceGetHistoryRes);
 
-    expect(aliceCreate.id).toBeString();
+    expect(typeof aliceCreate.id).toBe('string');
     expect(aliceCreate.username).toBe('Anonymous');
     expect(aliceCreate.config).toEqual({ anonymous: null });
     expect(aliceGetHistory.history).toHaveLength(1);

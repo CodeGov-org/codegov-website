@@ -1,4 +1,3 @@
-import { Principal } from '@dfinity/principal';
 import { AnonymousIdentity, HttpAgent, Identity } from '@dfinity/agent';
 import { AccountIdentifier } from '@dfinity/ledger-icp';
 import {
@@ -11,17 +10,14 @@ import { isNullish } from '@dfinity/utils';
 import { Ledger } from '../icp-ledger';
 import { CreateAgentOptions, createAgent } from '../agent';
 import {
+  GOVERNANCE_CANISTER_ID,
   encodeUpdateElectedReplicaVersionsPayload,
   generateNonce,
   getNeuronSubaccount,
   optional,
-} from './utils';
+} from '@cg/nns-utils';
 import { CreateRvmProposalRequest } from './types';
 import { Ora } from 'ora';
-
-const GOVERNANCE_CANISTER_ID = Principal.fromText(
-  'rrkah-fqaaa-aaaaa-aaaaq-cai',
-);
 
 export class Governance {
   private readonly governanceCanister: GovernanceCanister;

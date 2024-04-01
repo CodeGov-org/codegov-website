@@ -22,3 +22,5 @@ dist/
 .env
 
 /data/
+
+/src/backend/integration/state/*nns_state

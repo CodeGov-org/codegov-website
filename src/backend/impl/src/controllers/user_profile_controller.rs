@@ -149,7 +149,7 @@ impl<A: AccessControlService, U: UserProfileService> UserProfileController<A, U>
         self.access_control_service
             .assert_principal_not_anonymous(&calling_principal)?;
         self.access_control_service
-            .assert_principal_is_admin(calling_principal)?;
+            .assert_principal_is_admin(&calling_principal)?;
 
         self.user_profile_service
             .update_user_profile(calling_principal, request)?;

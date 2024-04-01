@@ -1,6 +1,7 @@
 packages:
   - lib/angular-ui
   - lib/backend
+  - lib/nns-utils
   - lib/styles
   - lib/ui
   - src/backend/integration
