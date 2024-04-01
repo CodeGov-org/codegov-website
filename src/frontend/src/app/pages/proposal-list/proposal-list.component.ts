@@ -1,5 +1,5 @@
 import { CommonModule, KeyValuePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -268,7 +268,7 @@ interface FilterForm {
     }
   `,
 })
-export class ProposalListComponent {
+export class ProposalListComponent implements OnInit {
   public proposalList$ = this.proposalService.currentProposalList$;
 
   public readonly isAuthenticated$ = this.authService.isAuthenticated$;
@@ -297,8 +297,6 @@ export class ProposalListComponent {
         this.onFilterFormUpdated(formValue.reviewPeriodState);
       });
 
-    this.isLoggedAsReviewer();
-
     this.isAuthenticated$
       .pipe(takeUntilDestroyed())
       .subscribe(isAuthenticated => {
@@ -308,6 +306,10 @@ export class ProposalListComponent {
       });
 
     this.proposalService.loadProposalList(ProposalState.InProgress);
+  }
+
+  public ngOnInit(): void {
+    this.isLoggedAsReviewer();
   }
 
   private async isLoggedAsReviewer(): Promise<void> {
