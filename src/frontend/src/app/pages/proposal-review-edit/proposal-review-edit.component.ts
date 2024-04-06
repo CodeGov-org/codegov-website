@@ -17,7 +17,12 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, filter, map } from 'rxjs';
 
-import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
+import {
+  CardComponent,
+  RadioInputComponent,
+  ImageUploaderBtnComponent,
+  ImageSet,
+} from '@cg/angular-ui';
 import { ProposalService, ProposalState } from '~core/state';
 import {
   FormFieldComponent,
@@ -67,6 +72,7 @@ function extractCommitSha(commitSha: string): string | null {
     InputErrorComponent,
     InputHintComponent,
     RadioInputComponent,
+    ImageUploaderBtnComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -86,6 +92,10 @@ function extractCommitSha(commitSha: string): string | null {
           margin-bottom: size(4);
         }
       }
+
+      .review-card {
+        margin-top: size(6);
+      }
     `,
   ],
   template: `
@@ -96,7 +106,7 @@ function extractCommitSha(commitSha: string): string | null {
         <h2 class="h3" slot="cardTitle">{{ proposal.title }}</h2>
       </cg-card>
 
-      <h3 class="h4 commits-heading">Commits</h3>
+      <h2 class="h3">Reviewed commits</h2>
       @for (commitForm of commitForms; track i; let i = $index) {
         <ng-container [formGroup]="commitForm">
           <cg-card class="commit-review-card">
@@ -267,6 +277,82 @@ function extractCommitSha(commitSha: string): string | null {
           Add commit
         </button>
       </div>
+
+      <cg-card class="review-card">
+        <h2 class="h3" slot="cardTitle">Review details</h2>
+
+        <div slot="cardContent">
+          <ng-container [formGroup]="reviewForm">
+            <app-key-value-grid>
+              <app-key-col>
+                <label appLabel for="timeSpent">Time spent (minutes)</label>
+              </app-key-col>
+              <app-value-col>
+                <app-form-field>
+                  <input
+                    appInput
+                    id="timeSpent"
+                    formControlName="timeSpent"
+                    type="number"
+                    min="0"
+                  />
+                </app-form-field>
+              </app-value-col>
+
+              <app-key-col>
+                <div>Summary</div>
+              </app-key-col>
+              <app-value-col>
+                <app-form-field>
+                  <textarea appInput formControlName="summary"></textarea>
+                </app-form-field>
+              </app-value-col>
+
+              <app-key-col>
+                <div>Build reproduced</div>
+              </app-key-col>
+              <app-value-col>
+                <app-form-field>
+                  <div class="radio-group">
+                    <cg-radio-input
+                      appInput
+                      value="true"
+                      formControlName="buildReproduced"
+                      name="buildReproduced"
+                    >
+                      Yes
+                    </cg-radio-input>
+
+                    <cg-radio-input
+                      appInput
+                      value="false"
+                      formControlName="buildReproduced"
+                      name="buildReproduced"
+                    >
+                      No
+                    </cg-radio-input>
+                  </div>
+                </app-form-field>
+              </app-value-col>
+
+              <app-key-col>
+                <div>Build verification images</div>
+              </app-key-col>
+              <app-value-col>
+                <cg-image-uploader-btn
+                  (selectedImagesChange)="onImagesSelected($event)"
+                >
+                  Select image(s)
+                </cg-image-uploader-btn>
+              </app-value-col>
+            </app-key-value-grid>
+
+            @for (image of selectedImages; track image.sm.url) {
+              <img [src]="image.xxl.url" />
+            }
+          </ng-container>
+        </div>
+      </cg-card>
     }
   `,
 })
@@ -275,6 +361,8 @@ export class ProposalReviewEditComponent implements OnInit {
   public readonly commitForms: Array<FormGroup<ReviewCommitForm>> = [];
   public readonly commitFormReviewedSubscriptions: Subscription[] = [];
   public readonly commitShaSubscriptions: Subscription[] = [];
+
+  public selectedImages: ImageSet[] = [];
 
   public readonly currentProposal$ = this.proposalService.currentProposal$;
 
@@ -320,6 +408,10 @@ export class ProposalReviewEditComponent implements OnInit {
 
   public ngOnInit(): void {
     this.proposalService.loadProposalList(ProposalState.InProgress);
+  }
+
+  public onImagesSelected(images: ImageSet[]): void {
+    this.selectedImages = images;
   }
 
   public canAddCommitForm(): boolean {

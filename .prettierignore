@@ -2,6 +2,7 @@
 **/.docusaurus/**
 pnpm-lock.yaml
 
+/lib/ui/.stencil/
 /lib/ui/loader/
 
 /src/frontend/src/global-config.json
