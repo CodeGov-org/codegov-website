@@ -106,7 +106,7 @@ function extractCommitSha(commitSha: string): string | null {
         <h2 class="h3" slot="cardTitle">{{ proposal.title }}</h2>
       </cg-card>
 
-      <h2 class="h3">Reviewed commits</h2>
+      <h2 class="h3">Commits</h2>
       @for (commitForm of commitForms; track i; let i = $index) {
         <ng-container [formGroup]="commitForm">
           <cg-card class="commit-review-card">
