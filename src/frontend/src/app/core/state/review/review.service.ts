@@ -104,6 +104,15 @@ export class ReviewService {
             summary: 'This is a commit summary',
             highlights: 'This is a commit highlight',
           },
+          {
+            id: 6n,
+            reviewId: 3n,
+            commitId: '3',
+            reviewed: 1,
+            matchesDescription: 1,
+            summary: 'This is a commit summary',
+            highlights: 'This is a commit highlight',
+          },
         ],
       },
     ]);

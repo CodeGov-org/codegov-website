@@ -7,13 +7,19 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { marked } from 'marked';
 import { filter, map } from 'rxjs';
 
 import { CardComponent } from '@cg/angular-ui';
 import { FormatDatePipe } from '~core/pipes';
-import { ProposalLinkBaseUrl, ProposalState, ProposalTopic } from '~core/state';
+import { UserAuthService } from '~core/services';
+import {
+  ProposalLinkBaseUrl,
+  ProposalState,
+  ProposalTopic,
+  UserRole,
+} from '~core/state';
 import { ProposalService } from '~core/state';
 import {
   KeyColComponent,
@@ -23,7 +29,7 @@ import {
 import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
 
 @Component({
-  selector: 'app-open-proposal-details',
+  selector: 'app-proposal-details',
   standalone: true,
   imports: [
     CommonModule,
@@ -33,6 +39,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
     ValueColComponent,
     FormatDatePipe,
     ClosedProposalSummaryComponent,
+    RouterLink,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -168,6 +175,16 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               {{ proposal.codeGovVote }}
             </app-value-col>
           </app-key-value-grid>
+          <div class="btn-group">
+            @if (isReviewer && proposal.state === proposalState.InProgress) {
+              <a
+                class="btn btn--outline"
+                [routerLink]="['/review', proposal.id, 'edit']"
+              >
+                My review
+              </a>
+            }
+          </div>
         </div>
       </cg-card>
 
@@ -191,6 +208,9 @@ export class ProposalDetailsComponent implements OnInit {
   public readonly linkBaseUrl = ProposalLinkBaseUrl;
   public readonly currentProposal$ = this.proposalService.currentProposal$;
 
+  public readonly isAuthenticated$ = this.authService.isAuthenticated$;
+  public isReviewer = false;
+
   private readonly proposalIdFromRoute$ = this.route.params.pipe(
     map(params => {
       try {
@@ -206,16 +226,27 @@ export class ProposalDetailsComponent implements OnInit {
     private readonly proposalService: ProposalService,
     private readonly route: ActivatedRoute,
     private readonly sanitizer: DomSanitizer,
+    private readonly authService: UserAuthService,
   ) {
+    this.isAuthenticated$
+      .pipe(takeUntilDestroyed())
+      .subscribe(isAuthenticated => {
+        if (isAuthenticated) {
+          this.isLoggedAsReviewer();
+        }
+      });
+
     this.proposalIdFromRoute$
       .pipe(takeUntilDestroyed())
       .subscribe(proposalId => {
         this.proposalService.setCurrentProposalId(proposalId);
       });
+
+    this.proposalService.loadProposalList();
   }
 
   public ngOnInit(): void {
-    this.proposalService.loadProposalList();
+    this.isLoggedAsReviewer();
   }
 
   public convertMarkdownToHTML(proposalSummary: string): string | null {
@@ -223,5 +254,9 @@ export class ProposalDetailsComponent implements OnInit {
       SecurityContext.HTML,
       marked.parse(proposalSummary),
     );
+  }
+
+  private async isLoggedAsReviewer(): Promise<void> {
+    this.isReviewer = await this.authService.isLoggedAs(UserRole.Reviewer);
   }
 }

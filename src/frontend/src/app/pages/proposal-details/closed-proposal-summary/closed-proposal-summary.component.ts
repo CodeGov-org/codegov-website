@@ -12,15 +12,32 @@ import { CardComponent } from '@cg/angular-ui';
 import { Proposal } from '~core/state';
 import { ProposalCommit } from '~core/state/review';
 import { ReviewService } from '~core/state/review/review.service';
+import {
+  KeyColComponent,
+  KeyValueGridComponent,
+  ValueColComponent,
+} from '~core/ui';
 
 @Component({
   selector: 'app-closed-proposal-summary',
   standalone: true,
-  imports: [CardComponent, CommonModule],
+  imports: [
+    CardComponent,
+    CommonModule,
+    KeyValueGridComponent,
+    KeyColComponent,
+    ValueColComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
       @import '@cg/styles/common';
+
+      .summary,
+      .review,
+      .commit {
+        margin-bottom: size(6);
+      }
 
       .summary__vote--adopt {
         color: $success;
@@ -32,6 +49,18 @@ import { ReviewService } from '~core/state/review/review.service';
 
       .summary__verification {
         margin-bottom: size(8);
+      }
+
+      .commit__highlights {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .commit__highlights-label {
+        color: $black;
+        @include dark {
+          color: $white;
+        }
       }
     `,
   ],
@@ -73,8 +102,102 @@ import { ReviewService } from '~core/state/review/review.service';
       </cg-card>
 
       <h2 class="h4">Reviews</h2>
-      @for (review of reviewList; track review.id) {
-        <cg-card></cg-card>
+      @for (review of reviewList; track review.id; let i = $index) {
+        <cg-card class="review">
+          <div slot="cardContent">
+            <app-key-value-grid [columnNumber]="1">
+              <app-key-col [id]="'reviewer-id-' + i">Reviewer</app-key-col>
+              <app-value-col [attr.labelledby]="'reviewer-id-' + i">
+                Reviewer Name Link
+              </app-value-col>
+
+              <app-key-col [id]="'build-reproduced-id-' + i">
+                Build reproduced
+              </app-key-col>
+              <app-value-col [attr.labelledby]="'build-reproduced-id-' + i">
+                {{ review.buildReproduced ? 'Yes' : 'No' }}
+              </app-value-col>
+
+              <app-key-col [id]="'vote-id-' + i">Vote</app-key-col>
+              <app-value-col
+                [attr.labelledby]="'vote-id-' + i"
+                [ngClass]="{
+                  'summary__vote--adopt': review.reviewerVote === 'ADOPT',
+                  'summary__vote--reject': review.reviewerVote === 'REJECT'
+                }"
+              >
+                {{ review.reviewerVote }}
+              </app-value-col>
+
+              <app-key-col [id]="'reviewed-commits-id-' + i">
+                Reviewed commits
+              </app-key-col>
+              <app-value-col [attr.labelledby]="'reviewed-commits-' + i">
+                {{ review.reviewCommits.length }} out of {{ commitList.length }}
+              </app-value-col>
+
+              <app-key-col [id]="'review-link-id-' + i">
+                Full review
+              </app-key-col>
+              <app-value-col [attr.labelledby]="'review-link-' + i">
+                Review Link
+              </app-value-col>
+            </app-key-value-grid>
+          </div>
+        </cg-card>
+      }
+
+      <h2 class="h4">Commits</h2>
+      @for (commit of commitList; track commit.commitId; let i = $index) {
+        <cg-card class="commit">
+          <div slot="cardContent">
+            <app-key-value-grid [columnNumber]="1">
+              <app-key-col [id]="'commit-id-' + i">ID</app-key-col>
+              <app-value-col [attr.labelledby]="'commit-id-' + i">
+                <a
+                  class="commit__link"
+                  href="https://github.com/dfinity/ic/commit/{{
+                    commit.commitId
+                  }}"
+                  target="_blank"
+                  rel="nofollow noreferrer"
+                >
+                  {{ commit.commitId }}
+                </a>
+              </app-value-col>
+
+              <app-key-col [id]="'reviewed-by-id-' + i">
+                Reviewed by
+              </app-key-col>
+              <app-value-col [attr.labelledby]="'reviewed-by-id-' + i">
+                {{ commit.reviewedCount }} out of {{ reviewList.length }}
+              </app-value-col>
+
+              <app-key-col [id]="'matches-descr-id-' + i">
+                Matches description
+              </app-key-col>
+              <app-value-col [attr.labelledby]="'matches-descr-id-' + i">
+                Yes ({{ commit.matchesDescriptionCount }}) No ({{
+                  commit.reviewedCount - commit.matchesDescriptionCount
+                }})
+              </app-value-col>
+            </app-key-value-grid>
+
+            <div class="commit__highlights">
+              <div class="commit__highlights-label">Reviewer highlights</div>
+              @for (
+                highlight of commit.highlights;
+                track highlight.reviewerId
+              ) {
+                <div class="commit__highlights-content">
+                  Reviewer #{{ highlight.reviewerId }} said: "{{
+                    highlight.text
+                  }}"
+                </div>
+              }
+            </div>
+          </div>
+        </cg-card>
       }
     }
   `,
