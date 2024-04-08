@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { RouterModule } from '@angular/router';
 
 import { ProfileService, UserRole } from '~core/state';
 import {
@@ -17,18 +17,18 @@ describe('AdminProfileComponent', () => {
     profileServiceMock = profileServiceMockFactory();
 
     await TestBed.configureTestingModule({
-      imports: [AdminProfileComponent, RouterTestingModule],
+      imports: [AdminProfileComponent, RouterModule],
       providers: [{ provide: ProfileService, useValue: profileServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdminProfileComponent);
     component = fixture.componentInstance;
-    component.userProfile = {
+    fixture.componentRef.setInput('userProfile', {
       id: '1',
       role: UserRole.Admin,
       username: 'TestAdmin',
       bio: 'bio',
-    };
+    });
     fixture.detectChanges();
   });
 

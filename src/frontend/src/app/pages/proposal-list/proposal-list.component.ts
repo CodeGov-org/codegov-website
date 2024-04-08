@@ -1,6 +1,6 @@
 import { CommonModule, KeyValuePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -10,7 +10,6 @@ import {
   ProposalLinkBaseUrl,
   ProposalService,
   ProposalState,
-  ProposalTopic,
 } from '~core/state';
 import {
   KeyValueGridComponent,
@@ -112,12 +111,12 @@ interface FilterForm {
   ],
   template: `
     <h1 class="h3">Proposals</h1>
-    <form [formGroup]="filterForm">
+    <form [formGroup]="filterForm()">
       <div class="filter">
         <div class="filter__label">Select code review status:</div>
         <app-form-field class="filter__value">
           <div class="radio-group">
-            @for (property of listFilter | keyvalue; track property.key) {
+            @for (property of listFilter() | keyvalue; track property.key) {
               <cg-radio-input
                 appInput
                 [value]="property.key"
@@ -132,7 +131,7 @@ interface FilterForm {
       </div>
     </form>
 
-    @if (proposalList$ | async; as proposalList) {
+    @if (proposalList(); as proposalList) {
       @for (proposal of proposalList; track proposal.id; let i = $index) {
         <cg-card class="proposal">
           <h2 class="h4 proposal__title" slot="cardTitle">
@@ -144,7 +143,7 @@ interface FilterForm {
               <app-key-col [id]="'proposal-id-' + i">ID</app-key-col>
               <app-value-col [attr.aria-labelledby]="'proposal-id-' + i">
                 <a
-                  href="{{ linkBaseUrl.Proposal }}{{ proposal.id }}"
+                  [href]="linkBaseUrl().Proposal + proposal.id"
                   target="_blank"
                   rel="nofollow noreferrer"
                 >
@@ -162,7 +161,7 @@ interface FilterForm {
                 ) {
                   <a
                     class="proposal__link"
-                    href="{{ proposalLink.link }}"
+                    [href]="proposalLink.link"
                     target="_blank"
                     rel="nofollow noreferrer"
                   >
@@ -194,7 +193,7 @@ interface FilterForm {
                 class="proposal__proposer"
               >
                 <a
-                  href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
+                  [href]="linkBaseUrl().Neuron + proposal.proposedBy"
                   target="_blank"
                   rel="nofollow noreferrer"
                 >
@@ -265,25 +264,24 @@ interface FilterForm {
   `,
 })
 export class ProposalListComponent {
-  public proposalList$ = this.proposalService.currentProposalList$;
+  public proposalList = toSignal(this.proposalService.currentProposalList$);
 
-  public readonly filterForm: FormGroup<FilterForm>;
-  public readonly listFilter = reviewPeriodStateFilter;
-
-  public readonly proposalTopic = ProposalTopic;
-  public readonly linkBaseUrl = ProposalLinkBaseUrl;
-
-  constructor(private readonly proposalService: ProposalService) {
-    this.filterForm = new FormGroup<FilterForm>({
+  public readonly filterForm = signal(
+    new FormGroup<FilterForm>({
       reviewPeriodState: new FormControl(ReviewPeriodStateFilter.InReview, {
         nonNullable: true,
       }),
-    });
+    }),
+  );
 
+  public readonly listFilter = signal(reviewPeriodStateFilter);
+  public readonly linkBaseUrl = signal(ProposalLinkBaseUrl);
+
+  constructor(private readonly proposalService: ProposalService) {
     this.proposalService.loadProposalList(ProposalState.InProgress);
 
-    this.filterForm.valueChanges
-      .pipe(takeUntilDestroyed())
+    this.filterForm()
+      .valueChanges.pipe(takeUntilDestroyed())
       .subscribe(formValue => {
         this.onFilterFormUpdated(formValue.reviewPeriodState);
       });

@@ -1,9 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
   TemplateRef,
-  ViewChild,
+  input,
+  viewChild,
 } from '@angular/core';
 
 @Component({
@@ -28,13 +28,12 @@ import {
   `,
 })
 export class InputErrorComponent {
-  @Input({ required: true })
-  public key!: string;
+  public readonly key = input.required<string>();
 
-  @ViewChild('errorTemplate', { static: true })
-  private errorTemplate!: TemplateRef<HTMLElement>;
+  private readonly errorTemplate =
+    viewChild.required<TemplateRef<HTMLElement>>('errorTemplate');
 
   public getTemplateRef(): TemplateRef<HTMLElement> {
-    return this.errorTemplate;
+    return this.errorTemplate();
   }
 }

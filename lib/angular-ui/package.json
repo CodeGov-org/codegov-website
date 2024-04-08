@@ -10,8 +10,8 @@
     "test:watch": "ng test ui"
   },
   "peerDependencies": {
-    "@angular/common": "^17.1.0",
-    "@angular/core": "^17.1.0",
+    "@angular/common": "^17.3.3",
+    "@angular/core": "^17.3.3",
     "@cg/ui": "workspace:*"
   },
   "devDependencies": {

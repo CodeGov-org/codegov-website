@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   TemplateRef,
-  ViewChild,
+  viewChild,
 } from '@angular/core';
 
 @Component({
@@ -16,10 +16,10 @@ import {
   `,
 })
 export class InputHintComponent {
-  @ViewChild('hintTemplate', { static: true })
-  private hintTemplate!: TemplateRef<HTMLElement>;
+  private readonly hintTemplate =
+    viewChild.required<TemplateRef<HTMLElement>>('hintTemplate');
 
   public getTemplateRef(): TemplateRef<HTMLElement> {
-    return this.hintTemplate;
+    return this.hintTemplate();
   }
 }

@@ -14,12 +14,12 @@ describe('AdminPersonalInfoComponent', () => {
 
     fixture = TestBed.createComponent(AdminPersonalInfoComponent);
     component = fixture.componentInstance;
-    component.userProfile = {
+    fixture.componentRef.setInput('userProfile', {
       id: '1',
       role: UserRole.Admin,
       username: 'TestReviewer',
       bio: 'bio',
-    };
+    });
     fixture.detectChanges();
   });
 

@@ -1,9 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
-  Input,
-  Output,
+  input,
+  output,
 } from '@angular/core';
 
 import { ReviewerProfile } from '~core/state';
@@ -31,12 +30,12 @@ import {
     <app-key-value-grid>
       <app-key-col id="reviewer-username">Username</app-key-col>
       <app-value-col aria-labelledby="reviewer-username">
-        {{ userProfile.username }}
+        {{ userProfile().username }}
       </app-value-col>
 
       <app-key-col id="reviewer-bio">Bio</app-key-col>
       <app-value-col aria-labelledby="reviewer-bio">
-        {{ userProfile.bio }}
+        {{ userProfile().bio }}
       </app-value-col>
 
       <app-key-col id="reviewer-wallet-address">Wallet address</app-key-col>
@@ -47,29 +46,27 @@ import {
         <a
           [href]="
             'https://dashboard.internetcomputer.org/account/' +
-            userProfile.walletAddress
+            userProfile().walletAddress
           "
           target="_blank"
           rel="noopener noreferrer"
         >
-          {{ userProfile.walletAddress }}
+          {{ userProfile().walletAddress }}
         </a>
       </app-value-col>
     </app-key-value-grid>
 
     <div class="btn-group">
-      <button type="button" class="btn" (click)="editForm()">Edit</button>
+      <button type="button" class="btn" (click)="onEditForm()">Edit</button>
     </div>
   `,
 })
 export class ReviewerPersonalInfoComponent {
-  @Input({ required: true })
-  public userProfile!: ReviewerProfile;
+  public readonly userProfile = input.required<ReviewerProfile>();
 
-  @Output()
-  public edit = new EventEmitter<void>();
+  public readonly edit = output();
 
-  public editForm(): void {
+  public onEditForm(): void {
     this.edit.emit();
   }
 }

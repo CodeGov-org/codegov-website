@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  signal,
+} from '@angular/core';
 
 import { ReviewerPersonalInfoComponent } from '../reviewer-personal-info';
 import { ReviewerPersonalInfoFormComponent } from '../reviewer-personal-info-form';
@@ -53,7 +58,7 @@ import {
       <app-key-value-grid slot="cardContent">
         <app-key-col id="reviewer-id">ID</app-key-col>
         <app-value-col aria-labelledby="reviewer-id">
-          {{ userProfile.id }}
+          {{ userProfile().id }}
         </app-value-col>
 
         <app-key-col id="reviewer-role">Role</app-key-col>
@@ -61,15 +66,15 @@ import {
           aria-labelledby="reviewer-role"
           aria-describedby="reviewer-role-description"
         >
-          {{ userProfile.role }}
+          {{ userProfile().role }}
 
           <app-info-icon
             aria-hidden="true"
-            [appTooltip]="nonEditableInfo"
+            [appTooltip]="nonEditableInfo()"
           ></app-info-icon>
         </app-value-col>
         <div id="reviewer-role-description" role="tooltip" class="sr-only">
-          {{ nonEditableInfo }}
+          {{ nonEditableInfo() }}
         </div>
 
         <app-key-col id="reviewer-neuron-id">Neuron ID</app-key-col>
@@ -80,21 +85,21 @@ import {
           <a
             [href]="
               'https://dashboard.internetcomputer.org/neuron/' +
-              userProfile.neuronId
+              userProfile().neuronId
             "
             target="_blank"
             rel="nofollow noreferrer"
           >
-            {{ userProfile.neuronId }}
+            {{ userProfile().neuronId }}
           </a>
 
           <app-info-icon
             aria-hidden="true"
-            [appTooltip]="nonEditableInfo"
+            [appTooltip]="nonEditableInfo()"
           ></app-info-icon>
         </app-value-col>
         <div id="reviewer-neuron-id-description" role="tooltip" class="sr-only">
-          {{ nonEditableInfo }}
+          {{ nonEditableInfo() }}
         </div>
       </app-key-value-grid>
     </cg-card>
@@ -103,14 +108,14 @@ import {
       <h2 class="h3" slot="cardTitle">Personal info</h2>
 
       <div slot="cardContent">
-        @if (isPersonalInfoEditable) {
+        @if (isPersonalInfoEditable()) {
           <app-reviewer-personal-info-form
-            [userProfile]="userProfile"
+            [userProfile]="userProfile()"
             (formClose)="hidePersonalInfoForm()"
           />
         } @else {
           <app-reviewer-personal-info
-            [userProfile]="userProfile"
+            [userProfile]="userProfile()"
             (edit)="showPersonalInfoForm()"
           />
         }
@@ -121,14 +126,14 @@ import {
       <h2 class="h3" slot="cardTitle">Social media</h2>
 
       <div slot="cardContent">
-        @if (isSocialMediaEditable) {
+        @if (isSocialMediaEditable()) {
           <app-reviewer-social-media-form
-            [userProfile]="userProfile"
+            [userProfile]="userProfile()"
             (formClose)="hideSocialMediaForm()"
           />
         } @else {
           <app-reviewer-social-media
-            [userProfile]="userProfile"
+            [userProfile]="userProfile()"
             (edit)="showSocialMediaForm()"
           />
         }
@@ -137,28 +142,27 @@ import {
   `,
 })
 export class ReviewerProfileComponent {
-  @Input({ required: true })
-  public userProfile!: ReviewerProfile;
+  public readonly userProfile = input.required<ReviewerProfile>();
+  public readonly isPersonalInfoEditable = signal(false);
+  public readonly isSocialMediaEditable = signal(false);
 
-  public isPersonalInfoEditable = false;
-  public isSocialMediaEditable = false;
-
-  public readonly nonEditableInfo: string =
-    'To change this property, contact a CodeGov admin.';
+  public readonly nonEditableInfo = signal(
+    'To change this property, contact a CodeGov admin.',
+  );
 
   public showPersonalInfoForm(): void {
-    this.isPersonalInfoEditable = true;
+    this.isPersonalInfoEditable.set(true);
   }
 
   public hidePersonalInfoForm(): void {
-    this.isPersonalInfoEditable = false;
+    this.isPersonalInfoEditable.set(false);
   }
 
   public showSocialMediaForm(): void {
-    this.isSocialMediaEditable = true;
+    this.isSocialMediaEditable.set(true);
   }
 
   public hideSocialMediaForm(): void {
-    this.isSocialMediaEditable = false;
+    this.isSocialMediaEditable.set(false);
   }
 }

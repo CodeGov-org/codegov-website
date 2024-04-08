@@ -1,16 +1,16 @@
 import {
   Directive,
   ElementRef,
-  EventEmitter,
   HostBinding,
   HostListener,
-  Input,
   OnInit,
   Optional,
-  Output,
   SkipSelf,
+  computed,
+  input,
+  output,
 } from '@angular/core';
-import { AbstractControl, ControlContainer } from '@angular/forms';
+import { ControlContainer } from '@angular/forms';
 
 import { formHasError } from '../form-utils';
 
@@ -39,26 +39,35 @@ export class InputDirective implements OnInit {
   @HostBinding('attr.aria-invalid')
   @HostBinding('class.input--invalid')
   public get hasError(): boolean {
-    return formHasError(this.formControl);
+    return formHasError(this.formControl());
   }
 
   @HostBinding('attr.aria-describedby')
-  public get feedbackElementId(): string | undefined {
+  public get feedbackElementId(): string {
     return `${this.getId()}-feedback`;
   }
 
-  @Input({ required: true })
-  public formControlName!: string;
+  public readonly formControlName = input.required<string>();
 
-  @Output()
-  public touchChange = new EventEmitter<void>();
+  public readonly touchChange = output();
 
   @HostListener('blur')
   public onBlur(): void {
     this.touchChange.emit();
   }
 
-  private formControl: AbstractControl | null | undefined;
+  private readonly formControl = computed(() => {
+    const formControl = this.controlContainer?.control?.get(
+      this.formControlName(),
+    );
+    if (!formControl) {
+      throw new Error(
+        `Control with name ${this.formControlName} does not exist`,
+      );
+    }
+
+    return formControl;
+  });
 
   constructor(
     private readonly elementRef: ElementRef<
@@ -72,13 +81,6 @@ export class InputDirective implements OnInit {
   public ngOnInit(): void {
     if (!this.controlContainer) {
       throw new Error('Input directive must be used within a form');
-    }
-
-    this.formControl = this.controlContainer.control?.get(this.formControlName);
-    if (!this.formControl) {
-      throw new Error(
-        `Control with name ${this.formControlName} does not exist`,
-      );
     }
   }
 
