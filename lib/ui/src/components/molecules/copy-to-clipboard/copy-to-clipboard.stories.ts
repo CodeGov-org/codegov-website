@@ -12,6 +12,7 @@ const meta: Meta = {
   },
   render: args => `
     <cg-copy-to-clipboard value="${args.value}">
+    </cg-copy-to-clipboard>
   `,
 };
 
