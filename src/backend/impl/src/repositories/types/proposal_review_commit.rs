@@ -97,13 +97,13 @@ impl ProposalReviewCommitProposalReviewUserRange {
                 proposal_review_id,
                 user_id.unwrap_or(Uuid::min()),
                 commit_sha.unwrap_or(CommitSha::min()),
-                Uuid::min(),
+                ProposalReviewCommitId::min(),
             )?,
             end_bound: ProposalReviewCommitProposalReviewUserKey::new(
                 proposal_review_id,
                 user_id.unwrap_or(Uuid::max()),
                 commit_sha.unwrap_or(CommitSha::max()),
-                Uuid::max(),
+                ProposalReviewCommitId::max(),
             )?,
         })
     }
