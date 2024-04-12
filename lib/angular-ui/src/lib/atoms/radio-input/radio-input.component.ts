@@ -37,8 +37,6 @@ export class RadioInputComponent implements ControlValueAccessor {
   private notifyChange: ChangeFn = () => {};
   private notifyTouched: TouchedFn = () => {};
 
-  public readonly thing = input<HTMLCgRadioInputElement['value']>();
-
   public readonly value = input.required<HTMLCgRadioInputElement['value']>();
 
   public writeValue(value: HTMLCgRadioInputElement['value']): void {
