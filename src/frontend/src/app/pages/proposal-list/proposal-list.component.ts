@@ -1,18 +1,17 @@
 import { CommonModule, KeyValuePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
 import { FormatDatePipe } from '~core/pipes';
-import { UserAuthService } from '~core/services';
 import {
+  ProfileService,
   ProposalLinkBaseUrl,
   ProposalService,
   ProposalState,
   ProposalTopic,
-  UserRole,
 } from '~core/state';
 import {
   KeyValueGridComponent,
@@ -250,7 +249,10 @@ interface FilterForm {
               </app-value-col>
             </app-key-value-grid>
             <div class="btn-group">
-              @if (isReviewer && proposal.state === proposalState.InProgress) {
+              @if (
+                (isReviewer$ | async) &&
+                proposal.state === proposalState.InProgress
+              ) {
                 <a
                   class="btn btn--outline"
                   [routerLink]="['/review', proposal.id, 'edit']"
@@ -268,11 +270,9 @@ interface FilterForm {
     }
   `,
 })
-export class ProposalListComponent implements OnInit {
+export class ProposalListComponent {
   public proposalList$ = this.proposalService.currentProposalList$;
-
-  public readonly isAuthenticated$ = this.authService.isAuthenticated$;
-  public isReviewer = false;
+  public isReviewer$ = this.profileService.isReviewer$;
 
   public readonly filterForm: FormGroup<FilterForm>;
   public readonly listFilter = reviewPeriodStateFilter;
@@ -283,7 +283,7 @@ export class ProposalListComponent implements OnInit {
 
   constructor(
     private readonly proposalService: ProposalService,
-    private readonly authService: UserAuthService,
+    private readonly profileService: ProfileService,
   ) {
     this.filterForm = new FormGroup<FilterForm>({
       reviewPeriodState: new FormControl(ReviewPeriodStateFilter.InReview, {
@@ -297,23 +297,7 @@ export class ProposalListComponent implements OnInit {
         this.onFilterFormUpdated(formValue.reviewPeriodState);
       });
 
-    this.isAuthenticated$
-      .pipe(takeUntilDestroyed())
-      .subscribe(isAuthenticated => {
-        if (isAuthenticated) {
-          this.isLoggedAsReviewer();
-        }
-      });
-
     this.proposalService.loadProposalList(ProposalState.InProgress);
-  }
-
-  public ngOnInit(): void {
-    this.isLoggedAsReviewer();
-  }
-
-  private async isLoggedAsReviewer(): Promise<void> {
-    this.isReviewer = await this.authService.isLoggedAs(UserRole.Reviewer);
   }
 
   private async onFilterFormUpdated(

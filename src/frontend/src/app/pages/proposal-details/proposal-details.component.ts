@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit,
   SecurityContext,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -13,12 +12,11 @@ import { filter, map } from 'rxjs';
 
 import { CardComponent } from '@cg/angular-ui';
 import { FormatDatePipe } from '~core/pipes';
-import { UserAuthService } from '~core/services';
 import {
+  ProfileService,
   ProposalLinkBaseUrl,
   ProposalState,
   ProposalTopic,
-  UserRole,
 } from '~core/state';
 import { ProposalService } from '~core/state';
 import {
@@ -176,7 +174,10 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
             </app-value-col>
           </app-key-value-grid>
           <div class="btn-group">
-            @if (isReviewer && proposal.state === proposalState.InProgress) {
+            @if (
+              (isReviewer$ | async) &&
+              proposal.state === proposalState.InProgress
+            ) {
               <a
                 class="btn btn--outline"
                 [routerLink]="['/review', proposal.id, 'edit']"
@@ -202,14 +203,12 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
     }
   `,
 })
-export class ProposalDetailsComponent implements OnInit {
+export class ProposalDetailsComponent {
   public readonly proposalTopic = ProposalTopic;
   public readonly proposalState = ProposalState;
   public readonly linkBaseUrl = ProposalLinkBaseUrl;
   public readonly currentProposal$ = this.proposalService.currentProposal$;
-
-  public readonly isAuthenticated$ = this.authService.isAuthenticated$;
-  public isReviewer = false;
+  public isReviewer$ = this.profileService.isReviewer$;
 
   private readonly proposalIdFromRoute$ = this.route.params.pipe(
     map(params => {
@@ -226,16 +225,8 @@ export class ProposalDetailsComponent implements OnInit {
     private readonly proposalService: ProposalService,
     private readonly route: ActivatedRoute,
     private readonly sanitizer: DomSanitizer,
-    private readonly authService: UserAuthService,
+    private readonly profileService: ProfileService,
   ) {
-    this.isAuthenticated$
-      .pipe(takeUntilDestroyed())
-      .subscribe(isAuthenticated => {
-        if (isAuthenticated) {
-          this.isLoggedAsReviewer();
-        }
-      });
-
     this.proposalIdFromRoute$
       .pipe(takeUntilDestroyed())
       .subscribe(proposalId => {
@@ -245,18 +236,10 @@ export class ProposalDetailsComponent implements OnInit {
     this.proposalService.loadProposalList();
   }
 
-  public ngOnInit(): void {
-    this.isLoggedAsReviewer();
-  }
-
   public convertMarkdownToHTML(proposalSummary: string): string | null {
     return this.sanitizer.sanitize(
       SecurityContext.HTML,
       marked.parse(proposalSummary),
     );
-  }
-
-  private async isLoggedAsReviewer(): Promise<void> {
-    this.isReviewer = await this.authService.isLoggedAs(UserRole.Reviewer);
   }
 }

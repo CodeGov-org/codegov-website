@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GLOBAL_CONFIG } from 'src/global-config';
 
 import { FooterComponent, NavbarComponent } from '@cg/angular-ui';
 import { SecondaryNavbarComponent } from '~core/layout';
+import { ProfileService } from '~core/state';
 
 @Component({
   standalone: true,
@@ -50,8 +51,14 @@ import { SecondaryNavbarComponent } from '~core/layout';
     </div>
   `,
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   public globalConfig = GLOBAL_CONFIG;
   public footerLinks = GLOBAL_CONFIG.footerLinks;
   public navbarLinks = GLOBAL_CONFIG.headerLinks;
+
+  constructor(private readonly profileService: ProfileService) {}
+
+  public ngOnInit(): void {
+    this.profileService.loadProfile();
+  }
 }
