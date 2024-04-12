@@ -2,11 +2,11 @@ import { defineCustomElement } from '@cg/ui/dist/components/cg-navbar';
 import { DefineCustomElement } from '../../define-custom-element';
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
-  Input,
   NgZone,
+  effect,
+  input,
 } from '@angular/core';
 
 @DefineCustomElement(defineCustomElement)
@@ -19,31 +19,27 @@ import {
   `,
 })
 export class NavbarComponent {
-  @Input({ required: true })
-  public set homeUrl(value: HTMLCgNavbarElement['homeUrl']) {
-    this.ngZone.runOutsideAngular(() => {
-      this.elementRef.nativeElement.homeUrl = value;
-    });
-  }
-  public get homeUrl(): HTMLCgNavbarElement['homeUrl'] {
-    return this.elementRef.nativeElement.homeUrl;
-  }
-
-  @Input({ required: true })
-  public set links(value: HTMLCgNavbarElement['links']) {
-    this.ngZone.runOutsideAngular(() => {
-      this.elementRef.nativeElement.links = value;
-    });
-  }
-  public get links(): HTMLCgNavbarElement['links'] {
-    return this.elementRef.nativeElement.links;
-  }
+  public readonly homeUrl = input.required<HTMLCgNavbarElement['homeUrl']>();
+  public readonly links = input.required<HTMLCgNavbarElement['links']>();
 
   constructor(
-    private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
     private readonly elementRef: ElementRef<HTMLCgNavbarElement>,
   ) {
-    this.changeDetectorRef.detach();
+    effect(() => {
+      const homeUrl = this.homeUrl();
+
+      this.ngZone.runOutsideAngular(() => {
+        this.elementRef.nativeElement.homeUrl = homeUrl;
+      });
+    });
+
+    effect(() => {
+      const links = this.links();
+
+      this.ngZone.runOutsideAngular(() => {
+        this.elementRef.nativeElement.links = links;
+      });
+    });
   }
 }

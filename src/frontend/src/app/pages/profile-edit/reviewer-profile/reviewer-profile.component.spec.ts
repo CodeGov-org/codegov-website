@@ -14,7 +14,7 @@ describe('ReviewerProfileComponent', () => {
 
     fixture = TestBed.createComponent(ReviewerProfileComponent);
     component = fixture.componentInstance;
-    component.userProfile = {
+    fixture.componentRef.setInput('userProfile', {
       id: '1',
       role: UserRole.Reviewer,
       username: 'TestReviewer',
@@ -22,7 +22,7 @@ describe('ReviewerProfileComponent', () => {
       walletAddress: '123213123sdfsdfs',
       bio: 'bio',
       socialMedia: [],
-    };
+    });
     fixture.detectChanges();
   });
 

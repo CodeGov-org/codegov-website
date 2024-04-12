@@ -1,8 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { defineCustomElement } from '@cg/ui/dist/components/cg-card';
 import { DefineCustomElement } from '../../define-custom-element';
@@ -16,8 +12,4 @@ import { DefineCustomElement } from '../../define-custom-element';
     <ng-content />
   `,
 })
-export class CardComponent {
-  constructor(private readonly changeDetectorRef: ChangeDetectorRef) {
-    this.changeDetectorRef.detach();
-  }
-}
+export class CardComponent {}

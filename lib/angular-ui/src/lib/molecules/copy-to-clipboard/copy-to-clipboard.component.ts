@@ -1,10 +1,10 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
-  Input,
   NgZone,
+  effect,
+  input,
 } from '@angular/core';
 
 import { defineCustomElement } from '@cg/ui/dist/components/cg-copy-to-clipboard';
@@ -20,21 +20,19 @@ import { DefineCustomElement } from '../../define-custom-element';
   `,
 })
 export class CopyToClipboardComponent {
-  @Input({ required: true })
-  public set value(value: HTMLCgCopyToClipboardElement['value']) {
-    this.ngZone.runOutsideAngular(() => {
-      this.elementRef.nativeElement.value = value;
-    });
-  }
-  public get value(): HTMLCgCopyToClipboardElement['value'] {
-    return this.elementRef.nativeElement.value;
-  }
+  public readonly value =
+    input.required<HTMLCgCopyToClipboardElement['value']>();
 
   constructor(
-    private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
     private readonly elementRef: ElementRef<HTMLCgCopyToClipboardElement>,
   ) {
-    this.changeDetectorRef.detach();
+    effect(() => {
+      const value = this.value();
+
+      this.ngZone.runOutsideAngular(() => {
+        this.elementRef.nativeElement.value = value;
+      });
+    });
   }
 }

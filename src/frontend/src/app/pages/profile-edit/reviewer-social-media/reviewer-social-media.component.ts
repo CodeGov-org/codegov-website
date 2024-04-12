@@ -1,12 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
-  Input,
-  Output,
+  computed,
+  input,
+  output,
+  signal,
 } from '@angular/core';
 
-import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from '../profile.model';
+import { SOCIAL_MEDIA_INPUTS } from '../profile.model';
 import { ReviewerProfile } from '~core/state';
 import {
   KeyColComponent,
@@ -22,18 +23,18 @@ import { keysOf } from '~core/utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-key-value-grid>
-      @for (key of socialMediaKeys; track key; let i = $index) {
+      @for (key of socialMediaKeys(); track key; let i = $index) {
         <app-key-col [id]="'social-media-' + i">
-          {{ socialMediaInputs[key].label }}
+          {{ socialMediaInputs()[key].label }}
         </app-key-col>
         <app-value-col [attr.aria-labelledby]="'social-media-' + i">
-          @if (hasSocialMedia(key)) {
+          @if (hasSocialMediaMap()[key]) {
             <a
-              [href]="getSocialMediaUrl(key)"
+              [href]="socialMediaUrls()[key]"
               target="_blank"
               rel="noopener noreferrer"
             >
-              {{ getSocialMediaUrl(key) }}
+              {{ socialMediaUrls()[key] }}
             </a>
           }
         </app-value-col>
@@ -46,35 +47,48 @@ import { keysOf } from '~core/utils';
   `,
 })
 export class ReviewerSocialMediaComponent {
-  @Input({ required: true })
-  public userProfile!: ReviewerProfile;
+  public readonly userProfile = input.required<ReviewerProfile>();
 
-  @Output()
-  public edit = new EventEmitter<void>();
+  public readonly edit = output();
 
-  public readonly socialMediaKeys = keysOf(SOCIAL_MEDIA_INPUTS);
-  public readonly socialMediaInputs = SOCIAL_MEDIA_INPUTS;
+  public readonly socialMediaKeys = signal(keysOf(SOCIAL_MEDIA_INPUTS));
+  public readonly socialMediaInputs = signal(SOCIAL_MEDIA_INPUTS);
+
+  public readonly socialMediaUsernames = computed(() =>
+    keysOf(SOCIAL_MEDIA_INPUTS).reduce<Record<string, string>>(
+      (accum, key) => ({
+        ...accum,
+        [key]:
+          this.userProfile().socialMedia.find(element => element.type === key)
+            ?.username ?? '',
+      }),
+      {},
+    ),
+  );
+
+  public readonly socialMediaUrls = computed(() =>
+    keysOf(SOCIAL_MEDIA_INPUTS).reduce<Record<string, string>>(
+      (accum, key) => ({
+        ...accum,
+        [key]:
+          this.socialMediaInputs()[key].baseUrl +
+          this.socialMediaUsernames()[key],
+      }),
+      {},
+    ),
+  );
+
+  public readonly hasSocialMediaMap = computed(() =>
+    keysOf(SOCIAL_MEDIA_INPUTS).reduce<Record<string, boolean>>(
+      (accum, key) => ({
+        ...accum,
+        [key]: this.socialMediaUsernames()[key].length > 0,
+      }),
+      {},
+    ),
+  );
 
   public editForm(): void {
     this.edit.emit();
-  }
-
-  public hasSocialMedia(lookupKey: keyof SocialMediaInputs): boolean {
-    const username = this.getSocialMediaUsername(lookupKey);
-
-    return username.length > 0;
-  }
-
-  public getSocialMediaUrl(lookupKey: keyof SocialMediaInputs): string {
-    const username = this.getSocialMediaUsername(lookupKey);
-
-    return this.socialMediaInputs[lookupKey].baseUrl + username;
-  }
-
-  private getSocialMediaUsername(lookupKey: keyof SocialMediaInputs): string {
-    return (
-      this.userProfile.socialMedia.find(element => element.type === lookupKey)
-        ?.username ?? ''
-    );
   }
 }

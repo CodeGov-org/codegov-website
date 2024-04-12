@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
@@ -41,7 +42,7 @@ import { ReviewerProfileComponent } from './reviewer-profile';
   template: `
     <h1 class="profile-edit__title">Edit profile</h1>
 
-    @if (userProfile$ | async; as userProfile) {
+    @if (userProfile(); as userProfile) {
       @switch (userProfile.role) {
         @case (UserRole.Anonymous) {
           <app-anonymous-profile [userProfile]="userProfile" />
@@ -57,13 +58,8 @@ import { ReviewerProfileComponent } from './reviewer-profile';
   `,
 })
 export class ProfileEditComponent implements OnInit {
-  public readonly userProfile$ = this.profileService.userProfile$;
+  public readonly userProfile = toSignal(this.profileService.userProfile$);
   public readonly UserRole = UserRole;
-
-  public readonly nonEditableInfo: string =
-    'To change this property, contact a CodeGov admin.';
-  public readonly adminInfo: string =
-    'Use DFX command to change this property.';
 
   constructor(private readonly profileService: ProfileService) {}
 

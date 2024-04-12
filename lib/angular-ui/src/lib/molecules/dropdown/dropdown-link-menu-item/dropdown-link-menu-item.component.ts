@@ -1,12 +1,12 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   HostBinding,
   HostListener,
-  Input,
   NgZone,
+  effect,
+  input,
 } from '@angular/core';
 
 import { defineCustomElement } from '@cg/ui/dist/components/cg-dropdown-link-menu-item';
@@ -22,14 +22,8 @@ import { DefineCustomElement } from '../../../define-custom-element';
   `,
 })
 export class DropdownLinkMenuItemComponent {
-  // when `routerLink` is set, proxy the value to the `href` attribute
-  // for accessibility.
-  @Input()
-  public set routerLink(value: HTMLCgDropdownLinkMenuItemElement['href']) {
-    this.ngZone.runOutsideAngular(() => {
-      this.elementRef.nativeElement.href = value;
-    });
-  }
+  public readonly routerLink =
+    input<HTMLCgDropdownLinkMenuItemElement['href']>();
 
   // prevent the `href` from being followed when clicked if it's not explicitly set.
   // this happens when `routerLink` is set.
@@ -45,37 +39,47 @@ export class DropdownLinkMenuItemComponent {
   @HostBinding('attr.tabindex')
   public tabIndex = -1;
 
-  @Input()
-  public set href(value: HTMLCgDropdownLinkMenuItemElement['href']) {
-    this.hasExplicitHref = true;
+  public href = input<HTMLCgDropdownLinkMenuItemElement['href']>();
 
-    this.ngZone.runOutsideAngular(() => {
-      this.elementRef.nativeElement.href = value;
-    });
-  }
-  public get href(): HTMLCgDropdownLinkMenuItemElement['href'] {
-    return this.elementRef.nativeElement.href;
-  }
-
-  @Input()
-  public set isExternal(
-    value: HTMLCgDropdownLinkMenuItemElement['isExternal'],
-  ) {
-    this.ngZone.runOutsideAngular(() => {
-      this.elementRef.nativeElement.isExternal = value;
-    });
-  }
-  public get isExternal(): HTMLCgDropdownLinkMenuItemElement['isExternal'] {
-    return this.elementRef.nativeElement.isExternal;
-  }
+  public isExternal =
+    input<HTMLCgDropdownLinkMenuItemElement['isExternal']>(false);
 
   private hasExplicitHref = false;
 
   constructor(
-    private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
     private readonly elementRef: ElementRef<HTMLCgDropdownLinkMenuItemElement>,
   ) {
-    this.changeDetectorRef.detach();
+    // when `routerLink` is set, proxy the value to the `href` attribute
+    // for accessibility.
+    effect(() => {
+      const routerLink = this.routerLink();
+
+      if (routerLink) {
+        this.ngZone.runOutsideAngular(() => {
+          this.elementRef.nativeElement.href = routerLink;
+        });
+      }
+    });
+
+    effect(() => {
+      // see onClick for why this is necessary
+      this.hasExplicitHref = true;
+      const href = this.href();
+
+      if (href) {
+        this.ngZone.runOutsideAngular(() => {
+          this.elementRef.nativeElement.href = href;
+        });
+      }
+    });
+
+    effect(() => {
+      const isExternal = this.isExternal();
+
+      this.ngZone.runOutsideAngular(() => {
+        this.elementRef.nativeElement.isExternal = isExternal;
+      });
+    });
   }
 }

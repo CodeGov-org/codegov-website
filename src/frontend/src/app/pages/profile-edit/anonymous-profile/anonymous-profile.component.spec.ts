@@ -14,11 +14,11 @@ describe('AnonymousProfileComponent', () => {
 
     fixture = TestBed.createComponent(AnonymousProfileComponent);
     component = fixture.componentInstance;
-    component.userProfile = {
+    fixture.componentRef.setInput('userProfile', {
       id: '1',
       role: UserRole.Anonymous,
       username: 'TestAnon',
-    };
+    });
     fixture.detectChanges();
   });
 

@@ -66,7 +66,7 @@ import { isNotNil } from '~core/utils';
             <app-key-col id="open-proposal-id">ID</app-key-col>
             <app-value-col aria-labelledby="open-proposal-id">
               <a
-                href="{{ linkBaseUrl.Proposal }}{{ proposal.id }}"
+                [href]="linkBaseUrl.Proposal + proposal.id"
                 target="_blank"
                 rel="nofollow noreferrer"
               >
@@ -83,7 +83,7 @@ import { isNotNil } from '~core/utils';
                 ) {
                   <a
                     class="proposal__link"
-                    href="{{ proposalLink.link }}"
+                    [href]="proposalLink.link"
                     target="_blank"
                     rel="nofollow noreferrer"
                   >
@@ -114,7 +114,7 @@ import { isNotNil } from '~core/utils';
               class="proposal__proposer"
             >
               <a
-                href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
+                [href]="linkBaseUrl.Neuron + proposal.proposedBy"
                 target="_blank"
                 rel="nofollow noreferrer"
               >

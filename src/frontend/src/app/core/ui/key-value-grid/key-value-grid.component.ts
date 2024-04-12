@@ -2,7 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   HostBinding,
-  Input,
+  computed,
+  input,
 } from '@angular/core';
 
 @Component({
@@ -38,16 +39,17 @@ import {
   `,
 })
 export class KeyValueGridComponent {
-  @Input()
-  public columnNumber = 1;
+  public readonly columnNumber = input(1);
 
   @HostBinding('class.key-value-grid--1-col')
-  public get isOneColumn(): boolean {
-    return this.columnNumber === 1;
+  public get hasOneColumnClass(): boolean {
+    return this.isOneColumn();
   }
+  private readonly isOneColumn = computed(() => this.columnNumber() === 1);
 
   @HostBinding('class.key-value-grid--2-col')
-  public get isTwoColumns(): boolean {
-    return this.columnNumber === 2;
+  public get hasTwoColumnsClass(): boolean {
+    return this.isTwoColumns();
   }
+  private readonly isTwoColumns = computed(() => this.columnNumber() === 2);
 }
