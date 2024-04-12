@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLinkActive, RouterModule } from '@angular/router';
-import { Observable } from 'rxjs';
 
 import {
   IconBtnComponent,
@@ -122,7 +122,7 @@ import { UserAuthService } from '~core/services';
         <div class="secondary-navbar__left"></div>
 
         <div class="secondary-navbar__right">
-          @if (isAuthenticated$ | async) {
+          @if (isAuthenticated()) {
             <cg-dropdown anchorAlign="right">
               <cg-dropdown-trigger
                 [isIconBtn]="true"
@@ -162,11 +162,9 @@ import { UserAuthService } from '~core/services';
   `,
 })
 export class SecondaryNavbarComponent {
-  public readonly isAuthenticated$: Observable<boolean>;
+  public readonly isAuthenticated = toSignal(this.authService.isAuthenticated$);
 
-  constructor(private readonly authService: UserAuthService) {
-    this.isAuthenticated$ = this.authService.isAuthenticated$;
-  }
+  constructor(private readonly authService: UserAuthService) {}
 
   public async onLoginButtonClicked(): Promise<void> {
     await this.authService.login();

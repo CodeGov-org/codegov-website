@@ -4,10 +4,11 @@ import {
   Component,
   ElementRef,
   OnInit,
-  QueryList,
-  ViewChildren,
+  effect,
+  signal,
+  viewChildren,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
   FormControl,
   FormGroup,
@@ -34,7 +35,7 @@ import {
   LabelDirective,
   ValueColComponent,
 } from '~core/ui';
-import { isNotNil } from '~core/utils';
+import { isNil } from '~core/utils';
 
 interface ReviewForm {
   timeSpent: FormControl<number | null>;
@@ -99,7 +100,7 @@ function extractCommitSha(commitSha: string): string | null {
     `,
   ],
   template: `
-    @if (currentProposal$ | async; as proposal) {
+    @if (currentProposal(); as proposal) {
       <h1 class="h1">Submit review for proposal {{ proposal.id }}</h1>
 
       <cg-card class="proposal-overview-card">
@@ -107,7 +108,7 @@ function extractCommitSha(commitSha: string): string | null {
       </cg-card>
 
       <h2 class="h3">Commits</h2>
-      @for (commitForm of commitForms; track i; let i = $index) {
+      @for (commitForm of commitForms(); track i; let i = $index) {
         <ng-container [formGroup]="commitForm">
           <cg-card class="commit-review-card">
             <div slot="cardContent">
@@ -259,7 +260,10 @@ function extractCommitSha(commitSha: string): string | null {
               </app-key-value-grid>
 
               <div class="btn-group">
-                <button class="btn btn--outline" (click)="removeCommitForm(i)">
+                <button
+                  class="btn btn--outline"
+                  (click)="onRemoveCommitForm(i)"
+                >
                   Remove
                 </button>
               </div>
@@ -271,7 +275,7 @@ function extractCommitSha(commitSha: string): string | null {
       <div>
         <button
           class="btn btn--outline"
-          (click)="addCommitForm()"
+          (click)="onAddCommitForm()"
           [disabled]="!canAddCommitForm()"
         >
           Add commit
@@ -282,7 +286,7 @@ function extractCommitSha(commitSha: string): string | null {
         <h2 class="h3" slot="cardTitle">Review details</h2>
 
         <div slot="cardContent">
-          <ng-container [formGroup]="reviewForm">
+          <ng-container [formGroup]="reviewForm()">
             <app-key-value-grid>
               <app-key-col>
                 <label appLabel for="timeSpent">Time spent (minutes)</label>
@@ -316,7 +320,7 @@ function extractCommitSha(commitSha: string): string | null {
                   <div class="radio-group">
                     <cg-radio-input
                       appInput
-                      value="true"
+                      [value]="1"
                       formControlName="buildReproduced"
                       name="buildReproduced"
                     >
@@ -325,7 +329,7 @@ function extractCommitSha(commitSha: string): string | null {
 
                     <cg-radio-input
                       appInput
-                      value="false"
+                      [value]="0"
                       formControlName="buildReproduced"
                       name="buildReproduced"
                     >
@@ -347,7 +351,7 @@ function extractCommitSha(commitSha: string): string | null {
               </app-value-col>
             </app-key-value-grid>
 
-            @for (image of selectedImages; track image.sm.url) {
+            @for (image of selectedImages(); track image.sm.url) {
               <img [src]="image.xxl.url" />
             }
           </ng-container>
@@ -357,17 +361,24 @@ function extractCommitSha(commitSha: string): string | null {
   `,
 })
 export class ProposalReviewEditComponent implements OnInit {
-  public readonly reviewForm: FormGroup<ReviewForm>;
-  public readonly commitForms: Array<FormGroup<ReviewCommitForm>> = [];
-  public readonly commitFormReviewedSubscriptions: Subscription[] = [];
-  public readonly commitShaSubscriptions: Subscription[] = [];
+  public readonly reviewForm = signal(
+    new FormGroup<ReviewForm>({
+      timeSpent: new FormControl(null),
+      summary: new FormControl(null),
+      buildReproduced: new FormControl(null),
+    }),
+  );
 
-  public selectedImages: ImageSet[] = [];
+  public readonly commitForms = signal<Array<FormGroup<ReviewCommitForm>>>([]);
 
-  public readonly currentProposal$ = this.proposalService.currentProposal$;
+  public selectedImages = signal<ImageSet[]>([]);
 
-  @ViewChildren('commitShaInput')
-  public readonly commitShaInputs!: QueryList<ElementRef<HTMLInputElement>>;
+  public readonly currentProposal = toSignal(
+    this.proposalService.currentProposal$,
+  );
+
+  public readonly commitShaInputs =
+    viewChildren<ElementRef<HTMLInputElement>>('commitShaInput');
 
   private readonly proposalIdFromRoute$ = this.route.params.pipe(
     map(params => {
@@ -380,6 +391,9 @@ export class ProposalReviewEditComponent implements OnInit {
     filter(Boolean),
   );
 
+  private readonly commitFormReviewedSubscriptions: Subscription[] = [];
+  private readonly commitShaSubscriptions: Subscription[] = [];
+
   constructor(
     private readonly proposalService: ProposalService,
     private readonly route: ActivatedRoute,
@@ -391,18 +405,15 @@ export class ProposalReviewEditComponent implements OnInit {
         this.proposalService.setCurrentProposalId(proposalId);
       });
 
-    this.currentProposal$
-      .pipe(takeUntilDestroyed(), filter(isNotNil))
-      .subscribe(proposal => {
-        if (proposal.state === ProposalState.Completed) {
-          this.router.navigate(['review', 'view', { id: proposal.id }]);
-        }
-      });
+    effect(() => {
+      const proposal = this.currentProposal();
+      if (isNil(proposal)) {
+        return;
+      }
 
-    this.reviewForm = new FormGroup<ReviewForm>({
-      timeSpent: new FormControl(null),
-      summary: new FormControl(null),
-      buildReproduced: new FormControl(null),
+      if (proposal.state === ProposalState.Completed) {
+        this.router.navigate(['review', 'view', { id: proposal.id }]);
+      }
     });
   }
 
@@ -411,14 +422,15 @@ export class ProposalReviewEditComponent implements OnInit {
   }
 
   public onImagesSelected(images: ImageSet[]): void {
-    this.selectedImages = images;
+    this.selectedImages.set(images);
   }
 
+  // [TODO] - convert to signal
   public canAddCommitForm(): boolean {
-    return this.commitForms.every(form => form.valid);
+    return this.commitForms().every(form => form.valid);
   }
 
-  public addCommitForm(): void {
+  public onAddCommitForm(): void {
     if (this.canAddCommitForm()) {
       const commitForm = new FormGroup<ReviewCommitForm>({
         id: new FormControl(null, {
@@ -432,7 +444,7 @@ export class ProposalReviewEditComponent implements OnInit {
         highlights: new FormControl(null),
       });
 
-      this.commitForms.push(commitForm);
+      this.commitForms.set([...this.commitForms(), commitForm]);
 
       const reviewedSubscription =
         commitForm.controls.reviewed.valueChanges.subscribe(reviewed => {
@@ -446,12 +458,15 @@ export class ProposalReviewEditComponent implements OnInit {
         });
       this.commitShaSubscriptions.push(commitShaSubscription);
 
-      this.focusCommitShaInput(this.commitForms.length - 1);
+      this.focusCommitShaInput(this.commitForms().length - 1);
     }
   }
 
-  public removeCommitForm(index: number): void {
-    this.commitForms.splice(index, 1);
+  public onRemoveCommitForm(index: number): void {
+    this.commitForms.set([
+      ...this.commitForms().slice(0, index),
+      ...this.commitForms().slice(index + 1),
+    ]);
 
     const [reviewedSubscription] = this.commitFormReviewedSubscriptions.splice(
       index,
@@ -465,7 +480,7 @@ export class ProposalReviewEditComponent implements OnInit {
     );
     commitShaSubscription.unsubscribe();
 
-    this.focusCommitShaInput(Math.min(index, this.commitForms.length - 1));
+    this.focusCommitShaInput(Math.min(index, this.commitForms().length - 1));
   }
 
   private onCommitReviewedChange(
@@ -509,7 +524,7 @@ export class ProposalReviewEditComponent implements OnInit {
 
   private focusCommitShaInput(index: number): void {
     setTimeout(() => {
-      this.commitShaInputs.get(index)?.nativeElement.focus();
+      this.commitShaInputs()[index]?.nativeElement.focus();
     }, 0);
   }
 }

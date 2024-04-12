@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 import { LoadingIconComponent } from '../../icons';
 
@@ -15,14 +15,14 @@ import { LoadingIconComponent } from '../../icons';
     `,
   ],
   template: `
-    <button [type]="type" [disabled]="disabled" [class]="btnClass">
-      @if (isSaving) {
+    <button [type]="type()" [disabled]="disabled()" [class]="btnClass()">
+      @if (isSaving()) {
         <app-loading-icon class="btn--loading" aria-label="Saving" />
       }
 
       <div
-        [attr.aria-hidden]="isSaving"
-        [class.loading-button__text--transparent]="isSaving"
+        [attr.aria-hidden]="isSaving()"
+        [class.loading-button__text--transparent]="isSaving()"
       >
         <ng-content />
       </div>
@@ -30,15 +30,11 @@ import { LoadingIconComponent } from '../../icons';
   `,
 })
 export class LoadingButtonComponent {
-  @Input()
-  public type: 'submit' | 'button' = 'button';
+  public readonly type = input<'submit' | 'button'>('button');
 
-  @Input()
-  public disabled = false;
+  public readonly disabled = input(false);
 
-  @Input()
-  public btnClass = '';
+  public readonly btnClass = input('');
 
-  @Input()
-  public isSaving = false;
+  public readonly isSaving = input(false);
 }

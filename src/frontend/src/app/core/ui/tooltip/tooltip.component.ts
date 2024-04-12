@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-tooltip',
@@ -27,10 +27,9 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
     `,
   ],
   template: `
-    {{ tooltipText }}
+    {{ tooltipText() }}
   `,
 })
 export class TooltipComponent {
-  @Input({ required: true })
-  public tooltipText!: string;
+  public readonly tooltipText = input.required<string>();
 }

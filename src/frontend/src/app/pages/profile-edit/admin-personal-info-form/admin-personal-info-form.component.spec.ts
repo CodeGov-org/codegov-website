@@ -17,12 +17,12 @@ describe('AdminPersonalInfoFormComponent', () => {
 
     fixture = TestBed.createComponent(AdminPersonalInfoFormComponent);
     component = fixture.componentInstance;
-    component.userProfile = {
+    fixture.componentRef.setInput('userProfile', {
       id: '1',
       role: UserRole.Admin,
       username: 'TestReviewer',
       bio: 'bio',
-    };
+    });
     fixture.detectChanges();
   });
 

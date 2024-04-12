@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  signal,
+} from '@angular/core';
 import { GLOBAL_CONFIG } from 'src/global-config';
 
 import { CardComponent, CopyToClipboardComponent } from '@cg/angular-ui';
@@ -16,13 +21,13 @@ import { AnonymousProfile } from '~core/state';
       <div slot="cardContent">
         <p>
           If you would like to become a reviewer,
-          <a [href]="applyLink">apply now</a>
+          <a [href]="applyLink()">apply now</a>
           .
         </p>
 
         <p>When requested, provide this ID to a CodeGov admin:</p>
 
-        <cg-copy-to-clipboard [value]="userProfile.id" />
+        <cg-copy-to-clipboard [value]="userProfile().id" />
 
         <p>
           If you're just here to look around, you don't need to do anything
@@ -33,8 +38,7 @@ import { AnonymousProfile } from '~core/state';
   `,
 })
 export class AnonymousProfileComponent {
-  @Input({ required: true })
-  public userProfile!: AnonymousProfile;
+  public readonly userProfile = input.required<AnonymousProfile>();
 
-  public applyLink = GLOBAL_CONFIG.applyLink;
+  public readonly applyLink = signal(GLOBAL_CONFIG.applyLink);
 }

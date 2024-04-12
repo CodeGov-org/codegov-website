@@ -2,10 +2,11 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
+  computed,
+  effect,
+  input,
+  output,
+  signal,
 } from '@angular/core';
 import {
   FormControl,
@@ -32,7 +33,6 @@ import {
   LoadingButtonComponent,
   ValueColComponent,
 } from '~core/ui';
-import { ComponentChanges } from '~core/utils';
 
 export interface ReviewerProfileForm {
   username: FormControl<string>;
@@ -72,7 +72,7 @@ export interface ReviewerProfileForm {
     `,
   ],
   template: `
-    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="profileForm()" (ngSubmit)="onSubmit()">
       <app-key-value-grid>
         <app-key-col>
           <label appLabel for="username">Username</label>
@@ -126,14 +126,14 @@ export interface ReviewerProfileForm {
             />
 
             <app-input-hint>
-              @if (walletAddressControlHasValue()) {
+              @if (hasWalletAddress()) {
                 <a
                   class="wallet-address-link"
-                  [href]="getWalletAddressLink()"
+                  [href]="walletAddressLink()"
                   target="_blank"
                   rel="nofollow noreferrer"
                 >
-                  {{ getWalletAddressLink() }}
+                  {{ walletAddressLink() }}
                 </a>
               }
             </app-input-hint>
@@ -150,8 +150,8 @@ export interface ReviewerProfileForm {
       <div class="btn-group">
         <button
           class="btn btn--outline"
-          (click)="cancelEdits()"
-          [disabled]="isSaving"
+          (click)="onCancelEdits()"
+          [disabled]="isSaving()"
         >
           Cancel
         </button>
@@ -159,8 +159,8 @@ export interface ReviewerProfileForm {
         <app-loading-button
           btnClass="btn"
           type="submit"
-          [disabled]="profileForm.invalid || isSaving"
-          [isSaving]="isSaving"
+          [disabled]="profileForm().invalid || isSaving()"
+          [isSaving]="isSaving()"
         >
           Save
         </app-loading-button>
@@ -168,21 +168,15 @@ export interface ReviewerProfileForm {
     </form>
   `,
 })
-export class ReviewerPersonalInfoFormComponent implements OnChanges {
-  @Input({ required: true })
-  public userProfile!: ReviewerProfile;
+export class ReviewerPersonalInfoFormComponent {
+  public readonly userProfile = input.required<ReviewerProfile>();
 
-  @Output()
-  public formClose = new EventEmitter<void>();
+  public readonly formClose = output();
 
-  @Output()
-  public formSaving = new EventEmitter<void>();
+  public readonly formSaving = output();
 
-  public readonly profileForm: FormGroup<ReviewerProfileForm>;
-  public isSaving = false;
-
-  constructor(private readonly profileService: ProfileService) {
-    this.profileForm = new FormGroup<ReviewerProfileForm>({
+  public readonly profileForm = signal(
+    new FormGroup<ReviewerProfileForm>({
       username: new FormControl('', {
         nonNullable: true,
         validators: [Validators.required, Validators.minLength(3)],
@@ -195,56 +189,53 @@ export class ReviewerPersonalInfoFormComponent implements OnChanges {
         nonNullable: true,
         validators: [Validators.required],
       }),
+    }),
+  );
+  public walletAddressControl = computed(() =>
+    this.profileForm().get('walletAddress'),
+  );
+  public walletAddress = computed(() => this.walletAddressControl()?.value);
+  public hasWalletAddress = computed(() => Boolean(this.walletAddress()));
+  public walletAddressLink = computed(
+    () =>
+      `https://dashboard.internetcomputer.org/account/${this.walletAddress()}`,
+  );
+
+  public readonly isSaving = signal(false);
+
+  constructor(private readonly profileService: ProfileService) {
+    effect(() => {
+      this.profileForm().patchValue({
+        username: this.userProfile().username,
+        bio: this.userProfile().bio,
+        walletAddress: this.userProfile().walletAddress,
+      });
     });
   }
 
-  public ngOnChanges(
-    changes: ComponentChanges<ReviewerPersonalInfoFormComponent>,
-  ): void {
-    if (changes.userProfile) {
-      this.profileForm.patchValue({
-        username: this.userProfile.username,
-        bio: this.userProfile.bio,
-        walletAddress: this.userProfile.walletAddress,
-      });
-    }
-  }
-
   public async onSubmit(): Promise<void> {
-    this.profileForm.disable();
-    this.isSaving = true;
+    this.profileForm().disable();
+    this.isSaving.set(true);
 
-    const profileFormValues = this.profileForm.value;
+    const profileFormValues = this.profileForm().value;
 
     const profileUpdate: ReviewerProfileUpdate = {
       role: UserRole.Reviewer,
       username: profileFormValues.username,
       bio: profileFormValues.bio,
       walletAddress: profileFormValues.walletAddress,
-      socialMedia: this.userProfile.socialMedia,
+      socialMedia: this.userProfile().socialMedia,
     };
 
     try {
       await this.profileService.saveProfile(profileUpdate);
     } finally {
-      this.isSaving = false;
+      this.isSaving.set(false);
       this.formClose.emit();
     }
   }
 
-  public cancelEdits(): void {
+  public onCancelEdits(): void {
     this.formClose.emit();
-  }
-
-  public walletAddressControlHasValue(): boolean {
-    const control = this.profileForm.get('walletAddress');
-
-    return Boolean(control?.value);
-  }
-
-  public getWalletAddressLink(): string {
-    const walletAddress = this.profileForm.get('walletAddress')?.value;
-
-    return `https://dashboard.internetcomputer.org/account/${walletAddress}`;
   }
 }

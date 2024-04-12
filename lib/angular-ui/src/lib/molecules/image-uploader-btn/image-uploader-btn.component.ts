@@ -1,10 +1,8 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
-  EventEmitter,
   HostListener,
-  Output,
+  output,
 } from '@angular/core';
 
 import { defineCustomElement } from '@cg/ui/dist/components/cg-image-uploader-btn';
@@ -31,12 +29,5 @@ export class ImageUploaderBtnComponent {
     this.selectedImagesChange.emit(event.detail);
   }
 
-  @Output()
-  public selectedImagesChange = new EventEmitter<
-    ImagesSelectedEvent['detail']
-  >();
-
-  constructor(private readonly changeDetectorRef: ChangeDetectorRef) {
-    this.changeDetectorRef.detach();
-  }
+  public selectedImagesChange = output<ImagesSelectedEvent['detail']>();
 }

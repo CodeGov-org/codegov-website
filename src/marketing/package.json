@@ -8,14 +8,14 @@
     "build": "astro check && astro build && node ./generate-alt-origins.mjs"
   },
   "dependencies": {
-    "@astrojs/netlify": "^5.0.0",
+    "@astrojs/netlify": "^5.2.0",
     "@cg/styles": "workspace:*",
     "@cg/ui": "workspace:*",
-    "@storyblok/astro": "^4.0.1",
-    "astro": "^4.2.3"
+    "@storyblok/astro": "^4.0.4",
+    "astro": "^4.5.16"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.4.1",
-    "sharp": "^0.33.1"
+    "@astrojs/check": "^0.5.10",
+    "sharp": "^0.33.3"
   }
 }

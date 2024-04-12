@@ -17,7 +17,7 @@ describe('ReviewerPersonalInfoFormComponent', () => {
 
     fixture = TestBed.createComponent(ReviewerPersonalInfoFormComponent);
     component = fixture.componentInstance;
-    component.userProfile = {
+    fixture.componentRef.setInput('userProfile', {
       id: '1',
       role: UserRole.Reviewer,
       username: 'TestReviewer',
@@ -25,7 +25,7 @@ describe('ReviewerPersonalInfoFormComponent', () => {
       walletAddress: '123213123sdfsdfs',
       bio: 'bio',
       socialMedia: [{ type: SocialMediaType.DSCVR, username: 'testLink' }],
-    };
+    });
     fixture.detectChanges();
   });
 
