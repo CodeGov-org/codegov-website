@@ -63,7 +63,7 @@ export async function createProposal(
   });
   const { proposals } = extractOkResponse(res);
 
-  return proposals[0].id;
+  return proposals[proposals.length - 1].id;
 }
 
 /**
