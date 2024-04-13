@@ -33,6 +33,8 @@ const NNS_STATE_PATH = resolve(
 const VALID_COMMIT_SHA_A = '47d98477c6c59e570e2220aab433b0943b326ef8';
 const VALID_COMMIT_SHA_B = 'f8f6b901032c59f4d60c8ad90c74042859bcc42e';
 
+const MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER = 50;
+
 describe('Proposal Review Commit', () => {
   let actor: Actor<_SERVICE>;
   let pic: PocketIc;
@@ -477,6 +479,192 @@ describe('Proposal Review Commit', () => {
             },
           },
         },
+      });
+    });
+
+    it('should not allow a reviewer to create too many review commits', async () => {
+      const reviewer = generateRandomIdentity();
+      const reviewerId = await createReviewer(actor, reviewer);
+
+      const { proposalReviewId: proposalReviewId1 } =
+        await createProposalReview(actor, governance, reviewer);
+
+      actor.setIdentity(reviewer);
+      for (
+        let i = 0;
+        i < MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER;
+        i++
+      ) {
+        const res = await actor.create_proposal_review_commit({
+          proposal_review_id: proposalReviewId1,
+          // generate unique commit sha at each iteration
+          commit_sha:
+            VALID_COMMIT_SHA_A.slice(0, -2) + i.toString().padStart(2, '0'),
+          state: {
+            reviewed: {
+              matches_description: true,
+              comment: ['comment alice'],
+              highlights: [],
+            },
+          },
+        });
+        extractOkResponse(res);
+      }
+
+      const res1 = await actor.create_proposal_review_commit({
+        proposal_review_id: proposalReviewId1,
+        commit_sha: VALID_COMMIT_SHA_A,
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['comment alice'],
+            highlights: [],
+          },
+        },
+      });
+
+      const res1Err = extractErrResponse(res1);
+      expect(res1Err).toEqual({
+        code: 409,
+        message: `User with Id ${reviewerId} has already created ${MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER} proposal review commits for proposal review with Id ${proposalReviewId1}`,
+      });
+
+      // attempt to reach the limit on another proposal review
+      // to test if the reviewer can still create review commits for other proposal reviews
+      const { proposalReviewId: proposalReviewId2 } =
+        await createProposalReview(actor, governance, reviewer);
+
+      actor.setIdentity(reviewer);
+      for (
+        let i = 0;
+        i < MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER;
+        i++
+      ) {
+        const res = await actor.create_proposal_review_commit({
+          proposal_review_id: proposalReviewId2,
+          // generate unique commit sha at each iteration
+          commit_sha:
+            VALID_COMMIT_SHA_B.slice(0, -2) + i.toString().padStart(2, '0'),
+          state: {
+            reviewed: {
+              matches_description: true,
+              comment: ['comment alice'],
+              highlights: [],
+            },
+          },
+        });
+        extractOkResponse(res);
+      }
+
+      const res2 = await actor.create_proposal_review_commit({
+        proposal_review_id: proposalReviewId2,
+        commit_sha: VALID_COMMIT_SHA_B,
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['comment alice'],
+            highlights: [],
+          },
+        },
+      });
+
+      const res2Err = extractErrResponse(res2);
+      expect(res2Err).toEqual({
+        code: 409,
+        message: `User with Id ${reviewerId} has already created ${MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER} proposal review commits for proposal review with Id ${proposalReviewId2}`,
+      });
+    });
+
+    it('should not allow multiple reviewers to create too many review commits', async () => {
+      const alice = generateRandomIdentity();
+      const bob = generateRandomIdentity();
+      const aliceId = await createReviewer(actor, alice);
+      const bobId = await createReviewer(actor, bob);
+
+      const { proposalId, proposalReviewId: aliceProposalReviewId } =
+        await createProposalReview(actor, governance, alice);
+
+      actor.setIdentity(alice);
+      for (
+        let i = 0;
+        i < MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER;
+        i++
+      ) {
+        const res = await actor.create_proposal_review_commit({
+          proposal_review_id: aliceProposalReviewId,
+          // generate unique commit sha at each iteration
+          commit_sha:
+            VALID_COMMIT_SHA_A.slice(0, -2) + i.toString().padStart(2, '0'),
+          state: {
+            reviewed: {
+              matches_description: true,
+              comment: ['comment alice'],
+              highlights: [],
+            },
+          },
+        });
+        extractOkResponse(res);
+      }
+
+      const resAlice = await actor.create_proposal_review_commit({
+        proposal_review_id: aliceProposalReviewId,
+        commit_sha: VALID_COMMIT_SHA_A,
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['comment alice'],
+            highlights: [],
+          },
+        },
+      });
+
+      const resAliceErr = extractErrResponse(resAlice);
+      expect(resAliceErr).toEqual({
+        code: 409,
+        message: `User with Id ${aliceId} has already created ${MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER} proposal review commits for proposal review with Id ${aliceProposalReviewId}`,
+      });
+
+      const { proposalReviewId: bobProposalReviewId } =
+        await createProposalReview(actor, governance, bob, proposalId);
+
+      actor.setIdentity(bob);
+      for (
+        let i = 0;
+        i < MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER;
+        i++
+      ) {
+        const res = await actor.create_proposal_review_commit({
+          proposal_review_id: bobProposalReviewId,
+          // generate unique commit sha at each iteration
+          commit_sha:
+            VALID_COMMIT_SHA_A.slice(0, -2) + i.toString().padStart(2, '0'),
+          state: {
+            reviewed: {
+              matches_description: true,
+              comment: ['comment bob'],
+              highlights: [],
+            },
+          },
+        });
+        extractOkResponse(res);
+      }
+
+      const resBob = await actor.create_proposal_review_commit({
+        proposal_review_id: bobProposalReviewId,
+        commit_sha: VALID_COMMIT_SHA_A,
+        state: {
+          reviewed: {
+            matches_description: true,
+            comment: ['comment bob'],
+            highlights: [],
+          },
+        },
+      });
+
+      const resBobErr = extractErrResponse(resBob);
+      expect(resBobErr).toEqual({
+        code: 409,
+        message: `User with Id ${bobId} has already created ${MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER} proposal review commits for proposal review with Id ${bobProposalReviewId}`,
       });
     });
 
