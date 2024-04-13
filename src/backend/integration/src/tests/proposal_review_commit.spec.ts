@@ -69,7 +69,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: [],
             highlights: [],
           },
@@ -97,7 +97,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: ['comment'],
             highlights: [],
           },
@@ -120,7 +120,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment'],
             highlights: [],
           },
@@ -153,7 +153,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment'],
             highlights: [],
           },
@@ -170,7 +170,7 @@ describe('Proposal Review Commit', () => {
           created_at: dateToRfc3339(currentDate),
           state: {
             reviewed: {
-              matches_description: true,
+              matches_description: [true],
               comment: ['comment'],
               highlights: [],
             },
@@ -219,7 +219,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: [],
             highlights: [],
           },
@@ -251,7 +251,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment'],
             highlights: [],
           },
@@ -282,7 +282,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment'],
             highlights: [],
           },
@@ -312,7 +312,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment'],
             highlights: [],
           },
@@ -325,7 +325,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment'],
             highlights: [],
           },
@@ -355,7 +355,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment 1'],
             highlights: [],
           },
@@ -371,7 +371,7 @@ describe('Proposal Review Commit', () => {
           created_at: dateToRfc3339(currentDate),
           state: {
             reviewed: {
-              matches_description: true,
+              matches_description: [true],
               comment: ['comment 1'],
               highlights: [],
             },
@@ -384,7 +384,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_B,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment 2'],
             highlights: ['highlight a', 'highlight b'],
           },
@@ -400,7 +400,7 @@ describe('Proposal Review Commit', () => {
           created_at: dateToRfc3339(currentDate),
           state: {
             reviewed: {
-              matches_description: true,
+              matches_description: [true],
               comment: ['comment 2'],
               highlights: ['highlight a', 'highlight b'],
             },
@@ -424,7 +424,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment alice'],
             highlights: [],
           },
@@ -440,7 +440,7 @@ describe('Proposal Review Commit', () => {
           created_at: dateToRfc3339(currentDate),
           state: {
             reviewed: {
-              matches_description: true,
+              matches_description: [true],
               comment: ['comment alice'],
               highlights: [],
             },
@@ -457,7 +457,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment bob'],
             highlights: ['highlight bob a', 'highlight bob b'],
           },
@@ -473,7 +473,7 @@ describe('Proposal Review Commit', () => {
           created_at: dateToRfc3339(currentDate),
           state: {
             reviewed: {
-              matches_description: true,
+              matches_description: [true],
               comment: ['comment bob'],
               highlights: ['highlight bob a', 'highlight bob b'],
             },
@@ -502,7 +502,7 @@ describe('Proposal Review Commit', () => {
             VALID_COMMIT_SHA_A.slice(0, -2) + i.toString().padStart(2, '0'),
           state: {
             reviewed: {
-              matches_description: true,
+              matches_description: [true],
               comment: ['comment alice'],
               highlights: [],
             },
@@ -516,7 +516,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment alice'],
             highlights: [],
           },
@@ -547,7 +547,7 @@ describe('Proposal Review Commit', () => {
             VALID_COMMIT_SHA_B.slice(0, -2) + i.toString().padStart(2, '0'),
           state: {
             reviewed: {
-              matches_description: true,
+              matches_description: [true],
               comment: ['comment alice'],
               highlights: [],
             },
@@ -561,7 +561,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_B,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment alice'],
             highlights: [],
           },
@@ -597,7 +597,7 @@ describe('Proposal Review Commit', () => {
             VALID_COMMIT_SHA_A.slice(0, -2) + i.toString().padStart(2, '0'),
           state: {
             reviewed: {
-              matches_description: true,
+              matches_description: [true],
               comment: ['comment alice'],
               highlights: [],
             },
@@ -611,7 +611,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment alice'],
             highlights: [],
           },
@@ -640,7 +640,7 @@ describe('Proposal Review Commit', () => {
             VALID_COMMIT_SHA_A.slice(0, -2) + i.toString().padStart(2, '0'),
           state: {
             reviewed: {
-              matches_description: true,
+              matches_description: [true],
               comment: ['comment bob'],
               highlights: [],
             },
@@ -654,7 +654,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment bob'],
             highlights: [],
           },
@@ -686,7 +686,7 @@ describe('Proposal Review Commit', () => {
           commit_sha: VALID_COMMIT_SHA_A.substring(0, 7),
           state: {
             reviewed: {
-              matches_description: true,
+              matches_description: [],
               comment: [],
               highlights: [],
             },
@@ -705,7 +705,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: 'foo bar foo bar foo bar foo bar foo bar ', // valid length, but invalid hex
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: [],
             highlights: [],
           },
@@ -726,7 +726,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: [''],
             highlights: [],
           },
@@ -743,7 +743,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: ['a'.repeat(1001)],
             highlights: [],
           },
@@ -760,7 +760,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: ['comment'],
             highlights: Array(6).fill('highlight'),
           },
@@ -777,7 +777,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment'],
             highlights: ['valid highlight', ''],
           },
@@ -794,7 +794,7 @@ describe('Proposal Review Commit', () => {
         commit_sha: VALID_COMMIT_SHA_A,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment'],
             highlights: ['a'.repeat(101), 'valid highlight'],
           },
@@ -816,7 +816,7 @@ describe('Proposal Review Commit', () => {
         id: 'proposal-review-commit-id',
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: [],
             highlights: [],
           },
@@ -843,7 +843,7 @@ describe('Proposal Review Commit', () => {
         id: 'proposal-review-commit-id',
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: ['comment'],
             highlights: [],
           },
@@ -865,7 +865,7 @@ describe('Proposal Review Commit', () => {
         id: 'proposal-review-commit-id',
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [true],
             comment: ['comment'],
             highlights: [],
           },
@@ -897,7 +897,7 @@ describe('Proposal Review Commit', () => {
         id: proposalReviewCommitId,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [false],
             comment: ['comment'],
             highlights: ['highlight a', 'highlight b'],
           },
@@ -948,7 +948,7 @@ describe('Proposal Review Commit', () => {
         id: proposalReviewCommitId,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: ['comment'],
             highlights: ['highlight a', 'highlight b'],
           },
@@ -980,7 +980,7 @@ describe('Proposal Review Commit', () => {
         id: proposalReviewCommitId,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: ['comment'],
             highlights: ['highlight a', 'highlight b'],
           },
@@ -1012,7 +1012,7 @@ describe('Proposal Review Commit', () => {
         id: proposalReviewCommitId,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [false],
             comment: ['comment'],
             highlights: ['highlight a', 'highlight b'],
           },
@@ -1043,7 +1043,7 @@ describe('Proposal Review Commit', () => {
         id: proposalReviewCommitId,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: [''],
             highlights: [],
           },
@@ -1059,7 +1059,7 @@ describe('Proposal Review Commit', () => {
         id: proposalReviewCommitId,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: ['a'.repeat(1001)],
             highlights: [],
           },
@@ -1075,7 +1075,7 @@ describe('Proposal Review Commit', () => {
         id: proposalReviewCommitId,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: ['comment'],
             highlights: Array(6).fill('highlight'),
           },
@@ -1091,7 +1091,7 @@ describe('Proposal Review Commit', () => {
         id: proposalReviewCommitId,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: ['comment'],
             highlights: ['valid highlight', ''],
           },
@@ -1107,7 +1107,7 @@ describe('Proposal Review Commit', () => {
         id: proposalReviewCommitId,
         state: {
           reviewed: {
-            matches_description: true,
+            matches_description: [],
             comment: ['comment'],
             highlights: ['a'.repeat(101), 'valid highlight'],
           },

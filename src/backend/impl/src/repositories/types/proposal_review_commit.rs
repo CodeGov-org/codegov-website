@@ -14,7 +14,7 @@ pub type ProposalReviewCommitId = Uuid;
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub enum ReviewCommitState {
     Reviewed {
-        matches_description: bool,
+        matches_description: Option<bool>,
         comment: Option<String>,
         highlights: Vec<String>,
     },

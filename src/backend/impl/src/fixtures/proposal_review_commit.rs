@@ -12,7 +12,7 @@ pub fn proposal_review_commit_reviewed() -> ProposalReviewCommit {
         created_at: date_time_a(),
         commit_sha: commit_sha_a(),
         state: ReviewCommitState::Reviewed {
-            matches_description: true,
+            matches_description: Some(true),
             comment: Some("Review commit comment".to_string()),
             highlights: vec![],
         },

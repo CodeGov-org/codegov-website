@@ -4,7 +4,7 @@ use candid::{CandidType, Deserialize};
 pub enum ReviewCommitState {
     #[serde(rename = "reviewed")]
     Reviewed {
-        matches_description: bool,
+        matches_description: Option<bool>,
         comment: Option<String>,
         highlights: Vec<String>,
     },

@@ -249,7 +249,7 @@ type UpdateProposalReviewResponse = variant {
 
 type ReviewCommitState = variant {
   reviewed : record {
-    matches_description : bool;
+    matches_description : opt bool;
     comment : opt text;
     highlights : vec text;
   };

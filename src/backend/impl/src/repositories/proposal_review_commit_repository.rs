@@ -508,7 +508,7 @@ mod tests {
     fn updated_proposal_review_commit() -> ProposalReviewCommit {
         ProposalReviewCommit {
             state: ReviewCommitState::Reviewed {
-                matches_description: false,
+                matches_description: Some(false),
                 comment: Some("Updated comment".to_string()),
                 highlights: vec![],
             },

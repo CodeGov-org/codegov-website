@@ -176,7 +176,7 @@ export async function createProposalReviewCommit(
     commit_sha: commitSha,
     state: {
       reviewed: {
-        matches_description: true,
+        matches_description: [true],
         comment: ['comment'],
         highlights: [],
       },

@@ -955,7 +955,7 @@ mod tests {
                 commit_sha: proposal_review_commit.commit_sha.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: Some("".to_string()),
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec![],
                 },
             },
@@ -974,7 +974,7 @@ mod tests {
                 commit_sha: proposal_review_commit.commit_sha.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: Some("a".repeat(MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS + 1)),
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec![],
                 },
             },
@@ -996,7 +996,7 @@ mod tests {
                 commit_sha: proposal_review_commit.commit_sha.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: None,
-                    matches_description: true,
+                    matches_description: None,
                     highlights: std::iter::repeat("a".to_string())
                         .take(MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHTS_COUNT + 1)
                         .collect(),
@@ -1020,7 +1020,7 @@ mod tests {
                 commit_sha: proposal_review_commit.commit_sha.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: None,
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec!["highlight".to_string(), "".to_string()],
                 },
             },
@@ -1039,7 +1039,7 @@ mod tests {
                 commit_sha: proposal_review_commit.commit_sha.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: None,
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec![
                         "highlight".to_string(),
                         "a".repeat(MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHT_CHARS + 1),
@@ -1449,7 +1449,7 @@ mod tests {
         let proposal = fixtures::nns_replica_version_management_proposal();
         let state = backend_api::ReviewCommitState::Reviewed {
             comment: Some("Review commit comment".to_string()),
-            matches_description: true,
+            matches_description: Some(true),
             highlights: vec![],
         };
 
@@ -1607,7 +1607,7 @@ mod tests {
                 id: id.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: Some("".to_string()),
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec![],
                 },
             },
@@ -1625,7 +1625,7 @@ mod tests {
                 id: id.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: Some("a".repeat(MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS + 1)),
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec![],
                 },
             },
@@ -1646,7 +1646,7 @@ mod tests {
                 id: id.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: None,
-                    matches_description: true,
+                    matches_description: None,
                     highlights: std::iter::repeat("a".to_string())
                         .take(MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHTS_COUNT + 1)
                         .collect(),
@@ -1669,7 +1669,7 @@ mod tests {
                 id: id.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: None,
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec!["highlight".to_string(), "".to_string()],
                 },
             },
@@ -1687,7 +1687,7 @@ mod tests {
                 id: id.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: None,
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec![
                         "highlight".to_string(),
                         "a".repeat(MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHT_CHARS + 1),
