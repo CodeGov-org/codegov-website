@@ -15,7 +15,9 @@ export function extractErrResponse<T>(response: ApiResponse<T>): Err {
     return response.err;
   }
 
-  throw new Error('Expected `err` response', { cause: response });
+  const err = new Error('Expected `err` response', { cause: response });
+  console.error(err);
+  throw err;
 }
 
 export type OkResponse<T> = T extends ApiSuccessResponse<infer U> ? U : never;
@@ -25,5 +27,7 @@ export function extractOkResponse<T>(response: ApiResponse<T>): T {
     return response.ok;
   }
 
-  throw new Error('Expected `ok` response', { cause: response });
+  const err = new Error('Expected `ok` response', { cause: response });
+  console.error(err);
+  throw err;
 }
