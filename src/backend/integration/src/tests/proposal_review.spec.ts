@@ -9,10 +9,12 @@ import {
   extractOkResponse,
   setupBackendCanister,
   Governance,
-  nnsProposerIdentity,
   dateToRfc3339,
+  createProposal,
+  completeProposal,
+  createProposalReview,
+  createReviewer,
 } from '../support';
-import { Identity } from '@dfinity/agent';
 
 const NNS_SUBNET_ID =
   '2o3zy-oo4hc-r3mtq-ylrpf-g6qge-qmuzn-2bsuv-d3yhd-e4qjc-6ff2b-6ae';
@@ -27,10 +29,8 @@ const NNS_STATE_PATH = resolve(
   'state',
 );
 
-type BackendActorService = Actor<_SERVICE>;
-
 describe('Proposal Review', () => {
-  let actor: BackendActorService;
+  let actor: Actor<_SERVICE>;
   let pic: PocketIc;
   // set to any date after the NNS state has been generated
   const currentDate = new Date(2024, 3, 25, 0, 0, 0, 0);
@@ -433,7 +433,11 @@ describe('Proposal Review', () => {
       await createReviewer(actor, alice);
       await createReviewer(actor, bob);
 
-      const [proposalId] = await createProposalReview(actor, governance, alice);
+      const { proposalId } = await createProposalReview(
+        actor,
+        governance,
+        alice,
+      );
 
       actor.setIdentity(bob);
 
@@ -457,7 +461,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const [proposalId] = await createProposalReview(
+      const { proposalId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -482,7 +486,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const [proposalId] = await createProposalReview(
+      const { proposalId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -542,7 +546,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const [proposalId] = await createProposalReview(
+      const { proposalId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -595,7 +599,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const [proposalId] = await createProposalReview(
+      const { proposalId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -630,7 +634,7 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const [proposalId] = await createProposalReview(
+      const { proposalId } = await createProposalReview(
         actor,
         governance,
         reviewer,
@@ -734,101 +738,3 @@ describe('Proposal Review', () => {
     });
   });
 });
-
-async function createReviewer(
-  actor: BackendActorService,
-  reviewer: Identity,
-): Promise<string> {
-  actor.setIdentity(reviewer);
-  const reviewerCreateRes = await actor.create_my_user_profile();
-  const reviewerCreate = extractOkResponse(reviewerCreateRes);
-
-  actor.setIdentity(controllerIdentity);
-  await actor.update_user_profile({
-    user_id: reviewerCreate.id,
-    username: ['reviewer'],
-    config: [
-      {
-        reviewer: {
-          bio: [],
-          wallet_address: [],
-          neuron_id: [],
-          social_links: [],
-        },
-      },
-    ],
-  });
-
-  return reviewerCreate.id;
-}
-
-/**
- * Creates an RVM proposal, syncs the proposals on the backend canister
- * and returns the backend proposal id.
- */
-async function createProposal(
-  actor: BackendActorService,
-  governance: Governance,
-): Promise<string> {
-  const neuronId = await governance.createNeuron(nnsProposerIdentity);
-
-  await governance.createRvmProposal(nnsProposerIdentity, {
-    neuronId: neuronId,
-    title: 'Test Proposal',
-    summary: 'Test Proposal Summary',
-    replicaVersion: 'ca82a6dff817ec66f44342007202690a93763949',
-  });
-
-  actor.setIdentity(controllerIdentity);
-
-  await actor.sync_proposals();
-  const res = await actor.list_proposals({
-    state: [{ in_progress: null }],
-  });
-  const { proposals } = extractOkResponse(res);
-
-  return proposals[0].id;
-}
-
-async function completeProposal(
-  pic: PocketIc,
-  actor: BackendActorService,
-  proposalId: string,
-) {
-  // advance time to make the proposal expire
-  await pic.advanceTime(48 * 60 * 60 * 1000); // 48 hours
-  // ensure timers run
-  await pic.tick(2);
-
-  const res = await actor.list_proposals({
-    state: [{ completed: null }],
-  });
-  const { proposals } = extractOkResponse(res);
-
-  const completedProposal = proposals[0];
-  if (completedProposal.id !== proposalId) {
-    throw new Error(
-      `Expected proposal id ${proposalId} but got ${completedProposal.id}`,
-    );
-  }
-}
-
-async function createProposalReview(
-  actor: BackendActorService,
-  governance: Governance,
-  reviewer: Identity,
-): Promise<[string, string]> {
-  const proposalId = await createProposal(actor, governance);
-
-  actor.setIdentity(reviewer);
-  const res = await actor.create_proposal_review({
-    proposal_id: proposalId,
-    summary: ['summary'],
-    review_duration_mins: [60],
-    build_reproduced: [true],
-    reproduced_build_image_id: [],
-  });
-  const { id } = extractOkResponse(res);
-
-  return [proposalId, id];
-}
