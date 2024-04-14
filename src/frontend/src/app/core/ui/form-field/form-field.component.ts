@@ -1,18 +1,18 @@
 import { CommonModule } from '@angular/common';
 import {
-  AfterContentInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
-  ContentChild,
-  ContentChildren,
   DestroyRef,
   Optional,
   SkipSelf,
-  TemplateRef,
+  computed,
+  contentChild,
+  contentChildren,
+  effect,
+  signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AbstractControl, ControlContainer } from '@angular/forms';
+import { ControlContainer } from '@angular/forms';
 
 import { formHasError } from '../form-utils';
 import { InputDirective } from '../input';
@@ -47,99 +47,79 @@ import { InputHintComponent } from '../input-hint';
 
     <div class="form-field__feedback" [id]="formControlId + '-feedback'">
       @if (hasError()) {
-        <ng-container *ngTemplateOutlet="getErrorTemplate()" />
+        <ng-container *ngTemplateOutlet="errorTemplate()" />
       } @else if (hasHint()) {
-        <ng-container *ngTemplateOutlet="getHintTemplate()" />
+        <ng-container *ngTemplateOutlet="hintTemplate()" />
       }
     </div>
   `,
 })
-export class FormFieldComponent implements AfterContentInit {
-  @ContentChild(InputDirective, { descendants: true })
-  private inputDirective?: InputDirective;
-
-  @ContentChildren(InputErrorComponent, { descendants: true })
-  private inputErrorComponents?: InputErrorComponent[];
-
-  @ContentChild(InputHintComponent, { descendants: true })
-  private inputHintComponent?: InputHintComponent;
-
-  private formControl: AbstractControl | undefined;
-
-  public formControlId: string | undefined;
-
-  constructor(
-    @SkipSelf()
-    @Optional()
-    private readonly controlContainer: ControlContainer,
-    private readonly destroyRef: DestroyRef,
-    private readonly changeDetectorRef: ChangeDetectorRef,
-  ) {}
-
-  public ngAfterContentInit(): void {
-    if (!this.inputDirective) {
-      throw new Error('Form field must have an input directive as a child');
-    }
-    const formControlName = this.inputDirective.formControlName;
-
-    if (!formControlName) {
-      throw new Error('Form field could not find form control name');
-    }
-    this.formControlId = this.inputDirective.getId();
+export class FormFieldComponent {
+  private readonly inputDirective = contentChild.required(InputDirective, {
+    descendants: true,
+  });
+  public readonly formControlId = computed(() => this.inputDirective().getId());
+  private readonly formControl = computed(() => {
+    const formControlName = this.inputDirective().formControlName();
 
     const formControl = this.controlContainer?.control?.get(formControlName);
     if (!formControl) {
       throw new Error(`Control with name ${formControlName} does not exist`);
     }
 
-    this.formControl = formControl;
+    return formControl;
+  });
 
-    this.formControl.statusChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.changeDetectorRef.markForCheck();
-      });
+  private readonly inputHintComponent = contentChild(InputHintComponent, {
+    descendants: true,
+  });
+  public readonly hasHint = computed(() => Boolean(this.inputHintComponent()));
+  public readonly hintTemplate = computed(() => {
+    const template = this.inputHintComponent()?.getTemplateRef();
 
-    this.inputDirective.touchChange
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.changeDetectorRef.markForCheck();
-      });
-  }
+    if (!template) {
+      throw new Error('Input hint does not exist');
+    }
 
-  public hasError(): boolean {
-    return formHasError(this.formControl);
-  }
+    return template;
+  });
 
-  public getErrorTemplate(): TemplateRef<HTMLElement> | null {
-    if (this.formControl?.errors) {
-      for (const inputError of this.inputErrorComponents ?? []) {
-        if (this.formControl.errors[inputError.key]) {
-          return inputError.getTemplateRef();
-        }
+  private readonly inputErrorComponents = contentChildren(InputErrorComponent, {
+    descendants: true,
+  });
+  public readonly hasError = signal(false);
+  public readonly errorTemplate = computed(() => {
+    for (const inputError of this.inputErrorComponents()) {
+      if (this.formControl().errors?.[inputError.key()]) {
+        return inputError.getTemplateRef();
       }
     }
 
     return null;
+  });
+
+  constructor(
+    @SkipSelf()
+    @Optional()
+    private readonly controlContainer: ControlContainer,
+    onDestroy: DestroyRef,
+  ) {
+    effect(() => {
+      this.formControl()
+        .statusChanges.pipe(takeUntilDestroyed(onDestroy))
+        .subscribe(() => {
+          this.setHasError();
+        });
+    });
+
+    effect(() => {
+      this.inputDirective().touchChange.subscribe(() => {
+        this.setHasError();
+      });
+    });
   }
 
-  public hasHint(): boolean {
-    return !!this.inputHintComponent;
-  }
-
-  public getHintTemplate(): TemplateRef<HTMLElement> {
-    if (!this.inputHintComponent) {
-      throw new Error('Input hint does not exist');
-    }
-
-    return this.inputHintComponent.getTemplateRef();
-  }
-
-  public getFormControlId(): string | undefined {
-    if (!this.inputDirective) {
-      throw new Error('Form field must have an input directive as a child');
-    }
-
-    return this.inputDirective.getId();
+  private setHasError(): void {
+    this.hasError.set(formHasError(this.formControl()));
   }
 }

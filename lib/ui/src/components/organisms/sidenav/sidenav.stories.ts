@@ -3,7 +3,7 @@ import { Meta, StoryObj } from '@storybook/html';
 const meta: Meta = {
   title: 'Organisms/Sidenav',
   render: () => `
-    <cg-sidenav id="sidenav" />
+    <cg-sidenav id="sidenav"></cg-sidenav>
 
     <script>
       document

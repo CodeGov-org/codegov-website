@@ -1,5 +1,5 @@
 import { DialogRef } from '@angular/cdk/dialog';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 
 import { LoadingIconComponent } from '~core/icons';
 
@@ -47,13 +47,11 @@ import { LoadingIconComponent } from '~core/icons';
   template: `
     <app-loading-icon class="dialog__icon" />
 
-    <h3 class="dialog__text">{{ infoText }}</h3>
+    <h3 class="dialog__text">{{ infoText() }}</h3>
   `,
 })
 export class LoadingDialogComponent {
-  public infoText: string;
+  public readonly infoText = signal(this.dialogRef.config.data.message);
 
-  constructor(private readonly dialogRef: DialogRef<string>) {
-    this.infoText = this.dialogRef.config.data.message;
-  }
+  constructor(private readonly dialogRef: DialogRef<string>) {}
 }

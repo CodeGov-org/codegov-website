@@ -2,11 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  EventEmitter,
   HostListener,
-  Input,
-  Output,
+  NgZone,
+  effect,
   forwardRef,
+  input,
+  output,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -36,16 +37,10 @@ export class RadioInputComponent implements ControlValueAccessor {
   private notifyChange: ChangeFn = () => {};
   private notifyTouched: TouchedFn = () => {};
 
-  @Input({ required: true })
-  public set value(value: HTMLCgRadioInputElement['value']) {
-    this.elementRef.nativeElement.value = value;
-  }
-  public get value(): HTMLCgRadioInputElement['value'] {
-    return this.elementRef.nativeElement.value;
-  }
+  public readonly value = input.required<HTMLCgRadioInputElement['value']>();
 
   public writeValue(value: HTMLCgRadioInputElement['value']): void {
-    this.elementRef.nativeElement.checked = value === this.value;
+    this.elementRef.nativeElement.checked = value === this.value();
   }
 
   public registerOnChange(fn: ChangeFn): void {
@@ -56,8 +51,7 @@ export class RadioInputComponent implements ControlValueAccessor {
     this.notifyTouched = fn;
   }
 
-  @Output()
-  public blur = new EventEmitter<void>();
+  public readonly blur = output();
 
   @HostListener('change')
   public handleChangeEvent(): void {
@@ -75,6 +69,15 @@ export class RadioInputComponent implements ControlValueAccessor {
   }
 
   constructor(
+    private readonly ngZone: NgZone,
     private readonly elementRef: ElementRef<HTMLCgRadioInputElement>,
-  ) {}
+  ) {
+    effect(() => {
+      const value = this.value();
+
+      this.ngZone.runOutsideAngular(() => {
+        this.elementRef.nativeElement.value = value;
+      });
+    });
+  }
 }
