@@ -8,28 +8,24 @@ import {
   ComponentRef,
   Directive,
   ElementRef,
-  EventEmitter,
   HostListener,
-  Input,
-  OnChanges,
   OnDestroy,
   OnInit,
-  Output,
+  effect,
+  input,
+  output,
 } from '@angular/core';
 
-import { ComponentChanges } from '~core/utils';
 import { TooltipComponent } from './tooltip.component';
 
 @Directive({
   selector: '[appTooltip]',
   standalone: true,
 })
-export class TooltipDirective implements OnInit, OnChanges, OnDestroy {
-  @Input({ required: true, alias: 'appTooltip' })
-  public tooltipText!: string | null;
+export class TooltipDirective implements OnInit, OnDestroy {
+  public readonly tooltipText = input.required<string>({ alias: 'appTooltip' });
 
-  @Output()
-  public tooltipClose = new EventEmitter<void>();
+  public readonly tooltipClose = output();
 
   private tooltipRef: ComponentRef<TooltipComponent> | null = null;
 
@@ -63,7 +59,13 @@ export class TooltipDirective implements OnInit, OnChanges, OnDestroy {
     private readonly overlayPositionBuilder: OverlayPositionBuilder,
     private readonly elementRef: ElementRef,
     private readonly overlay: Overlay,
-  ) {}
+  ) {
+    effect(() => {
+      if (this.tooltipRef !== null) {
+        this.tooltipRef.setInput('tooltipText', this.tooltipText());
+      }
+    });
+  }
 
   public ngOnInit(): void {
     const positionStrategy = this.overlayPositionBuilder
@@ -87,12 +89,6 @@ export class TooltipDirective implements OnInit, OnChanges, OnDestroy {
     this.overlayRef = this.overlay.create({ positionStrategy });
   }
 
-  public ngOnChanges(changes: ComponentChanges<TooltipDirective>): void {
-    if (changes.tooltipText && this.tooltipRef !== null) {
-      this.tooltipRef.setInput('tooltipText', this.tooltipText);
-    }
-  }
-
   public ngOnDestroy(): void {
     this.hide();
   }
@@ -112,7 +108,7 @@ export class TooltipDirective implements OnInit, OnChanges, OnDestroy {
       const tooltipPortal = new ComponentPortal(TooltipComponent);
       this.tooltipRef = this.overlayRef.attach(tooltipPortal);
 
-      this.tooltipRef.instance.tooltipText = this.tooltipText;
+      this.tooltipRef.setInput('tooltipText', this.tooltipText());
     }
   }
 }

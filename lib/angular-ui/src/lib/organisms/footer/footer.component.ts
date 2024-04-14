@@ -1,10 +1,10 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
-  Input,
   NgZone,
+  effect,
+  input,
 } from '@angular/core';
 import { DefineCustomElement } from '../../define-custom-element';
 import { defineCustomElement } from '@cg/ui/dist/components/cg-footer';
@@ -19,21 +19,18 @@ import { defineCustomElement } from '@cg/ui/dist/components/cg-footer';
   `,
 })
 export class FooterComponent {
-  @Input({ required: true })
-  public set links(value: HTMLCgFooterElement['links']) {
-    this.ngZone.runOutsideAngular(() => {
-      this.elementRef.nativeElement.links = value;
-    });
-  }
-  public get links(): HTMLCgFooterElement['links'] {
-    return this.elementRef.nativeElement.links;
-  }
+  public readonly links = input.required<HTMLCgFooterElement['links']>();
 
   constructor(
-    private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly ngZone: NgZone,
     private readonly elementRef: ElementRef<HTMLCgFooterElement>,
   ) {
-    this.changeDetectorRef.detach();
+    effect(() => {
+      const links = this.links();
+
+      this.ngZone.runOutsideAngular(() => {
+        this.elementRef.nativeElement.links = links;
+      });
+    });
   }
 }

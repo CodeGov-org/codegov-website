@@ -11,7 +11,7 @@ export class CopyToClipboardComponent {
 
   @State()
   private isCopied = false;
-
+  private inputElem!: HTMLCgTextInputElement;
   private timeoutId: number | undefined;
 
   public render() {
@@ -46,8 +46,6 @@ export class CopyToClipboardComponent {
       </Host>
     );
   }
-
-  private inputElem!: HTMLCgTextInputElement;
 
   private setInputElem(elem?: HTMLCgTextInputElement): void {
     if (!elem) {

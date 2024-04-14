@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { of } from 'rxjs';
 
 import { CardComponent } from '@cg/angular-ui';
@@ -19,15 +20,15 @@ import { CardComponent } from '@cg/angular-ui';
     `,
   ],
   template: `
-    @if (currentReview$ | async; as proposal) {
-      <h1 class="h1">Review for proposal {{ proposal.id }} by AnonReviewer</h1>
+    @if (currentReview(); as review) {
+      <h1 class="h1">Review for proposal {{ review.id }} by AnonReviewer</h1>
 
       <cg-card>
-        <h2 class="h3" slot="cardTitle">{{ proposal.title }}</h2>
+        <h2 class="h3" slot="cardTitle">{{ review.title }}</h2>
       </cg-card>
     }
   `,
 })
 export class ProposalReviewComponent {
-  public currentReview$ = of({ id: 1, title: 'Proposal Title' });
+  public currentReview = toSignal(of({ id: 1, title: 'Proposal Title' }));
 }

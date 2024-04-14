@@ -2,10 +2,10 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
+  effect,
+  input,
+  output,
+  signal,
 } from '@angular/core';
 import {
   FormControl,
@@ -14,7 +14,6 @@ import {
   Validators,
 } from '@angular/forms';
 
-import { AdminProfileComponent } from '../admin-profile';
 import {
   AdminProfile,
   AdminProfileUpdate,
@@ -32,7 +31,6 @@ import {
   LoadingButtonComponent,
   ValueColComponent,
 } from '~core/ui';
-import { ComponentChanges } from '~core/utils';
 
 interface AdminProfileForm {
   username: FormControl<string>;
@@ -57,7 +55,7 @@ interface AdminProfileForm {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="profileForm()" (ngSubmit)="onSubmit()">
       <app-key-value-grid>
         <app-key-col>
           <label appLabel for="username">Username</label>
@@ -104,8 +102,8 @@ interface AdminProfileForm {
       <div class="btn-group">
         <button
           class="btn btn--outline"
-          (click)="cancelEdits()"
-          [disabled]="isSaving"
+          (click)="onCancelEdits()"
+          [disabled]="isSaving()"
         >
           Cancel
         </button>
@@ -113,8 +111,8 @@ interface AdminProfileForm {
         <app-loading-button
           btnClass="btn"
           type="submit"
-          [disabled]="profileForm.invalid || isSaving"
-          [isSaving]="isSaving"
+          [disabled]="profileForm().invalid || isSaving()"
+          [isSaving]="isSaving()"
         >
           Save
         </app-loading-button>
@@ -122,21 +120,15 @@ interface AdminProfileForm {
     </form>
   `,
 })
-export class AdminPersonalInfoFormComponent implements OnChanges {
-  @Input({ required: true })
-  public userProfile!: AdminProfile;
+export class AdminPersonalInfoFormComponent {
+  public readonly userProfile = input.required<AdminProfile>();
 
-  @Output()
-  public formClose = new EventEmitter<void>();
+  public readonly formClose = output();
 
-  @Output()
-  public formSaving = new EventEmitter<void>();
+  public readonly formSaving = output();
 
-  public readonly profileForm: FormGroup<AdminProfileForm>;
-  public isSaving = false;
-
-  constructor(private readonly profileService: ProfileService) {
-    this.profileForm = new FormGroup<AdminProfileForm>({
+  public readonly profileForm = signal(
+    new FormGroup<AdminProfileForm>({
       username: new FormControl('', {
         nonNullable: true,
         validators: [Validators.required, Validators.minLength(3)],
@@ -145,23 +137,24 @@ export class AdminPersonalInfoFormComponent implements OnChanges {
         nonNullable: true,
         validators: [Validators.required],
       }),
+    }),
+  );
+  public readonly isSaving = signal(false);
+
+  constructor(private readonly profileService: ProfileService) {
+    effect(() => {
+      this.profileForm().patchValue({
+        username: this.userProfile().username,
+        bio: this.userProfile().bio,
+      });
     });
   }
 
-  public ngOnChanges(changes: ComponentChanges<AdminProfileComponent>): void {
-    if (changes.userProfile) {
-      this.profileForm.patchValue({
-        username: this.userProfile.username,
-        bio: this.userProfile.bio,
-      });
-    }
-  }
-
   public async onSubmit(): Promise<void> {
-    this.profileForm.disable();
-    this.isSaving = true;
+    this.profileForm().disable();
+    this.isSaving.set(true);
 
-    const formValues = this.profileForm.value;
+    const formValues = this.profileForm().value;
 
     const profileUpdate: AdminProfileUpdate = {
       role: UserRole.Admin,
@@ -172,12 +165,12 @@ export class AdminPersonalInfoFormComponent implements OnChanges {
     try {
       await this.profileService.saveProfile(profileUpdate);
     } finally {
-      this.isSaving = false;
+      this.isSaving.set(false);
       this.formClose.emit();
     }
   }
 
-  public cancelEdits(): void {
+  public onCancelEdits(): void {
     this.formClose.emit();
   }
 }

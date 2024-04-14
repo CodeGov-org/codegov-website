@@ -2,10 +2,11 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
+  computed,
+  effect,
+  input,
+  output,
+  signal,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -15,7 +16,6 @@ import {
 } from '@angular/forms';
 
 import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from '../profile.model';
-import { ReviewerProfileComponent } from '../reviewer-profile';
 import {
   ProfileService,
   ReviewerProfile,
@@ -35,7 +35,7 @@ import {
   LoadingButtonComponent,
   ValueColComponent,
 } from '~core/ui';
-import { ComponentChanges, keysOf } from '~core/utils';
+import { keysOf } from '~core/utils';
 
 export type SocialMediaForm = {
   [K in SocialMediaType]: FormControl<string>;
@@ -59,12 +59,12 @@ export type SocialMediaForm = {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <form [formGroup]="socialMediaForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="socialMediaForm()" (ngSubmit)="onSubmit()">
       <app-key-value-grid>
-        @for (key of socialMediaKeys; track key) {
+        @for (key of socialMediaKeys(); track key) {
           <app-key-col>
             <label appLabel [for]="key">
-              {{ socialMediaInputs[key].formLabel }}
+              {{ socialMediaInputs()[key].formLabel }}
             </label>
           </app-key-col>
 
@@ -75,7 +75,7 @@ export type SocialMediaForm = {
               <app-input-hint>
                 @if (socialMediaControlHasValue(key)) {
                   <a
-                    href="{{ getSocialMediaUrl(key) }}"
+                    [href]="getSocialMediaUrl(key)"
                     target="_blank"
                     rel="nofollow noreferrer"
                   >
@@ -93,8 +93,8 @@ export type SocialMediaForm = {
       <div class="btn-group">
         <button
           class="btn btn--outline"
-          (click)="cancelEdits()"
-          [disabled]="isSaving"
+          (click)="onCancelEdits()"
+          [disabled]="isSaving()"
         >
           Cancel
         </button>
@@ -102,8 +102,8 @@ export type SocialMediaForm = {
         <app-loading-button
           btnClass="btn"
           type="submit"
-          [disabled]="socialMediaForm.invalid || isSaving"
-          [isSaving]="isSaving"
+          [disabled]="socialMediaForm().invalid || isSaving()"
+          [isSaving]="isSaving()"
         >
           Save
         </app-loading-button>
@@ -111,46 +111,47 @@ export type SocialMediaForm = {
     </form>
   `,
 })
-export class ReviewerSocialMediaFormComponent implements OnChanges {
-  @Input({ required: true })
-  public userProfile!: ReviewerProfile;
+export class ReviewerSocialMediaFormComponent {
+  public readonly userProfile = input.required<ReviewerProfile>();
 
-  @Output()
-  public formClose = new EventEmitter<void>();
+  public readonly formClose = output();
+  public readonly formSaving = output();
 
-  @Output()
-  public formSaving = new EventEmitter<void>();
+  public readonly socialMediaKeys = signal(keysOf(SOCIAL_MEDIA_INPUTS));
+  public readonly socialMediaInputs = signal(SOCIAL_MEDIA_INPUTS);
+  public readonly isSaving = signal(false);
 
-  public isSaving = false;
-
-  public readonly socialMediaForm: FormGroup<SocialMediaForm>;
-  public readonly socialMediaKeys = keysOf(SOCIAL_MEDIA_INPUTS);
-  public readonly socialMediaInputs = SOCIAL_MEDIA_INPUTS;
+  public readonly socialMediaForm = computed(
+    () =>
+      new FormGroup<SocialMediaForm>(
+        this.socialMediaKeys().reduce(
+          (accum, value) => ({
+            ...accum,
+            [value]: new FormControl('', {
+              nonNullable: true,
+            }),
+          }),
+          {},
+        ) as SocialMediaForm,
+      ),
+  );
 
   constructor(private readonly profileService: ProfileService) {
-    this.socialMediaForm = new FormGroup<SocialMediaForm>(
-      this.generateSocialMedia(),
-    );
-  }
-
-  public ngOnChanges(
-    changes: ComponentChanges<ReviewerProfileComponent>,
-  ): void {
-    if (changes.userProfile) {
-      this.socialMediaForm.patchValue(
-        this.userProfile.socialMedia.reduce(
+    effect(() => {
+      this.socialMediaForm().patchValue(
+        this.userProfile().socialMedia.reduce(
           (accum, value) => ({ ...accum, [value.type]: value.username }),
           {},
         ),
       );
-    }
+    });
   }
 
   public async onSubmit(): Promise<void> {
-    this.socialMediaForm.disable();
-    this.isSaving = true;
+    this.socialMediaForm().disable();
+    this.isSaving.set(true);
 
-    const socialMediaFormValues = this.socialMediaForm.value;
+    const socialMediaFormValues = this.socialMediaForm().value;
 
     const socialMedia = Object.entries(
       socialMediaFormValues ?? {},
@@ -167,46 +168,37 @@ export class ReviewerSocialMediaFormComponent implements OnChanges {
     try {
       await this.profileService.saveProfile(profileUpdate);
     } finally {
-      this.isSaving = false;
+      this.isSaving.set(false);
       this.formClose.emit();
     }
   }
 
-  public cancelEdits(): void {
+  public onCancelEdits(): void {
     this.formClose.emit();
   }
 
-  public socialMediaControlHasValue(controlName: string): boolean {
+  public socialMediaControlHasValue(
+    controlName: keyof SocialMediaInputs,
+  ): boolean {
     const control = this.getSocialMediaControl(controlName);
 
     return control.value;
   }
 
+  // [TODO] - convert to signal
   public getSocialMediaUrl(controlName: keyof SocialMediaInputs): string {
     const control = this.getSocialMediaControl(controlName);
 
-    const baseUrl = this.socialMediaInputs[controlName].baseUrl;
+    const baseUrl = this.socialMediaInputs()[controlName].baseUrl;
 
     return baseUrl + control.value;
   }
 
   private getSocialMediaControl(controlName: string): AbstractControl {
-    const control = this.socialMediaForm.get(controlName);
+    const control = this.socialMediaForm().get(controlName);
     if (control === null) {
       throw new Error(`Control "${controlName} not found."`);
     }
     return control;
-  }
-
-  private generateSocialMedia(): SocialMediaForm {
-    return this.socialMediaKeys.reduce(
-      (accum, value) => ({
-        ...accum,
-        [value]: new FormControl('', {
-          nonNullable: true,
-        }),
-      }),
-      {},
-    ) as SocialMediaForm;
   }
 }

@@ -15,6 +15,7 @@ use crate::{
     system_api::get_date_time,
 };
 
+const MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER: usize = 50;
 const MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS: usize = 1000;
 const MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHTS_COUNT: usize = 5;
 const MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHT_CHARS: usize = 100;
@@ -97,6 +98,23 @@ impl<
             })?;
 
         let proposal_review_id = Uuid::try_from(request.proposal_review_id.as_str())?;
+
+        if self
+            .proposal_review_commit_repository
+            .get_proposal_review_commits_by_proposal_review_id_and_user_id(
+                proposal_review_id,
+                user_id,
+            )?
+            .len()
+            >= MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER
+        {
+            return Err(ApiError::conflict(&format!(
+                "User with Id {} has already created {} proposal review commits for proposal review with Id {}",
+                user_id.to_string(),
+                MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER,
+                proposal_review_id.to_string()
+            )));
+        }
 
         if self
             .proposal_review_commit_repository
@@ -341,6 +359,8 @@ impl<
 
 #[cfg(test)]
 mod tests {
+    use std::iter::repeat;
+
     use super::*;
     use crate::{
         fixtures::{self, uuid_a},
@@ -378,6 +398,11 @@ mod tests {
             .with(eq(calling_principal))
             .return_const(Some(user_id));
         let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
+        prc_repository_mock
+            .expect_get_proposal_review_commits_by_proposal_review_id_and_user_id()
+            .once()
+            .with(eq(proposal_review_id), eq(user_id))
+            .return_const(Ok(vec![]));
         prc_repository_mock
             .expect_get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha()
             .once()
@@ -436,6 +461,9 @@ mod tests {
             .return_const(None);
         let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
         prc_repository_mock
+            .expect_get_proposal_review_commits_by_proposal_review_id_and_user_id()
+            .never();
+        prc_repository_mock
             .expect_get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha()
             .never();
         let mut pr_repository_mock = MockProposalReviewRepository::new();
@@ -471,6 +499,68 @@ mod tests {
     }
 
     #[rstest]
+    async fn create_proposal_review_commit_too_many() {
+        let calling_principal = fixtures::principal();
+        let (proposal_review_commit, _, _, request) = proposal_review_commit_create_not_reviewed();
+        let user_id = proposal_review_commit.user_id;
+        let proposal_review_id = Uuid::try_from(request.proposal_review_id.as_str()).unwrap();
+
+        // in a real scenario, all proposal review commits
+        // have different commit sha and ids
+        let existing_proposal_review_commits = repeat((uuid_a(), proposal_review_commit))
+            .take(MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER)
+            .collect();
+
+        let mut u_repository_mock = MockUserProfileRepository::new();
+        u_repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(user_id));
+        let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
+        prc_repository_mock
+            .expect_get_proposal_review_commits_by_proposal_review_id_and_user_id()
+            .once()
+            .with(eq(proposal_review_id), eq(user_id))
+            .return_const(Ok(existing_proposal_review_commits));
+        prc_repository_mock
+            .expect_get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha()
+            .never();
+        let mut pr_repository_mock = MockProposalReviewRepository::new();
+        pr_repository_mock
+            .expect_get_proposal_review_by_id()
+            .never();
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock.expect_get_proposal_by_id().never();
+
+        prc_repository_mock
+            .expect_create_proposal_review_commit()
+            .never();
+
+        let service = ProposalReviewCommitServiceImpl::new(
+            prc_repository_mock,
+            u_repository_mock,
+            pr_repository_mock,
+            p_repository_mock,
+        );
+
+        let result = service
+            .create_proposal_review_commit(calling_principal, request)
+            .await
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::conflict(&format!(
+                "User with Id {} has already created {} proposal review commits for proposal review with Id {}",
+                user_id.to_string(),
+                MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER,
+                proposal_review_id.to_string()
+            ))
+        );
+    }
+
+    #[rstest]
     async fn create_proposal_review_commit_already_created() {
         let calling_principal = fixtures::principal();
         let (proposal_review_commit, _, _, request) = proposal_review_commit_create_reviewed();
@@ -485,6 +575,11 @@ mod tests {
             .with(eq(calling_principal))
             .return_const(Some(user_id));
         let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
+        prc_repository_mock
+            .expect_get_proposal_review_commits_by_proposal_review_id_and_user_id()
+            .once()
+            .with(eq(proposal_review_id), eq(user_id))
+            .return_const(Ok(vec![]));
         prc_repository_mock
             .expect_get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha()
             .once()
@@ -551,6 +646,11 @@ mod tests {
             .return_const(Some(user_id));
         let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
         prc_repository_mock
+            .expect_get_proposal_review_commits_by_proposal_review_id_and_user_id()
+            .once()
+            .with(eq(proposal_review_id), eq(user_id))
+            .return_const(Ok(vec![]));
+        prc_repository_mock
             .expect_get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha()
             .once()
             .with(eq(proposal_review_id), eq(user_id), eq(commit_sha))
@@ -599,6 +699,11 @@ mod tests {
             .with(eq(calling_principal))
             .return_const(Some(user_id));
         let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
+        prc_repository_mock
+            .expect_get_proposal_review_commits_by_proposal_review_id_and_user_id()
+            .once()
+            .with(eq(proposal_review_id), eq(user_id))
+            .return_const(Ok(vec![]));
         prc_repository_mock
             .expect_get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha()
             .once()
@@ -657,6 +762,9 @@ mod tests {
         let mut u_repository_mock = MockUserProfileRepository::new();
         u_repository_mock.expect_get_user_id_by_principal().never();
         let mut prc_repository_mock = MockProposalReviewCommitRepository::new();
+        prc_repository_mock
+            .expect_get_proposal_review_commits_by_proposal_review_id_and_user_id()
+            .never();
         prc_repository_mock
             .expect_get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha()
             .never();
@@ -851,7 +959,7 @@ mod tests {
                 commit_sha: proposal_review_commit.commit_sha.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: Some("".to_string()),
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec![],
                 },
             },
@@ -870,7 +978,7 @@ mod tests {
                 commit_sha: proposal_review_commit.commit_sha.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: Some("a".repeat(MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS + 1)),
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec![],
                 },
             },
@@ -892,7 +1000,7 @@ mod tests {
                 commit_sha: proposal_review_commit.commit_sha.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: None,
-                    matches_description: true,
+                    matches_description: None,
                     highlights: std::iter::repeat("a".to_string())
                         .take(MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHTS_COUNT + 1)
                         .collect(),
@@ -916,7 +1024,7 @@ mod tests {
                 commit_sha: proposal_review_commit.commit_sha.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: None,
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec!["highlight".to_string(), "".to_string()],
                 },
             },
@@ -935,7 +1043,7 @@ mod tests {
                 commit_sha: proposal_review_commit.commit_sha.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: None,
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec![
                         "highlight".to_string(),
                         "a".repeat(MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHT_CHARS + 1),
@@ -1346,7 +1454,7 @@ mod tests {
         let proposal = fixtures::nns_replica_version_management_proposal();
         let state = backend_api::ReviewCommitState::Reviewed {
             comment: Some("Review commit comment".to_string()),
-            matches_description: true,
+            matches_description: Some(true),
             highlights: vec![],
         };
 
@@ -1507,7 +1615,7 @@ mod tests {
                 id: id.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: Some("".to_string()),
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec![],
                 },
             },
@@ -1525,7 +1633,7 @@ mod tests {
                 id: id.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: Some("a".repeat(MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS + 1)),
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec![],
                 },
             },
@@ -1546,7 +1654,7 @@ mod tests {
                 id: id.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: None,
-                    matches_description: true,
+                    matches_description: None,
                     highlights: std::iter::repeat("a".to_string())
                         .take(MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHTS_COUNT + 1)
                         .collect(),
@@ -1569,7 +1677,7 @@ mod tests {
                 id: id.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: None,
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec!["highlight".to_string(), "".to_string()],
                 },
             },
@@ -1587,7 +1695,7 @@ mod tests {
                 id: id.to_string(),
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: None,
-                    matches_description: true,
+                    matches_description: None,
                     highlights: vec![
                         "highlight".to_string(),
                         "a".repeat(MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHT_CHARS + 1),

@@ -140,7 +140,7 @@ mod tests {
             proposal_review_id: "proposal_review_id".to_string(),
             commit_sha: "commit_sha".to_string(),
             state: backend_api::ReviewCommitState::Reviewed {
-                matches_description: true,
+                matches_description: Some(true),
                 comment: Some("comment".to_string()),
                 highlights: vec![],
             },
@@ -182,7 +182,7 @@ mod tests {
             proposal_review_id: "proposal_review_id".to_string(),
             commit_sha: "commit_sha".to_string(),
             state: backend_api::ReviewCommitState::Reviewed {
-                matches_description: true,
+                matches_description: Some(true),
                 comment: Some("comment".to_string()),
                 highlights: vec![],
             },
@@ -219,7 +219,7 @@ mod tests {
         let request = UpdateProposalReviewCommitRequest {
             id: "id".to_string(),
             state: backend_api::ReviewCommitState::Reviewed {
-                matches_description: true,
+                matches_description: Some(true),
                 comment: Some("comment".to_string()),
                 highlights: vec![],
             },
@@ -253,7 +253,7 @@ mod tests {
         let request = UpdateProposalReviewCommitRequest {
             id: "id".to_string(),
             state: backend_api::ReviewCommitState::Reviewed {
-                matches_description: true,
+                matches_description: Some(true),
                 comment: Some("comment".to_string()),
                 highlights: vec![],
             },

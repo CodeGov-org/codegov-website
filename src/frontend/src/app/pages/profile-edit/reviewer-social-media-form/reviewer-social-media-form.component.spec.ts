@@ -17,7 +17,7 @@ describe('ReviewerSocialMediaFormComponent', () => {
 
     fixture = TestBed.createComponent(ReviewerSocialMediaFormComponent);
     component = fixture.componentInstance;
-    component.userProfile = {
+    fixture.componentRef.setInput('userProfile', {
       id: '1',
       role: UserRole.Reviewer,
       username: 'TestReviewer',
@@ -25,7 +25,7 @@ describe('ReviewerSocialMediaFormComponent', () => {
       walletAddress: '123213123sdfsdfs',
       bio: 'bio',
       socialMedia: [{ type: SocialMediaType.DSCVR, username: 'testLink' }],
-    };
+    });
     fixture.detectChanges();
   });
 

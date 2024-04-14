@@ -12,7 +12,7 @@ const meta: Meta = {
   },
   render: args => `
     <cg-icon-btn label="${args.ariaLabel}">
-      <cg-profile-icon/>
+      <cg-profile-icon></cg-profile-icon>
     </cg-icon-btn>
   `,
 };

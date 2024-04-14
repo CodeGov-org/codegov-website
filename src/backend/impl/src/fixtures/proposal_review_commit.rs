@@ -13,7 +13,7 @@ pub fn proposal_review_commit_reviewed() -> ProposalReviewCommit {
         last_updated_at: None,
         commit_sha: commit_sha_a(),
         state: ReviewCommitState::Reviewed {
-            matches_description: true,
+            matches_description: Some(true),
             comment: Some("Review commit comment".to_string()),
             highlights: vec![],
         },

@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  signal,
+} from '@angular/core';
 
 import { AdminPersonalInfoComponent } from '../admin-personal-info';
 import { AdminPersonalInfoFormComponent } from '../admin-personal-info-form';
@@ -48,7 +53,7 @@ import {
       <app-key-value-grid slot="cardContent">
         <app-key-col id="admin-id">ID</app-key-col>
         <app-value-col aria-labelledby="admin-id">
-          {{ userProfile.id }}
+          {{ userProfile().id }}
         </app-value-col>
 
         <app-key-col id="admin-role">Role</app-key-col>
@@ -56,15 +61,15 @@ import {
           aria-labelledby="admin-role"
           aria-describedby="admin-role-description"
         >
-          {{ userProfile.role }}
+          {{ userProfile().role }}
 
           <app-info-icon
             aria-hidden="true"
-            [appTooltip]="adminInfo"
+            [appTooltip]="adminInfo()"
           ></app-info-icon>
         </app-value-col>
         <div class="admin-role-description sr-only" role="tooltip">
-          {{ adminInfo }}
+          {{ adminInfo() }}
         </div>
       </app-key-value-grid>
     </cg-card>
@@ -73,15 +78,15 @@ import {
       <h2 class="h3" slot="cardTitle">Personal Info</h2>
 
       <div slot="cardContent">
-        @if (isFormEditable) {
+        @if (isFormEditable()) {
           <app-admin-personal-info-form
-            [userProfile]="userProfile"
-            (formClose)="hideForm()"
+            [userProfile]="userProfile()"
+            (formClose)="onHideForm()"
           />
         } @else {
           <app-admin-personal-info
-            [userProfile]="userProfile"
-            (edit)="showForm()"
+            [userProfile]="userProfile()"
+            (edit)="onShowForm()"
           />
         }
       </div>
@@ -89,19 +94,19 @@ import {
   `,
 })
 export class AdminProfileComponent {
-  @Input({ required: true })
-  public userProfile!: AdminProfile;
+  public readonly userProfile = input.required<AdminProfile>();
 
-  public readonly adminInfo: string =
-    'Use DFX command to change this property.';
+  public readonly adminInfo = signal(
+    'Use DFX command to change this property.',
+  );
 
-  public isFormEditable = false;
+  public isFormEditable = signal(false);
 
-  public showForm(): void {
-    this.isFormEditable = true;
+  public onShowForm(): void {
+    this.isFormEditable.set(true);
   }
 
-  public hideForm(): void {
-    this.isFormEditable = false;
+  public onHideForm(): void {
+    this.isFormEditable.set(false);
   }
 }
