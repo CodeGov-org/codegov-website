@@ -59,6 +59,8 @@ export class AppComponent implements OnInit {
   constructor(private readonly profileService: ProfileService) {}
 
   public ngOnInit(): void {
-    this.profileService.loadProfile();
+    this.profileService.loadProfile().catch(() => {
+      // error is not relevant until we are on the profile page
+    });
   }
 }

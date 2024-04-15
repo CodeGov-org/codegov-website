@@ -14,6 +14,11 @@ import {
   ProposalServiceMock,
   proposalServiceMockFactory,
 } from '~core/state/proposal/proposal.service.mock';
+import { ReviewService } from '~core/state/review/review.service';
+import {
+  ReviewServiceMock,
+  reviewServiceMockFactory,
+} from '~core/state/review/review.service.mock';
 import {
   ActivatedRouteMock,
   activatedRouteMockFactory,
@@ -25,6 +30,7 @@ describe('ClosedProposalSummaryComponent', () => {
   let component: ClosedProposalSummaryComponent;
   let fixture: ComponentFixture<ClosedProposalSummaryComponent>;
   let proposalServiceMock: ProposalServiceMock;
+  let reviewServiceMock: ReviewServiceMock;
   let activatedRoute: ActivatedRouteMock;
 
   beforeEach(async () => {
@@ -52,6 +58,9 @@ describe('ClosedProposalSummaryComponent', () => {
       }),
     );
 
+    reviewServiceMock = reviewServiceMockFactory();
+    reviewServiceMock.reviewList$ = of([]);
+
     activatedRoute = activatedRouteMockFactory();
     activatedRoute.params = of([{ id: 1 }]);
 
@@ -59,6 +68,7 @@ describe('ClosedProposalSummaryComponent', () => {
       imports: [ClosedProposalSummaryComponent, RouterTestingModule],
       providers: [
         { provide: ProposalService, useValue: proposalServiceMock },
+        { provide: ReviewService, useValue: reviewServiceMock },
         {
           provide: ActivatedRoute,
           useValue: activatedRoute,
@@ -68,6 +78,27 @@ describe('ClosedProposalSummaryComponent', () => {
 
     fixture = TestBed.createComponent(ClosedProposalSummaryComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('proposal', {
+      id: 1n,
+      title: 'title',
+      topic: ProposalTopic.RVM,
+      type: 'unknown',
+      state: ProposalState.Completed,
+      reviewPeriodEnd: new Date(2024, 1, 17, 1, 1, 25),
+      votingPeriodEnd: new Date(2024, 1, 19, 1, 1, 25),
+      proposedAt: new Date(2024, 1, 15, 1, 1, 25),
+      proposedBy: 432432432423n,
+      reviewCompletedAt: new Date(2024, 1, 19, 1, 1, 25),
+      decidedAt: new Date(2024, 1, 19, 1, 1, 25),
+      summary: 'Elect new replica binary revision',
+      proposalLinks: [
+        {
+          type: ProposalVotingLinkType.NNSDApp,
+          link: ProposalLinkBaseUrl.NNSDApp + 1,
+        },
+      ],
+      codeGovVote: 'ADOPT',
+    });
 
     fixture.detectChanges();
   });

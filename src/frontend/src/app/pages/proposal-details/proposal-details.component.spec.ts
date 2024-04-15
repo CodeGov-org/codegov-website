@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { of } from 'rxjs';
 
 import {
@@ -8,8 +7,13 @@ import {
   ProposalState,
   ProposalVotingLinkType,
   ProposalLinkBaseUrl,
+  ProfileService,
 } from '~core/state';
 import { ProposalService } from '~core/state';
+import {
+  ProfileServiceMock,
+  profileServiceMockFactory,
+} from '~core/state/profile/profile.service.mock';
 import {
   ProposalServiceMock,
   proposalServiceMockFactory,
@@ -25,6 +29,7 @@ describe('ProposalDetailsComponent', () => {
   let component: ProposalDetailsComponent;
   let fixture: ComponentFixture<ProposalDetailsComponent>;
   let proposalServiceMock: ProposalServiceMock;
+  let profileServiceMock: ProfileServiceMock;
   let activatedRoute: ActivatedRouteMock;
 
   beforeEach(async () => {
@@ -52,13 +57,17 @@ describe('ProposalDetailsComponent', () => {
       }),
     );
 
+    profileServiceMock = profileServiceMockFactory();
+    profileServiceMock.isReviewer$ = of(true);
+
     activatedRoute = activatedRouteMockFactory();
     activatedRoute.params = of([{ id: 1 }]);
 
     await TestBed.configureTestingModule({
-      imports: [ProposalDetailsComponent, RouterTestingModule],
+      imports: [ProposalDetailsComponent, RouterModule],
       providers: [
         { provide: ProposalService, useValue: proposalServiceMock },
+        { provide: ProfileService, useValue: profileServiceMock },
         {
           provide: ActivatedRoute,
           useValue: activatedRoute,

@@ -249,8 +249,7 @@ interface FilterForm {
             </app-key-value-grid>
             <div class="btn-group">
               @if (
-                (isReviewer$ | async) &&
-                proposal.state === proposalState.InProgress
+                isReviewer() && proposal.state === proposalState().InProgress
               ) {
                 <a
                   class="btn btn--outline"
@@ -271,7 +270,7 @@ interface FilterForm {
 })
 export class ProposalListComponent {
   public proposalList = toSignal(this.proposalService.currentProposalList$);
-  public isReviewer$ = this.profileService.isReviewer$;
+  public isReviewer = toSignal(this.profileService.isReviewer$);
 
   public readonly filterForm = signal(
     new FormGroup<FilterForm>({
@@ -281,10 +280,14 @@ export class ProposalListComponent {
     }),
   );
 
+  public readonly proposalState = signal(ProposalState);
   public readonly listFilter = signal(reviewPeriodStateFilter);
   public readonly linkBaseUrl = signal(ProposalLinkBaseUrl);
 
-  constructor(private readonly proposalService: ProposalService) {
+  constructor(
+    private readonly proposalService: ProposalService,
+    private readonly profileService: ProfileService,
+  ) {
     this.proposalService.loadProposalList(ProposalState.InProgress);
 
     this.filterForm()
@@ -292,8 +295,6 @@ export class ProposalListComponent {
       .subscribe(formValue => {
         this.onFilterFormUpdated(formValue.reviewPeriodState);
       });
-
-    this.proposalService.loadProposalList(ProposalState.InProgress);
   }
 
   private async onFilterFormUpdated(

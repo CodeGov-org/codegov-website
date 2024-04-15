@@ -3,8 +3,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   SecurityContext,
+  signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { marked } from 'marked';
@@ -16,7 +17,6 @@ import {
   ProfileService,
   ProposalLinkBaseUrl,
   ProposalState,
-  ProposalTopic,
 } from '~core/state';
 import { ProposalService } from '~core/state';
 import {
@@ -75,7 +75,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
     `,
   ],
   template: `
-    @if (currentProposal$ | async; as proposal) {
+    @if (currentProposal(); as proposal) {
       <h1 class="h3 proposal-title">{{ proposal.title }}</h1>
 
       <cg-card class="proposal">
@@ -84,7 +84,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
             <app-key-col id="proposal-id">ID</app-key-col>
             <app-value-col aria-labelledby="proposal-id">
               <a
-                href="{{ linkBaseUrl.Proposal }}{{ proposal.id }}"
+                href="{{ linkBaseUrl().Proposal }}{{ proposal.id }}"
                 target="_blank"
                 rel="nofollow noreferrer"
               >
@@ -130,7 +130,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               class="proposal__proposer"
             >
               <a
-                href="{{ linkBaseUrl.Neuron }}{{ proposal.proposedBy }}"
+                href="{{ linkBaseUrl().Neuron }}{{ proposal.proposedBy }}"
                 target="_blank"
                 rel="nofollow noreferrer"
               >
@@ -175,8 +175,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
           </app-key-value-grid>
           <div class="btn-group">
             @if (
-              (isReviewer$ | async) &&
-              proposal.state === proposalState.InProgress
+              isReviewer() && proposal.state === proposalState().InProgress
             ) {
               <a
                 class="btn btn--outline"
@@ -189,7 +188,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
         </div>
       </cg-card>
 
-      @if (proposal.state === proposalState.InProgress) {
+      @if (proposal.state === proposalState().InProgress) {
         <h2 class="h4">Proposal summary</h2>
         <cg-card>
           <div
@@ -204,11 +203,13 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
   `,
 })
 export class ProposalDetailsComponent {
-  public readonly proposalTopic = ProposalTopic;
-  public readonly proposalState = ProposalState;
-  public readonly linkBaseUrl = ProposalLinkBaseUrl;
-  public readonly currentProposal$ = this.proposalService.currentProposal$;
-  public isReviewer$ = this.profileService.isReviewer$;
+  public readonly proposalState = signal(ProposalState);
+  public readonly linkBaseUrl = signal(ProposalLinkBaseUrl);
+
+  public readonly currentProposal = toSignal(
+    this.proposalService.currentProposal$,
+  );
+  public isReviewer = toSignal(this.profileService.isReviewer$);
 
   private readonly proposalIdFromRoute$ = this.route.params.pipe(
     map(params => {

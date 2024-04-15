@@ -2,16 +2,22 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
-  OnDestroy,
-  OnInit,
+  effect,
+  input,
+  signal,
 } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 import { CardComponent } from '@cg/angular-ui';
-import { Proposal } from '~core/state';
-import { ProposalCommit } from '~core/state/review';
-import { ReviewService } from '~core/state/review/review.service';
+import { RejectIconComponent } from '~core/icons';
+import { AdoptIconComponent } from '~core/icons/adopt-icon/adopt-icon.component';
+import {
+  Proposal,
+  ProposalCommit,
+  Review,
+  ReviewCommit,
+  ReviewService,
+} from '~core/state';
 import {
   KeyColComponent,
   KeyValueGridComponent,
@@ -27,6 +33,8 @@ import {
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
+    AdoptIconComponent,
+    RejectIconComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -47,8 +55,13 @@ import {
         color: $error;
       }
 
-      .summary__verification {
-        margin-bottom: size(8);
+      .summary__vote {
+        margin-bottom: size(4);
+      }
+
+      .summary__vote-position {
+        display: flex;
+        flex-direction: row;
       }
 
       .commit__highlights {
@@ -62,41 +75,61 @@ import {
           color: $white;
         }
       }
+
+      .commit__highlights-content {
+        @include my(2);
+      }
+
+      .commit__highlights-quote {
+        font-style: italic;
+      }
     `,
   ],
   template: `
-    @if (reviewList$ | async; as reviewList) {
+    @if (reviewList(); as reviewList) {
       <h2 class="h4">Review summary</h2>
       <cg-card class="summary">
         <div slot="cardContent">
-          <div class="summary__verification">
-            <h3 class="h5">Verification</h3>
-            <p>
-              {{ commitList.length }} commits reviewed by
-              {{ reviewList.length }} reviewers
-            </p>
-            <p>Build verified by {{ buildReproducedCount }} reviewers</p>
-          </div>
+          <h3 class="h5">
+            CodeGov voted to
+            <span
+              [ngClass]="{
+                'summary__vote--adopt': proposal().codeGovVote === 'ADOPT',
+                'summary__vote--reject': proposal().codeGovVote === 'REJECT'
+              }"
+            >
+              {{ proposal().codeGovVote }}
+            </span>
+            this proposal
+          </h3>
 
           <div class="summary__vote">
-            <h3 class="h5">
-              CodeGov voted to
-              <span
-                [ngClass]="{
-                  'summary__vote--adopt': proposal.codeGovVote === 'ADOPT',
-                  'summary__vote--reject': proposal.codeGovVote === 'REJECT'
-                }"
-              >
-                {{ proposal.codeGovVote }}
-              </span>
-              this proposal
-            </h3>
-            <p class="summary__vote--adopt">
-              {{ votesAdopt }} reviewer(s) voted to adopt this proposal
+            <div class="summary__vote-position">
+              <app-adopt-icon></app-adopt-icon>
+
+              <p>
+                {{ votesAdopt() }} reviewer(s) voted to
+                <span class="summary__vote--adopt">adopt</span>
+                this proposal
+              </p>
+            </div>
+            <div class="summary__vote-position">
+              <app-reject-icon></app-reject-icon>
+
+              <p>
+                {{ votesReject() }} reviewer(s) voted to
+                <span class="summary__vote--reject">reject</span>
+                this proposal
+              </p>
+            </div>
+          </div>
+
+          <div class="summary__verification">
+            <p>
+              {{ commitList().length }} commits reviewed by
+              {{ reviewList.length }} reviewers
             </p>
-            <p class="summary__vote--reject">
-              {{ votesReject }} reviewer(s) voted to reject this proposal
-            </p>
+            <p>Build verified by {{ buildReproducedCount() }} reviewers</p>
           </div>
         </div>
       </cg-card>
@@ -133,7 +166,8 @@ import {
                 Reviewed commits
               </app-key-col>
               <app-value-col [attr.labelledby]="'reviewed-commits-' + i">
-                {{ review.reviewCommits.length }} out of {{ commitList.length }}
+                {{ review.reviewCommits.length }} out of
+                {{ commitList().length }}
               </app-value-col>
 
               <app-key-col [id]="'review-link-id-' + i">
@@ -148,7 +182,7 @@ import {
       }
 
       <h2 class="h4">Commits</h2>
-      @for (commit of commitList; track commit.commitId; let i = $index) {
+      @for (commit of commitList(); track commit.commitId; let i = $index) {
         <cg-card class="commit">
           <div slot="cardContent">
             <app-key-value-grid [columnNumber]="1">
@@ -170,7 +204,8 @@ import {
                 Reviewed by
               </app-key-col>
               <app-value-col [attr.labelledby]="'reviewed-by-id-' + i">
-                {{ commit.reviewedCount }} out of {{ reviewList.length }}
+                {{ commit.reviewedCount }} out of
+                {{ reviewList.length }} reviewers
               </app-value-col>
 
               <app-key-col [id]="'matches-descr-id-' + i">
@@ -185,16 +220,19 @@ import {
 
             <div class="commit__highlights">
               <div class="commit__highlights-label">Reviewer highlights</div>
-              @for (
-                highlight of commit.highlights;
-                track highlight.reviewerId
-              ) {
-                <div class="commit__highlights-content">
-                  Reviewer #{{ highlight.reviewerId }} said: "{{
-                    highlight.text
-                  }}"
-                </div>
-              }
+              <ul>
+                @for (
+                  highlight of commit.highlights;
+                  track highlight.reviewerId
+                ) {
+                  <li class="commit__highlights-content">
+                    Reviewer #{{ highlight.reviewerId }} said:
+                    <span class="commit__highlights-quote">
+                      "{{ highlight.text }}"
+                    </span>
+                  </li>
+                }
+              </ul>
             </div>
           </div>
         </cg-card>
@@ -202,65 +240,77 @@ import {
     }
   `,
 })
-export class ClosedProposalSummaryComponent implements OnInit, OnDestroy {
-  @Input({ required: true })
-  public proposal!: Proposal;
+export class ClosedProposalSummaryComponent {
+  public readonly proposal = input.required<Proposal>();
 
-  public readonly reviewList$ = this.reviewService.reviewList$;
-  public reviewListSubscription: Subscription = Subscription.EMPTY;
+  public readonly reviewList = toSignal(this.reviewService.reviewList$);
 
-  public commitList: ProposalCommit[] = [];
-  public votesAdopt = 0;
-  public votesReject = 0;
-  public buildReproducedCount = 0;
+  public commitList = signal<ProposalCommit[]>([]);
+  public votesAdopt = signal(0);
+  public votesReject = signal(0);
+  public buildReproducedCount = signal(0);
 
   constructor(private readonly reviewService: ReviewService) {
     this.reviewService.loadReviewList();
+
+    effect(
+      () => {
+        const reviewList = this.reviewList();
+
+        if (reviewList != undefined) {
+          reviewList.forEach(review => {
+            this.updateReviewList(review);
+          });
+        }
+      },
+      { allowSignalWrites: true },
+    );
   }
 
-  public ngOnInit(): void {
-    this.reviewListSubscription = this.reviewList$.subscribe(reviewList => {
-      reviewList.forEach(review => {
-        if (review.reviewerVote === 'ADOPT') {
-          this.votesAdopt++;
-        } else if (review.reviewerVote === 'REJECT') {
-          this.votesReject++;
-        }
+  private updateReviewList(review: Review): void {
+    if (review.reviewerVote === 'ADOPT') {
+      this.votesAdopt.update(value => value + 1);
+    } else if (review.reviewerVote === 'REJECT') {
+      this.votesReject.update(value => value + 1);
+    }
 
-        if (review.buildReproduced) {
-          this.buildReproducedCount++;
-        }
+    if (review.buildReproduced) {
+      this.buildReproducedCount.update(value => value + 1);
+    }
 
-        for (const commit of review.reviewCommits) {
-          const existingCommit = this.commitList.find(
-            c => c.commitId === commit.commitId,
-          );
-          if (existingCommit) {
-            existingCommit.highlights.push({
-              reviewerId: review.reviewerId,
-              text: commit.highlights,
-            });
-            existingCommit.totalReviewers += 1;
-            existingCommit.reviewedCount += commit.reviewed;
-            existingCommit.matchesDescriptionCount += commit.matchesDescription;
-          } else {
-            this.commitList.push({
-              proposalId: this.proposal.id,
-              commitId: commit.commitId,
-              totalReviewers: 1,
-              reviewedCount: commit.reviewed === 1 ? 1 : 0,
-              matchesDescriptionCount: commit.matchesDescription === 1 ? 1 : 0,
-              highlights: [
-                { reviewerId: review.reviewerId, text: commit.highlights },
-              ],
-            });
-          }
-        }
+    for (const commit of review.reviewCommits) {
+      this.updateCommitList(commit, review.reviewerId);
+    }
+  }
+
+  private updateCommitList(commit: ReviewCommit, reviewerId: bigint): void {
+    const existingCommit = this.commitList().find(
+      c => c.commitId === commit.commitId,
+    );
+
+    if (existingCommit) {
+      existingCommit.highlights.push({
+        reviewerId: reviewerId,
+        text: commit.highlights,
       });
-    });
+      existingCommit.totalReviewers += 1;
+      existingCommit.reviewedCount += commit.reviewed;
+      existingCommit.matchesDescriptionCount += commit.matchesDescription;
+    } else {
+      this.addCommitToList(commit, reviewerId);
+    }
   }
 
-  public ngOnDestroy(): void {
-    this.reviewListSubscription.unsubscribe();
+  private addCommitToList(commit: ReviewCommit, reviewerId: bigint): void {
+    const proposal = this.proposal();
+
+    this.commitList().push({
+      proposalId: proposal.id,
+      commitId: commit.commitId,
+      totalReviewers: 1,
+      reviewedCount: commit.reviewed === 1 ? 1 : 0,
+      matchesDescriptionCount: commit.matchesDescription === 1 ? 1 : 0,
+      highlights: [{ reviewerId: reviewerId, text: commit.highlights }],
+    });
   }
 }
