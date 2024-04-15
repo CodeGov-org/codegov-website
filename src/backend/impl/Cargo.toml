@@ -25,6 +25,7 @@ serde.workspace = true
 
 uuid = { workspace = true, features = ["serde"] }
 chrono = { version = "0.4", default-features = false, features = ["std"] }
+hex = "0.4"
 
 rand = { version = "0.8", default-features = false }
 rand_chacha = { version = "0.3", default-features = false }
