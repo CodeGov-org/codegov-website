@@ -17,7 +17,7 @@ export class ReviewService {
 
   //TODO: loading by proposal ID using backend endpoint
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async loadReviewList(_proposalId: bigint): Promise<void> {
+  public async loadReviewListByProposalId(_proposalId: bigint): Promise<void> {
     this.reviewListSubject.next([
       {
         id: 1n,
