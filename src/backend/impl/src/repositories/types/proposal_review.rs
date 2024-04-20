@@ -22,6 +22,7 @@ pub struct ProposalReview {
     pub proposal_id: ProposalId,
     pub user_id: UserId,
     pub created_at: DateTime,
+    pub last_updated_at: Option<DateTime>,
     pub status: ProposalReviewStatus,
     pub summary: String,
     pub review_duration_mins: u16,

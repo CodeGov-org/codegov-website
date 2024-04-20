@@ -17,6 +17,7 @@ pub struct ProposalReviewCommit {
     pub proposal_review_id: String,
     pub user_id: String,
     pub created_at: String,
+    pub last_updated_at: Option<String>,
     pub commit_sha: String,
     pub state: ReviewCommitState,
 }
