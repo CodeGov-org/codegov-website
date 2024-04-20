@@ -275,7 +275,7 @@ impl<
             .filter_map(|(proposal_review_id, proposal_review)| {
                 // if the proposal review is in draft, only allow the owner to see it
                 if proposal_review.is_draft()
-                    && calling_user_id.is_some_and(|id| id == proposal_review.user_id)
+                    && !calling_user_id.is_some_and(|id| id == proposal_review.user_id)
                 {
                     return None;
                 }
