@@ -1094,23 +1094,29 @@ describe('Proposal Review', () => {
       const alice = generateRandomIdentity();
       const aliceId = await createReviewer(actor, alice);
 
-      const { proposalId, proposalReviewId } = await createProposalReview(
+      const proposalReviewData = await createProposalReview(
         actor,
         governance,
         alice,
       );
       for (const commitSha of [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B]) {
-        await createProposalReviewCommit(actor, governance, alice, commitSha);
+        await createProposalReviewCommit(
+          actor,
+          governance,
+          alice,
+          commitSha,
+          proposalReviewData,
+        );
       }
-      await publishProposalReview(actor, alice, proposalId);
+      await publishProposalReview(actor, alice, proposalReviewData.proposalId);
 
       actor.setIdentity(new AnonymousIdentity());
       const res = await actor.get_proposal_review({
-        proposal_review_id: proposalReviewId,
+        proposal_review_id: proposalReviewData.proposalReviewId,
       });
       const resOk = extractOkResponse(res);
       validateProposalReview(resOk, {
-        proposalId,
+        proposalId: proposalReviewData.proposalId,
         userId: aliceId,
         reviewStatus: { published: null },
         commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
