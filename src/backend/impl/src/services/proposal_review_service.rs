@@ -116,6 +116,7 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
             user_id,
             status: ProposalReviewStatus::Draft,
             created_at: DateTime::new(date_time)?,
+            last_updated_at: None,
             summary: request.summary.unwrap_or("".to_string()),
             review_duration_mins: request.review_duration_mins.unwrap_or(0),
             build_reproduced: request.build_reproduced.unwrap_or(false),
@@ -218,6 +219,9 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
 
             current_proposal_review.status = status.into();
         }
+
+        let date_time = get_date_time()?;
+        current_proposal_review.last_updated_at = Some(DateTime::new(date_time)?);
 
         self.proposal_review_repository
             .update_proposal_review(id, current_proposal_review)
@@ -1032,6 +1036,7 @@ mod tests {
         ProposalReview,
     ) {
         let id = fixtures::proposal_review_id();
+        let date_time = get_date_time().unwrap();
         let original_proposal_review = ProposalReview {
             user_id: fixtures::uuid_a(),
             ..fixtures::proposal_review_draft()
@@ -1055,6 +1060,7 @@ mod tests {
                 summary,
                 review_duration_mins,
                 build_reproduced,
+                last_updated_at: Some(DateTime::new(date_time).unwrap()),
                 ..original_proposal_review
             },
         )
@@ -1068,6 +1074,7 @@ mod tests {
         ProposalReview,
     ) {
         let id = fixtures::proposal_review_id();
+        let date_time = get_date_time().unwrap();
         let original_proposal_review = ProposalReview {
             user_id: fixtures::uuid_a(),
             ..fixtures::proposal_review_published()
@@ -1093,6 +1100,7 @@ mod tests {
                 summary,
                 review_duration_mins,
                 build_reproduced,
+                last_updated_at: Some(DateTime::new(date_time).unwrap()),
                 ..original_proposal_review
             },
         )
@@ -1106,6 +1114,7 @@ mod tests {
         ProposalReview,
     ) {
         let id = fixtures::proposal_review_id();
+        let date_time = get_date_time().unwrap();
         let original_proposal_review = ProposalReview {
             user_id: fixtures::uuid_a(),
             ..fixtures::proposal_review_draft()
@@ -1131,6 +1140,7 @@ mod tests {
                 summary,
                 review_duration_mins,
                 build_reproduced,
+                last_updated_at: Some(DateTime::new(date_time).unwrap()),
                 ..original_proposal_review
             },
         )

@@ -168,6 +168,7 @@ describe('Proposal Review Commit', () => {
           user_id: reviewerId,
           commit_sha: VALID_COMMIT_SHA_A,
           created_at: dateToRfc3339(currentDate),
+          last_updated_at: [],
           state: {
             reviewed: {
               matches_description: [true],
@@ -369,6 +370,7 @@ describe('Proposal Review Commit', () => {
           user_id: reviewerId,
           commit_sha: VALID_COMMIT_SHA_A,
           created_at: dateToRfc3339(currentDate),
+          last_updated_at: [],
           state: {
             reviewed: {
               matches_description: [true],
@@ -398,6 +400,7 @@ describe('Proposal Review Commit', () => {
           user_id: reviewerId,
           commit_sha: VALID_COMMIT_SHA_B,
           created_at: dateToRfc3339(currentDate),
+          last_updated_at: [],
           state: {
             reviewed: {
               matches_description: [true],
@@ -438,6 +441,7 @@ describe('Proposal Review Commit', () => {
           user_id: aliceId,
           commit_sha: VALID_COMMIT_SHA_A,
           created_at: dateToRfc3339(currentDate),
+          last_updated_at: [],
           state: {
             reviewed: {
               matches_description: [true],
@@ -471,6 +475,7 @@ describe('Proposal Review Commit', () => {
           user_id: bobId,
           commit_sha: VALID_COMMIT_SHA_A,
           created_at: dateToRfc3339(currentDate),
+          last_updated_at: [],
           state: {
             reviewed: {
               matches_description: [true],
