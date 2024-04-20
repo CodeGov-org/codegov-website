@@ -132,7 +132,11 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       const reviewerId = await createReviewer(actor, reviewer);
 
-      const proposalId = await createProposal(actor, governance);
+      const proposalId = await createProposal(
+        actor,
+        governance,
+        'Test proposal',
+      );
 
       actor.setIdentity(reviewer);
 
@@ -165,7 +169,11 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       const reviewerId = await createReviewer(actor, reviewer);
 
-      const proposalId = await createProposal(actor, governance);
+      const proposalId = await createProposal(
+        actor,
+        governance,
+        'Test proposal',
+      );
 
       actor.setIdentity(reviewer);
 
@@ -220,7 +228,11 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const proposalId = await createProposal(actor, governance);
+      const proposalId = await createProposal(
+        actor,
+        governance,
+        'Test proposal',
+      );
       await completeProposal(pic, actor, proposalId);
 
       actor.setIdentity(reviewer);
@@ -243,7 +255,11 @@ describe('Proposal Review', () => {
       const alice = generateRandomIdentity();
       const aliceId = await createReviewer(actor, alice);
 
-      const proposalId = await createProposal(actor, governance);
+      const proposalId = await createProposal(
+        actor,
+        governance,
+        'Test proposal',
+      );
 
       actor.setIdentity(alice);
 
@@ -286,7 +302,11 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const proposalId = await createProposal(actor, governance);
+      const proposalId = await createProposal(
+        actor,
+        governance,
+        'Test proposal',
+      );
 
       actor.setIdentity(reviewer);
 
@@ -523,7 +543,11 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const proposalId = await createProposal(actor, governance);
+      const proposalId = await createProposal(
+        actor,
+        governance,
+        'Test proposal',
+      );
 
       actor.setIdentity(reviewer);
       const resProposalReview = await actor.create_proposal_review({
@@ -719,7 +743,11 @@ describe('Proposal Review', () => {
       const reviewer = generateRandomIdentity();
       await createReviewer(actor, reviewer);
 
-      const proposalId = await createProposal(actor, governance);
+      const proposalId = await createProposal(
+        actor,
+        governance,
+        'Test proposal',
+      );
 
       actor.setIdentity(reviewer);
 
@@ -790,8 +818,8 @@ describe('Proposal Review', () => {
       aliceId = await createReviewer(actor, alice);
       bobId = await createReviewer(actor, bob);
 
-      proposal1Id = await createProposal(actor, governance);
-      proposal2Id = await createProposal(actor, governance);
+      proposal1Id = await createProposal(actor, governance, 'Test proposal 1');
+      proposal2Id = await createProposal(actor, governance, 'Test proposal 2');
 
       const proposal1ReviewAliceData = await createProposalReview(
         actor,
@@ -1058,6 +1086,46 @@ describe('Proposal Review', () => {
         reviewStatus: { published: null },
         commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
       });
+    });
+
+    it('should return an empty list when the proposal does not exist', async () => {
+      const nonExistentProposalId = 'a79710dc-e275-4775-9bf3-4a67b30e9c30';
+
+      actor.setIdentity(new AnonymousIdentity());
+      const res = await actor.list_proposal_reviews({
+        proposal_id: [nonExistentProposalId],
+        user_id: [],
+      });
+      const resOk = extractOkResponse(res);
+      expect(resOk.proposal_reviews.length).toEqual(0);
+    });
+
+    it('should return an empty list when there are no reviews', async () => {
+      const proposalId = await createProposal(
+        actor,
+        governance,
+        'Test Proposal with no reviews',
+      );
+
+      actor.setIdentity(new AnonymousIdentity());
+      const res = await actor.list_proposal_reviews({
+        proposal_id: [proposalId],
+        user_id: [],
+      });
+      const resOk = extractOkResponse(res);
+      expect(resOk.proposal_reviews.length).toEqual(0);
+    });
+
+    it('should return an empty list when the user does not exist', async () => {
+      const nonExistentUserId = 'b456a69a-3fef-44c4-b85e-e40ebb8f2f5e';
+
+      actor.setIdentity(new AnonymousIdentity());
+      const res = await actor.list_proposal_reviews({
+        proposal_id: [],
+        user_id: [nonExistentUserId],
+      });
+      const resOk = extractOkResponse(res);
+      expect(resOk.proposal_reviews.length).toEqual(0);
     });
   });
 });

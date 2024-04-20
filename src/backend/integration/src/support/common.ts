@@ -40,17 +40,21 @@ export async function createReviewer(
 /**
  * Creates an RVM proposal and syncs the proposals on the backend canister.
  *
+ * Make sure the `title` param is unique, as it is used to find
+ * the newly created proposal id in the backend canister.
+ *
  * @returns {Promise<string>} the backend canister id of created proposal
  */
 export async function createProposal(
   actor: BackendActorService,
   governance: Governance,
+  title: string,
 ): Promise<string> {
   const neuronId = await governance.createNeuron(nnsProposerIdentity);
 
   await governance.createRvmProposal(nnsProposerIdentity, {
     neuronId: neuronId,
-    title: 'Test Proposal',
+    title,
     summary: 'Test Proposal Summary',
     replicaVersion: 'ca82a6dff817ec66f44342007202690a93763949',
   });
@@ -63,7 +67,11 @@ export async function createProposal(
   });
   const { proposals } = extractOkResponse(res);
 
-  return proposals[proposals.length - 1].id;
+  const proposal = proposals.find(p => p.proposal.title === title);
+  if (!proposal) {
+    throw new Error(`Could not find proposal with title ${title}`);
+  }
+  return proposal.id;
 }
 
 /**
@@ -111,7 +119,12 @@ export async function createProposalReview(
 }> {
   let proposalId = existingProposalId;
   if (!proposalId) {
-    proposalId = await createProposal(actor, governance);
+    // randomize the proposal title to make it unique
+    proposalId = await createProposal(
+      actor,
+      governance,
+      'Test proposal ' + Math.random(),
+    );
   }
 
   actor.setIdentity(reviewer);
