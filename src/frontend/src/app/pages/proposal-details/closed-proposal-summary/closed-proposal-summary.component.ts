@@ -36,6 +36,7 @@ import {
     ValueColComponent,
     CheckCircleIconComponent,
     DashCircleIconComponent,
+    RouterLink,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [

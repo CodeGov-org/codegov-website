@@ -10,7 +10,9 @@ export class ReviewService {
   public reviewListSubject = new BehaviorSubject<ProposalReview[]>([]);
   public reviewList$ = this.reviewListSubject.asObservable();
 
-  private currentReviewSubject = new BehaviorSubject<Review | null>(null);
+  private currentReviewSubject = new BehaviorSubject<ProposalReview | null>(
+    null,
+  );
   public currentReview$ = this.currentReviewSubject.asObservable();
 
   //TODO: loading by proposal ID using backend endpoint

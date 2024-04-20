@@ -1,3 +1,5 @@
+import { ImageSet } from '@cg/angular-ui';
+
 export interface ProposalReview {
   id: bigint;
   proposalId: bigint;
