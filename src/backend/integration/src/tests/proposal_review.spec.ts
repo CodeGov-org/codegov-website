@@ -1,5 +1,10 @@
 import { resolve } from 'path';
-import type { ProposalReview, ProposalReviewStatus, ProposalReviewWithId, _SERVICE } from '@cg/backend';
+import type {
+  ProposalReview,
+  ProposalReviewStatus,
+  ProposalReviewWithId,
+  _SERVICE,
+} from '@cg/backend';
 import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
 import { Principal } from '@dfinity/principal';
 import {
@@ -788,21 +793,73 @@ describe('Proposal Review', () => {
       proposal1Id = await createProposal(actor, governance);
       proposal2Id = await createProposal(actor, governance);
 
-      const proposal1ReviewAliceData = await createProposalReview(actor, governance, alice, proposal1Id);
+      const proposal1ReviewAliceData = await createProposalReview(
+        actor,
+        governance,
+        alice,
+        proposal1Id,
+      );
       for (const commitSha of [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B]) {
-        await createProposalReviewCommit(actor, governance, alice, commitSha, proposal1ReviewAliceData);
+        await createProposalReviewCommit(
+          actor,
+          governance,
+          alice,
+          commitSha,
+          proposal1ReviewAliceData,
+        );
       }
-      await publishProposalReview(actor, alice, proposal1ReviewAliceData.proposalId);
-      const proposal2ReviewAliceData = await createProposalReview(actor, governance, alice, proposal2Id);
-      await createProposalReviewCommit(actor, governance, alice, VALID_COMMIT_SHA_A, proposal2ReviewAliceData);
+      await publishProposalReview(
+        actor,
+        alice,
+        proposal1ReviewAliceData.proposalId,
+      );
+      const proposal2ReviewAliceData = await createProposalReview(
+        actor,
+        governance,
+        alice,
+        proposal2Id,
+      );
+      await createProposalReviewCommit(
+        actor,
+        governance,
+        alice,
+        VALID_COMMIT_SHA_A,
+        proposal2ReviewAliceData,
+      );
 
-      const proposal1ReviewBobData = await createProposalReview(actor, governance, bob, proposal1Id);
-      await createProposalReviewCommit(actor, governance, bob, VALID_COMMIT_SHA_A, proposal1ReviewBobData);
-      const proposal2ReviewBobData = await createProposalReview(actor, governance, bob, proposal2Id);
+      const proposal1ReviewBobData = await createProposalReview(
+        actor,
+        governance,
+        bob,
+        proposal1Id,
+      );
+      await createProposalReviewCommit(
+        actor,
+        governance,
+        bob,
+        VALID_COMMIT_SHA_A,
+        proposal1ReviewBobData,
+      );
+      const proposal2ReviewBobData = await createProposalReview(
+        actor,
+        governance,
+        bob,
+        proposal2Id,
+      );
       for (const commitSha of [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B]) {
-        await createProposalReviewCommit(actor, governance, bob, commitSha, proposal2ReviewBobData);
+        await createProposalReviewCommit(
+          actor,
+          governance,
+          bob,
+          commitSha,
+          proposal2ReviewBobData,
+        );
       }
-      await publishProposalReview(actor, bob, proposal2ReviewBobData.proposalId);
+      await publishProposalReview(
+        actor,
+        bob,
+        proposal2ReviewBobData.proposalId,
+      );
     });
 
     type ExpectedProposalReviewFields = {
@@ -814,7 +871,10 @@ describe('Proposal Review', () => {
       };
     };
 
-    const validateProposalReview = (proposalReview: ProposalReviewWithId, expected: ExpectedProposalReviewFields) => {
+    const validateProposalReview = (
+      proposalReview: ProposalReviewWithId,
+      expected: ExpectedProposalReviewFields,
+    ) => {
       expect(proposalReview).toEqual({
         id: expect.any(String),
         proposal_review: {
@@ -826,8 +886,8 @@ describe('Proposal Review', () => {
           review_duration_mins: expect.any(Number),
           build_reproduced: expect.any(Boolean),
           reproduced_build_image_id: expect.any(Array),
-          proposal_review_commits: expected.commits.commitSha.map((commitSha) => (
-            {
+          proposal_review_commits: expected.commits.commitSha.map(
+            commitSha => ({
               id: expect.any(String),
               proposal_review_commit: {
                 commit_sha: commitSha,
@@ -836,8 +896,8 @@ describe('Proposal Review', () => {
                 created_at: expect.any(String),
                 state: expect.anything(),
               },
-            }
-          )),
+            }),
+          ),
         },
       } satisfies ProposalReviewWithId);
     };
@@ -908,7 +968,7 @@ describe('Proposal Review', () => {
       const resEmptyErr = extractErrResponse(resEmpty);
       expect(resEmptyErr).toEqual({
         code: 400,
-        message: "Must specify either proposal_id or user_id parameter",
+        message: 'Must specify either proposal_id or user_id parameter',
       });
 
       const resTooMany = await actor.list_proposal_reviews({
@@ -918,7 +978,7 @@ describe('Proposal Review', () => {
       const resTooManyErr = extractErrResponse(resTooMany);
       expect(resTooManyErr).toEqual({
         code: 400,
-        message: "Cannot specify both proposal_id and user_id parameters",
+        message: 'Cannot specify both proposal_id and user_id parameters',
       });
     });
 

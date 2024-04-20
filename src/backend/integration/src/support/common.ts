@@ -174,11 +174,7 @@ export async function createProposalReviewCommit(
   let proposalId: string;
   let proposalReviewId: string;
   if (!existingProposalReviewData) {
-    const result = await createProposalReview(
-      actor,
-      governance,
-      reviewer,
-    );
+    const result = await createProposalReview(actor, governance, reviewer);
     proposalId = result.proposalId;
     proposalReviewId = result.proposalReviewId;
   } else {
