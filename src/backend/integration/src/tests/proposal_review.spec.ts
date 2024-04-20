@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import type { ProposalReview, _SERVICE } from '@cg/backend';
+import type { ProposalReview, ProposalReviewStatus, ProposalReviewWithId, _SERVICE } from '@cg/backend';
 import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
 import { Principal } from '@dfinity/principal';
 import {
@@ -14,7 +14,12 @@ import {
   completeProposal,
   createProposalReview,
   createReviewer,
+  publishProposalReview,
+  VALID_COMMIT_SHA_A,
+  VALID_COMMIT_SHA_B,
+  createProposalReviewCommit,
 } from '../support';
+import { AnonymousIdentity, Identity } from '@dfinity/agent';
 
 const NNS_SUBNET_ID =
   '2o3zy-oo4hc-r3mtq-ylrpf-g6qge-qmuzn-2bsuv-d3yhd-e4qjc-6ff2b-6ae';
@@ -736,6 +741,220 @@ describe('Proposal Review', () => {
         code: 409,
         message:
           'Proposal review cannot be published due to invalid field: Summary cannot be empty',
+      });
+    });
+  });
+
+  describe.only('list proposal reviews', () => {
+    let alice: Identity;
+    let aliceId: string;
+    let bob: Identity;
+    let bobId: string;
+
+    let proposal1Id: string;
+    let proposal2Id: string;
+
+    beforeEach(async () => {
+      // create some test data
+      //
+      /**
+       * Test data structure:
+       * proposal 1:
+       *   review 1:
+       *     reviewer: alice
+       *     status: published
+       *     commits: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B]
+       *   review 2:
+       *     reviewer: bob
+       *     status: draft
+       *     commits: [VALID_COMMIT_SHA_A]
+       * proposal 2:
+       *   review 1:
+       *     reviewer: alice
+       *     status: draft
+       *     commits: [VALID_COMMIT_SHA_A]
+       *   review 2:
+       *     reviewer: bob
+       *     status: published
+       *     commits: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B]
+       */
+
+      alice = generateRandomIdentity();
+      bob = generateRandomIdentity();
+
+      aliceId = await createReviewer(actor, alice);
+      bobId = await createReviewer(actor, bob);
+
+      proposal1Id = await createProposal(actor, governance);
+      proposal2Id = await createProposal(actor, governance);
+
+      const proposal1ReviewAliceData = await createProposalReview(actor, governance, alice, proposal1Id);
+      for (const commitSha of [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B]) {
+        await createProposalReviewCommit(actor, governance, alice, commitSha, proposal1ReviewAliceData);
+      }
+      await publishProposalReview(actor, alice, proposal1ReviewAliceData.proposalId);
+      const proposal2ReviewAliceData = await createProposalReview(actor, governance, alice, proposal2Id);
+      await createProposalReviewCommit(actor, governance, alice, VALID_COMMIT_SHA_A, proposal2ReviewAliceData);
+
+      const proposal1ReviewBobData = await createProposalReview(actor, governance, bob, proposal1Id);
+      await createProposalReviewCommit(actor, governance, bob, VALID_COMMIT_SHA_A, proposal1ReviewBobData);
+      const proposal2ReviewBobData = await createProposalReview(actor, governance, bob, proposal2Id);
+      for (const commitSha of [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B]) {
+        await createProposalReviewCommit(actor, governance, bob, commitSha, proposal2ReviewBobData);
+      }
+      await publishProposalReview(actor, bob, proposal2ReviewBobData.proposalId);
+    });
+
+    type ExpectedProposalReviewFields = {
+      proposalId: string;
+      userId: string;
+      reviewStatus: ProposalReviewStatus;
+      commits: {
+        commitSha: string[];
+      };
+    };
+
+    const validateProposalReview = (proposalReview: ProposalReviewWithId, expected: ExpectedProposalReviewFields) => {
+      expect(proposalReview).toEqual({
+        id: expect.any(String),
+        proposal_review: {
+          proposal_id: expected.proposalId,
+          user_id: expected.userId,
+          status: expected.reviewStatus,
+          created_at: expect.any(String),
+          summary: expect.any(String),
+          review_duration_mins: expect.any(Number),
+          build_reproduced: expect.any(Boolean),
+          reproduced_build_image_id: expect.any(Array),
+          proposal_review_commits: expected.commits.commitSha.map((commitSha) => (
+            {
+              id: expect.any(String),
+              proposal_review_commit: {
+                commit_sha: commitSha,
+                user_id: expected.userId,
+                proposal_review_id: expect.any(String),
+                created_at: expect.any(String),
+                state: expect.anything(),
+              },
+            }
+          )),
+        },
+      } satisfies ProposalReviewWithId);
+    };
+
+    it('should allow anonymous principals', async () => {
+      actor.setIdentity(new AnonymousIdentity());
+
+      const resProposal1 = await actor.list_proposal_reviews({
+        proposal_id: [proposal1Id],
+        user_id: [],
+      });
+      const resProposal1Ok = extractOkResponse(resProposal1);
+      expect(resProposal1Ok.proposal_reviews.length).toEqual(1);
+      validateProposalReview(resProposal1Ok.proposal_reviews[0], {
+        proposalId: proposal1Id,
+        userId: aliceId,
+        reviewStatus: { published: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
+      });
+
+      const resProposal2 = await actor.list_proposal_reviews({
+        proposal_id: [proposal2Id],
+        user_id: [],
+      });
+      const resProposal2Ok = extractOkResponse(resProposal2);
+      expect(resProposal2Ok.proposal_reviews.length).toEqual(1);
+      validateProposalReview(resProposal2Ok.proposal_reviews[0], {
+        proposalId: proposal2Id,
+        userId: bobId,
+        reviewStatus: { published: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
+      });
+
+      const resAlice = await actor.list_proposal_reviews({
+        proposal_id: [],
+        user_id: [aliceId],
+      });
+      const resAliceOk = extractOkResponse(resAlice);
+      expect(resAliceOk.proposal_reviews.length).toEqual(1);
+      validateProposalReview(resAliceOk.proposal_reviews[0], {
+        proposalId: proposal1Id,
+        userId: aliceId,
+        reviewStatus: { published: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
+      });
+
+      const resBob = await actor.list_proposal_reviews({
+        proposal_id: [],
+        user_id: [bobId],
+      });
+      const resBobOk = extractOkResponse(resBob);
+      expect(resBobOk.proposal_reviews.length).toEqual(1);
+      validateProposalReview(resBobOk.proposal_reviews[0], {
+        proposalId: proposal2Id,
+        userId: bobId,
+        reviewStatus: { published: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
+      });
+    });
+
+    it('should not allow invalid arguments', async () => {
+      actor.setIdentity(new AnonymousIdentity());
+
+      const resEmpty = await actor.list_proposal_reviews({
+        proposal_id: [],
+        user_id: [],
+      });
+      const resEmptyErr = extractErrResponse(resEmpty);
+      expect(resEmptyErr).toEqual({
+        code: 400,
+        message: "Must specify either proposal_id or user_id parameter",
+      });
+
+      const resTooMany = await actor.list_proposal_reviews({
+        proposal_id: [proposal1Id],
+        user_id: [aliceId],
+      });
+      const resTooManyErr = extractErrResponse(resTooMany);
+      expect(resTooManyErr).toEqual({
+        code: 400,
+        message: "Cannot specify both proposal_id and user_id parameters",
+      });
+    });
+
+    it('should allow review owners to see their draft reviews', async () => {
+      actor.setIdentity(alice);
+
+      const resAlice = await actor.list_proposal_reviews({
+        proposal_id: [],
+        user_id: [aliceId],
+      });
+      const resAliceOk = extractOkResponse(resAlice);
+      expect(resAliceOk.proposal_reviews.length).toEqual(2);
+      validateProposalReview(resAliceOk.proposal_reviews[0], {
+        proposalId: proposal1Id,
+        userId: aliceId,
+        reviewStatus: { published: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
+      });
+      validateProposalReview(resAliceOk.proposal_reviews[1], {
+        proposalId: proposal2Id,
+        userId: aliceId,
+        reviewStatus: { draft: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A] },
+      });
+
+      const resBob = await actor.list_proposal_reviews({
+        proposal_id: [],
+        user_id: [bobId],
+      });
+      const resBobOk = extractOkResponse(resBob);
+      expect(resBobOk.proposal_reviews.length).toEqual(1);
+      validateProposalReview(resBobOk.proposal_reviews[0], {
+        proposalId: proposal2Id,
+        userId: bobId,
+        reviewStatus: { published: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
       });
     });
   });

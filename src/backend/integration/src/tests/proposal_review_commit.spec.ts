@@ -4,6 +4,8 @@ import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
 import { Principal } from '@dfinity/principal';
 import {
   Governance,
+  VALID_COMMIT_SHA_A,
+  VALID_COMMIT_SHA_B,
   anonymousIdentity,
   completeProposal,
   controllerIdentity,
@@ -29,9 +31,6 @@ const NNS_STATE_PATH = resolve(
   'node-100',
   'state',
 );
-
-const VALID_COMMIT_SHA_A = '47d98477c6c59e570e2220aab433b0943b326ef8';
-const VALID_COMMIT_SHA_B = 'f8f6b901032c59f4d60c8ad90c74042859bcc42e';
 
 const MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER = 50;
 

@@ -147,6 +147,9 @@ export async function publishProposalReview(
   extractOkResponse(res);
 }
 
+export const VALID_COMMIT_SHA_A = '47d98477c6c59e570e2220aab433b0943b326ef8';
+export const VALID_COMMIT_SHA_B = 'f8f6b901032c59f4d60c8ad90c74042859bcc42e';
+
 /**
  * Creates a new proposal review commit with the given commit sha.
  * Uses the {@link createProposalReview} function to create the proposal review.
@@ -159,16 +162,29 @@ export async function createProposalReviewCommit(
   governance: Governance,
   reviewer: Identity,
   commitSha: string,
+  existingProposalReviewData?: {
+    proposalId: string;
+    proposalReviewId: string;
+  },
 ): Promise<{
   proposalId: string;
   proposalReviewId: string;
   proposalReviewCommitId: string;
 }> {
-  const { proposalId, proposalReviewId } = await createProposalReview(
-    actor,
-    governance,
-    reviewer,
-  );
+  let proposalId: string;
+  let proposalReviewId: string;
+  if (!existingProposalReviewData) {
+    const result = await createProposalReview(
+      actor,
+      governance,
+      reviewer,
+    );
+    proposalId = result.proposalId;
+    proposalReviewId = result.proposalReviewId;
+  } else {
+    proposalId = existingProposalReviewData.proposalId;
+    proposalReviewId = existingProposalReviewData.proposalReviewId;
+  }
 
   actor.setIdentity(reviewer);
   const res = await actor.create_proposal_review_commit({
