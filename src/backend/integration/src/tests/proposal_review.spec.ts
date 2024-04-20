@@ -760,9 +760,9 @@ describe('Proposal Review', () => {
     let proposal2Id: string;
 
     beforeEach(async () => {
-      // create some test data
-      //
       /**
+       * Create some test data
+       *
        * Test data structure:
        * proposal 1:
        *   review 1:
@@ -1011,6 +1011,48 @@ describe('Proposal Review', () => {
       const resBobOk = extractOkResponse(resBob);
       expect(resBobOk.proposal_reviews.length).toEqual(1);
       validateProposalReview(resBobOk.proposal_reviews[0], {
+        proposalId: proposal2Id,
+        userId: bobId,
+        reviewStatus: { published: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
+      });
+    });
+
+    it('should allow admins to see all reviews', async () => {
+      actor.setIdentity(controllerIdentity);
+
+      const resProposal1 = await actor.list_proposal_reviews({
+        proposal_id: [proposal1Id],
+        user_id: [],
+      });
+      const resProposal1Ok = extractOkResponse(resProposal1);
+      expect(resProposal1Ok.proposal_reviews.length).toEqual(2);
+      validateProposalReview(resProposal1Ok.proposal_reviews[0], {
+        proposalId: proposal1Id,
+        userId: aliceId,
+        reviewStatus: { published: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
+      });
+      validateProposalReview(resProposal1Ok.proposal_reviews[1], {
+        proposalId: proposal1Id,
+        userId: bobId,
+        reviewStatus: { draft: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A] },
+      });
+
+      const resProposal2 = await actor.list_proposal_reviews({
+        proposal_id: [proposal2Id],
+        user_id: [],
+      });
+      const resProposal2Ok = extractOkResponse(resProposal2);
+      expect(resProposal2Ok.proposal_reviews.length).toEqual(2);
+      validateProposalReview(resProposal2Ok.proposal_reviews[0], {
+        proposalId: proposal2Id,
+        userId: aliceId,
+        reviewStatus: { draft: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A] },
+      });
+      validateProposalReview(resProposal2Ok.proposal_reviews[1], {
         proposalId: proposal2Id,
         userId: bobId,
         reviewStatus: { published: null },

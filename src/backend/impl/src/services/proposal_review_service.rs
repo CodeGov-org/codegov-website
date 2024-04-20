@@ -243,9 +243,9 @@ impl<
         calling_principal: Principal,
         request: ListProposalReviewsRequest,
     ) -> Result<ListProposalReviewsResponse, ApiError> {
-        let calling_user_id = self
+        let calling_user = self
             .user_profile_repository
-            .get_user_id_by_principal(&calling_principal);
+            .get_user_profile_by_principal(&calling_principal);
 
         // match filters
         let proposal_reviews = match (request.proposal_id, request.user_id) {
@@ -275,7 +275,11 @@ impl<
             .filter_map(|(proposal_review_id, proposal_review)| {
                 // if the proposal review is in draft, only allow the owner to see it
                 if proposal_review.is_draft()
-                    && !calling_user_id.is_some_and(|id| id == proposal_review.user_id)
+                    && !calling_user
+                        .as_ref()
+                        .is_some_and(|(user_id, user_profile)| {
+                            user_id == &proposal_review.user_id || user_profile.is_admin()
+                        })
                 {
                     return None;
                 }
