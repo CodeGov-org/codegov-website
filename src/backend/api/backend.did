@@ -271,6 +271,15 @@ type ListProposalReviewsResponse = variant {
   err : Err;
 };
 
+type GetProposalReviewRequest = record {
+  proposal_review_id : text;
+};
+
+type GetProposalReviewResponse = variant {
+  ok : ProposalReviewWithId;
+  err : Err;
+};
+
 type ProposalReviewCommit = record {
   proposal_review_id : text;
   user_id : text;
@@ -326,6 +335,7 @@ service : {
   create_proposal_review : (CreateProposalReviewRequest) -> (CreateProposalReviewResponse);
   update_proposal_review : (UpdateProposalReviewRequest) -> (UpdateProposalReviewResponse);
   list_proposal_reviews : (ListProposalReviewsRequest) -> (ListProposalReviewsResponse) query;
+  get_proposal_review : (GetProposalReviewRequest) -> (GetProposalReviewResponse) query;
   create_proposal_review_commit : (CreateProposalReviewCommitRequest) -> (CreateProposalReviewCommitResponse);
   update_proposal_review_commit : (UpdateProposalReviewCommitRequest) -> (UpdateProposalReviewCommitResponse);
   delete_proposal_review_commit : (DeleteProposalReviewCommitRequest) -> (DeleteProposalReviewCommitResponse);

@@ -1,6 +1,7 @@
 use backend_api::{
-    ApiError, CreateProposalReviewRequest, CreateProposalReviewResponse,
-    ListProposalReviewsRequest, ListProposalReviewsResponse, UpdateProposalReviewRequest,
+    ApiError, CreateProposalReviewRequest, CreateProposalReviewResponse, GetProposalReviewRequest,
+    GetProposalReviewResponse, ListProposalReviewsRequest, ListProposalReviewsResponse,
+    UpdateProposalReviewRequest,
 };
 use candid::Principal;
 
@@ -8,7 +9,7 @@ use crate::{
     mappings::map_proposal_review,
     repositories::{
         DateTime, ProposalId, ProposalRepository, ProposalRepositoryImpl, ProposalReview,
-        ProposalReviewCommitRepository, ProposalReviewCommitRepositoryImpl,
+        ProposalReviewCommitRepository, ProposalReviewCommitRepositoryImpl, ProposalReviewId,
         ProposalReviewRepository, ProposalReviewRepositoryImpl, ProposalReviewStatus, UserId,
         UserProfileRepository, UserProfileRepositoryImpl,
     },
@@ -37,6 +38,12 @@ pub trait ProposalReviewService {
         calling_principal: Principal,
         request: ListProposalReviewsRequest,
     ) -> Result<ListProposalReviewsResponse, ApiError>;
+
+    fn get_proposal_review(
+        &self,
+        calling_principal: Principal,
+        request: GetProposalReviewRequest,
+    ) -> Result<GetProposalReviewResponse, ApiError>;
 }
 
 pub struct ProposalReviewServiceImpl<
@@ -273,7 +280,7 @@ impl<
         let proposal_reviews = proposal_reviews
             .iter()
             .filter_map(|(proposal_review_id, proposal_review)| {
-                // if the proposal review is in draft, only allow the owner to see it
+                // if the proposal review is in draft, only allow the owner and admins to see it
                 if proposal_review.is_draft()
                     && !calling_user
                         .as_ref()
@@ -298,6 +305,47 @@ impl<
             .collect();
 
         Ok(ListProposalReviewsResponse { proposal_reviews })
+    }
+
+    fn get_proposal_review(
+        &self,
+        calling_principal: Principal,
+        request: GetProposalReviewRequest,
+    ) -> Result<GetProposalReviewResponse, ApiError> {
+        let calling_user = self
+            .user_profile_repository
+            .get_user_profile_by_principal(&calling_principal);
+
+        let proposal_review_id = ProposalReviewId::try_from(request.proposal_review_id.as_str())?;
+
+        let proposal_review = self
+            .proposal_review_repository
+            .get_proposal_review_by_id(&proposal_review_id)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "Proposal review with Id {} not found",
+                    request.proposal_review_id
+                ))
+            })?;
+
+        // if the proposal review is in draft, only allow the owner and admins to see it
+        if proposal_review.is_draft()
+            && !calling_user.is_some_and(|(user_id, user_profile)| {
+                user_id == proposal_review.user_id || user_profile.is_admin()
+            })
+        {
+            return Err(ApiError::permission_denied("Not authorized"));
+        }
+
+        let proposal_review_commits = self
+            .proposal_review_commit_repository
+            .get_proposal_review_commits_by_proposal_review_id(proposal_review_id)?;
+
+        Ok(map_proposal_review(
+            proposal_review_id,
+            proposal_review,
+            proposal_review_commits,
+        ))
     }
 }
 

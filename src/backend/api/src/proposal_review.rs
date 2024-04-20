@@ -60,3 +60,10 @@ pub struct ListProposalReviewsRequest {
 pub struct ListProposalReviewsResponse {
     pub proposal_reviews: Vec<ProposalReviewWithId>,
 }
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub struct GetProposalReviewRequest {
+    pub proposal_review_id: String,
+}
+
+pub type GetProposalReviewResponse = ProposalReviewWithId;

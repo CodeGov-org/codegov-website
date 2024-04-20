@@ -1,6 +1,7 @@
 use backend_api::{
     ApiError, ApiResult, CreateProposalReviewRequest, CreateProposalReviewResponse,
-    ListProposalReviewsRequest, ListProposalReviewsResponse, UpdateProposalReviewRequest,
+    GetProposalReviewRequest, GetProposalReviewResponse, ListProposalReviewsRequest,
+    ListProposalReviewsResponse, UpdateProposalReviewRequest,
 };
 use candid::Principal;
 use ic_cdk::*;
@@ -45,6 +46,15 @@ fn list_proposal_reviews(
 
     ProposalReviewController::default()
         .list_proposal_reviews(calling_principal, request)
+        .into()
+}
+
+#[query]
+fn get_proposal_review(request: GetProposalReviewRequest) -> ApiResult<GetProposalReviewResponse> {
+    let calling_principal = caller();
+
+    ProposalReviewController::default()
+        .get_proposal_review(calling_principal, request)
         .into()
 }
 
@@ -115,6 +125,15 @@ impl<A: AccessControlService, P: ProposalReviewService> ProposalReviewController
     ) -> Result<ListProposalReviewsResponse, ApiError> {
         self.proposal_review_service
             .list_proposal_reviews(calling_principal, request)
+    }
+
+    fn get_proposal_review(
+        &self,
+        calling_principal: Principal,
+        request: GetProposalReviewRequest,
+    ) -> Result<GetProposalReviewResponse, ApiError> {
+        self.proposal_review_service
+            .get_proposal_review(calling_principal, request)
     }
 }
 
