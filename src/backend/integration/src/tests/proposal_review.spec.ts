@@ -890,46 +890,6 @@ describe('Proposal Review', () => {
       );
     });
 
-    type ExpectedProposalReviewFields = {
-      proposalId: string;
-      userId: string;
-      reviewStatus: ProposalReviewStatus;
-      commits: {
-        commitSha: string[];
-      };
-    };
-
-    const validateProposalReview = (
-      proposalReview: ProposalReviewWithId,
-      expected: ExpectedProposalReviewFields,
-    ) => {
-      expect(proposalReview).toEqual({
-        id: expect.any(String),
-        proposal_review: {
-          proposal_id: expected.proposalId,
-          user_id: expected.userId,
-          status: expected.reviewStatus,
-          created_at: expect.any(String),
-          summary: expect.any(String),
-          review_duration_mins: expect.any(Number),
-          build_reproduced: expect.any(Boolean),
-          reproduced_build_image_id: expect.any(Array),
-          proposal_review_commits: expected.commits.commitSha.map(
-            commitSha => ({
-              id: expect.any(String),
-              proposal_review_commit: {
-                commit_sha: commitSha,
-                user_id: expected.userId,
-                proposal_review_id: expect.any(String),
-                created_at: expect.any(String),
-                state: expect.anything(),
-              },
-            }),
-          ),
-        },
-      } satisfies ProposalReviewWithId);
-    };
-
     it('should allow anonymous principals', async () => {
       actor.setIdentity(new AnonymousIdentity());
 
@@ -1128,4 +1088,155 @@ describe('Proposal Review', () => {
       expect(resOk.proposal_reviews.length).toEqual(0);
     });
   });
+
+  describe('get proposal review', () => {
+    it('should allow anonymous principals', async () => {
+      const alice = generateRandomIdentity();
+      const aliceId = await createReviewer(actor, alice);
+
+      const { proposalId, proposalReviewId } = await createProposalReview(
+        actor,
+        governance,
+        alice,
+      );
+      for (const commitSha of [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B]) {
+        await createProposalReviewCommit(actor, governance, alice, commitSha);
+      }
+      await publishProposalReview(actor, alice, proposalId);
+
+      actor.setIdentity(new AnonymousIdentity());
+      const res = await actor.get_proposal_review({
+        proposal_review_id: proposalReviewId,
+      });
+      const resOk = extractOkResponse(res);
+      validateProposalReview(resOk, {
+        proposalId,
+        userId: aliceId,
+        reviewStatus: { published: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
+      });
+    });
+
+    it('should allow admins and owner to get a draft proposal review', async () => {
+      const alice = generateRandomIdentity();
+      const aliceId = await createReviewer(actor, alice);
+
+      const { proposalId, proposalReviewId } = await createProposalReviewCommit(
+        actor,
+        governance,
+        alice,
+        VALID_COMMIT_SHA_A,
+      );
+
+      actor.setIdentity(alice);
+      const resAlice = await actor.get_proposal_review({
+        proposal_review_id: proposalReviewId,
+      });
+      const resAliceOk = extractOkResponse(resAlice);
+      validateProposalReview(resAliceOk, {
+        proposalId,
+        userId: aliceId,
+        reviewStatus: { draft: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A] },
+      });
+
+      actor.setIdentity(controllerIdentity);
+      const resController = await actor.get_proposal_review({
+        proposal_review_id: proposalReviewId,
+      });
+      const resControllerOk = extractOkResponse(resController);
+      validateProposalReview(resControllerOk, {
+        proposalId,
+        userId: aliceId,
+        reviewStatus: { draft: null },
+        commits: { commitSha: [VALID_COMMIT_SHA_A] },
+      });
+    });
+
+    it('should fail for a non-existent proposal review', async () => {
+      const nonExistentProposalReviewId =
+        '269a316e-589b-4c17-bca7-2ef47bea48fe';
+
+      actor.setIdentity(new AnonymousIdentity());
+      const res = await actor.get_proposal_review({
+        proposal_review_id: nonExistentProposalReviewId,
+      });
+      const resErr = extractErrResponse(res);
+      expect(resErr).toEqual({
+        code: 404,
+        message: `Proposal review with Id ${nonExistentProposalReviewId} not found`,
+      });
+    });
+
+    it('should fail for a draft review if the user is not an admin or the owner', async () => {
+      const alice = generateRandomIdentity();
+      const bob = generateRandomIdentity();
+      await createReviewer(actor, alice);
+      await createReviewer(actor, bob);
+
+      const { proposalReviewId } = await createProposalReview(
+        actor,
+        governance,
+        alice,
+      );
+
+      actor.setIdentity(bob);
+      const resBob = await actor.get_proposal_review({
+        proposal_review_id: proposalReviewId,
+      });
+      const resBobErr = extractErrResponse(resBob);
+      expect(resBobErr).toEqual({
+        code: 403,
+        message: 'Not authorized',
+      });
+
+      actor.setIdentity(new AnonymousIdentity());
+      const resAnonymous = await actor.get_proposal_review({
+        proposal_review_id: proposalReviewId,
+      });
+      const resAnonymousErr = extractErrResponse(resAnonymous);
+      expect(resAnonymousErr).toEqual({
+        code: 403,
+        message: 'Not authorized',
+      });
+    });
+  });
 });
+
+type ExpectedProposalReviewFields = {
+  proposalId: string;
+  userId: string;
+  reviewStatus: ProposalReviewStatus;
+  commits: {
+    commitSha: string[];
+  };
+};
+
+function validateProposalReview(
+  proposalReview: ProposalReviewWithId,
+  expected: ExpectedProposalReviewFields,
+) {
+  expect(proposalReview).toEqual({
+    id: expect.any(String),
+    proposal_review: {
+      proposal_id: expected.proposalId,
+      user_id: expected.userId,
+      status: expected.reviewStatus,
+      created_at: expect.any(String),
+      summary: expect.any(String),
+      review_duration_mins: expect.any(Number),
+      build_reproduced: expect.any(Boolean),
+      reproduced_build_image_id: expect.any(Array),
+      proposal_review_commits: expected.commits.commitSha.map(commitSha => ({
+        id: expect.any(String),
+        proposal_review_commit: {
+          commit_sha: commitSha,
+          user_id: expected.userId,
+          proposal_review_id: expect.any(String),
+          created_at: expect.any(String),
+          state: expect.anything(),
+        },
+      })),
+    },
+  } satisfies ProposalReviewWithId);
+}
