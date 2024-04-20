@@ -1,3 +1,5 @@
+import { ImageSet } from '@cg/angular-ui';
+
 export interface Review {
   id: bigint;
   proposalId: bigint;
@@ -8,6 +10,7 @@ export interface Review {
   timeSpent: number;
   summary: string;
   buildReproduced: boolean;
+  buildImages: ImageSet[];
   reviewCommits: ReviewCommit[];
 }
 

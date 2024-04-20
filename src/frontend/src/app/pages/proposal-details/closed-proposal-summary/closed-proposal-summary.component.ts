@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 
 import { CardComponent } from '@cg/angular-ui';
 import { RejectIconComponent } from '~core/icons';
@@ -35,6 +36,7 @@ import {
     ValueColComponent,
     AdoptIconComponent,
     RejectIconComponent,
+    RouterLink,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -174,7 +176,9 @@ import {
                 Full review
               </app-key-col>
               <app-value-col [attr.labelledby]="'review-link-' + i">
-                Review Link
+                <a [routerLink]="['/review', review.id, 'view']">
+                  See full review
+                </a>
               </app-value-col>
             </app-key-value-grid>
           </div>
@@ -189,7 +193,6 @@ import {
               <app-key-col [id]="'commit-id-' + i">ID</app-key-col>
               <app-value-col [attr.labelledby]="'commit-id-' + i">
                 <a
-                  class="commit__link"
                   href="https://github.com/dfinity/ic/commit/{{
                     commit.commitId
                   }}"

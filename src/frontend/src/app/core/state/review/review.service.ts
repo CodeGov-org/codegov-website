@@ -7,8 +7,11 @@ import { Review } from './review.model';
   providedIn: 'root',
 })
 export class ReviewService {
-  public reviewListSubject = new BehaviorSubject<Review[]>([]);
+  private reviewListSubject = new BehaviorSubject<Review[]>([]);
   public reviewList$ = this.reviewListSubject.asObservable();
+
+  private currentReviewSubject = new BehaviorSubject<Review | null>(null);
+  public currentReview$ = this.currentReviewSubject.asObservable();
 
   //TODO: loading by proposal ID using backend endpoint
   public async loadReviewList(): Promise<void> {
@@ -21,8 +24,9 @@ export class ReviewService {
         state: 'Completed',
         lastSaved: new Date(),
         timeSpent: 6,
-        summary: 'This is a review summaty',
+        summary: 'This is a review summary',
         buildReproduced: true,
+        buildImages: [],
         reviewCommits: [
           {
             id: 1n,
@@ -52,8 +56,9 @@ export class ReviewService {
         state: 'Completed',
         lastSaved: new Date(),
         timeSpent: 6,
-        summary: 'This is a review summaty',
+        summary: 'This is a review summary',
         buildReproduced: true,
+        buildImages: [],
         reviewCommits: [
           {
             id: 3n,
@@ -85,6 +90,7 @@ export class ReviewService {
         timeSpent: 6,
         summary: 'This is a review summaty',
         buildReproduced: true,
+        buildImages: [],
         reviewCommits: [
           {
             id: 4n,
@@ -116,5 +122,105 @@ export class ReviewService {
         ],
       },
     ]);
+  }
+
+  public async loadReview(reviewId: bigint): Promise<void> {
+    this.currentReviewSubject.next({
+      id: reviewId,
+      proposalId: 8n,
+      reviewerId: 1n,
+      reviewerVote: 'ADOPT',
+      state: 'Completed',
+      lastSaved: new Date(),
+      timeSpent: 6,
+      summary: 'This is a review summary',
+      buildReproduced: true,
+      buildImages: [
+        {
+          sm: {
+            url: '../assets/apple-touch-icon.png',
+            size: 10,
+            width: 10,
+            height: 10,
+          },
+          md: {
+            url: '../assets/apple-touch-icon.png',
+            size: 100,
+            width: 100,
+            height: 100,
+          },
+          lg: {
+            url: '../assets/apple-touch-icon.png',
+            size: 100,
+            width: 100,
+            height: 100,
+          },
+          xl: {
+            url: '../assets/apple-touch-icon.png',
+            size: 100,
+            width: 100,
+            height: 100,
+          },
+          xxl: {
+            url: '../assets/apple-touch-icon.png',
+            size: 100,
+            width: 100,
+            height: 100,
+          },
+        },
+        {
+          sm: {
+            url: '../assets/codegov-logo.png',
+            size: 10,
+            width: 10,
+            height: 10,
+          },
+          md: {
+            url: '../assets/codegov-logo.png',
+            size: 100,
+            width: 100,
+            height: 100,
+          },
+          lg: {
+            url: '../assets/codegov-logo.png',
+            size: 100,
+            width: 100,
+            height: 100,
+          },
+          xl: {
+            url: '../assets/codegov-logo.png',
+            size: 100,
+            width: 100,
+            height: 100,
+          },
+          xxl: {
+            url: '../assets/codegov-logo.png',
+            size: 100,
+            width: 100,
+            height: 100,
+          },
+        },
+      ],
+      reviewCommits: [
+        {
+          id: 1n,
+          reviewId: reviewId,
+          commitId: '1',
+          reviewed: 1,
+          matchesDescription: 1,
+          summary: 'This is a commit summary',
+          highlights: 'This is a commit highlight',
+        },
+        {
+          id: 2n,
+          reviewId: reviewId,
+          commitId: '2',
+          reviewed: 1,
+          matchesDescription: 0,
+          summary: 'This is a commit summary',
+          highlights: 'This is a commit highlight',
+        },
+      ],
+    });
   }
 }
