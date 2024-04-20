@@ -1,6 +1,4 @@
-import { ImageSet } from '@cg/angular-ui';
-
-export interface Review {
+export interface ProposalReview {
   id: bigint;
   proposalId: bigint;
   reviewerId: bigint;
@@ -11,14 +9,14 @@ export interface Review {
   summary: string;
   buildReproduced: boolean;
   buildImages: ImageSet[];
-  reviewCommits: ReviewCommit[];
+  reviewCommits: ProposalReviewCommit[];
 }
 
 export type ReviewState = 'Draft' | 'Completed';
 
 export type ReviewerVote = 'ADOPT' | 'REJECT' | 'NO VOTE';
 
-export interface ReviewCommit {
+export interface ProposalReviewCommit {
   id: bigint;
   reviewId: bigint;
   commitId: string;
@@ -28,15 +26,15 @@ export interface ReviewCommit {
   highlights: string;
 }
 
-export interface ReviewHighlight {
+export interface ProposalCommitReviewHighlight {
   reviewerId: bigint;
   text: string;
 }
 
-export interface ProposalCommit {
+export interface ProposalCommitReviewSummary {
   proposalId: bigint;
   commitId: string;
-  highlights: ReviewHighlight[];
+  highlights: ProposalCommitReviewHighlight[];
   totalReviewers: number;
   reviewedCount: number;
   matchesDescriptionCount: number;

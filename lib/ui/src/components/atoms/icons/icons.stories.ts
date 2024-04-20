@@ -72,6 +72,16 @@ const meta: Meta = {
         <cg-profile-icon class="${args.class}"></cg-profile-icon>
         <code>cg-profile-icon</code>
       </div>
+
+      <div class="grid-entry">
+        <cg-dash-circle-icon class="${args.class}"></cg-dash-circle-icon>
+        <code>cg-dash-circle-icon</code>
+      </div>
+
+      <div class="grid-entry">
+        <cg-check-circle-icon class="${args.class}"></cg-check-circle-icon>
+        <code>cg-dash-circle-icon</code>
+      </div>
     </div>
   `,
 };

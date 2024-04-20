@@ -26,6 +26,7 @@ pub struct ProposalReviewCommit {
     pub proposal_review_id: Uuid,
     pub user_id: Uuid,
     pub created_at: DateTime,
+    pub last_updated_at: Option<DateTime>,
     pub commit_sha: CommitSha,
     pub state: ReviewCommitState,
 }

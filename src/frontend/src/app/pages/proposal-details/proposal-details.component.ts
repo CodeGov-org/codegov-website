@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   SecurityContext,
+  computed,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -84,7 +85,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
             <app-key-col id="proposal-id">ID</app-key-col>
             <app-value-col aria-labelledby="proposal-id">
               <a
-                href="{{ linkBaseUrl().Proposal }}{{ proposal.id }}"
+                [href]="linkBaseUrl().Proposal + proposal.id"
                 target="_blank"
                 rel="nofollow noreferrer"
               >
@@ -100,7 +101,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               ) {
                 <a
                   class="proposal__link"
-                  href="{{ proposalLink.link }}"
+                  [href]="proposalLink.link"
                   target="_blank"
                   rel="nofollow noreferrer"
                 >
@@ -130,7 +131,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               class="proposal__proposer"
             >
               <a
-                href="{{ linkBaseUrl().Neuron }}{{ proposal.proposedBy }}"
+                [href]="linkBaseUrl().Neuron + proposal.proposedBy"
                 target="_blank"
                 rel="nofollow noreferrer"
               >
@@ -193,7 +194,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
         <cg-card>
           <div
             slot="cardContent"
-            [innerHTML]="convertMarkdownToHTML(proposal.summary)"
+            [innerHTML]="proposalSummaryInMarkdown()"
           ></div>
         </cg-card>
       } @else {
@@ -209,6 +210,14 @@ export class ProposalDetailsComponent {
   public readonly currentProposal = toSignal(
     this.proposalService.currentProposal$,
   );
+
+  public readonly proposalSummaryInMarkdown = computed(() =>
+    this.sanitizer.sanitize(
+      SecurityContext.HTML,
+      marked.parse(this.currentProposal()?.summary ?? ''),
+    ),
+  );
+
   public isReviewer = toSignal(this.profileService.isReviewer$);
 
   private readonly proposalIdFromRoute$ = this.route.params.pipe(
@@ -235,12 +244,5 @@ export class ProposalDetailsComponent {
       });
 
     this.proposalService.loadProposalList();
-  }
-
-  public convertMarkdownToHTML(proposalSummary: string): string | null {
-    return this.sanitizer.sanitize(
-      SecurityContext.HTML,
-      marked.parse(proposalSummary),
-    );
   }
 }
