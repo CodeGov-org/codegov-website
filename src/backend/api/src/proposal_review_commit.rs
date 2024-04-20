@@ -22,17 +22,19 @@ pub struct ProposalReviewCommit {
 }
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub struct ProposalReviewCommitWithId {
+    pub id: String,
+    pub proposal_review_commit: ProposalReviewCommit,
+}
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
 pub struct CreateProposalReviewCommitRequest {
     pub proposal_review_id: String,
     pub commit_sha: String,
     pub state: ReviewCommitState,
 }
 
-#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
-pub struct CreateProposalReviewCommitResponse {
-    pub id: String,
-    pub proposal_review_commit: ProposalReviewCommit,
-}
+pub type CreateProposalReviewCommitResponse = ProposalReviewCommitWithId;
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
 pub struct UpdateProposalReviewCommitRequest {

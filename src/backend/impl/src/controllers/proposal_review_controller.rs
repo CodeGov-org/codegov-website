@@ -1,13 +1,14 @@
 use backend_api::{
     ApiError, ApiResult, CreateProposalReviewRequest, CreateProposalReviewResponse,
-    UpdateProposalReviewRequest,
+    ListProposalReviewsRequest, ListProposalReviewsResponse, UpdateProposalReviewRequest,
 };
 use candid::Principal;
 use ic_cdk::*;
 
 use crate::{
     repositories::{
-        ProposalRepositoryImpl, ProposalReviewRepositoryImpl, UserProfileRepositoryImpl,
+        ProposalRepositoryImpl, ProposalReviewCommitRepositoryImpl, ProposalReviewRepositoryImpl,
+        UserProfileRepositoryImpl,
     },
     services::{
         AccessControlService, AccessControlServiceImpl, ProposalReviewService,
@@ -36,6 +37,17 @@ fn update_proposal_review(request: UpdateProposalReviewRequest) -> ApiResult<()>
         .into()
 }
 
+#[query]
+fn list_proposal_reviews(
+    request: ListProposalReviewsRequest,
+) -> ApiResult<ListProposalReviewsResponse> {
+    let calling_principal = caller();
+
+    ProposalReviewController::default()
+        .list_proposal_reviews(calling_principal, request)
+        .into()
+}
+
 struct ProposalReviewController<A: AccessControlService, P: ProposalReviewService> {
     access_control_service: A,
     proposal_review_service: P,
@@ -48,6 +60,7 @@ impl Default
             ProposalReviewRepositoryImpl,
             UserProfileRepositoryImpl,
             ProposalRepositoryImpl,
+            ProposalReviewCommitRepositoryImpl,
         >,
     >
 {
@@ -93,6 +106,15 @@ impl<A: AccessControlService, P: ProposalReviewService> ProposalReviewController
 
         self.proposal_review_service
             .update_proposal_review(calling_principal, request)
+    }
+
+    fn list_proposal_reviews(
+        &self,
+        calling_principal: Principal,
+        request: ListProposalReviewsRequest,
+    ) -> Result<ListProposalReviewsResponse, ApiError> {
+        self.proposal_review_service
+            .list_proposal_reviews(calling_principal, request)
     }
 }
 

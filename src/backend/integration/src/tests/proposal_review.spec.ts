@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import { type _SERVICE } from '@cg/backend';
+import type { ProposalReview, _SERVICE } from '@cg/backend';
 import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
 import { Principal } from '@dfinity/principal';
 import {
@@ -146,7 +146,8 @@ describe('Proposal Review', () => {
           review_duration_mins: 60,
           build_reproduced: true,
           reproduced_build_image_id: [],
-        },
+          proposal_review_commits: [],
+        } satisfies ProposalReview,
       });
     });
 
@@ -178,7 +179,8 @@ describe('Proposal Review', () => {
           review_duration_mins: 0,
           build_reproduced: false,
           reproduced_build_image_id: [],
-        },
+          proposal_review_commits: [],
+        } satisfies ProposalReview,
       });
     });
 

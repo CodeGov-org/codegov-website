@@ -215,6 +215,12 @@ type ProposalReview = record {
   review_duration_mins : nat16;
   build_reproduced : bool;
   reproduced_build_image_id : opt text;
+  proposal_review_commits : vec ProposalReviewCommitWithId;
+};
+
+type ProposalReviewWithId = record {
+  id : text;
+  proposal_review : ProposalReview;
 };
 
 type CreateProposalReviewRequest = record {
@@ -226,10 +232,7 @@ type CreateProposalReviewRequest = record {
 };
 
 type CreateProposalReviewResponse = variant {
-  ok : record {
-    id : text;
-    proposal_review : ProposalReview;
-  };
+  ok : ProposalReviewWithId;
   err : Err;
 };
 
@@ -256,12 +259,30 @@ type ReviewCommitState = variant {
   not_reviewed;
 };
 
+type ListProposalReviewsRequest = record {
+  proposal_id : opt text;
+  user_id : opt text;
+  status : opt ProposalReviewStatus;
+};
+
+type ListProposalReviewsResponse = variant {
+  ok : record {
+    proposal_reviews : vec ProposalReviewWithId;
+  };
+  err : Err;
+};
+
 type ProposalReviewCommit = record {
   proposal_review_id : text;
   user_id : text;
   created_at : text;
   commit_sha : text;
   state : ReviewCommitState;
+};
+
+type ProposalReviewCommitWithId = record {
+  id : text;
+  proposal_review_commit : ProposalReviewCommit;
 };
 
 type CreateProposalReviewCommitRequest = record {
@@ -271,10 +292,7 @@ type CreateProposalReviewCommitRequest = record {
 };
 
 type CreateProposalReviewCommitResponse = variant {
-  ok : record {
-    id : text;
-    proposal_review_commit : ProposalReviewCommit;
-  };
+  ok : ProposalReviewCommitWithId;
   err : Err;
 };
 
@@ -308,6 +326,7 @@ service : {
   sync_proposals : () -> (SyncProposalsResponse);
   create_proposal_review : (CreateProposalReviewRequest) -> (CreateProposalReviewResponse);
   update_proposal_review : (UpdateProposalReviewRequest) -> (UpdateProposalReviewResponse);
+  list_proposal_reviews : (ListProposalReviewsRequest) -> (ListProposalReviewsResponse) query;
   create_proposal_review_commit : (CreateProposalReviewCommitRequest) -> (CreateProposalReviewCommitResponse);
   update_proposal_review_commit : (UpdateProposalReviewCommitRequest) -> (UpdateProposalReviewCommitResponse);
   delete_proposal_review_commit : (DeleteProposalReviewCommitRequest) -> (DeleteProposalReviewCommitResponse);
