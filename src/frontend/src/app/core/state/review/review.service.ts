@@ -1,17 +1,18 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-import { Review } from './review.model';
+import { ProposalReview } from './review.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ReviewService {
-  public reviewListSubject = new BehaviorSubject<Review[]>([]);
+  public reviewListSubject = new BehaviorSubject<ProposalReview[]>([]);
   public reviewList$ = this.reviewListSubject.asObservable();
 
   //TODO: loading by proposal ID using backend endpoint
-  public async loadReviewList(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public async loadReviewList(_proposalId: bigint): Promise<void> {
     this.reviewListSubject.next([
       {
         id: 1n,

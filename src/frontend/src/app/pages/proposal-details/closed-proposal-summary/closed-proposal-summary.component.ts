@@ -2,20 +2,20 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  effect,
+  OnInit,
+  computed,
   input,
-  signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-import { CardComponent } from '@cg/angular-ui';
-import { RejectIconComponent } from '~core/icons';
-import { AdoptIconComponent } from '~core/icons/adopt-icon/adopt-icon.component';
+import {
+  CardComponent,
+  DashCircleIconComponent,
+  CheckCircleIconComponent,
+} from '@cg/angular-ui';
 import {
   Proposal,
-  ProposalCommit,
-  Review,
-  ReviewCommit,
+  ProposalCommitReviewSummary,
   ReviewService,
 } from '~core/state';
 import {
@@ -33,8 +33,8 @@ import {
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
-    AdoptIconComponent,
-    RejectIconComponent,
+    CheckCircleIconComponent,
+    DashCircleIconComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -83,6 +83,18 @@ import {
       .commit__highlights-quote {
         font-style: italic;
       }
+
+      .reject-icon {
+        width: size(6);
+        height: size(6);
+        stroke: $error;
+      }
+
+      .adopt-icon {
+        width: size(6);
+        height: size(6);
+        stroke: $success;
+      }
     `,
   ],
   template: `
@@ -105,7 +117,7 @@ import {
 
           <div class="summary__vote">
             <div class="summary__vote-position">
-              <app-adopt-icon></app-adopt-icon>
+              <cg-check-circle-icon class="adopt-icon"></cg-check-circle-icon>
 
               <p>
                 {{ votesAdopt() }} reviewer(s) voted to
@@ -114,7 +126,7 @@ import {
               </p>
             </div>
             <div class="summary__vote-position">
-              <app-reject-icon></app-reject-icon>
+              <cg-dash-circle-icon class="reject-icon"></cg-dash-circle-icon>
 
               <p>
                 {{ votesReject() }} reviewer(s) voted to
@@ -190,9 +202,9 @@ import {
               <app-value-col [attr.labelledby]="'commit-id-' + i">
                 <a
                   class="commit__link"
-                  href="https://github.com/dfinity/ic/commit/{{
-                    commit.commitId
-                  }}"
+                  [href]="
+                    'https://github.com/dfinity/ic/commit/' + commit.commitId
+                  "
                   target="_blank"
                   rel="nofollow noreferrer"
                 >
@@ -240,77 +252,83 @@ import {
     }
   `,
 })
-export class ClosedProposalSummaryComponent {
+export class ClosedProposalSummaryComponent implements OnInit {
   public readonly proposal = input.required<Proposal>();
 
   public readonly reviewList = toSignal(this.reviewService.reviewList$);
 
-  public commitList = signal<ProposalCommit[]>([]);
-  public votesAdopt = signal(0);
-  public votesReject = signal(0);
-  public buildReproducedCount = signal(0);
+  public votesAdopt = computed(() => {
+    let value = 0;
+    const reviewList = this.reviewList();
 
-  constructor(private readonly reviewService: ReviewService) {
-    this.reviewService.loadReviewList();
+    reviewList?.forEach(review => {
+      if (review.reviewerVote === 'ADOPT') {
+        value++;
+      }
+    });
+    return value;
+  });
 
-    effect(
-      () => {
-        const reviewList = this.reviewList();
+  public votesReject = computed(() => {
+    let value = 0;
+    const reviewList = this.reviewList();
 
-        if (reviewList != undefined) {
-          reviewList.forEach(review => {
-            this.updateReviewList(review);
+    reviewList?.forEach(review => {
+      if (review.reviewerVote === 'REJECT') {
+        value++;
+      }
+    });
+    return value;
+  });
+
+  public buildReproducedCount = computed(() => {
+    let value = 0;
+    const reviewList = this.reviewList();
+
+    reviewList?.forEach(review => {
+      if (review.buildReproduced) {
+        value++;
+      }
+    });
+    return value;
+  });
+
+  public commitList = computed(() => {
+    const list: ProposalCommitReviewSummary[] = [];
+
+    this.reviewList()?.forEach(review => {
+      for (const commit of review.reviewCommits) {
+        const existingCommit = list.find(c => c.commitId === commit.commitId);
+
+        if (existingCommit) {
+          existingCommit.highlights.push({
+            reviewerId: review.reviewerId,
+            text: commit.highlights,
+          });
+          existingCommit.totalReviewers++;
+          existingCommit.reviewedCount += commit.reviewed;
+          existingCommit.matchesDescriptionCount += commit.matchesDescription;
+        } else {
+          list.push({
+            proposalId: this.proposal().id,
+            commitId: commit.commitId,
+            totalReviewers: 1,
+            reviewedCount: commit.reviewed,
+            matchesDescriptionCount: commit.matchesDescription,
+            highlights: [
+              { reviewerId: review.reviewerId, text: commit.highlights },
+            ],
           });
         }
-      },
-      { allowSignalWrites: true },
-    );
-  }
-
-  private updateReviewList(review: Review): void {
-    if (review.reviewerVote === 'ADOPT') {
-      this.votesAdopt.update(value => value + 1);
-    } else if (review.reviewerVote === 'REJECT') {
-      this.votesReject.update(value => value + 1);
-    }
-
-    if (review.buildReproduced) {
-      this.buildReproducedCount.update(value => value + 1);
-    }
-
-    for (const commit of review.reviewCommits) {
-      this.updateCommitList(commit, review.reviewerId);
-    }
-  }
-
-  private updateCommitList(commit: ReviewCommit, reviewerId: bigint): void {
-    const existingCommit = this.commitList().find(
-      c => c.commitId === commit.commitId,
-    );
-
-    if (existingCommit) {
-      existingCommit.highlights.push({
-        reviewerId: reviewerId,
-        text: commit.highlights,
-      });
-      existingCommit.totalReviewers += 1;
-      existingCommit.reviewedCount += commit.reviewed;
-      existingCommit.matchesDescriptionCount += commit.matchesDescription;
-    } else {
-      this.addCommitToList(commit, reviewerId);
-    }
-  }
-
-  private addCommitToList(commit: ReviewCommit, reviewerId: bigint): void {
-    const proposal = this.proposal();
-
-    this.commitList().push({
-      proposalId: proposal.id,
-      commitId: commit.commitId,
-      totalReviewers: 1,
-      reviewedCount: commit.reviewed === 1 ? 1 : 0,
-      matchesDescriptionCount: commit.matchesDescription === 1 ? 1 : 0,
-      highlights: [{ reviewerId: reviewerId, text: commit.highlights }],
+      }
     });
+
+    return list;
+  });
+
+  constructor(private readonly reviewService: ReviewService) {}
+
+  public ngOnInit(): void {
+    this.reviewService.loadReviewList(this.proposal().id);
   }
 }

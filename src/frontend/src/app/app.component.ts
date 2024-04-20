@@ -60,7 +60,7 @@ export class AppComponent implements OnInit {
 
   public ngOnInit(): void {
     this.profileService.loadProfile().catch(() => {
-      // error is not relevant until we are on the profile page
+      // this error will be thrown if the user is not logged in, so we ignore it
     });
   }
 }
