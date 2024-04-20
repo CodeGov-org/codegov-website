@@ -329,6 +329,6 @@ export class ClosedProposalSummaryComponent implements OnInit {
   constructor(private readonly reviewService: ReviewService) {}
 
   public ngOnInit(): void {
-    this.reviewService.loadReviewList(this.proposal().id);
+    this.reviewService.loadReviewListByProposalId(this.proposal().id);
   }
 }
