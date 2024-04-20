@@ -54,7 +54,6 @@ pub struct UpdateProposalReviewRequest {
 pub struct ListProposalReviewsRequest {
     pub proposal_id: Option<String>,
     pub user_id: Option<String>,
-    pub status: Option<ProposalReviewStatus>,
 }
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]

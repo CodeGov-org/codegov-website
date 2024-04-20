@@ -280,12 +280,6 @@ impl<
                     return None;
                 }
 
-                if let Some(status) = &request.status {
-                    if status != &proposal_review.status.clone().into() {
-                        return None;
-                    }
-                }
-
                 let proposal_review_commits = self
                     .proposal_review_commit_repository
                     .get_proposal_review_commits_by_proposal_review_id(*proposal_review_id)

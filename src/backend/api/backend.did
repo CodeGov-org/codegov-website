@@ -262,7 +262,6 @@ type ReviewCommitState = variant {
 type ListProposalReviewsRequest = record {
   proposal_id : opt text;
   user_id : opt text;
-  status : opt ProposalReviewStatus;
 };
 
 type ListProposalReviewsResponse = variant {
