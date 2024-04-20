@@ -750,7 +750,7 @@ describe('Proposal Review', () => {
     });
   });
 
-  describe.only('list proposal reviews', () => {
+  describe('list proposal reviews', () => {
     let alice: Identity;
     let aliceId: string;
     let bob: Identity;
