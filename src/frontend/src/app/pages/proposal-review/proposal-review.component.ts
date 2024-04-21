@@ -83,7 +83,8 @@ import { isNotNil } from '~core/utils';
 
             <app-key-col id="review-time">Time spent</app-key-col>
             <app-value-col aria-labelledby="review-time">
-              {{ review.timeSpent }} hours
+              {{ review.timeSpent / 60 | number: '1.0-0' }} hours
+              {{ review.timeSpent % 60 }} minutes
             </app-value-col>
 
             <app-key-col id="review-summary">Summary</app-key-col>
@@ -101,7 +102,7 @@ import { isNotNil } from '~core/utils';
             </app-key-col>
             <app-value-col aria-labelledby="review-mages">
               @for (image of review.buildImages; track image.sm.url) {
-                <a href="{{ image.xxl.url }}" target="_blank">
+                <a [href]="image.xxl.url" target="_blank">
                   <img [src]="image.sm.url" class="review__image" />
                 </a>
               }
@@ -122,9 +123,9 @@ import { isNotNil } from '~core/utils';
               <app-key-col [id]="'commit-id-' + i">ID</app-key-col>
               <app-value-col [attr.labelledby]="'commit-id-' + i">
                 <a
-                  href="https://github.com/dfinity/ic/commit/{{
-                    commit.commitId
-                  }}"
+                  [href]="
+                    'https://github.com/dfinity/ic/commit/' + commit.commitId
+                  "
                   target="_blank"
                   rel="nofollow noreferrer"
                 >

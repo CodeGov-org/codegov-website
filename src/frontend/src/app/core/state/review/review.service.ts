@@ -135,7 +135,7 @@ export class ReviewService {
       reviewerVote: 'ADOPT',
       state: 'Completed',
       lastSaved: new Date(),
-      timeSpent: 6,
+      timeSpent: 260,
       summary: 'This is a review summary',
       buildReproduced: true,
       buildImages: [
