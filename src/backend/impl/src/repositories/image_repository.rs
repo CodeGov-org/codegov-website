@@ -125,11 +125,11 @@ impl ImageRepositoryImpl {
         let response = Self::create_image_http_response(image);
         let entry = Self::image_certification_entry(&response, &image_tree_path);
 
-        HTTP_TREE.with_borrow_mut(|http_tree| {
-            http_tree.insert(&entry);
+        STATE.with_borrow_mut(|s| {
+            s.http_tree.insert(&entry);
 
             #[cfg(not(test))]
-            ic_cdk::api::set_certified_data(&http_tree.root_hash());
+            ic_cdk::api::set_certified_data(&s.http_tree.root_hash());
         });
     }
 
@@ -153,11 +153,11 @@ impl ImageRepositoryImpl {
         let response = Self::create_image_http_response(image);
         let entry = Self::image_certification_entry(&response, &image_tree_path);
 
-        HTTP_TREE.with_borrow_mut(|http_tree| {
-            http_tree.delete(&entry);
+        STATE.with_borrow_mut(|s| {
+            s.http_tree.delete(&entry);
 
             #[cfg(not(test))]
-            ic_cdk::api::set_certified_data(&http_tree.root_hash());
+            ic_cdk::api::set_certified_data(&s.http_tree.root_hash());
         });
     }
 
@@ -221,8 +221,8 @@ impl ImageRepositoryImpl {
                 ic_cdk::api::data_certificate().expect("No data certificate available")
             }
         };
-        let witness = HTTP_TREE.with_borrow(|http_tree| {
-            let witness = http_tree.witness(entry, request_url).unwrap();
+        let witness = STATE.with_borrow(|s| {
+            let witness = s.http_tree.witness(entry, request_url).unwrap();
 
             cbor_encode(&witness)
         });
@@ -242,19 +242,20 @@ impl ImageRepositoryImpl {
 
 struct ImageRepositoryState {
     images: ImageMemory,
+    http_tree: HttpCertificationTree,
 }
 
 impl Default for ImageRepositoryState {
     fn default() -> Self {
         Self {
             images: init_images(),
+            http_tree: HttpCertificationTree::default(),
         }
     }
 }
 
 thread_local! {
     static STATE: RefCell<ImageRepositoryState> = RefCell::new(ImageRepositoryState::default());
-    static HTTP_TREE: RefCell<HttpCertificationTree> = RefCell::new(HttpCertificationTree::default());
 }
 
 #[cfg(test)]
@@ -271,7 +272,6 @@ mod tests {
     #[case::image_without_subpath(fixtures::image_without_subpath())]
     async fn create_and_get_image_by_id(#[case] image: Image) {
         STATE.set(ImageRepositoryState::default());
-        HTTP_TREE.set(HttpCertificationTree::default());
 
         let repository = ImageRepositoryImpl::default();
         let image_id = repository.create_image(image.clone()).await.unwrap();
@@ -286,7 +286,6 @@ mod tests {
     #[case::image_without_subpath(fixtures::image_without_subpath())]
     async fn create_and_get_image_http_response(#[case] image: Image) {
         STATE.set(ImageRepositoryState::default());
-        HTTP_TREE.set(HttpCertificationTree::default());
 
         let repository = ImageRepositoryImpl::default();
         let image_id = repository.create_image(image.clone()).await.unwrap();
@@ -314,7 +313,6 @@ mod tests {
     #[rstest]
     async fn delete_image() {
         STATE.set(ImageRepositoryState::default());
-        HTTP_TREE.set(HttpCertificationTree::default());
 
         let original_image = fixtures::image_with_subpath();
 
@@ -340,7 +338,6 @@ mod tests {
     #[rstest]
     async fn certify_all_images() {
         STATE.set(ImageRepositoryState::default());
-        HTTP_TREE.set(HttpCertificationTree::default());
 
         let repository = ImageRepositoryImpl::default();
         let mut expected_images = BTreeMap::new();
