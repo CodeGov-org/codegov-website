@@ -57,6 +57,10 @@ impl CreateImageRequest for CreateProposalReviewImageRequest {
     fn content_type(&self) -> String {
         self.content_type.clone()
     }
+
+    fn content_bytes(&self) -> Vec<u8> {
+        self.content_bytes.clone()
+    }
 }
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
