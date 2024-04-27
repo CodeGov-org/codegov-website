@@ -5,6 +5,7 @@ use candid::export_service;
 use ic_cdk::*;
 
 mod controllers;
+mod helpers;
 mod mappings;
 mod repositories;
 mod services;

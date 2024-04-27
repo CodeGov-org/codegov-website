@@ -1,21 +1,27 @@
+use std::{path::PathBuf, str::FromStr};
+
 use backend_api::{
-    ApiError, CreateProposalReviewRequest, CreateProposalReviewResponse,
-    UpdateProposalReviewRequest,
+    ApiError, CreateImageRequest, CreateProposalReviewImageRequest,
+    CreateProposalReviewImageResponse, CreateProposalReviewRequest, CreateProposalReviewResponse,
+    DeleteProposalReviewImageRequest, UpdateProposalReviewRequest,
 };
 use candid::Principal;
 
 use crate::{
     mappings::map_create_proposal_review_response,
     repositories::{
-        DateTime, ProposalRepository, ProposalRepositoryImpl, ProposalReview,
-        ProposalReviewRepository, ProposalReviewRepositoryImpl, ProposalReviewStatus,
-        UserProfileRepository, UserProfileRepositoryImpl, Uuid,
+        DateTime, Image, ImageRepository, ImageRepositoryImpl, ProposalRepository,
+        ProposalRepositoryImpl, ProposalReview, ProposalReviewId, ProposalReviewRepository,
+        ProposalReviewRepositoryImpl, ProposalReviewStatus, UserId, UserProfileRepository,
+        UserProfileRepositoryImpl, Uuid,
     },
     system_api::get_date_time,
 };
 
 const MAX_PROPOSAL_REVIEW_SUMMARY_CHARS: usize = 1500;
 const MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS: u16 = 60 * 3; // 3 hours
+
+const PROPOSAL_REVIEW_IMAGES_SUB_PATH: &str = "reviews";
 
 #[cfg_attr(test, mockall::automock)]
 pub trait ProposalReviewService {
@@ -30,16 +36,30 @@ pub trait ProposalReviewService {
         calling_principal: Principal,
         request: UpdateProposalReviewRequest,
     ) -> Result<(), ApiError>;
+
+    async fn create_proposal_review_image(
+        &self,
+        calling_principal: Principal,
+        request: CreateProposalReviewImageRequest,
+    ) -> Result<CreateProposalReviewImageResponse, ApiError>;
+
+    fn delete_proposal_review_image(
+        &self,
+        calling_principal: Principal,
+        request: DeleteProposalReviewImageRequest,
+    ) -> Result<(), ApiError>;
 }
 
 pub struct ProposalReviewServiceImpl<
     PR: ProposalReviewRepository,
     U: UserProfileRepository,
     P: ProposalRepository,
+    I: ImageRepository,
 > {
     proposal_review_repository: PR,
     user_profile_repository: U,
     proposal_repository: P,
+    image_repository: I,
 }
 
 impl Default
@@ -47,6 +67,7 @@ impl Default
         ProposalReviewRepositoryImpl,
         UserProfileRepositoryImpl,
         ProposalRepositoryImpl,
+        ImageRepositoryImpl,
     >
 {
     fn default() -> Self {
@@ -54,12 +75,17 @@ impl Default
             ProposalReviewRepositoryImpl::default(),
             UserProfileRepositoryImpl::default(),
             ProposalRepositoryImpl::default(),
+            ImageRepositoryImpl::default(),
         )
     }
 }
 
-impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalRepository>
-    ProposalReviewService for ProposalReviewServiceImpl<PR, U, P>
+impl<
+        PR: ProposalReviewRepository,
+        U: UserProfileRepository,
+        P: ProposalRepository,
+        I: ImageRepository,
+    > ProposalReviewService for ProposalReviewServiceImpl<PR, U, P, I>
 {
     async fn create_proposal_review(
         &self,
@@ -120,7 +146,6 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
             summary: request.summary.unwrap_or("".to_string()),
             review_duration_mins: request.review_duration_mins.unwrap_or(0),
             build_reproduced: request.build_reproduced.unwrap_or(false),
-            // TODO: use reproduced_build_image_id from request
             reproduced_build_image_id: None,
         };
 
@@ -149,46 +174,11 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
                 ))
             })?;
 
-        let proposal_id = Uuid::try_from(request.proposal_id.as_str())?;
-        let (id, mut current_proposal_review) = self
-            .proposal_review_repository
-            .get_proposal_review_by_proposal_id_and_user_id(proposal_id, user_id)
-            .ok_or_else(|| {
-                ApiError::not_found(&format!(
-                    "Proposal review for proposal with Id {} not found",
-                    request.proposal_id
-                ))
-            })?;
-
-        if current_proposal_review.is_published()
-            && !request
-                .status
-                .as_ref()
-                .is_some_and(|s| s == &backend_api::ProposalReviewStatus::Draft)
-        {
-            return Err(ApiError::conflict(&format!(
-                "Proposal review for proposal with Id {} is already published",
-                request.proposal_id
-            )));
-        }
-
-        let proposal_id = current_proposal_review.proposal_id;
-        match self.proposal_repository.get_proposal_by_id(&proposal_id) {
-            Some(proposal) => {
-                if proposal.is_completed() {
-                    return Err(ApiError::conflict(
-                        "The proposal associated with this review is already completed",
-                    ));
-                }
-            }
-            None => {
-                // this should never happen
-                return Err(ApiError::not_found(&format!(
-                    "Proposal with Id {} not found",
-                    proposal_id.to_string()
-                )));
-            }
-        }
+        let (id, mut current_proposal_review) = self.get_current_proposal_review(
+            request.proposal_id,
+            user_id,
+            request.status.as_ref(),
+        )?;
 
         if let Some(summary) = request.summary {
             current_proposal_review.summary = summary;
@@ -199,7 +189,6 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
         if let Some(build_reproduced) = request.build_reproduced {
             current_proposal_review.build_reproduced = build_reproduced;
         }
-        // TODO: use reproduced_build_image_id from request
 
         if let Some(status) = request.status {
             if status == backend_api::ProposalReviewStatus::Published {
@@ -226,20 +215,103 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
         self.proposal_review_repository
             .update_proposal_review(id, current_proposal_review)
     }
+
+    async fn create_proposal_review_image(
+        &self,
+        calling_principal: Principal,
+        request: CreateProposalReviewImageRequest,
+    ) -> Result<CreateProposalReviewImageResponse, ApiError> {
+        request.validate_fields()?;
+
+        let user_id = self
+            .user_profile_repository
+            .get_user_id_by_principal(&calling_principal)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "User id for principal {} not found",
+                    calling_principal.to_text()
+                ))
+            })?;
+
+        let (id, mut current_proposal_review) =
+            self.get_current_proposal_review(request.proposal_id.clone(), user_id, None)?;
+
+        let date_time = get_date_time()?;
+
+        let sub_path = PathBuf::from_str(PROPOSAL_REVIEW_IMAGES_SUB_PATH).unwrap();
+
+        let image = Image {
+            created_at: DateTime::new(date_time)?,
+            user_id,
+            content_type: request.content_type(),
+            sub_path: Some(sub_path),
+            content_bytes: request.content_bytes,
+        };
+
+        let image_id = self.image_repository.create_image(image.clone()).await?;
+
+        current_proposal_review.reproduced_build_image_id = Some(image_id);
+
+        self.proposal_review_repository
+            .update_proposal_review(id, current_proposal_review)?;
+
+        Ok(CreateProposalReviewImageResponse {
+            path: image.path(&image_id),
+        })
+    }
+
+    fn delete_proposal_review_image(
+        &self,
+        calling_principal: Principal,
+        request: DeleteProposalReviewImageRequest,
+    ) -> Result<(), ApiError> {
+        let user_id = self
+            .user_profile_repository
+            .get_user_id_by_principal(&calling_principal)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "User id for principal {} not found",
+                    calling_principal.to_text()
+                ))
+            })?;
+
+        let (id, mut current_proposal_review) =
+            self.get_current_proposal_review(request.proposal_id.clone(), user_id, None)?;
+
+        let Some(image_id) = current_proposal_review.reproduced_build_image_id else {
+            return Err(ApiError::not_found(&format!(
+                "Proposal review image not found for proposal with Id {}",
+                request.proposal_id,
+            )));
+        };
+
+        self.image_repository.delete_image(&image_id)?;
+
+        current_proposal_review.reproduced_build_image_id = None;
+
+        self.proposal_review_repository
+            .update_proposal_review(id, current_proposal_review)
+    }
 }
 
-impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalRepository>
-    ProposalReviewServiceImpl<PR, U, P>
+impl<
+        PR: ProposalReviewRepository,
+        U: UserProfileRepository,
+        P: ProposalRepository,
+        I: ImageRepository,
+    > ProposalReviewServiceImpl<PR, U, P, I>
 {
     fn new(
         proposal_review_repository: PR,
         user_profile_repository: U,
         proposal_repository: P,
+        image_repository: I,
     ) -> Self {
         Self {
             proposal_review_repository,
             user_profile_repository,
             proposal_repository,
+            image_repository,
         }
     }
 
@@ -276,6 +348,52 @@ impl<PR: ProposalReviewRepository, U: UserProfileRepository, P: ProposalReposito
 
         Ok(())
     }
+
+    fn get_current_proposal_review(
+        &self,
+        raw_proposal_id: String,
+        user_id: UserId,
+        request_status: Option<&backend_api::ProposalReviewStatus>,
+    ) -> Result<(ProposalReviewId, ProposalReview), ApiError> {
+        let proposal_id = Uuid::try_from(raw_proposal_id.as_str())?;
+        let (id, current_proposal_review) = self
+            .proposal_review_repository
+            .get_proposal_review_by_proposal_id_and_user_id(proposal_id, user_id)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "Proposal review for proposal with Id {} not found",
+                    raw_proposal_id
+                ))
+            })?;
+
+        if current_proposal_review.is_published()
+            && !request_status.is_some_and(|s| s == &backend_api::ProposalReviewStatus::Draft)
+        {
+            return Err(ApiError::conflict(&format!(
+                "Proposal review for proposal with Id {} is already published",
+                raw_proposal_id
+            )));
+        }
+
+        match self.proposal_repository.get_proposal_by_id(&proposal_id) {
+            Some(proposal) => {
+                if proposal.is_completed() {
+                    return Err(ApiError::conflict(
+                        "The proposal associated with this review is already completed",
+                    ));
+                }
+            }
+            None => {
+                // this should never happen
+                return Err(ApiError::not_found(&format!(
+                    "Proposal with Id {} not found",
+                    proposal_id.to_string()
+                )));
+            }
+        }
+
+        Ok((id, current_proposal_review))
+    }
 }
 
 #[cfg(test)]
@@ -284,8 +402,8 @@ mod tests {
     use crate::{
         fixtures,
         repositories::{
-            MockProposalRepository, MockProposalReviewRepository, MockUserProfileRepository,
-            ProposalReviewId,
+            MockImageRepository, MockProposalRepository, MockProposalReviewRepository,
+            MockUserProfileRepository, ProposalReviewId,
         },
     };
     use mockall::predicate::*;
@@ -326,11 +444,13 @@ mod tests {
             .once()
             .with(eq(proposal_review.clone()))
             .return_const(Ok(id));
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         let result = service
@@ -367,11 +487,13 @@ mod tests {
             .expect_get_proposal_review_by_proposal_id_and_user_id()
             .never();
         pr_repository_mock.expect_create_proposal_review().never();
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         let result = service
@@ -400,11 +522,13 @@ mod tests {
             .expect_get_proposal_review_by_proposal_id_and_user_id()
             .never();
         pr_repository_mock.expect_create_proposal_review().never();
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         let result = service
@@ -445,11 +569,13 @@ mod tests {
             .expect_get_proposal_review_by_proposal_id_and_user_id()
             .never();
         pr_repository_mock.expect_create_proposal_review().never();
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         let result = service
@@ -492,11 +618,13 @@ mod tests {
             .expect_get_proposal_review_by_proposal_id_and_user_id()
             .never();
         pr_repository_mock.expect_create_proposal_review().never();
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         let result = service
@@ -540,11 +668,13 @@ mod tests {
             .with(eq(proposal_id), eq(user_id))
             .return_const(Some((id, fixtures::proposal_review_draft())));
         pr_repository_mock.expect_create_proposal_review().never();
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         let result = service
@@ -577,7 +707,6 @@ mod tests {
                 summary: Some(proposal_review.summary.clone()),
                 review_duration_mins: Some(proposal_review.review_duration_mins),
                 build_reproduced: Some(proposal_review.build_reproduced),
-                reproduced_build_image_id: None,
             },
         )
     }
@@ -600,7 +729,6 @@ mod tests {
                 summary: None,
                 review_duration_mins: None,
                 build_reproduced: None,
-                reproduced_build_image_id: None,
             },
         )
     }
@@ -615,7 +743,6 @@ mod tests {
                 summary: Some("".to_string()),
                 review_duration_mins: Some(proposal_review.review_duration_mins),
                 build_reproduced: Some(proposal_review.build_reproduced),
-                reproduced_build_image_id: None,
             },
             ApiError::invalid_argument("Summary cannot be empty"),
         )
@@ -631,7 +758,6 @@ mod tests {
                 summary: Some("a".repeat(MAX_PROPOSAL_REVIEW_SUMMARY_CHARS + 1)),
                 review_duration_mins: Some(proposal_review.review_duration_mins),
                 build_reproduced: Some(proposal_review.build_reproduced),
-                reproduced_build_image_id: None,
             },
             ApiError::invalid_argument(&format!(
                 "Summary must be less than {} characters",
@@ -650,7 +776,6 @@ mod tests {
                 summary: Some(proposal_review.summary),
                 review_duration_mins: Some(0),
                 build_reproduced: Some(proposal_review.build_reproduced),
-                reproduced_build_image_id: None,
             },
             ApiError::invalid_argument("Review duration cannot be 0"),
         )
@@ -667,7 +792,6 @@ mod tests {
                 summary: Some(proposal_review.summary),
                 review_duration_mins: Some(MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS + 1),
                 build_reproduced: Some(proposal_review.build_reproduced),
-                reproduced_build_image_id: None,
             },
             ApiError::invalid_argument(&format!(
                 "Review duration must be less than {} minutes",
@@ -714,11 +838,13 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         service
@@ -744,11 +870,13 @@ mod tests {
         pr_repository_mock.expect_update_proposal_review().never();
         let mut p_repository_mock = MockProposalRepository::new();
         p_repository_mock.expect_get_proposal_by_id().never();
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         let result = service
@@ -785,11 +913,13 @@ mod tests {
         pr_repository_mock.expect_update_proposal_review().never();
         let mut p_repository_mock = MockProposalRepository::new();
         p_repository_mock.expect_get_proposal_by_id().never();
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         let result = service
@@ -832,11 +962,13 @@ mod tests {
             .return_const(Some(
                 fixtures::nns_replica_version_management_proposal_completed(),
             ));
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         let result = service
@@ -884,11 +1016,13 @@ mod tests {
         pr_repository_mock.expect_update_proposal_review().never();
         let mut p_repository_mock = MockProposalRepository::new();
         p_repository_mock.expect_get_proposal_by_id().never();
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         let result = service
@@ -934,11 +1068,13 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         service
@@ -964,11 +1100,13 @@ mod tests {
         pr_repository_mock.expect_update_proposal_review().never();
         let mut p_repository_mock = MockProposalRepository::new();
         p_repository_mock.expect_get_proposal_by_id().never();
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         let result = service
@@ -1014,11 +1152,13 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+        let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            image_repository_mock,
         );
 
         let result = service
@@ -1054,7 +1194,6 @@ mod tests {
                 summary: Some(summary.clone()),
                 review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
-                reproduced_build_image_id: None,
             },
             ProposalReview {
                 summary,
@@ -1093,7 +1232,6 @@ mod tests {
                 summary: Some(summary.clone()),
                 review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
-                reproduced_build_image_id: None,
             },
             ProposalReview {
                 status,
@@ -1133,7 +1271,6 @@ mod tests {
                 summary: Some(summary.clone()),
                 review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
-                reproduced_build_image_id: None,
             },
             ProposalReview {
                 status,
@@ -1155,7 +1292,6 @@ mod tests {
                 summary: Some("".to_string()),
                 review_duration_mins: None,
                 build_reproduced: None,
-                reproduced_build_image_id: None,
             },
             ApiError::invalid_argument("Summary cannot be empty"),
         )
@@ -1170,7 +1306,6 @@ mod tests {
                 summary: Some("a".repeat(MAX_PROPOSAL_REVIEW_SUMMARY_CHARS + 1)),
                 review_duration_mins: None,
                 build_reproduced: None,
-                reproduced_build_image_id: None,
             },
             ApiError::invalid_argument(&format!(
                 "Summary must be less than {} characters",
@@ -1188,7 +1323,6 @@ mod tests {
                 summary: None,
                 review_duration_mins: Some(0),
                 build_reproduced: None,
-                reproduced_build_image_id: None,
             },
             ApiError::invalid_argument("Review duration cannot be 0"),
         )
@@ -1203,7 +1337,6 @@ mod tests {
                 summary: None,
                 review_duration_mins: Some(MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS + 1),
                 build_reproduced: None,
-                reproduced_build_image_id: None,
             },
             ApiError::invalid_argument(&format!(
                 "Review duration must be less than {} minutes",
@@ -1235,7 +1368,6 @@ mod tests {
                 summary: None,
                 review_duration_mins: None,
                 build_reproduced: None,
-                reproduced_build_image_id: None,
             },
             ApiError::conflict(
                 "Proposal review cannot be published due to invalid field: Summary cannot be empty",
@@ -1270,7 +1402,6 @@ mod tests {
                 summary: None,
                 review_duration_mins: None,
                 build_reproduced: None,
-                reproduced_build_image_id: None,
             },
             ApiError::conflict(&format!(
                 "Proposal review cannot be published due to invalid field: {}",
@@ -1302,7 +1433,6 @@ mod tests {
                 summary: None,
                 review_duration_mins: None,
                 build_reproduced: None,
-                reproduced_build_image_id: None,
             },
             ApiError::conflict(
                 "Proposal review cannot be published due to invalid field: Review duration cannot be 0",
@@ -1337,7 +1467,6 @@ mod tests {
                 summary: None,
                 review_duration_mins: None,
                 build_reproduced: None,
-                reproduced_build_image_id: None,
             },
             ApiError::conflict(&format!(
                 "Proposal review cannot be published due to invalid field: {}",

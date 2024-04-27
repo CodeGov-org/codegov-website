@@ -1,6 +1,6 @@
 use crate::{
-    repositories::UserProfileRepositoryImpl,
-    services::{InitService, InitServiceImpl},
+    repositories::{ImageRepositoryImpl, UserProfileRepositoryImpl},
+    services::{ImageService, ImageServiceImpl, InitService, InitServiceImpl},
 };
 use backend_api::ApiError;
 use candid::Principal;
@@ -16,6 +16,8 @@ fn init() {
         spawn(init_admin(calling_principal))
     });
 
+    InitController::default().init_images();
+
     jobs::start_jobs();
 }
 
@@ -27,6 +29,8 @@ fn post_upgrade() {
         spawn(init_admin(calling_principal))
     });
 
+    InitController::default().init_images();
+
     jobs::start_jobs();
 }
 
@@ -36,23 +40,36 @@ async fn init_admin(calling_principal: Principal) {
     }
 }
 
-struct InitController<T: InitService> {
+struct InitController<T: InitService, I: ImageService> {
     init_service: T,
+    image_service: I,
 }
 
-impl Default for InitController<InitServiceImpl<UserProfileRepositoryImpl>> {
+impl Default
+    for InitController<
+        InitServiceImpl<UserProfileRepositoryImpl>,
+        ImageServiceImpl<ImageRepositoryImpl>,
+    >
+{
     fn default() -> Self {
-        Self::new(InitServiceImpl::default())
+        Self::new(InitServiceImpl::default(), ImageServiceImpl::default())
     }
 }
 
-impl<T: InitService> InitController<T> {
-    fn new(init_service: T) -> Self {
-        Self { init_service }
+impl<T: InitService, I: ImageService> InitController<T, I> {
+    fn new(init_service: T, image_service: I) -> Self {
+        Self {
+            init_service,
+            image_service,
+        }
     }
 
     async fn init(&self, calling_principal: Principal) -> Result<(), ApiError> {
         self.init_service.init(calling_principal).await
+    }
+
+    fn init_images(&self) {
+        self.image_service.certify_all_images()
     }
 }
 

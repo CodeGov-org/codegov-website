@@ -223,7 +223,6 @@ type CreateProposalReviewRequest = record {
   summary : opt text;
   review_duration_mins : opt nat16;
   build_reproduced : opt bool;
-  reproduced_build_image_id : opt text;
 };
 
 type CreateProposalReviewResponse = variant {
@@ -240,7 +239,6 @@ type UpdateProposalReviewRequest = record {
   summary : opt text;
   review_duration_mins : opt nat16;
   build_reproduced : opt bool;
-  reproduced_build_image_id : opt text;
 };
 
 type UpdateProposalReviewResponse = variant {
