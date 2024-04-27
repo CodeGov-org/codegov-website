@@ -91,7 +91,7 @@ impl ImageRepository for ImageRepositoryImpl {
 
     fn delete_image(&self, image_id: &ImageId) -> Result<(), ApiError> {
         let image = self
-            .get_image_by_id(&image_id)
+            .get_image_by_id(image_id)
             .ok_or(ApiError::not_found(&format!(
                 "Image with id {} not found",
                 image_id.to_string()
@@ -101,7 +101,7 @@ impl ImageRepository for ImageRepositoryImpl {
             s.images.remove(image_id);
         });
 
-        Self::remove_image_http_response_certification(&image_id, &image);
+        Self::remove_image_http_response_certification(image_id, &image);
 
         Ok(())
     }
@@ -195,7 +195,7 @@ impl ImageRepositoryImpl {
         response: &HttpResponse,
         image_tree_path: &'a HttpCertificationPath,
     ) -> HttpCertificationTreeEntry<'a> {
-        let certificate = HttpCertification::response_only(&CEL_EXPR, &response, None).unwrap();
+        let certificate = HttpCertification::response_only(&CEL_EXPR, response, None).unwrap();
 
         HttpCertificationTreeEntry::new(image_tree_path, certificate.to_owned())
     }
@@ -366,7 +366,7 @@ mod tests {
         repository.certify_all_images();
 
         for (image, request) in expected_images.values() {
-            let response = repository.get_image_http_response(&request);
+            let response = repository.get_image_http_response(request);
 
             assert_eq!(response.status_code, 200);
             assert_eq!(response.body, image.content_bytes);
