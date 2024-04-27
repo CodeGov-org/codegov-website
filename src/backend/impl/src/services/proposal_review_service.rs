@@ -386,10 +386,11 @@ mod tests {
     use crate::{
         fixtures,
         repositories::{
-            MockImageRepository, MockProposalRepository, MockProposalReviewRepository,
+            ImageId, MockImageRepository, MockProposalRepository, MockProposalReviewRepository,
             MockUserProfileRepository, ProposalReviewId,
         },
     };
+    use backend_api::UpsertProposalReviewImageRequestData;
     use mockall::predicate::*;
     use rstest::*;
 
@@ -1456,6 +1457,325 @@ mod tests {
                 "Proposal review cannot be published due to invalid field: {}",
                 error_message
             )),
+        )
+    }
+
+    #[rstest]
+    #[case::new(proposal_review_update_image_upsert_new())]
+    #[case::existing(proposal_review_update_image_upsert_existing())]
+    async fn update_proposal_review_image_upsert(
+        #[case] fixture: (
+            ProposalReviewId,
+            ProposalReview,
+            ImageId,
+            Image,
+            UpdateProposalReviewImageRequest,
+            ProposalReview,
+            UpdateProposalReviewImageResponse,
+        ),
+    ) {
+        let calling_principal = fixtures::principal();
+        let user_id = fixtures::uuid_a();
+        let (
+            id,
+            original_proposal_review,
+            image_id,
+            image,
+            request,
+            updated_proposal_review,
+            expected_response,
+        ) = fixture;
+
+        let mut u_repository_mock = MockUserProfileRepository::new();
+        u_repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(user_id));
+        let mut pr_repository_mock = MockProposalReviewRepository::new();
+        pr_repository_mock
+            .expect_get_proposal_review_by_proposal_id_and_user_id()
+            .once()
+            .with(eq(original_proposal_review.proposal_id), eq(user_id))
+            .return_const(Some((id, original_proposal_review.clone())));
+        pr_repository_mock
+            .expect_update_proposal_review()
+            .once()
+            .with(eq(id), eq(updated_proposal_review.clone()))
+            .return_const(Ok(()));
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock
+            .expect_get_proposal_by_id()
+            .once()
+            .with(eq(original_proposal_review.proposal_id))
+            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+        let mut image_repository_mock = MockImageRepository::new();
+        if let Some(existing_image_id) = original_proposal_review.reproduced_build_image_id {
+            image_repository_mock
+                .expect_delete_image()
+                .once()
+                .with(eq(existing_image_id))
+                .return_const(Ok(()));
+        }
+        image_repository_mock
+            .expect_create_image()
+            .once()
+            .with(eq(image))
+            .return_const(Ok(image_id));
+
+        let service = ProposalReviewServiceImpl::new(
+            pr_repository_mock,
+            u_repository_mock,
+            p_repository_mock,
+            image_repository_mock,
+        );
+
+        let result = service
+            .update_proposal_review_image(calling_principal, request)
+            .await
+            .unwrap();
+
+        assert_eq!(result, expected_response);
+    }
+
+    #[rstest]
+    async fn update_proposal_review_image_delete() {
+        let calling_principal = fixtures::principal();
+        let user_id = fixtures::uuid_a();
+        let (id, original_proposal_review, request, updated_proposal_review) =
+            proposal_review_update_image_delete();
+
+        let mut u_repository_mock = MockUserProfileRepository::new();
+        u_repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(user_id));
+        let mut pr_repository_mock = MockProposalReviewRepository::new();
+        pr_repository_mock
+            .expect_get_proposal_review_by_proposal_id_and_user_id()
+            .once()
+            .with(eq(original_proposal_review.proposal_id), eq(user_id))
+            .return_const(Some((id, original_proposal_review.clone())));
+        pr_repository_mock
+            .expect_update_proposal_review()
+            .once()
+            .with(eq(id), eq(updated_proposal_review.clone()))
+            .return_const(Ok(()));
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock
+            .expect_get_proposal_by_id()
+            .once()
+            .with(eq(original_proposal_review.proposal_id))
+            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+        let mut image_repository_mock = MockImageRepository::new();
+        image_repository_mock
+            .expect_delete_image()
+            .once()
+            .with(eq(original_proposal_review
+                .reproduced_build_image_id
+                .unwrap()))
+            .return_const(Ok(()));
+
+        let service = ProposalReviewServiceImpl::new(
+            pr_repository_mock,
+            u_repository_mock,
+            p_repository_mock,
+            image_repository_mock,
+        );
+
+        let result = service
+            .update_proposal_review_image(calling_principal, request)
+            .await
+            .unwrap();
+
+        assert_eq!(result, UpdateProposalReviewImageResponse { path: None });
+    }
+
+    #[rstest]
+    async fn update_proposal_review_image_delete_not_found() {
+        let calling_principal = fixtures::principal();
+        let user_id = fixtures::uuid_a();
+        let (id, original_proposal_review, request, _) = proposal_review_update_image_delete();
+
+        let original_proposal_review = ProposalReview {
+            reproduced_build_image_id: None,
+            ..original_proposal_review
+        };
+
+        let mut u_repository_mock = MockUserProfileRepository::new();
+        u_repository_mock
+            .expect_get_user_id_by_principal()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Some(user_id));
+        let mut pr_repository_mock = MockProposalReviewRepository::new();
+        pr_repository_mock
+            .expect_get_proposal_review_by_proposal_id_and_user_id()
+            .once()
+            .with(eq(original_proposal_review.proposal_id), eq(user_id))
+            .return_const(Some((id, original_proposal_review.clone())));
+        pr_repository_mock.expect_update_proposal_review().never();
+        let mut p_repository_mock = MockProposalRepository::new();
+        p_repository_mock
+            .expect_get_proposal_by_id()
+            .once()
+            .with(eq(original_proposal_review.proposal_id))
+            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+        let mut image_repository_mock = MockImageRepository::new();
+        image_repository_mock.expect_delete_image().never();
+
+        let service = ProposalReviewServiceImpl::new(
+            pr_repository_mock,
+            u_repository_mock,
+            p_repository_mock,
+            image_repository_mock,
+        );
+
+        let result = service
+            .update_proposal_review_image(calling_principal, request.clone())
+            .await
+            .unwrap_err();
+
+        assert_eq!(
+            result,
+            ApiError::not_found(&format!(
+                "Proposal review for proposal with Id {} does not have an image",
+                request.proposal_id
+            )),
+        );
+    }
+
+    #[fixture]
+    fn proposal_review_update_image_upsert_new() -> (
+        ProposalReviewId,
+        ProposalReview,
+        ImageId,
+        Image,
+        UpdateProposalReviewImageRequest,
+        ProposalReview,
+        UpdateProposalReviewImageResponse,
+    ) {
+        let proposal_review_id = fixtures::proposal_review_id();
+        let date_time = get_date_time().unwrap();
+        let user_id = fixtures::uuid_a();
+        let original_proposal_review = ProposalReview {
+            user_id,
+            reproduced_build_image_id: None,
+            ..fixtures::proposal_review_draft()
+        };
+        let image = Image {
+            created_at: DateTime::new(date_time).unwrap(),
+            sub_path: Some(PathBuf::from_str(PROPOSAL_REVIEW_IMAGES_SUB_PATH).unwrap()),
+            user_id,
+            ..fixtures::image_without_subpath()
+        };
+        let image_id = fixtures::uuid_b();
+
+        (
+            proposal_review_id,
+            original_proposal_review.clone(),
+            image_id,
+            image.clone(),
+            UpdateProposalReviewImageRequest {
+                proposal_id: original_proposal_review.proposal_id.to_string(),
+                operation: UpdateProposalReviewImageRequestOperation::Upsert(
+                    UpsertProposalReviewImageRequestData {
+                        content_type: image.content_type.clone(),
+                        content_bytes: image.content_bytes.clone(),
+                    },
+                ),
+            },
+            ProposalReview {
+                last_updated_at: Some(DateTime::new(date_time).unwrap()),
+                reproduced_build_image_id: Some(image_id),
+                ..original_proposal_review
+            },
+            UpdateProposalReviewImageResponse {
+                path: Some(image.path(&image_id)),
+            },
+        )
+    }
+
+    #[fixture]
+    fn proposal_review_update_image_upsert_existing() -> (
+        ProposalReviewId,
+        ProposalReview,
+        ImageId,
+        Image,
+        UpdateProposalReviewImageRequest,
+        ProposalReview,
+        UpdateProposalReviewImageResponse,
+    ) {
+        let proposal_review_id = fixtures::proposal_review_id();
+        let date_time = get_date_time().unwrap();
+        let user_id = fixtures::uuid_a();
+        let original_proposal_review = ProposalReview {
+            user_id,
+            reproduced_build_image_id: Some(fixtures::uuid_b()),
+            ..fixtures::proposal_review_draft()
+        };
+        let image = Image {
+            created_at: DateTime::new(date_time).unwrap(),
+            sub_path: Some(PathBuf::from_str(PROPOSAL_REVIEW_IMAGES_SUB_PATH).unwrap()),
+            user_id,
+            ..fixtures::image_without_subpath()
+        };
+        let image_id = fixtures::uuid_b();
+
+        (
+            proposal_review_id,
+            original_proposal_review.clone(),
+            image_id,
+            image.clone(),
+            UpdateProposalReviewImageRequest {
+                proposal_id: original_proposal_review.proposal_id.to_string(),
+                operation: UpdateProposalReviewImageRequestOperation::Upsert(
+                    UpsertProposalReviewImageRequestData {
+                        content_type: image.content_type.clone(),
+                        content_bytes: image.content_bytes.clone(),
+                    },
+                ),
+            },
+            ProposalReview {
+                last_updated_at: Some(DateTime::new(date_time).unwrap()),
+                reproduced_build_image_id: Some(image_id),
+                ..original_proposal_review
+            },
+            UpdateProposalReviewImageResponse {
+                path: Some(image.path(&image_id)),
+            },
+        )
+    }
+
+    #[fixture]
+    fn proposal_review_update_image_delete() -> (
+        ProposalReviewId,
+        ProposalReview,
+        UpdateProposalReviewImageRequest,
+        ProposalReview,
+    ) {
+        let proposal_review_id = fixtures::proposal_review_id();
+        let date_time = get_date_time().unwrap();
+        let image_id = fixtures::uuid_b();
+        let original_proposal_review = ProposalReview {
+            user_id: fixtures::uuid_a(),
+            reproduced_build_image_id: Some(image_id),
+            ..fixtures::proposal_review_draft()
+        };
+
+        (
+            proposal_review_id,
+            original_proposal_review.clone(),
+            UpdateProposalReviewImageRequest {
+                proposal_id: original_proposal_review.proposal_id.to_string(),
+                operation: UpdateProposalReviewImageRequestOperation::Delete,
+            },
+            ProposalReview {
+                last_updated_at: Some(DateTime::new(date_time).unwrap()),
+                reproduced_build_image_id: None,
+                ..original_proposal_review
+            },
         )
     }
 }
