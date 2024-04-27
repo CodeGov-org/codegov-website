@@ -1,6 +1,9 @@
 use ic_http_certification::{HttpRequest, HttpResponse};
 
-use crate::repositories::{ImageRepository, ImageRepositoryImpl};
+use crate::{
+    helpers::response_405,
+    repositories::{ImageRepository, ImageRepositoryImpl},
+};
 
 #[cfg_attr(test, mockall::automock)]
 pub trait ImageService {
@@ -21,6 +24,10 @@ impl Default for ImageServiceImpl<ImageRepositoryImpl> {
 
 impl<I: ImageRepository> ImageService for ImageServiceImpl<I> {
     fn get_image_response(&self, req: &HttpRequest) -> HttpResponse {
+        if req.method != "GET" {
+            return response_405();
+        }
+
         self.image_repository.get_image_http_response(req)
     }
 

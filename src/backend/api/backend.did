@@ -319,6 +319,24 @@ type DeleteProposalReviewCommitResponse = variant {
   err : Err;
 };
 
+// HTTP
+type HeaderField = record { text; text };
+
+type HttpRequest = record {
+  method : text;
+  url : text;
+  headers : vec HeaderField;
+  body : blob;
+  certificate_version : opt nat16;
+};
+
+type HttpResponse = record {
+  status_code : nat16;
+  headers : vec HeaderField;
+  body : blob;
+};
+// End HTTP
+
 service : {
   get_my_user_profile : () -> (GetMyUserProfileResponse) query;
   get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;
@@ -334,4 +352,8 @@ service : {
   create_proposal_review_commit : (CreateProposalReviewCommitRequest) -> (CreateProposalReviewCommitResponse);
   update_proposal_review_commit : (UpdateProposalReviewCommitRequest) -> (UpdateProposalReviewCommitResponse);
   delete_proposal_review_commit : (DeleteProposalReviewCommitRequest) -> (DeleteProposalReviewCommitResponse);
+
+  // HTTP
+  http_request : (request : HttpRequest) -> (HttpResponse) query;
+  // End HTTP
 };
