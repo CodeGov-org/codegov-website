@@ -127,10 +127,8 @@ impl ImageRepositoryImpl {
 
         STATE.with_borrow_mut(|s| {
             s.http_tree.insert(&entry);
-
-            #[cfg(not(test))]
-            ic_cdk::api::set_certified_data(&s.http_tree.root_hash());
         });
+        Self::set_certified_http_tree();
     }
 
     fn image_certified_http_response(image_id: &ImageId, image: &Image) -> HttpResponse {
@@ -155,10 +153,8 @@ impl ImageRepositoryImpl {
 
         STATE.with_borrow_mut(|s| {
             s.http_tree.delete(&entry);
-
-            #[cfg(not(test))]
-            ic_cdk::api::set_certified_data(&s.http_tree.root_hash());
         });
+        Self::set_certified_http_tree();
     }
 
     fn image_paths<'a>(image_id: &ImageId, image: &Image) -> (String, HttpCertificationPath<'a>) {
@@ -210,17 +206,7 @@ impl ImageRepositoryImpl {
         request_url: &str,
         expr_path: &[String],
     ) {
-        let certified_data = {
-            #[cfg(test)]
-            {
-                vec![]
-            }
-
-            #[cfg(not(test))]
-            {
-                ic_cdk::api::data_certificate().expect("No data certificate available")
-            }
-        };
+        let certified_data = Self::certified_data();
         let witness = STATE.with_borrow(|s| {
             let witness = s.http_tree.witness(entry, request_url).unwrap();
 
@@ -237,6 +223,27 @@ impl ImageRepositoryImpl {
                 BASE64.encode(expr_path)
             ),
         ));
+    }
+
+    fn set_certified_http_tree() {
+        #[cfg(not(test))]
+        {
+            STATE.with_borrow(|s| {
+                ic_cdk::api::set_certified_data(&s.http_tree.root_hash());
+            })
+        }
+    }
+
+    fn certified_data() -> Vec<u8> {
+        #[cfg(test)]
+        {
+            vec![]
+        }
+
+        #[cfg(not(test))]
+        {
+            ic_cdk::api::data_certificate().expect("No data certificate available")
+        }
     }
 }
 
