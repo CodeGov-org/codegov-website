@@ -141,6 +141,7 @@ impl<
             proposal_review_id,
             user_id,
             created_at: DateTime::new(date_time)?,
+            last_updated_at: None,
             commit_sha,
             state: request.state.into(),
         };
@@ -180,6 +181,9 @@ impl<
         )?;
 
         current_proposal_review_commit.state = request.state.into();
+
+        let date_time = get_date_time()?;
+        current_proposal_review_commit.last_updated_at = Some(DateTime::new(date_time)?);
 
         self.proposal_review_commit_repository
             .update_proposal_review_commit(id, current_proposal_review_commit)
@@ -1434,6 +1438,7 @@ mod tests {
         ProposalReviewCommit,
     ) {
         let id = fixtures::proposal_review_commit_id();
+        let date_time = get_date_time().unwrap();
         let user_id = fixtures::uuid_a();
         let original_proposal_review_commit = ProposalReviewCommit {
             user_id,
@@ -1461,6 +1466,7 @@ mod tests {
             },
             ProposalReviewCommit {
                 state: state.into(),
+                last_updated_at: Some(DateTime::new(date_time).unwrap()),
                 ..original_proposal_review_commit
             },
         )
@@ -1476,6 +1482,7 @@ mod tests {
         ProposalReviewCommit,
     ) {
         let id = fixtures::proposal_review_commit_id();
+        let date_time = get_date_time().unwrap();
         let user_id = fixtures::uuid_a();
         let original_proposal_review_commit = ProposalReviewCommit {
             user_id,
@@ -1499,6 +1506,7 @@ mod tests {
             },
             ProposalReviewCommit {
                 state: state.into(),
+                last_updated_at: Some(DateTime::new(date_time).unwrap()),
                 ..original_proposal_review_commit
             },
         )

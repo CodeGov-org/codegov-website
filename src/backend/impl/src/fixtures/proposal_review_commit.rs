@@ -10,6 +10,7 @@ pub fn proposal_review_commit_reviewed() -> ProposalReviewCommit {
         proposal_review_id: proposal_review_id(),
         user_id: user_id(),
         created_at: date_time_a(),
+        last_updated_at: None,
         commit_sha: commit_sha_a(),
         state: ReviewCommitState::Reviewed {
             matches_description: Some(true),
@@ -25,6 +26,7 @@ pub fn proposal_review_commit_not_reviewed() -> ProposalReviewCommit {
         proposal_review_id: proposal_review_id(),
         user_id: user_id(),
         created_at: date_time_a(),
+        last_updated_at: None,
         commit_sha: commit_sha_b(),
         state: ReviewCommitState::NotReviewed,
     }

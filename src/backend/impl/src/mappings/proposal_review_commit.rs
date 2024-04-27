@@ -40,6 +40,9 @@ impl From<ProposalReviewCommit> for backend_api::ProposalReviewCommit {
             proposal_review_id: proposal_review_commit.proposal_review_id.to_string(),
             user_id: proposal_review_commit.user_id.to_string(),
             created_at: proposal_review_commit.created_at.to_string(),
+            last_updated_at: proposal_review_commit
+                .last_updated_at
+                .map(|dt| dt.to_string()),
             commit_sha: proposal_review_commit.commit_sha.to_string(),
             state: proposal_review_commit.state.into(),
         }

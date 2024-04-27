@@ -29,6 +29,7 @@ impl From<ProposalReview> for backend_api::ProposalReview {
             proposal_id: proposal_review.proposal_id.to_string(),
             user_id: proposal_review.user_id.to_string(),
             created_at: proposal_review.created_at.to_string(),
+            last_updated_at: proposal_review.last_updated_at.map(|dt| dt.to_string()),
             status: proposal_review.status.into(),
             summary: proposal_review.summary,
             review_duration_mins: proposal_review.review_duration_mins,
