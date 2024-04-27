@@ -246,6 +246,28 @@ type UpdateProposalReviewResponse = variant {
   err : Err;
 };
 
+type UpdateProposalReviewImageRequest = record {
+  proposal_id : text;
+  operation : UpdateProposalReviewImageRequestOperation;
+};
+
+type UpdateProposalReviewImageRequestOperation = variant {
+  upsert : UpsertProposalReviewImageRequestData;
+  delete;
+};
+
+type UpsertProposalReviewImageRequestData = record {
+  content_type : text;
+  content_bytes : blob;
+};
+
+type UpdateProposalReviewImageResponse = variant {
+  ok : record {
+    path : opt text;
+  };
+  err : Err;
+};
+
 type ReviewCommitState = variant {
   reviewed : record {
     matches_description : opt bool;
@@ -308,6 +330,7 @@ service : {
   sync_proposals : () -> (SyncProposalsResponse);
   create_proposal_review : (CreateProposalReviewRequest) -> (CreateProposalReviewResponse);
   update_proposal_review : (UpdateProposalReviewRequest) -> (UpdateProposalReviewResponse);
+  update_proposal_review_image : (UpdateProposalReviewImageRequest) -> (UpdateProposalReviewImageResponse);
   create_proposal_review_commit : (CreateProposalReviewCommitRequest) -> (CreateProposalReviewCommitResponse);
   update_proposal_review_commit : (UpdateProposalReviewCommitRequest) -> (UpdateProposalReviewCommitResponse);
   delete_proposal_review_commit : (DeleteProposalReviewCommitRequest) -> (DeleteProposalReviewCommitResponse);

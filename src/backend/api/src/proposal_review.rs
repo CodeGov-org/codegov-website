@@ -52,7 +52,9 @@ pub struct UpdateProposalReviewImageRequest {
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
 pub enum UpdateProposalReviewImageRequestOperation {
+    #[serde(rename = "upsert")]
     Upsert(UpsertProposalReviewImageRequestData),
+    #[serde(rename = "delete")]
     Delete,
 }
 
