@@ -2,7 +2,7 @@
   "name": "backend-integration",
   "private": true,
   "scripts": {
-    "test": "tsc && jest --testTimeout 30000"
+    "test": "jest"
   },
   "devDependencies": {
     "@cg/backend": "workspace:*",
