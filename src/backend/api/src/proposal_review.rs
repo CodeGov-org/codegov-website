@@ -1,7 +1,5 @@
 use candid::{CandidType, Deserialize};
 
-use crate::CreateImageRequest;
-
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub enum ProposalReviewStatus {
     #[serde(rename = "draft")]
@@ -47,28 +45,24 @@ pub struct UpdateProposalReviewRequest {
 }
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
-pub struct CreateProposalReviewImageRequest {
+pub struct UpdateProposalReviewImageRequest {
     pub proposal_id: String,
+    pub operation: UpdateProposalReviewImageRequestOperation,
+}
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub enum UpdateProposalReviewImageRequestOperation {
+    Upsert(UpsertProposalReviewImageRequestData),
+    Delete,
+}
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub struct UpsertProposalReviewImageRequestData {
     pub content_type: String,
     pub content_bytes: Vec<u8>,
 }
 
-impl CreateImageRequest for CreateProposalReviewImageRequest {
-    fn content_type(&self) -> String {
-        self.content_type.clone()
-    }
-
-    fn content_bytes(&self) -> Vec<u8> {
-        self.content_bytes.clone()
-    }
-}
-
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
-pub struct CreateProposalReviewImageResponse {
-    pub path: String,
-}
-
-#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
-pub struct DeleteProposalReviewImageRequest {
-    pub proposal_id: String,
+pub struct UpdateProposalReviewImageResponse {
+    pub path: Option<String>,
 }

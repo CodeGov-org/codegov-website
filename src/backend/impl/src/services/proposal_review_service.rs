@@ -2,8 +2,8 @@ use std::{path::PathBuf, str::FromStr};
 
 use backend_api::{
     ApiError, CreateProposalReviewRequest, CreateProposalReviewResponse,
-    CreateProposalReviewImageResponse, CreateProposalReviewRequest, CreateProposalReviewResponse,
-    DeleteProposalReviewImageRequest, UpdateProposalReviewRequest,
+    UpdateProposalReviewImageRequest, UpdateProposalReviewImageRequestOperation,
+    UpdateProposalReviewImageResponse, UpdateProposalReviewRequest,
 };
 use candid::Principal;
 
@@ -37,17 +37,11 @@ pub trait ProposalReviewService {
         request: UpdateProposalReviewRequest,
     ) -> Result<(), ApiError>;
 
-    async fn create_proposal_review_image(
+    async fn update_proposal_review_image(
         &self,
         calling_principal: Principal,
-        request: CreateProposalReviewImageRequest,
-    ) -> Result<CreateProposalReviewImageResponse, ApiError>;
-
-    fn delete_proposal_review_image(
-        &self,
-        calling_principal: Principal,
-        request: DeleteProposalReviewImageRequest,
-    ) -> Result<(), ApiError>;
+        request: UpdateProposalReviewImageRequest,
+    ) -> Result<UpdateProposalReviewImageResponse, ApiError>;
 }
 
 pub struct ProposalReviewServiceImpl<
@@ -216,13 +210,11 @@ impl<
             .update_proposal_review(id, current_proposal_review)
     }
 
-    async fn create_proposal_review_image(
+    async fn update_proposal_review_image(
         &self,
         calling_principal: Principal,
-        request: CreateProposalReviewImageRequest,
-    ) -> Result<CreateProposalReviewImageResponse, ApiError> {
-        request.validate_fields()?;
-
+        request: UpdateProposalReviewImageRequest,
+    ) -> Result<UpdateProposalReviewImageResponse, ApiError> {
         let user_id = self
             .user_profile_repository
             .get_user_id_by_principal(&calling_principal)
@@ -238,59 +230,51 @@ impl<
 
         let date_time = get_date_time()?;
 
-        let sub_path = PathBuf::from_str(PROPOSAL_REVIEW_IMAGES_SUB_PATH).unwrap();
+        let image_path = match request.operation {
+            UpdateProposalReviewImageRequestOperation::Upsert(data) => {
+                data.validate_fields()?;
 
-        let image = Image {
-            created_at: DateTime::new(date_time)?,
-            user_id,
-            content_type: request.content_type(),
-            sub_path: Some(sub_path),
-            content_bytes: request.content_bytes,
+                if let Some(existing_image_id) = current_proposal_review.reproduced_build_image_id {
+                    self.image_repository.delete_image(&existing_image_id)?;
+                }
+
+                let sub_path = PathBuf::from_str(PROPOSAL_REVIEW_IMAGES_SUB_PATH).unwrap();
+
+                let image = Image {
+                    created_at: DateTime::new(date_time)?,
+                    user_id,
+                    content_type: data.content_type(),
+                    sub_path: Some(sub_path),
+                    content_bytes: data.content_bytes(),
+                };
+
+                let image_id = self.image_repository.create_image(image.clone()).await?;
+
+                current_proposal_review.reproduced_build_image_id = Some(image_id);
+
+                Some(image.path(&image_id))
+            }
+            UpdateProposalReviewImageRequestOperation::Delete => {
+                if let Some(existing_image_id) =
+                    current_proposal_review.reproduced_build_image_id.take()
+                {
+                    self.image_repository.delete_image(&existing_image_id)?;
+                } else {
+                    return Err(ApiError::not_found(&format!(
+                        "Proposal review for proposal with Id {} does not have an image",
+                        request.proposal_id
+                    )));
+                }
+
+                None
+            }
         };
 
-        let image_id = self.image_repository.create_image(image.clone()).await?;
-
-        current_proposal_review.reproduced_build_image_id = Some(image_id);
-
+        current_proposal_review.last_updated_at = Some(DateTime::new(date_time)?);
         self.proposal_review_repository
             .update_proposal_review(id, current_proposal_review)?;
 
-        Ok(CreateProposalReviewImageResponse {
-            path: image.path(&image_id),
-        })
-    }
-
-    fn delete_proposal_review_image(
-        &self,
-        calling_principal: Principal,
-        request: DeleteProposalReviewImageRequest,
-    ) -> Result<(), ApiError> {
-        let user_id = self
-            .user_profile_repository
-            .get_user_id_by_principal(&calling_principal)
-            .ok_or_else(|| {
-                ApiError::not_found(&format!(
-                    "User id for principal {} not found",
-                    calling_principal.to_text()
-                ))
-            })?;
-
-        let (id, mut current_proposal_review) =
-            self.get_current_proposal_review(request.proposal_id.clone(), user_id, None)?;
-
-        let Some(image_id) = current_proposal_review.reproduced_build_image_id else {
-            return Err(ApiError::not_found(&format!(
-                "Proposal review image not found for proposal with Id {}",
-                request.proposal_id,
-            )));
-        };
-
-        self.image_repository.delete_image(&image_id)?;
-
-        current_proposal_review.reproduced_build_image_id = None;
-
-        self.proposal_review_repository
-            .update_proposal_review(id, current_proposal_review)
+        Ok(UpdateProposalReviewImageResponse { path: image_path })
     }
 }
 

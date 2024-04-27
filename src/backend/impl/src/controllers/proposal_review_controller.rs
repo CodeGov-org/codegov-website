@@ -1,6 +1,6 @@
 use backend_api::{
-    ApiError, ApiResult, CreateProposalReviewImageRequest, CreateProposalReviewImageResponse,
-    CreateProposalReviewRequest, CreateProposalReviewResponse, DeleteProposalReviewImageRequest,
+    ApiError, ApiResult, CreateProposalReviewRequest, CreateProposalReviewResponse,
+    UpdateProposalReviewImageRequest, UpdateProposalReviewImageResponse,
     UpdateProposalReviewRequest,
 };
 use candid::Principal;
@@ -39,23 +39,14 @@ fn update_proposal_review(request: UpdateProposalReviewRequest) -> ApiResult<()>
 }
 
 #[update]
-async fn create_proposal_review_image(
-    request: CreateProposalReviewImageRequest,
-) -> ApiResult<CreateProposalReviewImageResponse> {
+async fn update_proposal_review_image(
+    request: UpdateProposalReviewImageRequest,
+) -> ApiResult<UpdateProposalReviewImageResponse> {
     let calling_principal = caller();
 
     ProposalReviewController::default()
-        .create_proposal_review_image(calling_principal, request)
+        .update_proposal_review_image(calling_principal, request)
         .await
-        .into()
-}
-
-#[update]
-fn delete_proposal_review_image(request: DeleteProposalReviewImageRequest) -> ApiResult<()> {
-    let calling_principal = caller();
-
-    ProposalReviewController::default()
-        .delete_proposal_review_image(calling_principal, request)
         .into()
 }
 
@@ -119,29 +110,17 @@ impl<A: AccessControlService, P: ProposalReviewService> ProposalReviewController
             .update_proposal_review(calling_principal, request)
     }
 
-    async fn create_proposal_review_image(
+    async fn update_proposal_review_image(
         &self,
         calling_principal: Principal,
-        request: CreateProposalReviewImageRequest,
-    ) -> Result<CreateProposalReviewImageResponse, ApiError> {
+        request: UpdateProposalReviewImageRequest,
+    ) -> Result<UpdateProposalReviewImageResponse, ApiError> {
         self.access_control_service
             .assert_principal_is_reviewer(&calling_principal)?;
 
         self.proposal_review_service
-            .create_proposal_review_image(calling_principal, request)
+            .update_proposal_review_image(calling_principal, request)
             .await
-    }
-
-    fn delete_proposal_review_image(
-        &self,
-        calling_principal: Principal,
-        request: DeleteProposalReviewImageRequest,
-    ) -> Result<(), ApiError> {
-        self.access_control_service
-            .assert_principal_is_reviewer(&calling_principal)?;
-
-        self.proposal_review_service
-            .delete_proposal_review_image(calling_principal, request)
     }
 }
 
