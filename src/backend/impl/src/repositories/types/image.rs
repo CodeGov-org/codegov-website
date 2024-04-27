@@ -1,10 +1,13 @@
 use std::{borrow::Cow, path::PathBuf, str::FromStr};
 
 use super::{DateTime, UserId, Uuid};
+use backend_api::ApiError;
 use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_stable_structures::{storable::Bound, Storable};
 
 pub const IMAGES_BASE_PATH: &str = "/images/";
+const ALLOWED_IMAGE_CONTENT_TYPES: &[&str] =
+    &["image/png", "image/jpeg", "image/gif", "image/webp"];
 
 pub type ImageId = Uuid;
 
@@ -42,6 +45,43 @@ impl Image {
         let id = PathBuf::from(id.to_string());
 
         path.join(id).to_string_lossy().to_string()
+    }
+}
+
+pub trait CreateImageRequest {
+    fn content_type(&self) -> String;
+
+    fn content_bytes(&self) -> Vec<u8>;
+
+    fn validate_fields(&self) -> Result<(), ApiError> {
+        let content_type = self.content_type();
+
+        if content_type.is_empty() {
+            return Err(ApiError::invalid_argument("Content type cannot be empty"));
+        }
+
+        if !ALLOWED_IMAGE_CONTENT_TYPES.contains(&content_type.as_str()) {
+            return Err(ApiError::invalid_argument(&format!(
+                "Content type {} not allowed",
+                content_type
+            )));
+        }
+
+        // We just check that the image is not empty, but this is not so robust
+        // as one could upload a single pixel "image".
+        //
+        // TODO: implement a more robust validation on the minimum size of the image
+        if self.content_bytes().is_empty() {
+            return Err(ApiError::invalid_argument("Image content cannot be empty"));
+        }
+
+        // We don't have to check for the maximum size of the image
+        // because the IC already limits the size of ingress messages to 2MB
+        //
+        // TODO: for this canister to be future proof, we should also check
+        // that the image is not too large.
+
+        Ok(())
     }
 }
 
@@ -109,5 +149,72 @@ mod tests {
                 format!("{}{}", IMAGES_BASE_PATH, uuid_b().to_string()),
             ),
         ]
+    }
+
+    struct TestCreateImageRequest {
+        content_type: String,
+        content_bytes: Vec<u8>,
+    }
+
+    impl TestCreateImageRequest {
+        fn new(content_type: String, content_bytes: Vec<u8>) -> Self {
+            Self {
+                content_type,
+                content_bytes,
+            }
+        }
+    }
+
+    impl CreateImageRequest for TestCreateImageRequest {
+        fn content_type(&self) -> String {
+            self.content_type.clone()
+        }
+
+        fn content_bytes(&self) -> Vec<u8> {
+            self.content_bytes.clone()
+        }
+    }
+
+    #[rstest]
+    fn test_validate_fields() {
+        let request = TestCreateImageRequest::new(
+            "image/png".to_string(),
+            fixtures::image_without_subpath().content_bytes,
+        );
+
+        assert!(request.validate_fields().is_ok());
+    }
+
+    #[rstest]
+    #[case::content_type_empty(create_image_request_content_type_empty())]
+    #[case::content_type_invalid(create_image_request_content_type_invalid())]
+    #[case::content_bytes_empty(create_image_request_content_bytes_empty())]
+    fn test_validate_fields_error(#[case] fixture: (TestCreateImageRequest, ApiError)) {
+        let (request, expected_error) = fixture;
+        assert_eq!(request.validate_fields().unwrap_err(), expected_error);
+    }
+
+    #[fixture]
+    fn create_image_request_content_type_empty() -> (TestCreateImageRequest, ApiError) {
+        (
+            TestCreateImageRequest::new("".to_string(), vec![]),
+            ApiError::invalid_argument("Content type cannot be empty"),
+        )
+    }
+
+    #[fixture]
+    fn create_image_request_content_type_invalid() -> (TestCreateImageRequest, ApiError) {
+        (
+            TestCreateImageRequest::new("image/invalid".to_string(), vec![]),
+            ApiError::invalid_argument("Content type image/invalid not allowed"),
+        )
+    }
+
+    #[fixture]
+    fn create_image_request_content_bytes_empty() -> (TestCreateImageRequest, ApiError) {
+        (
+            TestCreateImageRequest::new("image/png".to_string(), vec![]),
+            ApiError::invalid_argument("Image content cannot be empty"),
+        )
     }
 }
