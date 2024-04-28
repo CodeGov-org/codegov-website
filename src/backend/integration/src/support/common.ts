@@ -135,7 +135,6 @@ export async function createProposalReview(
     summary: ['summary'],
     review_duration_mins: [60],
     build_reproduced: [true],
-    reproduced_build_image_id: [],
   });
   const { id: proposalReviewId } = extractOkResponse(res);
 
@@ -157,7 +156,6 @@ export async function publishProposalReview(
     summary: [],
     review_duration_mins: [],
     build_reproduced: [],
-    reproduced_build_image_id: [],
   });
   extractOkResponse(res);
 }

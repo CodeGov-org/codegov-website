@@ -75,7 +75,6 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
-        reproduced_build_image_id: [],
       });
       const resErr = extractErrResponse(res);
 
@@ -99,7 +98,6 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
-        reproduced_build_image_id: [],
       });
       const resAnonymousErr = extractErrResponse(resAnonymous);
 
@@ -118,7 +116,6 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
-        reproduced_build_image_id: [],
       });
       const resAdminErr = extractErrResponse(resAdmin);
 
@@ -147,7 +144,6 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
-        reproduced_build_image_id: [],
       });
       const resFullOk = extractOkResponse(resFull);
 
@@ -185,7 +181,6 @@ describe('Proposal Review', () => {
         summary: [],
         review_duration_mins: [],
         build_reproduced: [],
-        reproduced_build_image_id: [],
       });
       const resEmptyOk = extractOkResponse(resEmpty);
 
@@ -218,7 +213,6 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
-        reproduced_build_image_id: [],
       });
       const resErr = extractErrResponse(res);
 
@@ -245,7 +239,6 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
-        reproduced_build_image_id: [],
       });
       const resErr = extractErrResponse(res);
 
@@ -272,7 +265,6 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
-        reproduced_build_image_id: [],
       });
       extractOkResponse(resAliceCreated);
 
@@ -281,7 +273,6 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
-        reproduced_build_image_id: [],
       });
       const resErr = extractErrResponse(res);
       expect(resErr).toEqual({
@@ -297,7 +288,6 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
-        reproduced_build_image_id: [],
       });
       extractOkResponse(resBobCreated);
     });
@@ -319,7 +309,6 @@ describe('Proposal Review', () => {
         summary: [''],
         review_duration_mins: [60],
         build_reproduced: [true],
-        reproduced_build_image_id: [],
       });
       const resEmptySummaryErr = extractErrResponse(resEmptySummary);
 
@@ -333,7 +322,6 @@ describe('Proposal Review', () => {
         summary: ['a'.repeat(1501)],
         review_duration_mins: [60],
         build_reproduced: [true],
-        reproduced_build_image_id: [],
       });
       const resLongSummaryErr = extractErrResponse(resLongSummary);
 
@@ -347,7 +335,6 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [0],
         build_reproduced: [true],
-        reproduced_build_image_id: [],
       });
       const resZeroDurationErr = extractErrResponse(resZeroDuration);
 
@@ -361,7 +348,6 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [3 * 60 + 1],
         build_reproduced: [true],
-        reproduced_build_image_id: [],
       });
       const resLongDurationErr = extractErrResponse(resLongDuration);
 
@@ -383,7 +369,6 @@ describe('Proposal Review', () => {
           summary: ['summary'],
           review_duration_mins: [60],
           build_reproduced: [true],
-          reproduced_build_image_id: [],
         });
         const resErr = extractErrResponse(res);
 
@@ -408,7 +393,6 @@ describe('Proposal Review', () => {
           summary: ['summary'],
           review_duration_mins: [60],
           build_reproduced: [true],
-          reproduced_build_image_id: [],
         });
         const resAnonymousErr = extractErrResponse(resAnonymous);
 
@@ -428,7 +412,6 @@ describe('Proposal Review', () => {
           summary: ['summary'],
           review_duration_mins: [60],
           build_reproduced: [true],
-          reproduced_build_image_id: [],
         });
         const resAdminErr = extractErrResponse(resAdmin);
 
@@ -454,7 +437,6 @@ describe('Proposal Review', () => {
           summary: ['summary'],
           review_duration_mins: [60],
           build_reproduced: [true],
-          reproduced_build_image_id: [],
         });
         const resErr = extractErrResponse(res);
 
@@ -484,7 +466,6 @@ describe('Proposal Review', () => {
           summary: ['summary'],
           review_duration_mins: [60],
           build_reproduced: [true],
-          reproduced_build_image_id: [],
         });
         const resErr = extractErrResponse(res);
 
@@ -512,7 +493,6 @@ describe('Proposal Review', () => {
           summary: ['updated summary'],
           review_duration_mins: [120],
           build_reproduced: [false],
-          reproduced_build_image_id: [],
         });
         const resOk = extractOkResponse(res);
 
@@ -537,7 +517,6 @@ describe('Proposal Review', () => {
           summary: [],
           review_duration_mins: [],
           build_reproduced: [],
-          reproduced_build_image_id: [],
         });
         const resOk = extractOkResponse(res);
 
@@ -560,7 +539,6 @@ describe('Proposal Review', () => {
           summary: [],
           review_duration_mins: [60],
           build_reproduced: [true],
-          reproduced_build_image_id: [],
         });
         extractOkResponse(resProposalReview);
 
@@ -572,7 +550,6 @@ describe('Proposal Review', () => {
           summary: ['updated summary'],
           review_duration_mins: [1],
           build_reproduced: [false],
-          reproduced_build_image_id: [],
         });
         const resErr = extractErrResponse(res);
 
@@ -601,7 +578,6 @@ describe('Proposal Review', () => {
           summary: [],
           review_duration_mins: [],
           build_reproduced: [],
-          reproduced_build_image_id: [],
         });
         extractOkResponse(resPublished);
 
@@ -611,7 +587,6 @@ describe('Proposal Review', () => {
           summary: ['updated summary'],
           review_duration_mins: [1],
           build_reproduced: [false],
-          reproduced_build_image_id: [],
         });
         const resNoStatusErr = extractErrResponse(resNoStatus);
 
@@ -626,7 +601,6 @@ describe('Proposal Review', () => {
           summary: ['updated summary'],
           review_duration_mins: [1],
           build_reproduced: [false],
-          reproduced_build_image_id: [],
         });
         const resPublishErr = extractErrResponse(resPublish);
 
@@ -654,7 +628,6 @@ describe('Proposal Review', () => {
           summary: [],
           review_duration_mins: [],
           build_reproduced: [],
-          reproduced_build_image_id: [],
         });
         extractOkResponse(resPublished);
 
@@ -664,7 +637,6 @@ describe('Proposal Review', () => {
           summary: ['updated summary'],
           review_duration_mins: [1],
           build_reproduced: [false],
-          reproduced_build_image_id: [],
         });
         const resOk = extractOkResponse(res);
 
@@ -691,7 +663,6 @@ describe('Proposal Review', () => {
           summary: [''],
           review_duration_mins: [60],
           build_reproduced: [true],
-          reproduced_build_image_id: [],
         });
         const resEmptySummaryErr = extractErrResponse(resEmptySummary);
 
@@ -706,7 +677,6 @@ describe('Proposal Review', () => {
           summary: ['a'.repeat(1501)],
           review_duration_mins: [60],
           build_reproduced: [true],
-          reproduced_build_image_id: [],
         });
         const resLongSummaryErr = extractErrResponse(resLongSummary);
 
@@ -721,7 +691,6 @@ describe('Proposal Review', () => {
           summary: ['summary'],
           review_duration_mins: [0],
           build_reproduced: [true],
-          reproduced_build_image_id: [],
         });
         const resZeroDurationErr = extractErrResponse(resZeroDuration);
 
@@ -736,7 +705,6 @@ describe('Proposal Review', () => {
           summary: ['summary'],
           review_duration_mins: [3 * 60 + 1],
           build_reproduced: [true],
-          reproduced_build_image_id: [],
         });
         const resLongDurationErr = extractErrResponse(resLongDuration);
 
@@ -763,7 +731,6 @@ describe('Proposal Review', () => {
           summary: [],
           review_duration_mins: [60],
           build_reproduced: [true],
-          reproduced_build_image_id: [],
         });
         extractOkResponse(resProposalReview);
 
@@ -773,7 +740,6 @@ describe('Proposal Review', () => {
           summary: [],
           review_duration_mins: [],
           build_reproduced: [],
-          reproduced_build_image_id: [],
         });
         const resErr = extractErrResponse(res);
 
