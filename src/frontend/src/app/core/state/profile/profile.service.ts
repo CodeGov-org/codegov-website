@@ -1,7 +1,7 @@
 import { Dialog } from '@angular/cdk/dialog';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 
 import { BackendActorService } from '~core/services';
 import {
@@ -15,7 +15,7 @@ import {
   mapUpdateProfileRequest,
   mergeProfileUpdate,
 } from './profile.mapper';
-import { Profile, ProfileUpdate } from './profile.model';
+import { Profile, ProfileUpdate, UserRole } from './profile.model';
 
 @Injectable({
   providedIn: 'root',
@@ -23,6 +23,14 @@ import { Profile, ProfileUpdate } from './profile.model';
 export class ProfileService {
   private userProfileSubject = new BehaviorSubject<Profile | null>(null);
   public userProfile$ = this.userProfileSubject.asObservable();
+
+  public userRole$ = this.userProfile$.pipe(
+    map(profile => (isNil(profile) ? null : profile.role)),
+  );
+
+  public isReviewer$ = this.userRole$.pipe(
+    map(role => role === UserRole.Reviewer),
+  );
 
   private createProfileMessage: LoadingDialogInput = {
     message: 'Creating new profile...',
