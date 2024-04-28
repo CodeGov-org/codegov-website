@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { marked } from 'marked';
 import { filter, map } from 'rxjs';
 
@@ -190,7 +190,10 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               isReviewer() && proposal.state === proposalState().InProgress
             ) {
               @if (userReview() === undefined) {
-                <a class="btn btn--outline" (click)="onCreateReview()">
+                <a
+                  class="btn btn--outline"
+                  [routerLink]="['/review', proposal.id, 'edit']"
+                >
                   Create review
                 </a>
               } @else if (userReview()!.state === 'Draft') {
@@ -274,7 +277,6 @@ export class ProposalDetailsComponent {
     private readonly sanitizer: DomSanitizer,
     private readonly profileService: ProfileService,
     private readonly reviewService: ReviewService,
-    private readonly router: Router,
   ) {
     this.proposalIdFromRoute$
       .pipe(takeUntilDestroyed())
@@ -283,18 +285,6 @@ export class ProposalDetailsComponent {
       });
 
     this.proposalService.loadProposalList();
-  }
-
-  public async onCreateReview(): Promise<void> {
-    if (this.userProfile() && this.currentProposal()) {
-      try {
-        await this.reviewService.createReview(this.currentProposal()!.id);
-      } catch {
-        throw new Error('Cannot create review');
-      } finally {
-        this.router.navigate(['/review', this.currentProposal()!.id, 'edit']);
-      }
-    }
   }
 
   public onToggleSummary(): void {

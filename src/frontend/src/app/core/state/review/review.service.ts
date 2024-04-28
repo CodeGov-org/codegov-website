@@ -15,15 +15,16 @@ import { ProposalReview } from './review.model';
 })
 export class ReviewService {
   private proposalReviewListSubject = new BehaviorSubject<ProposalReview[]>([]);
-  public proposalReviewList$ = this.proposalReviewListSubject.asObservable();
+  public readonly proposalReviewList$ =
+    this.proposalReviewListSubject.asObservable();
 
   private currentReviewSubject = new BehaviorSubject<ProposalReview | null>(
     null,
   );
-  public currentReview$ = this.currentReviewSubject.asObservable();
+  public readonly currentReview$ = this.currentReviewSubject.asObservable();
 
   private userReviewListSubject = new BehaviorSubject<ProposalReview[]>([]);
-  public userReviewList$ = this.userReviewListSubject.asObservable();
+  public readonly userReviewList$ = this.userReviewListSubject.asObservable();
 
   constructor(private readonly actorService: BackendActorService) {}
 

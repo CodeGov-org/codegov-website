@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
 import { FormatDatePipe } from '~core/pipes';
@@ -260,7 +260,7 @@ interface FilterForm {
                 @if (proposal.reviewState === undefined) {
                   <a
                     class="btn btn--outline"
-                    (click)="onCreateReview(proposal.id)"
+                    [routerLink]="['/review', proposal.id, 'edit']"
                   >
                     Create review
                   </a>
@@ -328,7 +328,6 @@ export class ProposalListComponent {
     private readonly proposalService: ProposalService,
     private readonly profileService: ProfileService,
     private readonly reviewService: ReviewService,
-    private readonly router: Router,
   ) {
     this.proposalService.loadProposalList(ProposalState.InProgress);
     if (this.userProfile()) {
@@ -358,17 +357,5 @@ export class ProposalListComponent {
     }
 
     await this.proposalService.loadProposalList(inputParam);
-  }
-
-  public async onCreateReview(proposalId: string): Promise<void> {
-    if (this.userProfile()) {
-      try {
-        await this.reviewService.createReview(proposalId);
-      } catch {
-        throw new Error('Cannot create review');
-      } finally {
-        this.router.navigate(['/review', proposalId, 'edit']);
-      }
-    }
   }
 }

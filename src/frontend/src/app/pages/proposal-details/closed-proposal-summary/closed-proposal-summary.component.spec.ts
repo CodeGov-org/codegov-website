@@ -39,7 +39,8 @@ describe('ClosedProposalSummaryComponent', () => {
       proposalServiceMock,
       'currentProposal$',
       of({
-        id: 1n,
+        id: '1',
+        ns_proposal_id: 1n,
         title: 'title',
         topic: ProposalTopic.RVM,
         type: 'unknown',
@@ -59,7 +60,7 @@ describe('ClosedProposalSummaryComponent', () => {
     );
 
     reviewServiceMock = reviewServiceMockFactory();
-    reviewServiceMock.proposalReviewList$ = of([]);
+    defineProp(reviewServiceMock, 'proposalReviewList$', of([]));
 
     activatedRoute = activatedRouteMockFactory();
     activatedRoute.params = of([{ id: 1 }]);

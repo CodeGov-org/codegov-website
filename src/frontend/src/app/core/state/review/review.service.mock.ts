@@ -7,5 +7,6 @@ export function reviewServiceMockFactory(): ReviewServiceMock {
     'loadReviewListByProposalId',
     'loadReviewListByReviewerlId',
     'loadReview',
+    'createReview',
   ]);
 }

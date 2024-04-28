@@ -14,10 +14,12 @@ const CACHE_TTL = 5_000;
 })
 export class ProposalService {
   private currentProposalListSubject = new BehaviorSubject<Proposal[]>([]);
-  public currentProposalList$ = this.currentProposalListSubject.asObservable();
+  public readonly currentProposalList$ =
+    this.currentProposalListSubject.asObservable();
 
   private currentProposalIdSubject = new BehaviorSubject<string | null>(null);
-  public currentProposalId$ = this.currentProposalIdSubject.asObservable();
+  public readonly currentProposalId$ =
+    this.currentProposalIdSubject.asObservable();
 
   private openProposalList: Proposal[] = [];
   private openProposalListLastLoaded: number | null = null;
