@@ -301,7 +301,9 @@ describe('Proposal Review Commit', () => {
           message: `Proposal with Id ${proposalId} is already completed`,
         });
       });
+    });
 
+    describe('batch two', () => {
       it('should not allow a reviewer to create a review commit for the same commit sha', async () => {
         const reviewer = generateRandomIdentity();
         const reviewerId = await createReviewer(actor, reviewer);
@@ -418,7 +420,7 @@ describe('Proposal Review Commit', () => {
       });
     });
 
-    describe('batch two', () => {
+    describe('batch three', () => {
       it('should allow multiple reviewers to create review commits for the same review', async () => {
         const alice = generateRandomIdentity();
         const bob = generateRandomIdentity();
@@ -1047,7 +1049,9 @@ describe('Proposal Review Commit', () => {
           message: `Proposal with Id ${proposalId} is already completed`,
         });
       });
+    });
 
+    describe('batch four', () => {
       it('should not allow to update with invalid input', async () => {
         const reviewer = generateRandomIdentity();
         await createReviewer(actor, reviewer);
@@ -1239,8 +1243,6 @@ describe('Proposal Review Commit', () => {
           code: 404,
           message: `Proposal review commit with Id ${nonExistentProposalReviewCommitId} not found`,
         });
-
-        expect(false).toBe(true);
       });
     });
 

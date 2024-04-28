@@ -101,9 +101,7 @@ export async function completeProposal(
 
   const completedProposal = proposals.find(p => p.id === proposalId);
   if (!completedProposal) {
-    throw new Error(
-      `Could not find proposal with id ${proposalId}`,
-    );
+    throw new Error(`Could not find proposal with id ${proposalId}`);
   }
 }
 
