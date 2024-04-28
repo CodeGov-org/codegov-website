@@ -40,17 +40,24 @@ export async function createReviewer(
 /**
  * Creates an RVM proposal and syncs the proposals on the backend canister.
  *
+ * Make sure the `title` param is unique, as it is used to find
+ * the newly created proposal id in the backend canister.
+ *
  * @returns {Promise<string>} the backend canister id of created proposal
  */
 export async function createProposal(
   actor: BackendActorService,
   governance: Governance,
+  title: string,
 ): Promise<string> {
   const neuronId = await governance.createNeuron(nnsProposerIdentity);
 
+  // randomize the proposal title to make it unique
+  const proposalTitle = title + Math.random().toString();
+
   await governance.createRvmProposal(nnsProposerIdentity, {
     neuronId: neuronId,
-    title: 'Test Proposal',
+    title: proposalTitle,
     summary: 'Test Proposal Summary',
     replicaVersion: 'ca82a6dff817ec66f44342007202690a93763949',
   });
@@ -63,7 +70,12 @@ export async function createProposal(
   });
   const { proposals } = extractOkResponse(res);
 
-  return proposals[proposals.length - 1].id;
+  const proposal = proposals.find(p => p.proposal.title === proposalTitle);
+  if (!proposal) {
+    throw new Error(`Could not find proposal with title ${title}`);
+  }
+
+  return proposal.id;
 }
 
 /**
@@ -84,11 +96,9 @@ export async function completeProposal(
   });
   const { proposals } = extractOkResponse(res);
 
-  const completedProposal = proposals[0];
-  if (completedProposal.id !== proposalId) {
-    throw new Error(
-      `Expected proposal id ${proposalId} but got ${completedProposal.id}`,
-    );
+  const completedProposal = proposals.find(p => p.id === proposalId);
+  if (!completedProposal) {
+    throw new Error(`Could not find proposal with id ${proposalId}`);
   }
 }
 
@@ -111,7 +121,12 @@ export async function createProposalReview(
 }> {
   let proposalId = existingProposalId;
   if (!proposalId) {
-    proposalId = await createProposal(actor, governance);
+    // randomize the proposal title to make it unique
+    proposalId = await createProposal(
+      actor,
+      governance,
+      'Test proposal ' + Math.random(),
+    );
   }
 
   actor.setIdentity(reviewer);
@@ -147,6 +162,9 @@ export async function publishProposalReview(
   extractOkResponse(res);
 }
 
+export const VALID_COMMIT_SHA_A = '47d98477c6c59e570e2220aab433b0943b326ef8';
+export const VALID_COMMIT_SHA_B = 'f8f6b901032c59f4d60c8ad90c74042859bcc42e';
+
 /**
  * Creates a new proposal review commit with the given commit sha.
  * Uses the {@link createProposalReview} function to create the proposal review.
@@ -159,16 +177,25 @@ export async function createProposalReviewCommit(
   governance: Governance,
   reviewer: Identity,
   commitSha: string,
+  existingProposalReviewData?: {
+    proposalId: string;
+    proposalReviewId: string;
+  },
 ): Promise<{
   proposalId: string;
   proposalReviewId: string;
   proposalReviewCommitId: string;
 }> {
-  const { proposalId, proposalReviewId } = await createProposalReview(
-    actor,
-    governance,
-    reviewer,
-  );
+  let proposalId: string;
+  let proposalReviewId: string;
+  if (!existingProposalReviewData) {
+    const result = await createProposalReview(actor, governance, reviewer);
+    proposalId = result.proposalId;
+    proposalReviewId = result.proposalReviewId;
+  } else {
+    proposalId = existingProposalReviewData.proposalId;
+    proposalReviewId = existingProposalReviewData.proposalReviewId;
+  }
 
   actor.setIdentity(reviewer);
   const res = await actor.create_proposal_review_commit({

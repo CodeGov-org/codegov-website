@@ -1,5 +1,3 @@
-use backend_api::CreateProposalReviewCommitResponse;
-
 use crate::repositories::{ProposalReviewCommit, ProposalReviewCommitId, ReviewCommitState};
 
 impl From<ReviewCommitState> for backend_api::ReviewCommitState {
@@ -51,12 +49,21 @@ impl From<ProposalReviewCommit> for backend_api::ProposalReviewCommit {
     }
 }
 
-pub fn map_create_proposal_review_commit_response(
+pub fn map_proposal_review_commit(
     id: ProposalReviewCommitId,
     proposal_review_commit: ProposalReviewCommit,
-) -> CreateProposalReviewCommitResponse {
-    CreateProposalReviewCommitResponse {
+) -> backend_api::ProposalReviewCommitWithId {
+    backend_api::ProposalReviewCommitWithId {
         id: id.to_string(),
         proposal_review_commit: proposal_review_commit.into(),
     }
+}
+
+pub fn map_proposal_review_commits(
+    proposal_review_commits: Vec<(ProposalReviewCommitId, ProposalReviewCommit)>,
+) -> Vec<backend_api::ProposalReviewCommitWithId> {
+    proposal_review_commits
+        .into_iter()
+        .map(|(id, proposal_review_commit)| map_proposal_review_commit(id, proposal_review_commit))
+        .collect()
 }
