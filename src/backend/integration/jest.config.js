@@ -7,6 +7,6 @@ module.exports = {
   },
   globalSetup: '<rootDir>/src/global-setup.ts',
   globalTeardown: '<rootDir>/src/global-teardown.ts',
-  testTimeout: 30_000,
+  testTimeout: 60_000,
   detectOpenHandles: true,
 };

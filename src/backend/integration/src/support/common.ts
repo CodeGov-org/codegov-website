@@ -4,6 +4,7 @@ import { Governance } from './governance';
 import { controllerIdentity, nnsProposerIdentity } from './identity';
 import { extractOkResponse } from './response';
 import { Identity } from '@dfinity/agent';
+import { sleep } from './helpers';
 
 type BackendActorService = Actor<_SERVICE>;
 
@@ -71,6 +72,9 @@ export async function createProposal(
   if (!proposal) {
     throw new Error(`Could not find proposal with title ${title}`);
   }
+
+  await sleep(100);
+
   return proposal.id;
 }
 
@@ -136,6 +140,8 @@ export async function createProposalReview(
     reproduced_build_image_id: [],
   });
   const { id: proposalReviewId } = extractOkResponse(res);
+
+  await sleep(100);
 
   return { proposalId, proposalReviewId };
 }
@@ -208,6 +214,8 @@ export async function createProposalReviewCommit(
     },
   });
   const { id: proposalReviewCommitId } = extractOkResponse(res);
+
+  await sleep(100);
 
   return {
     proposalId,
