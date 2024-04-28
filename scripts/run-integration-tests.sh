@@ -1,3 +1,5 @@
+set -e
+
 pnpm -F backend-integration test -- {dev,user_profile}.spec
 
 pnpm -F backend-integration test -- proposal_review.spec -t "create proposal review"
