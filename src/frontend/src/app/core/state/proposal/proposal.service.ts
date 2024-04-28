@@ -16,7 +16,7 @@ export class ProposalService {
   private currentProposalListSubject = new BehaviorSubject<Proposal[]>([]);
   public currentProposalList$ = this.currentProposalListSubject.asObservable();
 
-  private currentProposalIdSubject = new BehaviorSubject<bigint | null>(null);
+  private currentProposalIdSubject = new BehaviorSubject<string | null>(null);
   public currentProposalId$ = this.currentProposalIdSubject.asObservable();
 
   private openProposalList: Proposal[] = [];
@@ -52,7 +52,7 @@ export class ProposalService {
     }
   }
 
-  public async setCurrentProposalId(proposalId: bigint): Promise<void> {
+  public async setCurrentProposalId(proposalId: string): Promise<void> {
     this.currentProposalIdSubject.next(proposalId);
   }
 

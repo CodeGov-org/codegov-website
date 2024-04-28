@@ -150,11 +150,11 @@ interface FilterForm {
               <app-key-col [id]="'proposal-id-' + i">ID</app-key-col>
               <app-value-col [attr.aria-labelledby]="'proposal-id-' + i">
                 <a
-                  [href]="linkBaseUrl().Proposal + proposal.id"
+                  [href]="linkBaseUrl().Proposal + proposal.ns_proposal_id"
                   target="_blank"
                   rel="nofollow noreferrer"
                 >
-                  {{ proposal.id }}
+                  {{ proposal.ns_proposal_id }}
                 </a>
               </app-value-col>
 
@@ -360,13 +360,10 @@ export class ProposalListComponent {
     await this.proposalService.loadProposalList(inputParam);
   }
 
-  public async onCreateReview(proposalId: bigint): Promise<void> {
+  public async onCreateReview(proposalId: string): Promise<void> {
     if (this.userProfile()) {
       try {
-        await this.reviewService.createReview(
-          proposalId,
-          this.userProfile()!.id,
-        );
+        await this.reviewService.createReview(proposalId);
       } catch {
         throw new Error('Cannot create review');
       } finally {

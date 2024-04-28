@@ -86,11 +86,11 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
             <app-key-col id="proposal-id">ID</app-key-col>
             <app-value-col aria-labelledby="proposal-id">
               <a
-                [href]="linkBaseUrl().Proposal + proposal.id"
+                [href]="linkBaseUrl().Proposal + proposal.ns_proposal_id"
                 target="_blank"
                 rel="nofollow noreferrer"
               >
-                {{ proposal.id }}
+                {{ proposal.ns_proposal_id }}
               </a>
             </app-value-col>
 
@@ -260,7 +260,7 @@ export class ProposalDetailsComponent {
   private readonly proposalIdFromRoute$ = this.route.params.pipe(
     map(params => {
       try {
-        return BigInt(params['id']);
+        return params['id'];
       } catch (error) {
         return null;
       }
@@ -288,14 +288,11 @@ export class ProposalDetailsComponent {
   public async onCreateReview(): Promise<void> {
     if (this.userProfile() && this.currentProposal()) {
       try {
-        await this.reviewService.createReview(
-          this.currentProposal()!.id,
-          this.userProfile()!.id,
-        );
+        await this.reviewService.createReview(this.currentProposal()!.id);
       } catch {
         throw new Error('Cannot create review');
       } finally {
-        this.router.navigate(['/review', this.currentProposal()?.id, 'edit']);
+        this.router.navigate(['/review', this.currentProposal()!.id, 'edit']);
       }
     }
   }

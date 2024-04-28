@@ -284,23 +284,29 @@ export class ClosedProposalSummaryComponent implements OnInit {
 
     this.reviewList()?.forEach(review => {
       for (const commit of review.reviewCommits) {
-        const existingCommit = map.get(commit.commitId) ?? {
+        const existingCommit = map.get(commit.id) ?? {
           proposalId: this.proposal().id,
-          commitId: commit.commitId,
+          commitId: commit.id,
+          commitSha: commit.commitSha,
           totalReviewers: 0,
           reviewedCount: 0,
           matchesDescriptionCount: 0,
           highlights: [],
         };
-        existingCommit.highlights.push({
-          reviewerId: review.reviewerId,
-          text: commit.highlights,
-        });
+        if (commit.highlights)
+          existingCommit.highlights.push({
+            reviewerId: review.reviewerId,
+            text: commit.highlights,
+          });
         existingCommit.totalReviewers++;
-        existingCommit.reviewedCount += commit.reviewed;
-        existingCommit.matchesDescriptionCount += commit.matchesDescription;
+        existingCommit.reviewedCount = commit.reviewed
+          ? existingCommit.reviewedCount++
+          : existingCommit.reviewedCount;
+        existingCommit.matchesDescriptionCount = commit.matchesDescription
+          ? existingCommit.matchesDescriptionCount++
+          : existingCommit.matchesDescriptionCount;
 
-        map.set(commit.commitId, existingCommit);
+        map.set(commit.id, existingCommit);
       }
     });
     return Array.from(map.values());

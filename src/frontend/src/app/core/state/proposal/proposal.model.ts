@@ -1,5 +1,6 @@
 export interface Proposal {
-  id: bigint;
+  id: string;
+  ns_proposal_id: bigint;
   title: string;
   topic: ProposalTopic;
   type: string;

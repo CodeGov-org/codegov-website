@@ -76,7 +76,7 @@ import { isNotNil } from '~core/utils';
             <app-key-value-grid [columnNumber]="1">
               <app-key-col id="proposal-title">Proposal title</app-key-col>
               <app-value-col aria-labelledby="proposal-title">
-                <a [routerLink]="['/', proposal.id]">
+                <a [routerLink]="['/', proposal.ns_proposal_id]">
                   {{ proposal.title }}
                 </a>
               </app-value-col>
@@ -138,11 +138,7 @@ import { isNotNil } from '~core/utils';
         </cg-card>
 
         <h2 class="h4">Commits</h2>
-        @for (
-          commit of review.reviewCommits;
-          track commit.commitId;
-          let i = $index
-        ) {
+        @for (commit of review.reviewCommits; track commit.id; let i = $index) {
           <cg-card class="review__commit">
             <div slot="cardContent">
               <app-key-value-grid [columnNumber]="1">
@@ -150,26 +146,26 @@ import { isNotNil } from '~core/utils';
                 <app-value-col [attr.labelledby]="'commit-id-' + i">
                   <a
                     [href]="
-                      'https://github.com/dfinity/ic/commit/' + commit.commitId
+                      'https://github.com/dfinity/ic/commit/' + commit.commitSha
                     "
                     target="_blank"
                     rel="nofollow noreferrer"
                   >
-                    {{ commit.commitId }}
+                    {{ commit.commitSha }}
                   </a>
                 </app-value-col>
 
                 <app-key-col [id]="'reviewed-' + i">Reviewed</app-key-col>
                 <app-value-col [attr.labelledby]="'reviewed-' + i">
-                  {{ commit.reviewed === 1 ? 'Yes' : 'No' }}
+                  {{ commit.reviewed ? 'Yes' : 'No' }}
                 </app-value-col>
 
-                @if (commit.reviewed === 1) {
+                @if (commit.reviewed) {
                   <app-key-col [id]="'matches-descr-id-' + i">
                     Matches description
                   </app-key-col>
                   <app-value-col [attr.labelledby]="'matches-descr-id-' + i">
-                    {{ commit.matchesDescription === 1 ? 'Yes' : 'No' }}
+                    {{ commit.matchesDescription ? 'Yes' : 'No' }}
                   </app-value-col>
 
                   <app-key-col [id]="'summary-id-' + i">
@@ -198,7 +194,7 @@ export class ProposalReviewComponent {
   public readonly reviewIdFromRoute$ = this.route.params.pipe(
     map(params => {
       try {
-        return BigInt(params['id']);
+        return params['id'];
       } catch (error) {
         return null;
       }
