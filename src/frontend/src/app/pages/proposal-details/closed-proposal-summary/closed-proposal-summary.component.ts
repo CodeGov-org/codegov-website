@@ -120,7 +120,7 @@ import {
               <cg-check-circle-icon class="adopt-icon"></cg-check-circle-icon>
 
               <p>
-                {{ votesAdopt() }} reviewer(s) voted to
+                {{ proposalStats()?.adopt }} reviewer(s) voted to
                 <span class="summary__vote--adopt">adopt</span>
                 this proposal
               </p>
@@ -129,7 +129,7 @@ import {
               <cg-dash-circle-icon class="reject-icon"></cg-dash-circle-icon>
 
               <p>
-                {{ votesReject() }} reviewer(s) voted to
+                {{ proposalStats()?.reject }} reviewer(s) voted to
                 <span class="summary__vote--reject">reject</span>
                 this proposal
               </p>
@@ -141,7 +141,9 @@ import {
               {{ commitList().length }} commits reviewed by
               {{ reviewList.length }} reviewers
             </p>
-            <p>Build verified by {{ buildReproducedCount() }} reviewers</p>
+            <p>
+              Build verified by {{ proposalStats()?.buildReproduced }} reviewers
+            </p>
           </div>
         </div>
       </cg-card>
@@ -257,73 +259,47 @@ export class ClosedProposalSummaryComponent implements OnInit {
 
   public readonly reviewList = toSignal(this.reviewService.reviewList$);
 
-  public votesAdopt = computed(() => {
-    let value = 0;
-    const reviewList = this.reviewList();
-
-    reviewList?.forEach(review => {
-      if (review.reviewerVote === 'ADOPT') {
-        value++;
-      }
-    });
-    return value;
-  });
-
-  public votesReject = computed(() => {
-    let value = 0;
-    const reviewList = this.reviewList();
-
-    reviewList?.forEach(review => {
-      if (review.reviewerVote === 'REJECT') {
-        value++;
-      }
-    });
-    return value;
-  });
-
-  public buildReproducedCount = computed(() => {
-    let value = 0;
-    const reviewList = this.reviewList();
-
-    reviewList?.forEach(review => {
-      if (review.buildReproduced) {
-        value++;
-      }
-    });
-    return value;
-  });
+  public proposalStats = computed(
+    () =>
+      this.reviewList()?.reduce(
+        (accum, review) => ({
+          adopt:
+            review.reviewerVote === 'ADOPT' ? accum.adopt + 1 : accum.adopt,
+          reject:
+            review.reviewerVote === 'REJECT' ? accum.reject + 1 : accum.reject,
+          buildReproduced: review.buildReproduced
+            ? accum.buildReproduced + 1
+            : accum.buildReproduced,
+        }),
+        { adopt: 0, reject: 0, buildReproduced: 0 },
+      ) ?? null,
+  );
 
   public commitList = computed(() => {
-    const list: ProposalCommitReviewSummary[] = [];
+    const map: Map<string, ProposalCommitReviewSummary> = new Map();
 
     this.reviewList()?.forEach(review => {
       for (const commit of review.reviewCommits) {
-        const existingCommit = list.find(c => c.commitId === commit.commitId);
+        const existingCommit = map.get(commit.commitId) ?? {
+          proposalId: this.proposal().id,
+          commitId: commit.commitId,
+          totalReviewers: 0,
+          reviewedCount: 0,
+          matchesDescriptionCount: 0,
+          highlights: [],
+        };
+        existingCommit.highlights.push({
+          reviewerId: review.reviewerId,
+          text: commit.highlights,
+        });
+        existingCommit.totalReviewers++;
+        existingCommit.reviewedCount += commit.reviewed;
+        existingCommit.matchesDescriptionCount += commit.matchesDescription;
 
-        if (existingCommit) {
-          existingCommit.highlights.push({
-            reviewerId: review.reviewerId,
-            text: commit.highlights,
-          });
-          existingCommit.totalReviewers++;
-          existingCommit.reviewedCount += commit.reviewed;
-          existingCommit.matchesDescriptionCount += commit.matchesDescription;
-        } else {
-          list.push({
-            proposalId: this.proposal().id,
-            commitId: commit.commitId,
-            totalReviewers: 1,
-            reviewedCount: commit.reviewed,
-            matchesDescriptionCount: commit.matchesDescription,
-            highlights: [
-              { reviewerId: review.reviewerId, text: commit.highlights },
-            ],
-          });
-        }
+        map.set(commit.commitId, existingCommit);
       }
     });
-
-    return list;
+    return Array.from(map.values());
   });
 
   constructor(private readonly reviewService: ReviewService) {}
