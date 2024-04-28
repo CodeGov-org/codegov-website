@@ -17,6 +17,7 @@ import {
   extractOkResponse,
   publishProposalReview,
   setupBackendCanister,
+  sleep,
 } from '../support';
 
 const NNS_SUBNET_ID =
@@ -490,7 +491,7 @@ describe('Proposal Review Commit', () => {
         });
       });
 
-      it.skip('should not allow a reviewer to create too many review commits', async () => {
+      it('should not allow a reviewer to create too many review commits', async () => {
         const reviewer = generateRandomIdentity();
         const reviewerId = await createReviewer(actor, reviewer);
 
@@ -517,6 +518,7 @@ describe('Proposal Review Commit', () => {
             },
           });
           extractOkResponse(res);
+          await sleep(100);
         }
 
         const res1 = await actor.create_proposal_review_commit({
@@ -583,7 +585,7 @@ describe('Proposal Review Commit', () => {
         });
       });
 
-      it.skip('should not allow multiple reviewers to create too many review commits', async () => {
+      it('should not allow multiple reviewers to create too many review commits', async () => {
         const alice = generateRandomIdentity();
         const bob = generateRandomIdentity();
         const aliceId = await createReviewer(actor, alice);
@@ -612,6 +614,7 @@ describe('Proposal Review Commit', () => {
             },
           });
           extractOkResponse(res);
+          await sleep(100);
         }
 
         const resAlice = await actor.create_proposal_review_commit({
