@@ -209,12 +209,12 @@ import {
                 <a
                   class="commit__link"
                   [href]="
-                    'https://github.com/dfinity/ic/commit/' + commit.commitId
+                    'https://github.com/dfinity/ic/commit/' + commit.commitSha
                   "
                   target="_blank"
                   rel="nofollow noreferrer"
                 >
-                  {{ commit.commitId }}
+                  {{ commit.commitSha }}
                 </a>
               </app-value-col>
 
@@ -299,12 +299,10 @@ export class ClosedProposalSummaryComponent implements OnInit {
             text: commit.highlights,
           });
         existingCommit.totalReviewers++;
-        existingCommit.reviewedCount = commit.reviewed
-          ? existingCommit.reviewedCount++
-          : existingCommit.reviewedCount;
-        existingCommit.matchesDescriptionCount = commit.matchesDescription
-          ? existingCommit.matchesDescriptionCount++
-          : existingCommit.matchesDescriptionCount;
+        existingCommit.reviewedCount += commit.reviewed ? 1 : 0;
+        existingCommit.matchesDescriptionCount += commit.matchesDescription
+          ? 1
+          : 0;
 
         map.set(commit.id, existingCommit);
       }

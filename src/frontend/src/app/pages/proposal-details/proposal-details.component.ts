@@ -193,17 +193,17 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
                 <a class="btn btn--outline" (click)="onCreateReview()">
                   Create review
                 </a>
-              } @else if (userReview()?.state === 'Draft') {
+              } @else if (userReview()!.state === 'Draft') {
                 <a
                   class="btn btn--outline"
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Edit review
                 </a>
-              } @else if (userReview()?.state === 'Completed') {
+              } @else if (userReview()!.state === 'Completed') {
                 <a
                   class="btn btn--outline"
-                  [routerLink]="['/review', userReview()?.id, 'view']"
+                  [routerLink]="['/review', userReview()!.id, 'view']"
                 >
                   My review
                 </a>
