@@ -39,7 +39,7 @@
     "@angular-eslint/template-parser": "^17.3.0",
     "@angular/cli": "^17.3.3",
     "@angular/compiler-cli": "^17.3.3",
-    "@hadronous/pic": "0.7.0",
+    "@hadronous/pic": "0.8.1",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

@@ -5,7 +5,7 @@ use backend_api::{
 use candid::Principal;
 
 use crate::{
-    mappings::map_create_proposal_review_commit_response,
+    mappings::map_proposal_review_commit,
     repositories::{
         CommitSha, DateTime, ProposalRepository, ProposalRepositoryImpl, ProposalReviewCommit,
         ProposalReviewCommitRepository, ProposalReviewCommitRepositoryImpl,
@@ -151,10 +151,7 @@ impl<
             .create_proposal_review_commit(proposal_review_commit.clone())
             .await?;
 
-        Ok(map_create_proposal_review_commit_response(
-            id,
-            proposal_review_commit,
-        ))
+        Ok(map_proposal_review_commit(id, proposal_review_commit))
     }
 
     fn update_proposal_review_commit(
