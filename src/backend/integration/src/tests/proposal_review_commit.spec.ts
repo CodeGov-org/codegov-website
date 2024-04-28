@@ -17,7 +17,6 @@ import {
   extractOkResponse,
   publishProposalReview,
   setupBackendCanister,
-  sleep,
 } from '../support';
 
 const NNS_SUBNET_ID =
@@ -523,7 +522,6 @@ describe('Proposal Review Commit', () => {
             },
           });
           extractOkResponse(res);
-          await sleep(100);
         }
 
         const res1 = await actor.create_proposal_review_commit({
@@ -619,7 +617,6 @@ describe('Proposal Review Commit', () => {
             },
           });
           extractOkResponse(res);
-          await sleep(100);
         }
 
         const resAlice = await actor.create_proposal_review_commit({
@@ -1080,7 +1077,6 @@ describe('Proposal Review Commit', () => {
           code: 400,
           message: 'Comment cannot be empty',
         });
-        await sleep(100);
 
         const resLongComment = await actor.update_proposal_review_commit({
           id: proposalReviewCommitId,
@@ -1097,7 +1093,6 @@ describe('Proposal Review Commit', () => {
           code: 400,
           message: 'Comment must be less than 1000 characters',
         });
-        await sleep(100);
 
         const resTooManyHighlights = await actor.update_proposal_review_commit({
           id: proposalReviewCommitId,
@@ -1115,7 +1110,6 @@ describe('Proposal Review Commit', () => {
           code: 400,
           message: 'Number of highlights must be less than 5',
         });
-        await sleep(100);
 
         const resEmptyHighlight = await actor.update_proposal_review_commit({
           id: proposalReviewCommitId,
@@ -1132,7 +1126,6 @@ describe('Proposal Review Commit', () => {
           code: 400,
           message: 'Highlight cannot be empty',
         });
-        await sleep(100);
 
         const resLongHighlight = await actor.update_proposal_review_commit({
           id: proposalReviewCommitId,
