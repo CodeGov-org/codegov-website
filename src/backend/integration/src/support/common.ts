@@ -53,9 +53,12 @@ export async function createProposal(
 ): Promise<string> {
   const neuronId = await governance.createNeuron(nnsProposerIdentity);
 
+  // randomize the proposal title to make it unique
+  const proposalTitle = title + Math.random().toString();
+
   await governance.createRvmProposal(nnsProposerIdentity, {
     neuronId: neuronId,
-    title,
+    title: proposalTitle,
     summary: 'Test Proposal Summary',
     replicaVersion: 'ca82a6dff817ec66f44342007202690a93763949',
   });
@@ -68,7 +71,7 @@ export async function createProposal(
   });
   const { proposals } = extractOkResponse(res);
 
-  const proposal = proposals.find(p => p.proposal.title === title);
+  const proposal = proposals.find(p => p.proposal.title === proposalTitle);
   if (!proposal) {
     throw new Error(`Could not find proposal with title ${title}`);
   }
@@ -96,10 +99,10 @@ export async function completeProposal(
   });
   const { proposals } = extractOkResponse(res);
 
-  const completedProposal = proposals[0];
-  if (completedProposal.id !== proposalId) {
+  const completedProposal = proposals.find(p => p.id === proposalId);
+  if (!completedProposal) {
     throw new Error(
-      `Expected proposal id ${proposalId} but got ${completedProposal.id}`,
+      `Could not find proposal with id ${proposalId}`,
     );
   }
 }

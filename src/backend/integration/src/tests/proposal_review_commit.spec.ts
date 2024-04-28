@@ -43,7 +43,7 @@ describe('Proposal Review Commit', () => {
 
   let governance: Governance;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     pic = await PocketIc.create(process.env.PIC_URL, {
       processingTimeoutMs: 10_000,
       nns: {
@@ -51,13 +51,16 @@ describe('Proposal Review Commit', () => {
         subnetId: Principal.fromText(NNS_SUBNET_ID),
       },
     });
+  });
+
+  beforeEach(async () => {
     const fixture = await setupBackendCanister(pic, currentDate);
     actor = fixture.actor;
 
     governance = new Governance(pic);
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await pic.tearDown();
   });
 
@@ -1236,6 +1239,8 @@ describe('Proposal Review Commit', () => {
           code: 404,
           message: `Proposal review commit with Id ${nonExistentProposalReviewCommitId} not found`,
         });
+
+        expect(false).toBe(true);
       });
     });
 
