@@ -1,6 +1,9 @@
-use backend_api::CreateProposalReviewResponse;
+use crate::repositories::{
+    ProposalReview, ProposalReviewCommit, ProposalReviewCommitId, ProposalReviewId,
+    ProposalReviewStatus,
+};
 
-use crate::repositories::{ProposalReview, ProposalReviewId, ProposalReviewStatus};
+use super::map_proposal_review_commits;
 
 impl From<ProposalReviewStatus> for backend_api::ProposalReviewStatus {
     fn from(proposal_review_status: ProposalReviewStatus) -> Self {
@@ -34,16 +37,21 @@ impl From<ProposalReview> for backend_api::ProposalReview {
             reproduced_build_image_id: proposal_review
                 .reproduced_build_image_id
                 .map(|id| id.to_string()),
+            proposal_review_commits: vec![],
         }
     }
 }
 
-pub fn map_create_proposal_review_response(
+pub fn map_proposal_review(
     id: ProposalReviewId,
     proposal_review: ProposalReview,
-) -> CreateProposalReviewResponse {
-    CreateProposalReviewResponse {
+    proposal_review_commits: Vec<(ProposalReviewCommitId, ProposalReviewCommit)>,
+) -> backend_api::ProposalReviewWithId {
+    backend_api::ProposalReviewWithId {
         id: id.to_string(),
-        proposal_review: proposal_review.into(),
+        proposal_review: backend_api::ProposalReview {
+            proposal_review_commits: map_proposal_review_commits(proposal_review_commits),
+            ..proposal_review.into()
+        },
     }
 }

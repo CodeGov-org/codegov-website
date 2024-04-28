@@ -5,4 +5,8 @@ module.exports = {
   moduleNameMapper: {
     '^@cg/(.*)$': '<rootDir>/../../../lib/$1',
   },
+  globalSetup: '<rootDir>/src/global-setup.ts',
+  globalTeardown: '<rootDir>/src/global-teardown.ts',
+  testTimeout: 30_000,
+  detectOpenHandles: true,
 };
