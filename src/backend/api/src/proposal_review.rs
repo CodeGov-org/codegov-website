@@ -20,7 +20,7 @@ pub struct ProposalReview {
     pub summary: String,
     pub review_duration_mins: u16,
     pub build_reproduced: bool,
-    pub reproduced_build_image_id: Option<String>,
+    pub reproduced_build_image_path: Option<String>,
     pub proposal_review_commits: Vec<ProposalReviewCommitWithId>,
 }
 

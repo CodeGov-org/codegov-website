@@ -167,7 +167,7 @@ impl<
             .create_proposal_review(proposal_review.clone())
             .await?;
 
-        Ok(map_proposal_review(id, proposal_review, vec![]))
+        Ok(map_proposal_review(id, proposal_review, vec![], None))
     }
 
     fn update_proposal_review(
@@ -275,16 +275,8 @@ impl<
                     return None;
                 }
 
-                let proposal_review_commits = self
-                    .proposal_review_commit_repository
-                    .get_proposal_review_commits_by_proposal_review_id(*proposal_review_id)
-                    .ok()?;
-
-                Some(map_proposal_review(
-                    *proposal_review_id,
-                    proposal_review.clone(),
-                    proposal_review_commits,
-                ))
+                self.map_proposal_review(*proposal_review_id, proposal_review.clone())
+                    .ok()
             })
             .collect();
 
@@ -321,15 +313,7 @@ impl<
             return Err(ApiError::permission_denied("Not authorized"));
         }
 
-        let proposal_review_commits = self
-            .proposal_review_commit_repository
-            .get_proposal_review_commits_by_proposal_review_id(proposal_review_id)?;
-
-        Ok(map_proposal_review(
-            proposal_review_id,
-            proposal_review,
-            proposal_review_commits,
-        ))
+        self.map_proposal_review(proposal_review_id, proposal_review)
     }
 
     async fn update_proposal_review_image(
@@ -502,6 +486,32 @@ impl<
         }
 
         Ok((id, current_proposal_review))
+    }
+
+    fn map_proposal_review(
+        &self,
+        id: ProposalReviewId,
+        proposal_review: ProposalReview,
+    ) -> Result<backend_api::ProposalReviewWithId, ApiError> {
+        let proposal_review_commits = self
+            .proposal_review_commit_repository
+            .get_proposal_review_commits_by_proposal_review_id(id)?;
+
+        let reproduced_build_image_path =
+            proposal_review
+                .reproduced_build_image_id
+                .and_then(|image_id| {
+                    let image = self.image_repository.get_image_by_id(&image_id);
+
+                    image.map(|image| image.path(&image_id))
+                });
+
+        Ok(map_proposal_review(
+            id,
+            proposal_review,
+            proposal_review_commits,
+            reproduced_build_image_path,
+        ))
     }
 }
 

@@ -158,7 +158,7 @@ describe('Proposal Review', () => {
           summary: 'summary',
           review_duration_mins: 60,
           build_reproduced: true,
-          reproduced_build_image_id: [],
+          reproduced_build_image_path: [],
           proposal_review_commits: [],
         } satisfies ProposalReview,
       });
@@ -195,7 +195,7 @@ describe('Proposal Review', () => {
           summary: '',
           review_duration_mins: 0,
           build_reproduced: false,
-          reproduced_build_image_id: [],
+          reproduced_build_image_path: [],
           proposal_review_commits: [],
         } satisfies ProposalReview,
       });
@@ -1223,7 +1223,7 @@ function validateProposalReview(
       summary: expect.any(String),
       review_duration_mins: expect.any(Number),
       build_reproduced: expect.any(Boolean),
-      reproduced_build_image_id: expect.any(Array),
+      reproduced_build_image_path: expect.any(Array),
       proposal_review_commits: expected.commits.commitSha.map(
         commitSha =>
           ({

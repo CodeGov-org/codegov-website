@@ -215,7 +215,7 @@ type ProposalReview = record {
   summary : text;
   review_duration_mins : nat16;
   build_reproduced : bool;
-  reproduced_build_image_id : opt text;
+  reproduced_build_image_path : opt text;
   proposal_review_commits : vec ProposalReviewCommitWithId;
 };
 
