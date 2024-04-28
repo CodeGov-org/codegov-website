@@ -29,3 +29,5 @@ pnpm -F backend-integration test -- proposal_review_image.spec -t "update propos
 pnpm -F backend-integration test -- proposal_review_image.spec -t "update proposal review image batch two"
 pnpm -F backend-integration test -- proposal_review_image.spec -t "update proposal review image batch three"
 pnpm -F backend-integration test -- proposal_review_image.spec -t "update proposal review image batch four"
+
+pnpm -F backend-integration test -- proposal_review_image.spec -t "http proposal review image batch one"
