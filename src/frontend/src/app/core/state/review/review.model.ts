@@ -3,7 +3,7 @@ import { ImageSet } from '@cg/angular-ui';
 export interface ProposalReview {
   id: bigint;
   proposalId: bigint;
-  reviewerId: bigint;
+  reviewerId: string;
   reviewerVote: ReviewerVote;
   state: ReviewState;
   lastSaved: Date;
@@ -29,7 +29,7 @@ export interface ProposalReviewCommit {
 }
 
 export interface ProposalCommitReviewHighlight {
-  reviewerId: bigint;
+  reviewerId: string;
   text: string;
 }
 

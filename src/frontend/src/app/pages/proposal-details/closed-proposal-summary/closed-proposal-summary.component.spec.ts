@@ -59,7 +59,7 @@ describe('ClosedProposalSummaryComponent', () => {
     );
 
     reviewServiceMock = reviewServiceMockFactory();
-    reviewServiceMock.reviewList$ = of([]);
+    reviewServiceMock.proposalReviewList$ = of([]);
 
     activatedRoute = activatedRouteMockFactory();
     activatedRoute.params = of([{ id: 1 }]);

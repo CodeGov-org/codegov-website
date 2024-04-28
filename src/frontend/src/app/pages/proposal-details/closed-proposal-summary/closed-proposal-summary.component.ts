@@ -259,7 +259,7 @@ import {
 export class ClosedProposalSummaryComponent implements OnInit {
   public readonly proposal = input.required<Proposal>();
 
-  public readonly reviewList = toSignal(this.reviewService.reviewList$);
+  public readonly reviewList = toSignal(this.reviewService.proposalReviewList$);
 
   public votesAdopt = computed(() => {
     let value = 0;

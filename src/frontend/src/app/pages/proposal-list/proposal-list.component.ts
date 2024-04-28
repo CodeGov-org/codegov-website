@@ -1,8 +1,13 @@
 import { CommonModule, KeyValuePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
 import { FormatDatePipe } from '~core/pipes';
@@ -11,6 +16,7 @@ import {
   ProposalLinkBaseUrl,
   ProposalService,
   ProposalState,
+  ReviewService,
 } from '~core/state';
 import {
   KeyValueGridComponent,
@@ -132,7 +138,7 @@ interface FilterForm {
       </div>
     </form>
 
-    @if (proposalList(); as proposalList) {
+    @if (proposalListWithReviewIds(); as proposalList) {
       @for (proposal of proposalList; track proposal.id; let i = $index) {
         <cg-card class="proposal">
           <h2 class="h4 proposal__title" slot="cardTitle">
@@ -249,14 +255,30 @@ interface FilterForm {
             </app-key-value-grid>
             <div class="btn-group">
               @if (
-                isReviewer() && proposal.state === proposalState().InProgress
+                proposal.state === proposalState().InProgress && isReviewer()
               ) {
-                <a
-                  class="btn btn--outline"
-                  [routerLink]="['/review', proposal.id, 'edit']"
-                >
-                  My review
-                </a>
+                @if (proposal.reviewState === undefined) {
+                  <a
+                    class="btn btn--outline"
+                    (click)="onCreateReview(proposal.id)"
+                  >
+                    Create review
+                  </a>
+                } @else if (proposal.reviewState === 'Draft') {
+                  <a
+                    class="btn btn--outline"
+                    [routerLink]="['/review', proposal.id, 'edit']"
+                  >
+                    Edit review
+                  </a>
+                } @else if (proposal.reviewState === 'Completed') {
+                  <a
+                    class="btn btn--outline"
+                    [routerLink]="['/review', proposal.reviewId, 'view']"
+                  >
+                    My review
+                  </a>
+                }
               }
               <a class="btn btn--outline" [routerLink]="[proposal.id]">
                 View details
@@ -269,8 +291,26 @@ interface FilterForm {
   `,
 })
 export class ProposalListComponent {
-  public proposalList = toSignal(this.proposalService.currentProposalList$);
-  public isReviewer = toSignal(this.profileService.isReviewer$);
+  public readonly proposalList = toSignal(
+    this.proposalService.currentProposalList$,
+  );
+
+  public readonly isReviewer = toSignal(this.profileService.isReviewer$);
+  public readonly userProfile = toSignal(this.profileService.userProfile$);
+  public readonly userReviewList = toSignal(this.reviewService.userReviewList$);
+
+  public readonly proposalListWithReviewIds = computed(() => {
+    return this.proposalList()?.map(proposal => {
+      const review = this.userReviewList()?.find(
+        review => review.proposalId === proposal.id,
+      );
+      return {
+        ...proposal,
+        reviewId: review?.id,
+        reviewState: review?.state,
+      };
+    });
+  });
 
   public readonly filterForm = signal(
     new FormGroup<FilterForm>({
@@ -287,8 +327,13 @@ export class ProposalListComponent {
   constructor(
     private readonly proposalService: ProposalService,
     private readonly profileService: ProfileService,
+    private readonly reviewService: ReviewService,
+    private readonly router: Router,
   ) {
     this.proposalService.loadProposalList(ProposalState.InProgress);
+    if (this.userProfile()) {
+      this.reviewService.loadReviewListByReviewerlId(this.userProfile()!.id);
+    }
 
     this.filterForm()
       .valueChanges.pipe(takeUntilDestroyed())
@@ -313,5 +358,20 @@ export class ProposalListComponent {
     }
 
     await this.proposalService.loadProposalList(inputParam);
+  }
+
+  public async onCreateReview(proposalId: bigint): Promise<void> {
+    if (this.userProfile()) {
+      try {
+        await this.reviewService.createReview(
+          proposalId,
+          this.userProfile()!.id,
+        );
+      } catch {
+        throw new Error('Cannot create review');
+      } finally {
+        this.router.navigate(['/review', proposalId, 'edit']);
+      }
+    }
   }
 }
