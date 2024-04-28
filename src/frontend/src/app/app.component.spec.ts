@@ -7,6 +7,11 @@ import {
   UserAuthServiceMock,
   userAuthServiceMockFactory,
 } from '~core/services/user-auth-service-mock';
+import { ProfileService } from '~core/state';
+import {
+  ProfileServiceMock,
+  profileServiceMockFactory,
+} from '~core/state/profile/profile.service.mock';
 import { AppComponent } from './app.component';
 import { defineProp } from './testing/test-utils';
 
@@ -14,10 +19,14 @@ describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
   let component: AppComponent;
   let userAuthServiceMock: UserAuthServiceMock;
+  let profileServiceMock: ProfileServiceMock;
 
   beforeEach(async () => {
     userAuthServiceMock = userAuthServiceMockFactory();
     defineProp(userAuthServiceMock, 'isAuthenticated$', of(true));
+
+    profileServiceMock = profileServiceMockFactory();
+    profileServiceMock.loadProfile.and.returnValue(Promise.resolve());
 
     await TestBed.configureTestingModule({
       imports: [AppComponent],
@@ -25,6 +34,10 @@ describe('AppComponent', () => {
         {
           provide: UserAuthService,
           useValue: userAuthServiceMock,
+        },
+        {
+          provide: ProfileService,
+          useValue: profileServiceMock,
         },
         provideRouter([]),
       ],
