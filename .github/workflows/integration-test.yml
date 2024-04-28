@@ -32,9 +32,6 @@ jobs:
       - name: Backend integration tests
         run: ./scripts/run-integration-tests.sh
 
-      # - name: Backend integration tests 2
-      #   run: ./scripts/run-integration-tests-2.sh
-
       - name: Frontend unit tests
         run: pnpm -F frontend test
 
