@@ -142,6 +142,50 @@ export async function createProposalReview(
 }
 
 /**
+ * Same as {@link createProposalReview} function,
+ * but uploads the provided image too.
+ *
+ * Skips creating the RVM proposal if a proposal id is specified as last parameter.
+ *
+ * @returns the backend canister id of created proposal, the backend canister id of created review
+ * and the image path.
+ */
+export async function createProposalReviewWithImage(
+  actor: BackendActorService,
+  governance: Governance,
+  reviewer: Identity,
+  imageBytes: Uint8Array,
+  existingProposalId?: string,
+): Promise<{
+  proposalId: string;
+  proposalReviewId: string;
+  imagePath: string;
+}> {
+  const { proposalId, proposalReviewId } = await createProposalReview(
+    actor,
+    governance,
+    reviewer,
+    existingProposalId,
+  );
+
+  actor.setIdentity(reviewer);
+  const res = await actor.update_proposal_review_image({
+    proposal_id: proposalId,
+    operation: {
+      upsert: {
+        content_type: 'image/png',
+        content_bytes: imageBytes,
+      },
+    },
+  });
+  const resOk = extractOkResponse(res);
+
+  const imagePath = resOk.path[0]!;
+
+  return { proposalId, proposalReviewId, imagePath };
+}
+
+/**
  * Publishes the proposal review associated to the given proposal id and reviewer identity.
  */
 export async function publishProposalReview(

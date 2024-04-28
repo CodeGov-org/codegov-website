@@ -8,12 +8,14 @@ import {
   completeProposal,
   controllerIdentity,
   createProposalReview,
+  createProposalReviewWithImage,
   createReviewer,
   extractErrResponse,
+  extractOkResponse,
   publishProposalReview,
   setupBackendCanister,
 } from '../support';
-// import { CODEGOV_LOGO_PNG } from '../fixtures';
+import { CODEGOV_LOGO_PNG } from '../fixtures';
 
 const NNS_SUBNET_ID =
   '2o3zy-oo4hc-r3mtq-ylrpf-g6qge-qmuzn-2bsuv-d3yhd-e4qjc-6ff2b-6ae';
@@ -245,6 +247,182 @@ describe('Proposal Review Image', () => {
         expect(resErr).toEqual({
           code: 409,
           message: `Proposal review for proposal with Id ${proposalId} is already published`,
+        });
+      });
+    });
+
+    describe('batch four', () => {
+      it('should allow a reviewer to upload image for a proposal review', async () => {
+        const reviewer = generateRandomIdentity();
+        await createReviewer(actor, reviewer);
+
+        const { proposalId, proposalReviewId } = await createProposalReview(
+          actor,
+          governance,
+          reviewer,
+        );
+
+        actor.setIdentity(reviewer);
+
+        const resUpdate = await actor.update_proposal_review_image({
+          proposal_id: proposalId,
+          operation: {
+            upsert: {
+              content_type: 'image/png',
+              content_bytes: CODEGOV_LOGO_PNG,
+            },
+          },
+        });
+        const resUpdateOk = extractOkResponse(resUpdate);
+
+        const imagePath = resUpdateOk.path[0]!;
+        expect(imagePath.startsWith('/images/reviews/')).toBe(true);
+
+        const resGet = await actor.get_proposal_review({
+          proposal_review_id: proposalReviewId,
+        });
+        const resGetOk = extractOkResponse(resGet);
+
+        expect(resGetOk.proposal_review.reproduced_build_image_path[0]).toEqual(
+          imagePath,
+        );
+      });
+
+      it('should allow a reviewer to replace image for a proposal review', async () => {
+        const reviewer = generateRandomIdentity();
+        await createReviewer(actor, reviewer);
+
+        const {
+          proposalId,
+          proposalReviewId,
+          imagePath: originalImagePath,
+        } = await createProposalReviewWithImage(
+          actor,
+          governance,
+          reviewer,
+          VALID_IMAGE_BYTES,
+        );
+
+        actor.setIdentity(reviewer);
+
+        const resUpdate = await actor.update_proposal_review_image({
+          proposal_id: proposalId,
+          operation: {
+            upsert: {
+              content_type: 'image/png',
+              content_bytes: VALID_IMAGE_BYTES,
+            },
+          },
+        });
+        const resUpdateOk = extractOkResponse(resUpdate);
+
+        const originalImageId = originalImagePath.split('/').pop()!;
+        const imagePath = resUpdateOk.path[0]!;
+        const imageId = resUpdateOk.path[0]!.split('/').pop()!;
+        expect(imageId).not.toEqual(originalImageId);
+
+        const resGet = await actor.get_proposal_review({
+          proposal_review_id: proposalReviewId,
+        });
+        const resGetOk = extractOkResponse(resGet);
+
+        expect(resGetOk.proposal_review.reproduced_build_image_path[0]).toEqual(
+          imagePath,
+        );
+      });
+
+      it('should allow a reviewer to delete image for a proposal review', async () => {
+        const reviewer = generateRandomIdentity();
+        await createReviewer(actor, reviewer);
+
+        const { proposalId, proposalReviewId } =
+          await createProposalReviewWithImage(
+            actor,
+            governance,
+            reviewer,
+            VALID_IMAGE_BYTES,
+          );
+
+        actor.setIdentity(reviewer);
+
+        const resUpdate = await actor.update_proposal_review_image({
+          proposal_id: proposalId,
+          operation: {
+            delete: null,
+          },
+        });
+        const resUpdateOk = extractOkResponse(resUpdate);
+
+        expect(resUpdateOk.path).toEqual([]);
+
+        const resGet = await actor.get_proposal_review({
+          proposal_review_id: proposalReviewId,
+        });
+        const resGetOk = extractOkResponse(resGet);
+
+        expect(resGetOk.proposal_review.reproduced_build_image_path).toEqual(
+          [],
+        );
+      });
+
+      it('should not allow to update image for a review with invalid fields', async () => {
+        const reviewer = generateRandomIdentity();
+        await createReviewer(actor, reviewer);
+
+        const { proposalId } = await createProposalReview(
+          actor,
+          governance,
+          reviewer,
+        );
+
+        actor.setIdentity(reviewer);
+
+        const resEmptyContentType = await actor.update_proposal_review_image({
+          proposal_id: proposalId,
+          operation: {
+            upsert: {
+              content_type: '',
+              content_bytes: VALID_IMAGE_BYTES,
+            },
+          },
+        });
+        const resEmptyContentTypeErr = extractErrResponse(resEmptyContentType);
+
+        expect(resEmptyContentTypeErr).toEqual({
+          code: 400,
+          message: 'Content type cannot be empty',
+        });
+
+        const resWrongContentType = await actor.update_proposal_review_image({
+          proposal_id: proposalId,
+          operation: {
+            upsert: {
+              content_type: 'wrong-content-type',
+              content_bytes: VALID_IMAGE_BYTES,
+            },
+          },
+        });
+        const resWrongContentTypeErr = extractErrResponse(resWrongContentType);
+
+        expect(resWrongContentTypeErr).toEqual({
+          code: 400,
+          message: 'Content type wrong-content-type not allowed',
+        });
+
+        const resEmptyContent = await actor.update_proposal_review_image({
+          proposal_id: proposalId,
+          operation: {
+            upsert: {
+              content_type: 'image/png',
+              content_bytes: new Uint8Array(),
+            },
+          },
+        });
+        const resEmptyContentErr = extractErrResponse(resEmptyContent);
+
+        expect(resEmptyContentErr).toEqual({
+          code: 400,
+          message: 'Image content cannot be empty',
         });
       });
     });
