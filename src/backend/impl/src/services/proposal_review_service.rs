@@ -1,19 +1,21 @@
 use std::{path::PathBuf, str::FromStr};
 
 use backend_api::{
-    ApiError, CreateProposalReviewRequest, CreateProposalReviewResponse,
+    ApiError, CreateProposalReviewRequest, CreateProposalReviewResponse, GetProposalReviewRequest,
+    GetProposalReviewResponse, ListProposalReviewsRequest, ListProposalReviewsResponse,
     UpdateProposalReviewImageRequest, UpdateProposalReviewImageRequestOperation,
     UpdateProposalReviewImageResponse, UpdateProposalReviewRequest,
 };
 use candid::Principal;
 
 use crate::{
-    mappings::map_create_proposal_review_response,
+    mappings::map_proposal_review,
     repositories::{
-        CreateImageRequest, DateTime, Image, ImageRepository, ImageRepositoryImpl,
-        ProposalRepository, ProposalRepositoryImpl, ProposalReview, ProposalReviewId,
-        ProposalReviewRepository, ProposalReviewRepositoryImpl, ProposalReviewStatus, UserId,
-        UserProfileRepository, UserProfileRepositoryImpl, Uuid,
+        CreateImageRequest, DateTime, Image, ImageRepository, ImageRepositoryImpl, ProposalId,
+        ProposalRepository, ProposalRepositoryImpl, ProposalReview, ProposalReviewCommitRepository,
+        ProposalReviewCommitRepositoryImpl, ProposalReviewId, ProposalReviewRepository,
+        ProposalReviewRepositoryImpl, ProposalReviewStatus, UserId, UserProfileRepository,
+        UserProfileRepositoryImpl,
     },
     system_api::get_date_time,
 };
@@ -37,6 +39,18 @@ pub trait ProposalReviewService {
         request: UpdateProposalReviewRequest,
     ) -> Result<(), ApiError>;
 
+    fn list_proposal_reviews(
+        &self,
+        calling_principal: Principal,
+        request: ListProposalReviewsRequest,
+    ) -> Result<ListProposalReviewsResponse, ApiError>;
+
+    fn get_proposal_review(
+        &self,
+        calling_principal: Principal,
+        request: GetProposalReviewRequest,
+    ) -> Result<GetProposalReviewResponse, ApiError>;
+
     async fn update_proposal_review_image(
         &self,
         calling_principal: Principal,
@@ -48,11 +62,13 @@ pub struct ProposalReviewServiceImpl<
     PR: ProposalReviewRepository,
     U: UserProfileRepository,
     P: ProposalRepository,
+    PRC: ProposalReviewCommitRepository,
     I: ImageRepository,
 > {
     proposal_review_repository: PR,
     user_profile_repository: U,
     proposal_repository: P,
+    proposal_review_commit_repository: PRC,
     image_repository: I,
 }
 
@@ -61,6 +77,7 @@ impl Default
         ProposalReviewRepositoryImpl,
         UserProfileRepositoryImpl,
         ProposalRepositoryImpl,
+        ProposalReviewCommitRepositoryImpl,
         ImageRepositoryImpl,
     >
 {
@@ -69,6 +86,7 @@ impl Default
             ProposalReviewRepositoryImpl::default(),
             UserProfileRepositoryImpl::default(),
             ProposalRepositoryImpl::default(),
+            ProposalReviewCommitRepositoryImpl::default(),
             ImageRepositoryImpl::default(),
         )
     }
@@ -78,8 +96,9 @@ impl<
         PR: ProposalReviewRepository,
         U: UserProfileRepository,
         P: ProposalRepository,
+        PRC: ProposalReviewCommitRepository,
         I: ImageRepository,
-    > ProposalReviewService for ProposalReviewServiceImpl<PR, U, P, I>
+    > ProposalReviewService for ProposalReviewServiceImpl<PR, U, P, PRC, I>
 {
     async fn create_proposal_review(
         &self,
@@ -98,7 +117,7 @@ impl<
                 ))
             })?;
 
-        let proposal_id = Uuid::try_from(request.proposal_id.as_str())?;
+        let proposal_id = ProposalId::try_from(request.proposal_id.as_str())?;
 
         match self.proposal_repository.get_proposal_by_id(&proposal_id) {
             Some(proposal) => {
@@ -148,7 +167,7 @@ impl<
             .create_proposal_review(proposal_review.clone())
             .await?;
 
-        Ok(map_create_proposal_review_response(id, proposal_review))
+        Ok(map_proposal_review(id, proposal_review, vec![]))
     }
 
     fn update_proposal_review(
@@ -208,6 +227,109 @@ impl<
 
         self.proposal_review_repository
             .update_proposal_review(id, current_proposal_review)
+    }
+
+    fn list_proposal_reviews(
+        &self,
+        calling_principal: Principal,
+        request: ListProposalReviewsRequest,
+    ) -> Result<ListProposalReviewsResponse, ApiError> {
+        let calling_user = self
+            .user_profile_repository
+            .get_user_profile_by_principal(&calling_principal);
+
+        // match filters
+        let proposal_reviews = match (request.proposal_id, request.user_id) {
+            (Some(proposal_id), None) => {
+                let proposal_id = ProposalId::try_from(proposal_id.as_str())?;
+
+                self.proposal_review_repository
+                    .get_proposal_reviews_by_proposal_id(proposal_id)
+            }
+            (None, Some(user_id)) => {
+                let user_id = UserId::try_from(user_id.as_str())?;
+
+                self.proposal_review_repository
+                    .get_proposal_reviews_by_user_id(user_id)
+            }
+            (Some(_), Some(_)) => Err(ApiError::invalid_argument(
+                "Cannot specify both proposal_id and user_id parameters",
+            )),
+            (None, None) => Err(ApiError::invalid_argument(
+                "Must specify either proposal_id or user_id parameter",
+            )),
+        }?;
+
+        // map and filter by status and owner
+        let proposal_reviews = proposal_reviews
+            .iter()
+            .filter_map(|(proposal_review_id, proposal_review)| {
+                // if the proposal review is in draft, only allow the owner and admins to see it
+                if proposal_review.is_draft()
+                    && !calling_user
+                        .as_ref()
+                        .is_some_and(|(user_id, user_profile)| {
+                            user_id == &proposal_review.user_id || user_profile.is_admin()
+                        })
+                {
+                    return None;
+                }
+
+                let proposal_review_commits = self
+                    .proposal_review_commit_repository
+                    .get_proposal_review_commits_by_proposal_review_id(*proposal_review_id)
+                    .ok()?;
+
+                Some(map_proposal_review(
+                    *proposal_review_id,
+                    proposal_review.clone(),
+                    proposal_review_commits,
+                ))
+            })
+            .collect();
+
+        Ok(ListProposalReviewsResponse { proposal_reviews })
+    }
+
+    fn get_proposal_review(
+        &self,
+        calling_principal: Principal,
+        request: GetProposalReviewRequest,
+    ) -> Result<GetProposalReviewResponse, ApiError> {
+        let calling_user = self
+            .user_profile_repository
+            .get_user_profile_by_principal(&calling_principal);
+
+        let proposal_review_id = ProposalReviewId::try_from(request.proposal_review_id.as_str())?;
+
+        let proposal_review = self
+            .proposal_review_repository
+            .get_proposal_review_by_id(&proposal_review_id)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "Proposal review with Id {} not found",
+                    request.proposal_review_id
+                ))
+            })?;
+
+        // if the proposal review is in draft, only allow the owner and admins to see it
+        if proposal_review.is_draft()
+            && !calling_user.is_some_and(|(user_id, user_profile)| {
+                user_id == proposal_review.user_id || user_profile.is_admin()
+            })
+        {
+            return Err(ApiError::permission_denied("Not authorized"));
+        }
+
+        let proposal_review_commits = self
+            .proposal_review_commit_repository
+            .get_proposal_review_commits_by_proposal_review_id(proposal_review_id)?;
+
+        Ok(map_proposal_review(
+            proposal_review_id,
+            proposal_review,
+            proposal_review_commits,
+        ))
     }
 
     async fn update_proposal_review_image(
@@ -282,19 +404,22 @@ impl<
         PR: ProposalReviewRepository,
         U: UserProfileRepository,
         P: ProposalRepository,
+        PRC: ProposalReviewCommitRepository,
         I: ImageRepository,
-    > ProposalReviewServiceImpl<PR, U, P, I>
+    > ProposalReviewServiceImpl<PR, U, P, PRC, I>
 {
     fn new(
         proposal_review_repository: PR,
         user_profile_repository: U,
         proposal_repository: P,
+        proposal_review_commit_repository: PRC,
         image_repository: I,
     ) -> Self {
         Self {
             proposal_review_repository,
             user_profile_repository,
             proposal_repository,
+            proposal_review_commit_repository,
             image_repository,
         }
     }
@@ -339,7 +464,7 @@ impl<
         user_id: UserId,
         request_status: Option<&backend_api::ProposalReviewStatus>,
     ) -> Result<(ProposalReviewId, ProposalReview), ApiError> {
-        let proposal_id = Uuid::try_from(raw_proposal_id.as_str())?;
+        let proposal_id = ProposalId::try_from(raw_proposal_id.as_str())?;
         let (id, current_proposal_review) = self
             .proposal_review_repository
             .get_proposal_review_by_proposal_id_and_user_id(proposal_id, user_id)
@@ -386,7 +511,8 @@ mod tests {
     use crate::{
         fixtures,
         repositories::{
-            ImageId, MockImageRepository, MockProposalRepository, MockProposalReviewRepository,
+            ImageId, MockImageRepository, MockProposalRepository,
+            MockProposalReviewCommitRepository, MockProposalReviewRepository,
             MockUserProfileRepository, ProposalReviewId,
         },
     };
@@ -403,7 +529,7 @@ mod tests {
         let calling_principal = fixtures::principal();
         let user_id = fixtures::user_id();
         let (proposal_review, request) = fixture;
-        let proposal_id = Uuid::try_from(request.proposal_id.as_str()).unwrap();
+        let proposal_id = ProposalId::try_from(request.proposal_id.as_str()).unwrap();
         let id = fixtures::proposal_review_id();
 
         let mut u_repository_mock = MockUserProfileRepository::new();
@@ -429,12 +555,14 @@ mod tests {
             .once()
             .with(eq(proposal_review.clone()))
             .return_const(Ok(id));
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -472,12 +600,14 @@ mod tests {
             .expect_get_proposal_review_by_proposal_id_and_user_id()
             .never();
         pr_repository_mock.expect_create_proposal_review().never();
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -507,12 +637,14 @@ mod tests {
             .expect_get_proposal_review_by_proposal_id_and_user_id()
             .never();
         pr_repository_mock.expect_create_proposal_review().never();
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -535,7 +667,7 @@ mod tests {
         let calling_principal = fixtures::principal();
         let user_id = fixtures::user_id();
         let (_, request) = proposal_review_create();
-        let proposal_id = Uuid::try_from(request.proposal_id.as_str()).unwrap();
+        let proposal_id = ProposalId::try_from(request.proposal_id.as_str()).unwrap();
 
         let mut u_repository_mock = MockUserProfileRepository::new();
         u_repository_mock
@@ -554,12 +686,14 @@ mod tests {
             .expect_get_proposal_review_by_proposal_id_and_user_id()
             .never();
         pr_repository_mock.expect_create_proposal_review().never();
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -582,7 +716,7 @@ mod tests {
         let calling_principal = fixtures::principal();
         let user_id = fixtures::user_id();
         let (_, request) = proposal_review_create();
-        let proposal_id = Uuid::try_from(request.proposal_id.as_str()).unwrap();
+        let proposal_id = ProposalId::try_from(request.proposal_id.as_str()).unwrap();
 
         let mut u_repository_mock = MockUserProfileRepository::new();
         u_repository_mock
@@ -603,12 +737,14 @@ mod tests {
             .expect_get_proposal_review_by_proposal_id_and_user_id()
             .never();
         pr_repository_mock.expect_create_proposal_review().never();
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -631,7 +767,7 @@ mod tests {
         let calling_principal = fixtures::principal();
         let user_id = fixtures::user_id();
         let (_, request) = proposal_review_create();
-        let proposal_id = Uuid::try_from(request.proposal_id.as_str()).unwrap();
+        let proposal_id = ProposalId::try_from(request.proposal_id.as_str()).unwrap();
         let id = fixtures::proposal_review_id();
 
         let mut u_repository_mock = MockUserProfileRepository::new();
@@ -653,12 +789,14 @@ mod tests {
             .with(eq(proposal_id), eq(user_id))
             .return_const(Some((id, fixtures::proposal_review_draft())));
         pr_repository_mock.expect_create_proposal_review().never();
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -823,12 +961,14 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -855,12 +995,14 @@ mod tests {
         pr_repository_mock.expect_update_proposal_review().never();
         let mut p_repository_mock = MockProposalRepository::new();
         p_repository_mock.expect_get_proposal_by_id().never();
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -898,12 +1040,14 @@ mod tests {
         pr_repository_mock.expect_update_proposal_review().never();
         let mut p_repository_mock = MockProposalRepository::new();
         p_repository_mock.expect_get_proposal_by_id().never();
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -947,12 +1091,14 @@ mod tests {
             .return_const(Some(
                 fixtures::nns_replica_version_management_proposal_completed(),
             ));
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -1001,12 +1147,14 @@ mod tests {
         pr_repository_mock.expect_update_proposal_review().never();
         let mut p_repository_mock = MockProposalRepository::new();
         p_repository_mock.expect_get_proposal_by_id().never();
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -1053,12 +1201,14 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -1085,12 +1235,14 @@ mod tests {
         pr_repository_mock.expect_update_proposal_review().never();
         let mut p_repository_mock = MockProposalRepository::new();
         p_repository_mock.expect_get_proposal_by_id().never();
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -1137,12 +1289,14 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -1509,6 +1663,7 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let mut image_repository_mock = MockImageRepository::new();
         if let Some(existing_image_id) = original_proposal_review.reproduced_build_image_id {
             image_repository_mock
@@ -1527,6 +1682,7 @@ mod tests {
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -1568,6 +1724,7 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let mut image_repository_mock = MockImageRepository::new();
         image_repository_mock
             .expect_delete_image()
@@ -1581,6 +1738,7 @@ mod tests {
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 
@@ -1622,6 +1780,7 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+        let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let mut image_repository_mock = MockImageRepository::new();
         image_repository_mock.expect_delete_image().never();
 
@@ -1629,6 +1788,7 @@ mod tests {
             pr_repository_mock,
             u_repository_mock,
             p_repository_mock,
+            prc_repository_mock,
             image_repository_mock,
         );
 

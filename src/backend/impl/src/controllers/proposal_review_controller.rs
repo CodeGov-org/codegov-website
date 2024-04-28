@@ -1,15 +1,16 @@
 use backend_api::{
     ApiError, ApiResult, CreateProposalReviewRequest, CreateProposalReviewResponse,
-    UpdateProposalReviewImageRequest, UpdateProposalReviewImageResponse,
-    UpdateProposalReviewRequest,
+    GetProposalReviewRequest, GetProposalReviewResponse, ListProposalReviewsRequest,
+    ListProposalReviewsResponse, UpdateProposalReviewImageRequest,
+    UpdateProposalReviewImageResponse, UpdateProposalReviewRequest,
 };
 use candid::Principal;
 use ic_cdk::*;
 
 use crate::{
     repositories::{
-        ImageRepositoryImpl, ProposalRepositoryImpl, ProposalReviewRepositoryImpl,
-        UserProfileRepositoryImpl,
+        ImageRepositoryImpl, ProposalRepositoryImpl, ProposalReviewCommitRepositoryImpl,
+        ProposalReviewRepositoryImpl, UserProfileRepositoryImpl,
     },
     services::{
         AccessControlService, AccessControlServiceImpl, ProposalReviewService,
@@ -38,6 +39,26 @@ fn update_proposal_review(request: UpdateProposalReviewRequest) -> ApiResult<()>
         .into()
 }
 
+#[query]
+fn list_proposal_reviews(
+    request: ListProposalReviewsRequest,
+) -> ApiResult<ListProposalReviewsResponse> {
+    let calling_principal = caller();
+
+    ProposalReviewController::default()
+        .list_proposal_reviews(calling_principal, request)
+        .into()
+}
+
+#[query]
+fn get_proposal_review(request: GetProposalReviewRequest) -> ApiResult<GetProposalReviewResponse> {
+    let calling_principal = caller();
+
+    ProposalReviewController::default()
+        .get_proposal_review(calling_principal, request)
+        .into()
+}
+
 #[update]
 async fn update_proposal_review_image(
     request: UpdateProposalReviewImageRequest,
@@ -62,6 +83,7 @@ impl Default
             ProposalReviewRepositoryImpl,
             UserProfileRepositoryImpl,
             ProposalRepositoryImpl,
+            ProposalReviewCommitRepositoryImpl,
             ImageRepositoryImpl,
         >,
     >
@@ -108,6 +130,24 @@ impl<A: AccessControlService, P: ProposalReviewService> ProposalReviewController
 
         self.proposal_review_service
             .update_proposal_review(calling_principal, request)
+    }
+
+    fn list_proposal_reviews(
+        &self,
+        calling_principal: Principal,
+        request: ListProposalReviewsRequest,
+    ) -> Result<ListProposalReviewsResponse, ApiError> {
+        self.proposal_review_service
+            .list_proposal_reviews(calling_principal, request)
+    }
+
+    fn get_proposal_review(
+        &self,
+        calling_principal: Principal,
+        request: GetProposalReviewRequest,
+    ) -> Result<GetProposalReviewResponse, ApiError> {
+        self.proposal_review_service
+            .get_proposal_review(calling_principal, request)
     }
 
     async fn update_proposal_review_image(

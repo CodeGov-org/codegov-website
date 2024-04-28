@@ -18,7 +18,9 @@ describe('User Profile', () => {
   const currentDate = new Date(1988, 1, 14, 0, 0, 0, 0);
 
   beforeEach(async () => {
-    pic = await PocketIc.create();
+    pic = await PocketIc.create(process.env.PIC_URL, {
+      processingTimeoutMs: 10_000,
+    });
     const fixture = await setupBackendCanister(pic, currentDate);
     actor = fixture.actor;
     canisterId = fixture.canisterId;
@@ -28,199 +30,201 @@ describe('User Profile', () => {
     await pic.tearDown();
   });
 
-  it('should not allow the anonymous principal', async () => {
-    actor.setIdentity(anonymousIdentity);
+  describe('create user profile', () => {
+    it('should not allow the anonymous principal', async () => {
+      actor.setIdentity(anonymousIdentity);
 
-    const res = await actor.get_my_user_profile();
-    const resErr = extractErrResponse(res);
+      const res = await actor.get_my_user_profile();
+      const resErr = extractErrResponse(res);
 
-    expect(resErr).toEqual({
-      code: 401,
-      message: 'Anonymous principals are not allowed to call this endpoint',
+      expect(resErr).toEqual({
+        code: 401,
+        message: 'Anonymous principals are not allowed to call this endpoint',
+      });
     });
-  });
 
-  it('should auto create an admin profile for the controller', async () => {
-    actor.setIdentity(controllerIdentity);
+    it('should auto create an admin profile for the controller', async () => {
+      actor.setIdentity(controllerIdentity);
 
-    const res = await actor.get_my_user_profile();
-    const resOk = extractOkResponse(res);
+      const res = await actor.get_my_user_profile();
+      const resOk = extractOkResponse(res);
 
-    const historyRes = await actor.get_my_user_profile_history();
-    const historyOk = extractOkResponse(historyRes);
+      const historyRes = await actor.get_my_user_profile_history();
+      const historyOk = extractOkResponse(historyRes);
 
-    expect(resOk).toEqual({
-      id: expect.any(String),
-      username: 'Admin',
-      config: {
-        admin: {
-          bio: 'Default admin profile created for canister controllers',
+      expect(resOk).toEqual({
+        id: expect.any(String),
+        username: 'Admin',
+        config: {
+          admin: {
+            bio: 'Default admin profile created for canister controllers',
+          },
         },
-      },
-    });
-    expect(historyOk.history).toHaveLength(1);
-    expect(historyOk.history[0]).toEqual({
-      action: { create: null },
-      user: controllerIdentity.getPrincipal(),
-      date_time: dateToRfc3339(currentDate),
-      data: {
-        username: resOk.username,
-        config: resOk.config,
-      },
-    });
-  });
-
-  it('should auto create an admin profile for a new controller', async () => {
-    const newControllerIdentity = generateRandomIdentity();
-    actor.setIdentity(newControllerIdentity);
-
-    await pic.updateCanisterSettings({
-      canisterId,
-      controllers: [newControllerIdentity.getPrincipal()],
-      sender: controllerIdentity.getPrincipal(),
-    });
-    await pic.upgradeCanister({
-      canisterId,
-      wasm: BACKEND_WASM_PATH,
-      sender: newControllerIdentity.getPrincipal(),
-    });
-    // make sure init timers run
-    await pic.tick(2);
-
-    const res = await actor.get_my_user_profile();
-    const resOk = extractOkResponse(res);
-
-    const historyRes = await actor.get_my_user_profile_history();
-    const historyOk = extractOkResponse(historyRes);
-
-    expect(resOk).toEqual({
-      id: expect.any(String),
-      username: 'Admin',
-      config: {
-        admin: {
-          bio: 'Default admin profile created for canister controllers',
+      });
+      expect(historyOk.history).toHaveLength(1);
+      expect(historyOk.history[0]).toEqual({
+        action: { create: null },
+        user: controllerIdentity.getPrincipal(),
+        date_time: dateToRfc3339(currentDate),
+        data: {
+          username: resOk.username,
+          config: resOk.config,
         },
-      },
-    });
-    expect(historyOk.history).toHaveLength(1);
-    expect(historyOk.history[0]).toEqual({
-      action: { create: null },
-      user: newControllerIdentity.getPrincipal(),
-      date_time: dateToRfc3339(currentDate),
-      data: {
-        username: resOk.username,
-        config: resOk.config,
-      },
-    });
-  });
-
-  it('should not return a profile that does not exist', async () => {
-    const alice = generateRandomIdentity();
-    actor.setIdentity(alice);
-
-    const res = await actor.get_my_user_profile();
-    const resErr = extractErrResponse(res);
-
-    const principal = alice.getPrincipal().toText();
-    expect(resErr).toEqual({
-      code: 404,
-      message: `User profile with principal ${principal} not found`,
-    });
-  });
-
-  it('should create and return a new anonymous profile', async () => {
-    const alice = generateRandomIdentity();
-    const bob = generateRandomIdentity();
-
-    actor.setIdentity(alice);
-    const aliceCreateRes = await actor.create_my_user_profile();
-    const aliceCreate = extractOkResponse(aliceCreateRes);
-
-    actor.setIdentity(bob);
-    const bobCreateRes = await actor.create_my_user_profile();
-    const bobCreate = extractOkResponse(bobCreateRes);
-
-    actor.setIdentity(alice);
-    const aliceGetRes = await actor.get_my_user_profile();
-    const aliceGet = extractOkResponse(aliceGetRes);
-    const aliceGetHistoryRes = await actor.get_my_user_profile_history();
-    const aliceGetHistory = extractOkResponse(aliceGetHistoryRes);
-
-    actor.setIdentity(bob);
-    const bobGetRes = await actor.get_my_user_profile();
-    const bobGet = extractOkResponse(bobGetRes);
-    const bobGetHistoryRes = await actor.get_my_user_profile_history();
-    const bobGetHistory = extractOkResponse(bobGetHistoryRes);
-
-    expect(typeof aliceCreate.id).toBe('string');
-    expect(aliceCreate.username).toBe('Anonymous');
-    expect(aliceCreate.config).toEqual({ anonymous: null });
-    expect(aliceGetHistory.history).toHaveLength(1);
-    expect(aliceGetHistory.history[0]).toEqual({
-      action: { create: null },
-      user: alice.getPrincipal(),
-      date_time: dateToRfc3339(currentDate),
-      data: {
-        username: aliceCreate.username,
-        config: aliceCreate.config,
-      },
+      });
     });
 
-    expect(typeof bobCreate.id).toBe('string');
-    expect(bobCreate.username).toBe('Anonymous');
-    expect(bobCreate.config).toEqual({ anonymous: null });
-    expect(bobGetHistory.history).toHaveLength(1);
-    expect(bobGetHistory.history[0]).toEqual({
-      action: { create: null },
-      user: bob.getPrincipal(),
-      date_time: dateToRfc3339(currentDate),
-      data: {
-        username: bobCreate.username,
-        config: bobCreate.config,
-      },
+    it('should auto create an admin profile for a new controller', async () => {
+      const newControllerIdentity = generateRandomIdentity();
+      actor.setIdentity(newControllerIdentity);
+
+      await pic.updateCanisterSettings({
+        canisterId,
+        controllers: [newControllerIdentity.getPrincipal()],
+        sender: controllerIdentity.getPrincipal(),
+      });
+      await pic.upgradeCanister({
+        canisterId,
+        wasm: BACKEND_WASM_PATH,
+        sender: newControllerIdentity.getPrincipal(),
+      });
+      // make sure init timers run
+      await pic.tick(2);
+
+      const res = await actor.get_my_user_profile();
+      const resOk = extractOkResponse(res);
+
+      const historyRes = await actor.get_my_user_profile_history();
+      const historyOk = extractOkResponse(historyRes);
+
+      expect(resOk).toEqual({
+        id: expect.any(String),
+        username: 'Admin',
+        config: {
+          admin: {
+            bio: 'Default admin profile created for canister controllers',
+          },
+        },
+      });
+      expect(historyOk.history).toHaveLength(1);
+      expect(historyOk.history[0]).toEqual({
+        action: { create: null },
+        user: newControllerIdentity.getPrincipal(),
+        date_time: dateToRfc3339(currentDate),
+        data: {
+          username: resOk.username,
+          config: resOk.config,
+        },
+      });
     });
 
-    expect(aliceCreate.id).not.toEqual(bobCreate.id);
+    it('should not return a profile that does not exist', async () => {
+      const alice = generateRandomIdentity();
+      actor.setIdentity(alice);
 
-    expect(aliceGet).toEqual(aliceCreate);
-    expect(bobGet).toEqual(bobCreate);
-  });
+      const res = await actor.get_my_user_profile();
+      const resErr = extractErrResponse(res);
 
-  it('should not allow the same user to create multiple profiles', async () => {
-    const alice = generateRandomIdentity();
-    actor.setIdentity(alice);
-
-    const aliceCreateRes = await actor.create_my_user_profile();
-    const aliceCreate = extractOkResponse(aliceCreateRes);
-
-    const aliceCreateAgainRes = await actor.create_my_user_profile();
-    const aliceCreateAgainErr = extractErrResponse(aliceCreateAgainRes);
-
-    const aliceGetRes = await actor.get_my_user_profile();
-    const aliceGet = extractOkResponse(aliceGetRes);
-    const aliceGetHistoryRes = await actor.get_my_user_profile_history();
-    const aliceGetHistory = extractOkResponse(aliceGetHistoryRes);
-
-    expect(typeof aliceCreate.id).toBe('string');
-    expect(aliceCreate.username).toBe('Anonymous');
-    expect(aliceCreate.config).toEqual({ anonymous: null });
-    expect(aliceGetHistory.history).toHaveLength(1);
-    expect(aliceGetHistory.history[0]).toEqual({
-      action: { create: null },
-      user: alice.getPrincipal(),
-      date_time: dateToRfc3339(currentDate),
-      data: {
-        username: aliceCreate.username,
-        config: aliceCreate.config,
-      },
+      const principal = alice.getPrincipal().toText();
+      expect(resErr).toEqual({
+        code: 404,
+        message: `User profile with principal ${principal} not found`,
+      });
     });
-    expect(aliceGet).toEqual(aliceCreate);
 
-    expect(aliceCreateAgainErr).toEqual({
-      code: 409,
-      message: `User profile for principal ${alice
-        .getPrincipal()
-        .toText()} already exists`,
+    it('should create and return a new anonymous profile', async () => {
+      const alice = generateRandomIdentity();
+      const bob = generateRandomIdentity();
+
+      actor.setIdentity(alice);
+      const aliceCreateRes = await actor.create_my_user_profile();
+      const aliceCreate = extractOkResponse(aliceCreateRes);
+
+      actor.setIdentity(bob);
+      const bobCreateRes = await actor.create_my_user_profile();
+      const bobCreate = extractOkResponse(bobCreateRes);
+
+      actor.setIdentity(alice);
+      const aliceGetRes = await actor.get_my_user_profile();
+      const aliceGet = extractOkResponse(aliceGetRes);
+      const aliceGetHistoryRes = await actor.get_my_user_profile_history();
+      const aliceGetHistory = extractOkResponse(aliceGetHistoryRes);
+
+      actor.setIdentity(bob);
+      const bobGetRes = await actor.get_my_user_profile();
+      const bobGet = extractOkResponse(bobGetRes);
+      const bobGetHistoryRes = await actor.get_my_user_profile_history();
+      const bobGetHistory = extractOkResponse(bobGetHistoryRes);
+
+      expect(typeof aliceCreate.id).toBe('string');
+      expect(aliceCreate.username).toBe('Anonymous');
+      expect(aliceCreate.config).toEqual({ anonymous: null });
+      expect(aliceGetHistory.history).toHaveLength(1);
+      expect(aliceGetHistory.history[0]).toEqual({
+        action: { create: null },
+        user: alice.getPrincipal(),
+        date_time: dateToRfc3339(currentDate),
+        data: {
+          username: aliceCreate.username,
+          config: aliceCreate.config,
+        },
+      });
+
+      expect(typeof bobCreate.id).toBe('string');
+      expect(bobCreate.username).toBe('Anonymous');
+      expect(bobCreate.config).toEqual({ anonymous: null });
+      expect(bobGetHistory.history).toHaveLength(1);
+      expect(bobGetHistory.history[0]).toEqual({
+        action: { create: null },
+        user: bob.getPrincipal(),
+        date_time: dateToRfc3339(currentDate),
+        data: {
+          username: bobCreate.username,
+          config: bobCreate.config,
+        },
+      });
+
+      expect(aliceCreate.id).not.toEqual(bobCreate.id);
+
+      expect(aliceGet).toEqual(aliceCreate);
+      expect(bobGet).toEqual(bobCreate);
+    });
+
+    it('should not allow the same user to create multiple profiles', async () => {
+      const alice = generateRandomIdentity();
+      actor.setIdentity(alice);
+
+      const aliceCreateRes = await actor.create_my_user_profile();
+      const aliceCreate = extractOkResponse(aliceCreateRes);
+
+      const aliceCreateAgainRes = await actor.create_my_user_profile();
+      const aliceCreateAgainErr = extractErrResponse(aliceCreateAgainRes);
+
+      const aliceGetRes = await actor.get_my_user_profile();
+      const aliceGet = extractOkResponse(aliceGetRes);
+      const aliceGetHistoryRes = await actor.get_my_user_profile_history();
+      const aliceGetHistory = extractOkResponse(aliceGetHistoryRes);
+
+      expect(typeof aliceCreate.id).toBe('string');
+      expect(aliceCreate.username).toBe('Anonymous');
+      expect(aliceCreate.config).toEqual({ anonymous: null });
+      expect(aliceGetHistory.history).toHaveLength(1);
+      expect(aliceGetHistory.history[0]).toEqual({
+        action: { create: null },
+        user: alice.getPrincipal(),
+        date_time: dateToRfc3339(currentDate),
+        data: {
+          username: aliceCreate.username,
+          config: aliceCreate.config,
+        },
+      });
+      expect(aliceGet).toEqual(aliceCreate);
+
+      expect(aliceCreateAgainErr).toEqual({
+        code: 409,
+        message: `User profile for principal ${alice
+          .getPrincipal()
+          .toText()} already exists`,
+      });
     });
   });
 

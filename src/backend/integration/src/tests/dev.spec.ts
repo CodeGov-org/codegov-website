@@ -10,7 +10,9 @@ describe('Dev features', () => {
   const controller = controllerIdentity.getPrincipal();
 
   beforeEach(async () => {
-    pic = await PocketIc.create();
+    pic = await PocketIc.create(process.env.PIC_URL, {
+      processingTimeoutMs: 10_000,
+    });
 
     canisterId = await pic.createCanister({
       sender: controller,
@@ -20,6 +22,10 @@ describe('Dev features', () => {
       wasm: BACKEND_WASM_PATH,
       sender: controller,
     });
+  });
+
+  afterEach(async () => {
+    await pic.tearDown();
   });
 
   it('should not allow closing proposals', async () => {
