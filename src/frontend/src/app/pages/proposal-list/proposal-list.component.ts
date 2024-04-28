@@ -7,6 +7,7 @@ import { RouterLink } from '@angular/router';
 import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
 import { FormatDatePipe } from '~core/pipes';
 import {
+  ProfileService,
   ProposalLinkBaseUrl,
   ProposalService,
   ProposalState,
@@ -247,13 +248,17 @@ interface FilterForm {
               </app-value-col>
             </app-key-value-grid>
             <div class="btn-group">
-              <a
-                class="btn btn--outline"
-                [routerLink]="['/review', proposal.id, 'edit']"
-              >
-                My review
-              </a>
-              <a class="btn btn--outline" [routerLink]="['/open', proposal.id]">
+              @if (
+                isReviewer() && proposal.state === proposalState().InProgress
+              ) {
+                <a
+                  class="btn btn--outline"
+                  [routerLink]="['/review', proposal.id, 'edit']"
+                >
+                  My review
+                </a>
+              }
+              <a class="btn btn--outline" [routerLink]="[proposal.id]">
                 View details
               </a>
             </div>
@@ -265,6 +270,7 @@ interface FilterForm {
 })
 export class ProposalListComponent {
   public proposalList = toSignal(this.proposalService.currentProposalList$);
+  public isReviewer = toSignal(this.profileService.isReviewer$);
 
   public readonly filterForm = signal(
     new FormGroup<FilterForm>({
@@ -274,10 +280,14 @@ export class ProposalListComponent {
     }),
   );
 
+  public readonly proposalState = signal(ProposalState);
   public readonly listFilter = signal(reviewPeriodStateFilter);
   public readonly linkBaseUrl = signal(ProposalLinkBaseUrl);
 
-  constructor(private readonly proposalService: ProposalService) {
+  constructor(
+    private readonly proposalService: ProposalService,
+    private readonly profileService: ProfileService,
+  ) {
     this.proposalService.loadProposalList(ProposalState.InProgress);
 
     this.filterForm()

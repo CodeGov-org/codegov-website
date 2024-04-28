@@ -7,8 +7,13 @@ import {
   ProposalState,
   ProposalVotingLinkType,
   ProposalLinkBaseUrl,
+  ProfileService,
 } from '~core/state';
 import { ProposalService } from '~core/state';
+import {
+  ProfileServiceMock,
+  profileServiceMockFactory,
+} from '~core/state/profile/profile.service.mock';
 import {
   ProposalServiceMock,
   proposalServiceMockFactory,
@@ -18,12 +23,13 @@ import {
   activatedRouteMockFactory,
   defineProp,
 } from '~testing';
-import { OpenProposalDetailsComponent } from './open-proposal-details.component';
+import { ProposalDetailsComponent } from './proposal-details.component';
 
-describe('OpenProposalDetailsComponent', () => {
-  let component: OpenProposalDetailsComponent;
-  let fixture: ComponentFixture<OpenProposalDetailsComponent>;
+describe('ProposalDetailsComponent', () => {
+  let component: ProposalDetailsComponent;
+  let fixture: ComponentFixture<ProposalDetailsComponent>;
   let proposalServiceMock: ProposalServiceMock;
+  let profileServiceMock: ProfileServiceMock;
   let activatedRoute: ActivatedRouteMock;
 
   beforeEach(async () => {
@@ -51,13 +57,17 @@ describe('OpenProposalDetailsComponent', () => {
       }),
     );
 
+    profileServiceMock = profileServiceMockFactory();
+    profileServiceMock.isReviewer$ = of(true);
+
     activatedRoute = activatedRouteMockFactory();
     activatedRoute.params = of([{ id: 1 }]);
 
     await TestBed.configureTestingModule({
-      imports: [OpenProposalDetailsComponent, RouterModule],
+      imports: [ProposalDetailsComponent, RouterModule],
       providers: [
         { provide: ProposalService, useValue: proposalServiceMock },
+        { provide: ProfileService, useValue: profileServiceMock },
         {
           provide: ActivatedRoute,
           useValue: activatedRoute,
@@ -65,8 +75,9 @@ describe('OpenProposalDetailsComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(OpenProposalDetailsComponent);
+    fixture = TestBed.createComponent(ProposalDetailsComponent);
     component = fixture.componentInstance;
+
     fixture.detectChanges();
   });
 

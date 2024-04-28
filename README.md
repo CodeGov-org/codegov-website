@@ -325,7 +325,7 @@ To list open replica version management proposals:
    ```
 6. Close a proposal:
    ```bash
-   dfx canister call backend close_proposal
+   dfx canister call backend close_proposal '("${id}")'
    ```
 
 ### Creating proposals

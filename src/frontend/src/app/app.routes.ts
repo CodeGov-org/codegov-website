@@ -15,11 +15,9 @@ export const ROUTES: Routes = [
     canActivate: [isAuthenticatedGuard],
   },
   {
-    path: 'open/:id',
+    path: ':id',
     loadComponent: () =>
-      import('./pages/open-proposal-details').then(
-        m => m.OpenProposalDetailsComponent,
-      ),
+      import('./pages/proposal-details').then(m => m.ProposalDetailsComponent),
   },
   {
     path: 'review/:id/view',
@@ -33,5 +31,6 @@ export const ROUTES: Routes = [
       import('./pages/proposal-review-edit').then(
         m => m.ProposalReviewEditComponent,
       ),
+    canActivate: [isAuthenticatedGuard],
   },
 ];

@@ -1,7 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterModule } from '@angular/router';
 import { of } from 'rxjs';
 
-import { ProposalService } from '~core/state';
+import { ProfileService, ProposalService } from '~core/state';
+import {
+  ProfileServiceMock,
+  profileServiceMockFactory,
+} from '~core/state/profile/profile.service.mock';
 import {
   ProposalServiceMock,
   proposalServiceMockFactory,
@@ -12,14 +17,20 @@ describe('ProposalListComponent', () => {
   let component: ProposalListComponent;
   let fixture: ComponentFixture<ProposalListComponent>;
   let proposalServiceMock: ProposalServiceMock;
+  let profileServiceMock: ProfileServiceMock;
 
   beforeEach(async () => {
     proposalServiceMock = proposalServiceMockFactory();
     proposalServiceMock.currentProposalList$ = of([]);
+    profileServiceMock = profileServiceMockFactory();
+    profileServiceMock.isReviewer$ = of(true);
 
     await TestBed.configureTestingModule({
-      imports: [ProposalListComponent],
-      providers: [{ provide: ProposalService, useValue: proposalServiceMock }],
+      imports: [ProposalListComponent, RouterModule],
+      providers: [
+        { provide: ProposalService, useValue: proposalServiceMock },
+        { provide: ProfileService, useValue: profileServiceMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProposalListComponent);
