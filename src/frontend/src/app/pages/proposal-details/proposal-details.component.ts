@@ -18,6 +18,7 @@ import {
   ProfileService,
   ProposalLinkBaseUrl,
   ProposalState,
+  ReviewService,
 } from '~core/state';
 import { ProposalService } from '~core/state';
 import {
@@ -85,11 +86,11 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
             <app-key-col id="proposal-id">ID</app-key-col>
             <app-value-col aria-labelledby="proposal-id">
               <a
-                [href]="linkBaseUrl().Proposal + proposal.id"
+                [href]="linkBaseUrl().Proposal + proposal.ns_proposal_id"
                 target="_blank"
                 rel="nofollow noreferrer"
               >
-                {{ proposal.id }}
+                {{ proposal.ns_proposal_id }}
               </a>
             </app-value-col>
 
@@ -174,22 +175,50 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               {{ proposal.codeGovVote }}
             </app-value-col>
           </app-key-value-grid>
+
           <div class="btn-group">
+            @if (proposal.state === proposalState().InProgress) {
+              <button type="button" class="btn" (click)="onToggleSummary()">
+                {{
+                  showSummary()
+                    ? 'Show proposal description'
+                    : 'Show preliminary summary'
+                }}
+              </button>
+            }
             @if (
               isReviewer() && proposal.state === proposalState().InProgress
             ) {
-              <a
-                class="btn btn--outline"
-                [routerLink]="['/review', proposal.id, 'edit']"
-              >
-                My review
-              </a>
+              @if (userReview() === undefined) {
+                <a
+                  class="btn btn--outline"
+                  [routerLink]="['/review', proposal.id, 'edit']"
+                >
+                  Create review
+                </a>
+              } @else if (userReview()!.state === 'Draft') {
+                <a
+                  class="btn btn--outline"
+                  [routerLink]="['/review', proposal.id, 'edit']"
+                >
+                  Edit review
+                </a>
+              } @else if (userReview()!.state === 'Completed') {
+                <a
+                  class="btn btn--outline"
+                  [routerLink]="['/review', userReview()!.id, 'view']"
+                >
+                  My review
+                </a>
+              }
             }
           </div>
         </div>
       </cg-card>
 
-      @if (proposal.state === proposalState().InProgress) {
+      @if (showSummary() || proposal.state === proposalState().Completed) {
+        <app-closed-proposal-summary [proposal]="proposal" />
+      } @else {
         <h2 class="h4">Proposal summary</h2>
         <cg-card>
           <div
@@ -197,8 +226,6 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
             [innerHTML]="proposalSummaryInMarkdown()"
           ></div>
         </cg-card>
-      } @else {
-        <app-closed-proposal-summary [proposal]="proposal" />
       }
     }
   `,
@@ -210,6 +237,9 @@ export class ProposalDetailsComponent {
   public readonly currentProposal = toSignal(
     this.proposalService.currentProposal$,
   );
+  public readonly currentProposalReviews = toSignal(
+    this.reviewService.proposalReviewList$,
+  );
 
   public readonly proposalSummaryInMarkdown = computed(() =>
     this.sanitizer.sanitize(
@@ -218,12 +248,22 @@ export class ProposalDetailsComponent {
     ),
   );
 
-  public isReviewer = toSignal(this.profileService.isReviewer$);
+  public readonly isReviewer = toSignal(this.profileService.isReviewer$);
+  public readonly userProfile = toSignal(this.profileService.userProfile$);
+
+  public readonly userReviewList = toSignal(this.reviewService.userReviewList$);
+  public readonly userReview = computed(() =>
+    this.userReviewList()?.find(
+      review => review.proposalId === this.currentProposal()?.id,
+    ),
+  );
+
+  public readonly showSummary = signal(false);
 
   private readonly proposalIdFromRoute$ = this.route.params.pipe(
     map(params => {
       try {
-        return BigInt(params['id']);
+        return params['id'];
       } catch (error) {
         return null;
       }
@@ -236,6 +276,7 @@ export class ProposalDetailsComponent {
     private readonly route: ActivatedRoute,
     private readonly sanitizer: DomSanitizer,
     private readonly profileService: ProfileService,
+    private readonly reviewService: ReviewService,
   ) {
     this.proposalIdFromRoute$
       .pipe(takeUntilDestroyed())
@@ -244,5 +285,9 @@ export class ProposalDetailsComponent {
       });
 
     this.proposalService.loadProposalList();
+  }
+
+  public onToggleSummary(): void {
+    this.showSummary.set(!this.showSummary().valueOf());
   }
 }

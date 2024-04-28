@@ -1,121 +1,84 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
+import {
+  GetProposalReviewResponse,
+  ListProposalReviewsResponse,
+} from '@cg/backend';
+import { BackendActorService } from '~core/services';
+import { extractOkResponse, isErr } from '~core/utils';
+import { mapReviewListResponse, mapReviewResponse } from './review.mapper';
 import { ProposalReview } from './review.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ReviewService {
-  public reviewListSubject = new BehaviorSubject<ProposalReview[]>([]);
-  public reviewList$ = this.reviewListSubject.asObservable();
+  private proposalReviewListSubject = new BehaviorSubject<ProposalReview[]>([]);
+  public readonly proposalReviewList$ =
+    this.proposalReviewListSubject.asObservable();
 
-  //TODO: loading by proposal ID using backend endpoint
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async loadReviewListByProposalId(_proposalId: bigint): Promise<void> {
-    this.reviewListSubject.next([
-      {
-        id: 1n,
-        proposalId: 1n,
-        reviewerId: 1n,
-        reviewerVote: 'ADOPT',
-        state: 'Completed',
-        lastSaved: new Date(),
-        timeSpent: 6,
-        summary: 'This is a review summaty',
-        buildReproduced: true,
-        reviewCommits: [
-          {
-            id: 1n,
-            reviewId: 1n,
-            commitId: '1',
-            reviewed: 1,
-            matchesDescription: 1,
-            summary: 'This is a commit summary',
-            highlights: 'This is a commit highlight',
-          },
-          {
-            id: 2n,
-            reviewId: 1n,
-            commitId: '2',
-            reviewed: 1,
-            matchesDescription: 1,
-            summary: 'This is a commit summary',
-            highlights: 'This is a commit highlight',
-          },
-        ],
-      },
-      {
-        id: 2n,
-        proposalId: 1n,
-        reviewerId: 2n,
-        reviewerVote: 'REJECT',
-        state: 'Completed',
-        lastSaved: new Date(),
-        timeSpent: 6,
-        summary: 'This is a review summaty',
-        buildReproduced: true,
-        reviewCommits: [
-          {
-            id: 3n,
-            reviewId: 2n,
-            commitId: '1',
-            reviewed: 1,
-            matchesDescription: 0,
-            summary: 'This is a commit summary',
-            highlights: 'This is a commit highlight',
-          },
-          {
-            id: 4n,
-            reviewId: 2n,
-            commitId: '2',
-            reviewed: 1,
-            matchesDescription: 1,
-            summary: 'This is a commit summary',
-            highlights: 'This is a commit highlight',
-          },
-        ],
-      },
-      {
-        id: 3n,
-        proposalId: 1n,
-        reviewerId: 3n,
-        reviewerVote: 'ADOPT',
-        state: 'Completed',
-        lastSaved: new Date(),
-        timeSpent: 6,
-        summary: 'This is a review summaty',
-        buildReproduced: true,
-        reviewCommits: [
-          {
-            id: 4n,
-            reviewId: 3n,
-            commitId: '1',
-            reviewed: 1,
-            matchesDescription: 0,
-            summary: 'This is a commit summary',
-            highlights: 'This is a commit highlight',
-          },
-          {
-            id: 5n,
-            reviewId: 3n,
-            commitId: '2',
-            reviewed: 1,
-            matchesDescription: 1,
-            summary: 'This is a commit summary',
-            highlights: 'This is a commit highlight',
-          },
-          {
-            id: 6n,
-            reviewId: 3n,
-            commitId: '3',
-            reviewed: 1,
-            matchesDescription: 1,
-            summary: 'This is a commit summary',
-            highlights: 'This is a commit highlight',
-          },
-        ],
-      },
-    ]);
+  private currentReviewSubject = new BehaviorSubject<ProposalReview | null>(
+    null,
+  );
+  public readonly currentReview$ = this.currentReviewSubject.asObservable();
+
+  private userReviewListSubject = new BehaviorSubject<ProposalReview[]>([]);
+  public readonly userReviewList$ = this.userReviewListSubject.asObservable();
+
+  constructor(private readonly actorService: BackendActorService) {}
+
+  public async loadReviewListByProposalId(proposalId: string): Promise<void> {
+    const getResponse = await this.actorService.list_proposal_reviews({
+      user_id: [],
+      proposal_id: [proposalId],
+    });
+
+    this.proposalReviewListSubject.next(this.getReviewList(getResponse));
+  }
+
+  public async loadReviewListByReviewerlId(reviewerId: string): Promise<void> {
+    const getResponse = await this.actorService.list_proposal_reviews({
+      user_id: [reviewerId],
+      proposal_id: [],
+    });
+
+    this.userReviewListSubject.next(this.getReviewList(getResponse));
+  }
+
+  public async loadReview(reviewId: string): Promise<void> {
+    const getResponse = await this.actorService.get_proposal_review({
+      proposal_review_id: reviewId,
+    });
+
+    this.currentReviewSubject.next(this.getReview(getResponse));
+  }
+
+  public async createReview(proposalId: string): Promise<void> {
+    const createResponse = await this.actorService.create_proposal_review({
+      review_duration_mins: [],
+      summary: [],
+      proposal_id: proposalId,
+      build_reproduced: [],
+      reproduced_build_image_id: [],
+    });
+
+    if (isErr(createResponse)) {
+      throw new Error(
+        `${createResponse.err.code}: ${createResponse.err.message}`,
+      );
+    }
+  }
+
+  private getReviewList(
+    getResponse: ListProposalReviewsResponse,
+  ): ProposalReview[] {
+    return mapReviewListResponse(
+      extractOkResponse(getResponse).proposal_reviews,
+    );
+  }
+
+  private getReview(getResponse: GetProposalReviewResponse): ProposalReview {
+    return mapReviewResponse(extractOkResponse(getResponse));
   }
 }

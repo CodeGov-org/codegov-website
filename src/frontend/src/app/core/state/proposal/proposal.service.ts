@@ -14,10 +14,12 @@ const CACHE_TTL = 5_000;
 })
 export class ProposalService {
   private currentProposalListSubject = new BehaviorSubject<Proposal[]>([]);
-  public currentProposalList$ = this.currentProposalListSubject.asObservable();
+  public readonly currentProposalList$ =
+    this.currentProposalListSubject.asObservable();
 
-  private currentProposalIdSubject = new BehaviorSubject<bigint | null>(null);
-  public currentProposalId$ = this.currentProposalIdSubject.asObservable();
+  private currentProposalIdSubject = new BehaviorSubject<string | null>(null);
+  public readonly currentProposalId$ =
+    this.currentProposalIdSubject.asObservable();
 
   private openProposalList: Proposal[] = [];
   private openProposalListLastLoaded: number | null = null;
@@ -52,7 +54,7 @@ export class ProposalService {
     }
   }
 
-  public async setCurrentProposalId(proposalId: bigint): Promise<void> {
+  public async setCurrentProposalId(proposalId: string): Promise<void> {
     this.currentProposalIdSubject.next(proposalId);
   }
 

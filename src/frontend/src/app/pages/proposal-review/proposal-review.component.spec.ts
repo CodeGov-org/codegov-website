@@ -1,14 +1,60 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
 
+import { ProfileService, ProposalService, ReviewService } from '~core/state';
+import {
+  ProfileServiceMock,
+  profileServiceMockFactory,
+} from '~core/state/profile/profile.service.mock';
+import {
+  ProposalServiceMock,
+  proposalServiceMockFactory,
+} from '~core/state/proposal/proposal.service.mock';
+import {
+  ReviewServiceMock,
+  reviewServiceMockFactory,
+} from '~core/state/review/review.service.mock';
+import {
+  ActivatedRouteMock,
+  activatedRouteMockFactory,
+  defineProp,
+} from '~testing';
 import { ProposalReviewComponent } from './proposal-review.component';
 
 describe('ProposalReviewComponent', () => {
   let component: ProposalReviewComponent;
   let fixture: ComponentFixture<ProposalReviewComponent>;
+  let reviewServiceMock: ReviewServiceMock;
+  let proposalServiceMock: ProposalServiceMock;
+  let profileServiceMock: ProfileServiceMock;
+  let activatedRouteMock: ActivatedRouteMock;
 
   beforeEach(async () => {
+    reviewServiceMock = reviewServiceMockFactory();
+    defineProp(reviewServiceMock, 'currentReview$', of(null));
+
+    proposalServiceMock = proposalServiceMockFactory();
+    defineProp(proposalServiceMock, 'currentProposal$', of(null));
+
+    profileServiceMock = profileServiceMockFactory();
+    defineProp(profileServiceMock, 'userProfile$', of(null));
+    defineProp(profileServiceMock, 'isReviewer$', of(true));
+
+    activatedRouteMock = activatedRouteMockFactory();
+    activatedRouteMock.params = of([{ id: 1 }]);
+
     await TestBed.configureTestingModule({
       imports: [ProposalReviewComponent],
+      providers: [
+        { provide: ReviewService, useValue: reviewServiceMock },
+        { provide: ProposalService, useValue: proposalServiceMock },
+        { provide: ProfileService, useValue: profileServiceMock },
+        {
+          provide: ActivatedRoute,
+          useValue: activatedRouteMock,
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProposalReviewComponent);

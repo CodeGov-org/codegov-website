@@ -15,7 +15,8 @@ export function mapProposalListResponse(
   apiResponseList: ProposalResponse[],
 ): Proposal[] {
   return apiResponseList.map(proposalResponse => ({
-    id: proposalResponse.proposal.nervous_system.network.id,
+    id: proposalResponse.id,
+    ns_proposal_id: proposalResponse.proposal.nervous_system.network.id,
     title: proposalResponse.proposal.title,
     topic: getProposalTopic(
       proposalResponse.proposal.nervous_system.network.topic,

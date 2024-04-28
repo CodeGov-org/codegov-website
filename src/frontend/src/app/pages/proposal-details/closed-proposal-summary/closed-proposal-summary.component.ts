@@ -7,6 +7,7 @@ import {
   input,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 
 import {
   CardComponent,
@@ -35,6 +36,7 @@ import {
     ValueColComponent,
     CheckCircleIconComponent,
     DashCircleIconComponent,
+    RouterLink,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -188,7 +190,9 @@ import {
                 Full review
               </app-key-col>
               <app-value-col [attr.labelledby]="'review-link-' + i">
-                Review Link
+                <a [routerLink]="['/review', review.id, 'view']">
+                  See full review
+                </a>
               </app-value-col>
             </app-key-value-grid>
           </div>
@@ -205,12 +209,12 @@ import {
                 <a
                   class="commit__link"
                   [href]="
-                    'https://github.com/dfinity/ic/commit/' + commit.commitId
+                    'https://github.com/dfinity/ic/commit/' + commit.commitSha
                   "
                   target="_blank"
                   rel="nofollow noreferrer"
                 >
-                  {{ commit.commitId }}
+                  {{ commit.commitSha }}
                 </a>
               </app-value-col>
 
@@ -257,7 +261,7 @@ import {
 export class ClosedProposalSummaryComponent implements OnInit {
   public readonly proposal = input.required<Proposal>();
 
-  public readonly reviewList = toSignal(this.reviewService.reviewList$);
+  public readonly reviewList = toSignal(this.reviewService.proposalReviewList$);
 
   public proposalStats = computed(
     () =>
@@ -280,23 +284,27 @@ export class ClosedProposalSummaryComponent implements OnInit {
 
     this.reviewList()?.forEach(review => {
       for (const commit of review.reviewCommits) {
-        const existingCommit = map.get(commit.commitId) ?? {
+        const existingCommit = map.get(commit.id) ?? {
           proposalId: this.proposal().id,
-          commitId: commit.commitId,
+          commitId: commit.id,
+          commitSha: commit.commitSha,
           totalReviewers: 0,
           reviewedCount: 0,
           matchesDescriptionCount: 0,
           highlights: [],
         };
-        existingCommit.highlights.push({
-          reviewerId: review.reviewerId,
-          text: commit.highlights,
-        });
+        if (commit.highlights)
+          existingCommit.highlights.push({
+            reviewerId: review.reviewerId,
+            text: commit.highlights,
+          });
         existingCommit.totalReviewers++;
-        existingCommit.reviewedCount += commit.reviewed;
-        existingCommit.matchesDescriptionCount += commit.matchesDescription;
+        existingCommit.reviewedCount += commit.reviewed ? 1 : 0;
+        existingCommit.matchesDescriptionCount += commit.matchesDescription
+          ? 1
+          : 0;
 
-        map.set(commit.commitId, existingCommit);
+        map.set(commit.id, existingCommit);
       }
     });
     return Array.from(map.values());

@@ -46,7 +46,9 @@ import { ReviewDetailsFormComponent } from './review-details-form';
   ],
   template: `
     @if (currentProposal(); as proposal) {
-      <h1 class="h1">Submit review for proposal {{ proposal.id }}</h1>
+      <h1 class="h1">
+        Submit review for proposal {{ proposal.ns_proposal_id }}
+      </h1>
 
       <cg-card class="proposal-overview-card">
         <h2 class="h3" slot="cardTitle">{{ proposal.title }}</h2>
@@ -73,7 +75,7 @@ export class ProposalReviewEditComponent implements OnInit {
   private readonly proposalIdFromRoute$ = this.route.params.pipe(
     map(params => {
       try {
-        return BigInt(params['id']);
+        return params['id'];
       } catch (error) {
         return null;
       }
