@@ -22,13 +22,13 @@ import { Profile, ProfileUpdate, UserRole } from './profile.model';
 })
 export class ProfileService {
   private userProfileSubject = new BehaviorSubject<Profile | null>(null);
-  public userProfile$ = this.userProfileSubject.asObservable();
+  public readonly userProfile$ = this.userProfileSubject.asObservable();
 
-  public userRole$ = this.userProfile$.pipe(
+  public readonly userRole$ = this.userProfile$.pipe(
     map(profile => (isNil(profile) ? null : profile.role)),
   );
 
-  public isReviewer$ = this.userRole$.pipe(
+  public readonly isReviewer$ = this.userRole$.pipe(
     map(role => role === UserRole.Reviewer),
   );
 

@@ -1,13 +1,16 @@
+import { ImageSet } from '@cg/angular-ui';
+
 export interface ProposalReview {
-  id: bigint;
-  proposalId: bigint;
-  reviewerId: bigint;
+  id: string;
+  proposalId: string;
+  reviewerId: string;
   reviewerVote: ReviewerVote;
   state: ReviewState;
-  lastSaved: Date;
+  lastSaved: Date | undefined;
   timeSpent: number;
   summary: string;
   buildReproduced: boolean;
+  buildImages: ImageSet[];
   reviewCommits: ProposalReviewCommit[];
 }
 
@@ -16,23 +19,24 @@ export type ReviewState = 'Draft' | 'Completed';
 export type ReviewerVote = 'ADOPT' | 'REJECT' | 'NO VOTE';
 
 export interface ProposalReviewCommit {
-  id: bigint;
-  reviewId: bigint;
-  commitId: string;
-  reviewed: 0 | 1;
-  matchesDescription: 0 | 1;
-  summary: string;
-  highlights: string;
+  id: string;
+  reviewId: string;
+  commitSha: string;
+  reviewed: boolean;
+  matchesDescription: boolean | undefined;
+  summary: string | undefined;
+  highlights: string | undefined;
 }
 
 export interface ProposalCommitReviewHighlight {
-  reviewerId: bigint;
+  reviewerId: string;
   text: string;
 }
 
 export interface ProposalCommitReviewSummary {
-  proposalId: bigint;
+  proposalId: string;
   commitId: string;
+  commitSha: string;
   highlights: ProposalCommitReviewHighlight[];
   totalReviewers: number;
   reviewedCount: number;

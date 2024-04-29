@@ -8,6 +8,7 @@ import {
   ProposalVotingLinkType,
   ProposalLinkBaseUrl,
   ProfileService,
+  ReviewService,
 } from '~core/state';
 import { ProposalService } from '~core/state';
 import {
@@ -18,6 +19,10 @@ import {
   ProposalServiceMock,
   proposalServiceMockFactory,
 } from '~core/state/proposal/proposal.service.mock';
+import {
+  ReviewServiceMock,
+  reviewServiceMockFactory,
+} from '~core/state/review/review.service.mock';
 import {
   ActivatedRouteMock,
   activatedRouteMockFactory,
@@ -31,6 +36,7 @@ describe('ProposalDetailsComponent', () => {
   let proposalServiceMock: ProposalServiceMock;
   let profileServiceMock: ProfileServiceMock;
   let activatedRoute: ActivatedRouteMock;
+  let reviewServiceMock: ReviewServiceMock;
 
   beforeEach(async () => {
     proposalServiceMock = proposalServiceMockFactory();
@@ -38,7 +44,8 @@ describe('ProposalDetailsComponent', () => {
       proposalServiceMock,
       'currentProposal$',
       of({
-        id: 1n,
+        id: '1',
+        ns_proposal_id: 1n,
         title: 'title',
         topic: ProposalTopic.RVM,
         type: 'unknown',
@@ -58,16 +65,22 @@ describe('ProposalDetailsComponent', () => {
     );
 
     profileServiceMock = profileServiceMockFactory();
-    profileServiceMock.isReviewer$ = of(true);
+    defineProp(profileServiceMock, 'isReviewer$', of(true));
+    defineProp(profileServiceMock, 'userProfile$', of(null));
 
     activatedRoute = activatedRouteMockFactory();
     activatedRoute.params = of([{ id: 1 }]);
+
+    reviewServiceMock = reviewServiceMockFactory();
+    defineProp(reviewServiceMock, 'proposalReviewList$', of([]));
+    defineProp(reviewServiceMock, 'userReviewList$', of([]));
 
     await TestBed.configureTestingModule({
       imports: [ProposalDetailsComponent, RouterModule],
       providers: [
         { provide: ProposalService, useValue: proposalServiceMock },
         { provide: ProfileService, useValue: profileServiceMock },
+        { provide: ReviewService, useValue: reviewServiceMock },
         {
           provide: ActivatedRoute,
           useValue: activatedRoute,

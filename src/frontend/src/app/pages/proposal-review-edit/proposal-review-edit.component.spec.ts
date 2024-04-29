@@ -33,7 +33,8 @@ describe('EditProposalReviewComponent', () => {
       proposalServiceMock,
       'currentProposal$',
       of({
-        id: 1n,
+        id: '1',
+        ns_proposal_id: 1n,
         title: 'title',
         topic: ProposalTopic.RVM,
         type: 'unknown',
