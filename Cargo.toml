@@ -17,7 +17,7 @@ ic-cdk = "0.12"
 ic-cdk-macros = "0.8"
 ic-cdk-timers = "0.6"
 ic-stable-structures = "0.6"
-ic-nns-governance = { git = "https://github.com/dfinity/ic", rev = "044cfd5147fc97d7e5a214966941b6580c325d72" }
+ic-nns-governance = { git = "https://github.com/dfinity/ic", tag = "release-2024-02-21_23-01", version = "0.9.0" }
 
 candid = "0.10"
 candid_parser = "0.1"
