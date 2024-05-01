@@ -151,18 +151,6 @@ type Follow = record { topic : int32; followees : vec NeuronId };
 type Followees = record { followees : vec NeuronId };
 type Followers = record { followers : vec NeuronId };
 type FollowersMap = record { followers_map : vec record { nat64; Followers } };
-type GenesisNeuronAccount = record {
-  id : nat64;
-  error_count : nat64;
-  neuron_type : int32;
-  account_ids : vec text;
-  tag_end_timestamp_seconds : opt nat64;
-  amount_icp_e8s : nat64;
-  tag_start_timestamp_seconds : opt nat64;
-};
-type GenesisNeuronAccounts = record {
-  genesis_neuron_accounts : vec GenesisNeuronAccount;
-};
 type GetNeuronsFundAuditInfoRequest = record { nns_proposal_id : opt NeuronId };
 type GetNeuronsFundAuditInfoResponse = record { result : opt Result_6 };
 type GlobalTimeOfDay = record { seconds_after_utc_midnight : opt nat64 };
@@ -171,7 +159,6 @@ type Governance = record {
   making_sns_proposal : opt MakingSnsProposal;
   most_recent_monthly_node_provider_rewards : opt MostRecentMonthlyNodeProviderRewards;
   maturity_modulation_last_updated_at_timestamp_seconds : opt nat64;
-  genesis_neuron_accounts : opt GenesisNeuronAccounts;
   wait_for_quiet_threshold_seconds : nat64;
   metrics : opt GovernanceCachedMetrics;
   neuron_management_voting_period_seconds : opt nat64;
@@ -647,28 +634,28 @@ type WaitForQuietState = record { current_deadline_timestamp_seconds : nat64 };
 service : (Governance) -> {
   claim_gtc_neurons : (principal, vec NeuronId) -> (Result);
   claim_or_refresh_neuron_from_account : (ClaimOrRefreshNeuronFromAccount) -> (
-    ClaimOrRefreshNeuronFromAccountResponse
-  );
+      ClaimOrRefreshNeuronFromAccountResponse,
+    );
   get_build_metadata : () -> (text) query;
   get_full_neuron : (nat64) -> (Result_2) query;
   get_full_neuron_by_id_or_subaccount : (NeuronIdOrSubaccount) -> (
-    Result_2
-  ) query;
+      Result_2,
+    ) query;
   get_latest_reward_event : () -> (RewardEvent) query;
   get_metrics : () -> (Result_3) query;
   get_monthly_node_provider_rewards : () -> (Result_4);
   get_most_recent_monthly_node_provider_rewards : () -> (
-    opt MostRecentMonthlyNodeProviderRewards
-  ) query;
+      opt MostRecentMonthlyNodeProviderRewards,
+    ) query;
   get_network_economics_parameters : () -> (NetworkEconomics) query;
   get_neuron_ids : () -> (vec nat64) query;
   get_neuron_info : (nat64) -> (Result_5) query;
   get_neuron_info_by_id_or_subaccount : (NeuronIdOrSubaccount) -> (
-    Result_5
-  ) query;
+      Result_5,
+    ) query;
   get_neurons_fund_audit_info : (GetNeuronsFundAuditInfoRequest) -> (
-    GetNeuronsFundAuditInfoResponse
-  ) query;
+      GetNeuronsFundAuditInfoResponse,
+    ) query;
   get_node_provider_by_caller : (null) -> (Result_7) query;
   get_pending_proposals : () -> (vec ProposalInfo) query;
   get_proposal_info : (nat64) -> (opt ProposalInfo) query;
@@ -678,12 +665,12 @@ service : (Governance) -> {
   list_proposals : (ListProposalInfo) -> (ListProposalInfoResponse) query;
   manage_neuron : (ManageNeuron) -> (ManageNeuronResponse);
   settle_community_fund_participation : (SettleCommunityFundParticipation) -> (
-    Result
-  );
+      Result,
+    );
   settle_neurons_fund_participation : (
-    SettleNeuronsFundParticipationRequest
-  ) -> (SettleNeuronsFundParticipationResponse);
+      SettleNeuronsFundParticipationRequest,
+    ) -> (SettleNeuronsFundParticipationResponse);
   simulate_manage_neuron : (ManageNeuron) -> (ManageNeuronResponse);
   transfer_gtc_neuron : (NeuronId, NeuronId) -> (Result);
   update_node_provider : (UpdateNodeProvider) -> (Result);
-};
+}
