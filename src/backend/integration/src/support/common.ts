@@ -70,7 +70,11 @@ export async function createProposal(
   });
   const { proposals } = extractOkResponse(res);
 
-  const proposal = proposals.find(p => p.proposal.title === proposalTitle);
+  const proposal = proposals.find(
+    p =>
+      p.proposal.nervous_system.network.proposal_info.proposal[0]!.title[0] ===
+      proposalTitle,
+  );
   if (!proposal) {
     throw new Error(`Could not find proposal with title ${title}`);
   }
