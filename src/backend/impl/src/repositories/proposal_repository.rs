@@ -91,12 +91,12 @@ impl ProposalRepository for ProposalRepositoryImpl {
         STATE.with_borrow_mut(|s| {
             let old_key = ProposalStatusTimestampKey::new(
                 ReviewPeriodState::InProgress.into(),
-                proposal.proposed_at,
+                proposal.proposed_at()?,
                 proposal_id,
             )?;
             let new_key = ProposalStatusTimestampKey::new(
                 ReviewPeriodState::Completed.into(),
-                proposal.proposed_at,
+                proposal.proposed_at()?,
                 proposal_id,
             )?;
 
@@ -120,7 +120,7 @@ impl ProposalRepository for ProposalRepositoryImpl {
         let proposal_id = ProposalId::new().await?;
         let proposal_status_key = ProposalStatusTimestampKey::new(
             proposal.state.into(),
-            proposal.proposed_at,
+            proposal.proposed_at()?,
             proposal_id,
         )?;
 
@@ -170,7 +170,7 @@ mod tests {
     use rstest::*;
 
     #[rstest]
-    #[case::nns_proposal(fixtures::nns_replica_version_management_proposal())]
+    #[case::nns_proposal(fixtures::nns_replica_version_management_proposal(None))]
     async fn create_and_get_proposal_by_id(#[case] proposal: Proposal) {
         STATE.set(ProposalState::default());
 
@@ -203,18 +203,9 @@ mod tests {
     #[fixture]
     fn sorted_proposals() -> Vec<Proposal> {
         vec![
-            Proposal {
-                proposed_at: date_time_c(),
-                ..fixtures::nns_replica_version_management_proposal()
-            },
-            Proposal {
-                proposed_at: date_time_b(),
-                ..fixtures::nns_replica_version_management_proposal()
-            },
-            Proposal {
-                proposed_at: date_time_a(),
-                ..fixtures::nns_replica_version_management_proposal()
-            },
+            fixtures::nns_replica_version_management_proposal(Some(date_time_c())),
+            fixtures::nns_replica_version_management_proposal(Some(date_time_b())),
+            fixtures::nns_replica_version_management_proposal(Some(date_time_a())),
         ]
     }
 
@@ -286,19 +277,19 @@ mod tests {
         vec![
             Proposal {
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(None)
             },
             Proposal {
                 state: ReviewPeriodState::Completed,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(None)
             },
             Proposal {
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(None)
             },
             Proposal {
                 state: ReviewPeriodState::Completed,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(None)
             },
         ]
     }
@@ -334,37 +325,41 @@ mod tests {
 
         vec![
             Proposal {
-                proposed_at: DateTime::new(current_time).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(Some(
+                    DateTime::new(current_time).unwrap(),
+                ))
             },
             Proposal {
-                proposed_at: DateTime::new(current_time - Duration::hours(12)).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(Some(
+                    DateTime::new(current_time - Duration::hours(12)).unwrap(),
+                ))
             },
             Proposal {
-                proposed_at: DateTime::new(current_time - Duration::hours(24)).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(Some(
+                    DateTime::new(current_time - Duration::hours(24)).unwrap(),
+                ))
             },
             Proposal {
-                proposed_at: DateTime::new(current_time - Duration::hours(36)).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(Some(
+                    DateTime::new(current_time - Duration::hours(36)).unwrap(),
+                ))
             },
             Proposal {
-                proposed_at: DateTime::new(
-                    current_time - Duration::hours(48) - Duration::minutes(1),
-                )
-                .unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(Some(
+                    DateTime::new(current_time - Duration::hours(48) - Duration::minutes(1))
+                        .unwrap(),
+                ))
             },
             Proposal {
-                proposed_at: DateTime::new(current_time - Duration::hours(60)).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(Some(
+                    DateTime::new(current_time - Duration::hours(60)).unwrap(),
+                ))
             },
         ]
     }

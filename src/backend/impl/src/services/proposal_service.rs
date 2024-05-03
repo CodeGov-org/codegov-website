@@ -163,7 +163,7 @@ mod tests {
     #[rstest]
     async fn get_proposal() {
         let proposal_id = fixtures::proposal_id();
-        let proposal = fixtures::nns_replica_version_management_proposal();
+        let proposal = fixtures::nns_replica_version_management_proposal(None);
 
         let mut repository_mock = MockProposalRepository::new();
         repository_mock

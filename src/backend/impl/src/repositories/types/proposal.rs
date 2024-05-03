@@ -65,9 +65,6 @@ pub struct Proposal {
     pub nervous_system: NervousSystem,
     /// The internal state of the proposal's review period.
     pub state: ReviewPeriodState,
-    /// The timestamp of when the proposal was proposed
-    /// in the Nervous System.
-    pub proposed_at: DateTime,
     /// The timestamp of when the proposal was fetched from the Nervous System.
     pub synced_at: DateTime,
     /// The timestamp of when the proposal's review period is completed.
@@ -99,9 +96,6 @@ impl TryFrom<ProposalInfo> for Proposal {
 
         let state = nns_proposal.status().into();
 
-        let proposed_at =
-            DateTime::from_timestamp_micros(nns_proposal.proposal_timestamp_seconds * 1_000_000)?;
-
         // the NNS proposal is casted to our proposal when it is fetched
         // from the NNS, so here it's fine to set the synced_at time to now
         let date_time = get_date_time()?;
@@ -109,7 +103,6 @@ impl TryFrom<ProposalInfo> for Proposal {
         Ok(Proposal {
             nervous_system,
             state,
-            proposed_at,
             synced_at: DateTime::new(date_time)?,
             review_completed_at: None,
         })
@@ -121,12 +114,22 @@ impl Proposal {
     /// and was proposed more than **48 hours** ago.
     pub fn is_pending(&self, current_time: &DateTime) -> bool {
         self.state == ReviewPeriodState::InProgress
-            && self.proposed_at <= current_time.sub(Duration::hours(48))
+            && self.proposed_at().unwrap() <= current_time.sub(Duration::hours(48))
     }
 
     /// Checks if the proposal is in [ReviewPeriodState::Completed] state.
     pub fn is_completed(&self) -> bool {
         self.state == ReviewPeriodState::Completed
+    }
+
+    pub fn proposed_at(&self) -> Result<DateTime, ApiError> {
+        let proposal_timestamp_seconds = match &self.nervous_system {
+            NervousSystem::Network { proposal_info, .. } => {
+                proposal_info.proposal_timestamp_seconds
+            }
+        };
+
+        DateTime::from_timestamp_micros(proposal_timestamp_seconds * 1_000_000)
     }
 }
 
@@ -204,7 +207,7 @@ mod tests {
     use rstest::*;
 
     #[rstest]
-    #[case::nns_proposal(fixtures::nns_replica_version_management_proposal())]
+    #[case::nns_proposal(fixtures::nns_replica_version_management_proposal(None))]
     fn proposal_storable_impl(#[case] proposal: Proposal) {
         let serialized_proposal = proposal.to_bytes();
         let deserialized_proposal = Proposal::from_bytes(serialized_proposal);
@@ -258,24 +261,28 @@ mod tests {
 
         vec![
             Proposal {
-                proposed_at: DateTime::new(current_time).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(Some(
+                    DateTime::new(current_time).unwrap(),
+                ))
             },
             Proposal {
-                proposed_at: DateTime::new(current_time - Duration::hours(12)).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(Some(
+                    DateTime::new(current_time - Duration::hours(12)).unwrap(),
+                ))
             },
             Proposal {
-                proposed_at: DateTime::new(current_time - Duration::hours(24)).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(Some(
+                    DateTime::new(current_time - Duration::hours(24)).unwrap(),
+                ))
             },
             Proposal {
-                proposed_at: DateTime::new(current_time - Duration::hours(36)).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(Some(
+                    DateTime::new(current_time - Duration::hours(36)).unwrap(),
+                ))
             },
         ]
     }
@@ -286,17 +293,17 @@ mod tests {
 
         vec![
             Proposal {
-                proposed_at: DateTime::new(
-                    current_time - Duration::hours(48) - Duration::minutes(1),
-                )
-                .unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(Some(
+                    DateTime::new(current_time - Duration::hours(48) - Duration::minutes(1))
+                        .unwrap(),
+                ))
             },
             Proposal {
-                proposed_at: DateTime::new(current_time - Duration::hours(60)).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(Some(
+                    DateTime::new(current_time - Duration::hours(60)).unwrap(),
+                ))
             },
         ]
     }

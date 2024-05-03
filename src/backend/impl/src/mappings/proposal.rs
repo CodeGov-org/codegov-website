@@ -32,9 +32,9 @@ impl From<backend_api::ReviewPeriodState> for ReviewPeriodState {
 impl From<Proposal> for backend_api::Proposal {
     fn from(value: Proposal) -> Self {
         backend_api::Proposal {
-            nervous_system: value.nervous_system.into(),
+            nervous_system: value.nervous_system.clone().into(),
             state: value.state.into(),
-            proposed_at: value.proposed_at.to_string(),
+            proposed_at: value.proposed_at().unwrap().to_string(),
             synced_at: value.synced_at.to_string(),
             review_completed_at: value.review_completed_at.map(|dt| dt.to_string()),
         }

@@ -809,7 +809,7 @@ mod tests {
             user_id,
             ..fixtures::proposal_review_draft()
         };
-        let proposal = fixtures::nns_replica_version_management_proposal();
+        let proposal = fixtures::nns_replica_version_management_proposal(None);
 
         (
             proposal_review_commit.clone(),
@@ -841,7 +841,7 @@ mod tests {
             user_id,
             ..fixtures::proposal_review_draft()
         };
-        let proposal = fixtures::nns_replica_version_management_proposal();
+        let proposal = fixtures::nns_replica_version_management_proposal(None);
 
         (
             proposal_review_commit.clone(),
@@ -1448,7 +1448,7 @@ mod tests {
             user_id,
             ..fixtures::proposal_review_draft()
         };
-        let proposal = fixtures::nns_replica_version_management_proposal();
+        let proposal = fixtures::nns_replica_version_management_proposal(None);
         let state = backend_api::ReviewCommitState::Reviewed {
             comment: Some("Review commit comment".to_string()),
             matches_description: Some(true),
@@ -1492,7 +1492,7 @@ mod tests {
             user_id,
             ..fixtures::proposal_review_draft()
         };
-        let proposal = fixtures::nns_replica_version_management_proposal();
+        let proposal = fixtures::nns_replica_version_management_proposal(None);
         let state = backend_api::ReviewCommitState::NotReviewed;
 
         (
@@ -1715,7 +1715,7 @@ mod tests {
             user_id: proposal_review_commit.user_id,
             ..fixtures::proposal_review_draft()
         };
-        let proposal = fixtures::nns_replica_version_management_proposal();
+        let proposal = fixtures::nns_replica_version_management_proposal(None);
 
         let mut u_repository_mock = MockUserProfileRepository::new();
         u_repository_mock
