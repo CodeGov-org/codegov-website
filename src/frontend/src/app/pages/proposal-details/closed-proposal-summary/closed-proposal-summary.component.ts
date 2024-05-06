@@ -105,155 +105,178 @@ import {
       <cg-card class="summary">
         <div slot="cardContent">
           <h3 class="h5">
-            CodeGov voted to
-            <span
-              [ngClass]="{
-                'summary__vote--adopt': proposal().codeGovVote === 'ADOPT',
-                'summary__vote--reject': proposal().codeGovVote === 'REJECT'
-              }"
-            >
-              {{ proposal().codeGovVote }}
-            </span>
-            this proposal
+            @if (proposal().codeGovVote === 'NO VOTE') {
+              No CodeGov vote cast
+            } @else {
+              CodeGov voted to
+              <span
+                [ngClass]="{
+                  'summary__vote--adopt': proposal().codeGovVote === 'ADOPT',
+                  'summary__vote--reject': proposal().codeGovVote === 'REJECT'
+                }"
+              >
+                {{ proposal().codeGovVote }}
+              </span>
+              this proposal
+            }
           </h3>
 
-          <div class="summary__vote">
-            <div class="summary__vote-position">
-              <cg-check-circle-icon class="adopt-icon"></cg-check-circle-icon>
+          @if (reviewList.length !== 0) {
+            <div class="summary__vote">
+              <div class="summary__vote-position">
+                <cg-check-circle-icon class="adopt-icon"></cg-check-circle-icon>
 
+                <p>
+                  {{ proposalStats()?.adopt }} reviewer(s) voted to
+                  <span class="summary__vote--adopt">adopt</span>
+                  this proposal
+                </p>
+              </div>
+              <div class="summary__vote-position">
+                <cg-dash-circle-icon class="reject-icon"></cg-dash-circle-icon>
+
+                <p>
+                  {{ proposalStats()?.reject }} reviewer(s) voted to
+                  <span class="summary__vote--reject">reject</span>
+                  this proposal
+                </p>
+              </div>
+            </div>
+
+            <div class="summary__verification">
               <p>
-                {{ proposalStats()?.adopt }} reviewer(s) voted to
-                <span class="summary__vote--adopt">adopt</span>
-                this proposal
+                {{ commitList().length }} commits reviewed by
+                {{ reviewList.length }} reviewers
+              </p>
+              <p>
+                Build verified by
+                {{ proposalStats()?.buildReproduced }} reviewers
               </p>
             </div>
-            <div class="summary__vote-position">
-              <cg-dash-circle-icon class="reject-icon"></cg-dash-circle-icon>
-
-              <p>
-                {{ proposalStats()?.reject }} reviewer(s) voted to
-                <span class="summary__vote--reject">reject</span>
-                this proposal
-              </p>
-            </div>
-          </div>
-
-          <div class="summary__verification">
-            <p>
-              {{ commitList().length }} commits reviewed by
-              {{ reviewList.length }} reviewers
-            </p>
-            <p>
-              Build verified by {{ proposalStats()?.buildReproduced }} reviewers
-            </p>
-          </div>
+          }
         </div>
       </cg-card>
 
       <h2 class="h4">Reviews</h2>
-      @for (review of reviewList; track review.id; let i = $index) {
-        <cg-card class="review">
+      @if (reviewList.length === 0) {
+        <cg-card class="commit">
           <div slot="cardContent">
-            <app-key-value-grid [columnNumber]="1">
-              <app-key-col [id]="'reviewer-id-' + i">Reviewer</app-key-col>
-              <app-value-col [attr.labelledby]="'reviewer-id-' + i">
-                Reviewer Name Link
-              </app-value-col>
-
-              <app-key-col [id]="'build-reproduced-id-' + i">
-                Build reproduced
-              </app-key-col>
-              <app-value-col [attr.labelledby]="'build-reproduced-id-' + i">
-                {{ review.buildReproduced ? 'Yes' : 'No' }}
-              </app-value-col>
-
-              <app-key-col [id]="'vote-id-' + i">Vote</app-key-col>
-              <app-value-col
-                [attr.labelledby]="'vote-id-' + i"
-                [ngClass]="{
-                  'summary__vote--adopt': review.reviewerVote === 'ADOPT',
-                  'summary__vote--reject': review.reviewerVote === 'REJECT'
-                }"
-              >
-                {{ review.reviewerVote }}
-              </app-value-col>
-
-              <app-key-col [id]="'reviewed-commits-id-' + i">
-                Reviewed commits
-              </app-key-col>
-              <app-value-col [attr.labelledby]="'reviewed-commits-' + i">
-                {{ review.reviewCommits.length }} out of
-                {{ commitList().length }}
-              </app-value-col>
-
-              <app-key-col [id]="'review-link-id-' + i">
-                Full review
-              </app-key-col>
-              <app-value-col [attr.labelledby]="'review-link-' + i">
-                <a [routerLink]="['/review', review.id, 'view']">
-                  See full review
-                </a>
-              </app-value-col>
-            </app-key-value-grid>
+            <p>No reviews submitted</p>
           </div>
         </cg-card>
+      } @else {
+        @for (review of reviewList; track review.id; let i = $index) {
+          <cg-card class="review">
+            <div slot="cardContent">
+              <app-key-value-grid [columnNumber]="1">
+                <app-key-col [id]="'reviewer-id-' + i">Reviewer</app-key-col>
+                <app-value-col [attr.labelledby]="'reviewer-id-' + i">
+                  Reviewer Name Link
+                </app-value-col>
+
+                <app-key-col [id]="'build-reproduced-id-' + i">
+                  Build reproduced
+                </app-key-col>
+                <app-value-col [attr.labelledby]="'build-reproduced-id-' + i">
+                  {{ review.buildReproduced ? 'Yes' : 'No' }}
+                </app-value-col>
+
+                <app-key-col [id]="'vote-id-' + i">Vote</app-key-col>
+                <app-value-col
+                  [attr.labelledby]="'vote-id-' + i"
+                  [ngClass]="{
+                    'summary__vote--adopt': review.reviewerVote === 'ADOPT',
+                    'summary__vote--reject': review.reviewerVote === 'REJECT'
+                  }"
+                >
+                  {{ review.reviewerVote }}
+                </app-value-col>
+
+                <app-key-col [id]="'reviewed-commits-id-' + i">
+                  Reviewed commits
+                </app-key-col>
+                <app-value-col [attr.labelledby]="'reviewed-commits-' + i">
+                  {{ review.reviewCommits.length }} out of
+                  {{ commitList().length }}
+                </app-value-col>
+
+                <app-key-col [id]="'review-link-id-' + i">
+                  Full review
+                </app-key-col>
+                <app-value-col [attr.labelledby]="'review-link-' + i">
+                  <a [routerLink]="['/review', review.id, 'view']">
+                    See full review
+                  </a>
+                </app-value-col>
+              </app-key-value-grid>
+            </div>
+          </cg-card>
+        }
       }
 
       <h2 class="h4">Commits</h2>
-      @for (commit of commitList(); track commit.commitId; let i = $index) {
+      @if (commitList().length === 0) {
         <cg-card class="commit">
           <div slot="cardContent">
-            <app-key-value-grid [columnNumber]="1">
-              <app-key-col [id]="'commit-id-' + i">ID</app-key-col>
-              <app-value-col [attr.labelledby]="'commit-id-' + i">
-                <a
-                  class="commit__link"
-                  [href]="
-                    'https://github.com/dfinity/ic/commit/' + commit.commitSha
-                  "
-                  target="_blank"
-                  rel="nofollow noreferrer"
-                >
-                  {{ commit.commitSha }}
-                </a>
-              </app-value-col>
-
-              <app-key-col [id]="'reviewed-by-id-' + i">
-                Reviewed by
-              </app-key-col>
-              <app-value-col [attr.labelledby]="'reviewed-by-id-' + i">
-                {{ commit.reviewedCount }} out of
-                {{ reviewList.length }} reviewers
-              </app-value-col>
-
-              <app-key-col [id]="'matches-descr-id-' + i">
-                Matches description
-              </app-key-col>
-              <app-value-col [attr.labelledby]="'matches-descr-id-' + i">
-                Yes ({{ commit.matchesDescriptionCount }}) No ({{
-                  commit.reviewedCount - commit.matchesDescriptionCount
-                }})
-              </app-value-col>
-            </app-key-value-grid>
-
-            <div class="commit__highlights">
-              <div class="commit__highlights-label">Reviewer highlights</div>
-              <ul>
-                @for (
-                  highlight of commit.highlights;
-                  track highlight.reviewerId
-                ) {
-                  <li class="commit__highlights-content">
-                    Reviewer #{{ highlight.reviewerId }} said:
-                    <span class="commit__highlights-quote">
-                      "{{ highlight.text }}"
-                    </span>
-                  </li>
-                }
-              </ul>
-            </div>
+            <p>No commits reviewed</p>
           </div>
         </cg-card>
+      } @else {
+        @for (commit of commitList(); track commit.commitId; let i = $index) {
+          <cg-card class="commit">
+            <div slot="cardContent">
+              <app-key-value-grid [columnNumber]="1">
+                <app-key-col [id]="'commit-id-' + i">ID</app-key-col>
+                <app-value-col [attr.labelledby]="'commit-id-' + i">
+                  <a
+                    class="commit__link"
+                    [href]="
+                      'https://github.com/dfinity/ic/commit/' + commit.commitSha
+                    "
+                    target="_blank"
+                    rel="nofollow noreferrer"
+                  >
+                    {{ commit.commitSha }}
+                  </a>
+                </app-value-col>
+
+                <app-key-col [id]="'reviewed-by-id-' + i">
+                  Reviewed by
+                </app-key-col>
+                <app-value-col [attr.labelledby]="'reviewed-by-id-' + i">
+                  {{ commit.reviewedCount }} out of
+                  {{ reviewList.length }} reviewers
+                </app-value-col>
+
+                <app-key-col [id]="'matches-descr-id-' + i">
+                  Matches description
+                </app-key-col>
+                <app-value-col [attr.labelledby]="'matches-descr-id-' + i">
+                  Yes ({{ commit.matchesDescriptionCount }}) No ({{
+                    commit.reviewedCount - commit.matchesDescriptionCount
+                  }})
+                </app-value-col>
+              </app-key-value-grid>
+
+              <div class="commit__highlights">
+                <div class="commit__highlights-label">Reviewer highlights</div>
+                <ul>
+                  @for (
+                    highlight of commit.highlights;
+                    track highlight.reviewerId
+                  ) {
+                    <li class="commit__highlights-content">
+                      Reviewer #{{ highlight.reviewerId }} said:
+                      <span class="commit__highlights-quote">
+                        "{{ highlight.text }}"
+                      </span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            </div>
+          </cg-card>
+        }
       }
     }
   `,
