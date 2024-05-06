@@ -6,6 +6,6 @@
     "moduleResolution": "Node",
     "target": "ESNext",
     "noEmit": true,
-    "types": ["bun-types"]
+    "types": ["@types/bun"]
   }
 }

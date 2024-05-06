@@ -4,9 +4,8 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Node",
-    "esModuleInterop": true,
     "target": "ESNext",
     "noEmit": true,
-    "allowJs": true
+    "types": ["@types/bun"]
   }
 }

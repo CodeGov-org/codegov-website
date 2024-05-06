@@ -35,6 +35,6 @@ export function icpToE8s(icp: number): bigint {
   return BigInt(icp * 1e8);
 }
 
-export function base64ToUInt8Array(base64String: string): Buffer {
-  return Buffer.from(base64String, 'base64');
+export function base64ToUInt8Array(base64String: string): ArrayBuffer {
+  return Buffer.from(base64String, 'base64').buffer as ArrayBuffer;
 }
