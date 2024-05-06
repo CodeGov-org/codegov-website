@@ -105,48 +105,55 @@ import {
       <cg-card class="summary">
         <div slot="cardContent">
           <h3 class="h5">
-            CodeGov voted to
-            <span
-              [ngClass]="{
-                'summary__vote--adopt': proposal().codeGovVote === 'ADOPT',
-                'summary__vote--reject': proposal().codeGovVote === 'REJECT'
-              }"
-            >
-              {{ proposal().codeGovVote }}
-            </span>
-            this proposal
+            @if (proposal().codeGovVote === 'NO VOTE') {
+              No CodeGov vote cast
+            } @else {
+              CodeGov voted to
+              <span
+                [ngClass]="{
+                  'summary__vote--adopt': proposal().codeGovVote === 'ADOPT',
+                  'summary__vote--reject': proposal().codeGovVote === 'REJECT'
+                }"
+              >
+                {{ proposal().codeGovVote }}
+              </span>
+              this proposal
+            }
           </h3>
 
-          <div class="summary__vote">
-            <div class="summary__vote-position">
-              <cg-check-circle-icon class="adopt-icon"></cg-check-circle-icon>
+          @if (reviewList.length !== 0) {
+            <div class="summary__vote">
+              <div class="summary__vote-position">
+                <cg-check-circle-icon class="adopt-icon"></cg-check-circle-icon>
 
+                <p>
+                  {{ proposalStats()?.adopt }} reviewer(s) voted to
+                  <span class="summary__vote--adopt">adopt</span>
+                  this proposal
+                </p>
+              </div>
+              <div class="summary__vote-position">
+                <cg-dash-circle-icon class="reject-icon"></cg-dash-circle-icon>
+
+                <p>
+                  {{ proposalStats()?.reject }} reviewer(s) voted to
+                  <span class="summary__vote--reject">reject</span>
+                  this proposal
+                </p>
+              </div>
+            </div>
+
+            <div class="summary__verification">
               <p>
-                {{ proposalStats()?.adopt }} reviewer(s) voted to
-                <span class="summary__vote--adopt">adopt</span>
-                this proposal
+                {{ commitList().length }} commits reviewed by
+                {{ reviewList.length }} reviewers
+              </p>
+              <p>
+                Build verified by
+                {{ proposalStats()?.buildReproduced }} reviewers
               </p>
             </div>
-            <div class="summary__vote-position">
-              <cg-dash-circle-icon class="reject-icon"></cg-dash-circle-icon>
-
-              <p>
-                {{ proposalStats()?.reject }} reviewer(s) voted to
-                <span class="summary__vote--reject">reject</span>
-                this proposal
-              </p>
-            </div>
-          </div>
-
-          <div class="summary__verification">
-            <p>
-              {{ commitList().length }} commits reviewed by
-              {{ reviewList.length }} reviewers
-            </p>
-            <p>
-              Build verified by {{ proposalStats()?.buildReproduced }} reviewers
-            </p>
-          </div>
+          }
         </div>
       </cg-card>
 
@@ -195,6 +202,12 @@ import {
                 </a>
               </app-value-col>
             </app-key-value-grid>
+          </div>
+        </cg-card>
+      } @empty {
+        <cg-card class="review">
+          <div slot="cardContent">
+            <p>No reviews submitted</p>
           </div>
         </cg-card>
       }
@@ -252,6 +265,12 @@ import {
                 }
               </ul>
             </div>
+          </div>
+        </cg-card>
+      } @empty {
+        <cg-card class="commit">
+          <div slot="cardContent">
+            <p>No commits reviewed</p>
           </div>
         </cg-card>
       }
