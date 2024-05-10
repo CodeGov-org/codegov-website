@@ -82,19 +82,15 @@ describe('Proposal Review Image', () => {
     await pic.tearDown();
   });
 
-  describe('update proposal review image', () => {
+  describe('create proposal review image', () => {
     describe('batch one', () => {
       it('should not allow anonymous principals', async () => {
         actor.setIdentity(anonymousIdentity);
 
-        const res = await actor.update_proposal_review_image({
+        const res = await actor.create_proposal_review_image({
           proposal_id: 'proposal-id',
-          operation: {
-            upsert: {
-              content_type: 'image/png',
-              content_bytes: VALID_IMAGE_BYTES,
-            },
-          },
+          content_type: 'image/png',
+          content_bytes: VALID_IMAGE_BYTES,
         });
         const resErr = extractErrResponse(res);
 
@@ -113,14 +109,10 @@ describe('Proposal Review Image', () => {
 
         await actor.create_my_user_profile();
 
-        const resAnonymous = await actor.update_proposal_review_image({
+        const resAnonymous = await actor.create_proposal_review_image({
           proposal_id: 'proposal-id',
-          operation: {
-            upsert: {
-              content_type: 'image/png',
-              content_bytes: VALID_IMAGE_BYTES,
-            },
-          },
+          content_type: 'image/png',
+          content_bytes: VALID_IMAGE_BYTES,
         });
         const resAnonymousErr = extractErrResponse(resAnonymous);
 
@@ -134,11 +126,10 @@ describe('Proposal Review Image', () => {
         // as admin
         actor.setIdentity(controllerIdentity);
 
-        const resAdmin = await actor.update_proposal_review_image({
+        const resAdmin = await actor.create_proposal_review_image({
           proposal_id: 'proposal-id',
-          operation: {
-            delete: null,
-          },
+          content_type: 'image/png',
+          content_bytes: VALID_IMAGE_BYTES,
         });
         const resAdminErr = extractErrResponse(resAdmin);
 
@@ -150,7 +141,7 @@ describe('Proposal Review Image', () => {
         });
       });
 
-      it('should not allow to update image for a proposal review that does not exist', async () => {
+      it('should not allow to create image for a proposal review that does not exist', async () => {
         const reviewer = generateRandomIdentity();
         await createReviewer(actor, reviewer);
 
@@ -158,14 +149,10 @@ describe('Proposal Review Image', () => {
 
         actor.setIdentity(reviewer);
 
-        const res = await actor.update_proposal_review_image({
+        const res = await actor.create_proposal_review_image({
           proposal_id: nonExistentProposalId,
-          operation: {
-            upsert: {
-              content_type: 'image/png',
-              content_bytes: VALID_IMAGE_BYTES,
-            },
-          },
+          content_type: 'image/png',
+          content_bytes: VALID_IMAGE_BYTES,
         });
         const resErr = extractErrResponse(res);
 
@@ -175,7 +162,7 @@ describe('Proposal Review Image', () => {
         });
       });
 
-      it('should not allow a reviewer to update image of a proposal review that belongs to another reviewer', async () => {
+      it('should not allow a reviewer to create image of a proposal review that belongs to another reviewer', async () => {
         const alice = generateRandomIdentity();
         const bob = generateRandomIdentity();
         await createReviewer(actor, alice);
@@ -189,14 +176,10 @@ describe('Proposal Review Image', () => {
 
         actor.setIdentity(bob);
 
-        const res = await actor.update_proposal_review_image({
+        const res = await actor.create_proposal_review_image({
           proposal_id: proposalId,
-          operation: {
-            upsert: {
-              content_type: 'image/png',
-              content_bytes: VALID_IMAGE_BYTES,
-            },
-          },
+          content_type: 'image/png',
+          content_bytes: VALID_IMAGE_BYTES,
         });
         const resErr = extractErrResponse(res);
 
@@ -208,7 +191,7 @@ describe('Proposal Review Image', () => {
     });
 
     describe('batch two', () => {
-      it('should not allow a reviewer to update image for a proposal review of a completed proposal', async () => {
+      it('should not allow a reviewer to create image for a proposal review of a completed proposal', async () => {
         const reviewer = generateRandomIdentity();
         await createReviewer(actor, reviewer);
 
@@ -220,14 +203,10 @@ describe('Proposal Review Image', () => {
         await completeProposal(pic, actor, proposalId);
 
         actor.setIdentity(reviewer);
-        const res = await actor.update_proposal_review_image({
+        const res = await actor.create_proposal_review_image({
           proposal_id: proposalId,
-          operation: {
-            upsert: {
-              content_type: 'image/png',
-              content_bytes: VALID_IMAGE_BYTES,
-            },
-          },
+          content_type: 'image/png',
+          content_bytes: VALID_IMAGE_BYTES,
         });
         const resErr = extractErrResponse(res);
 
@@ -240,7 +219,7 @@ describe('Proposal Review Image', () => {
     });
 
     describe('batch three', () => {
-      it('should not allow a reviewer to update image for a proposal review that is already published', async () => {
+      it('should not allow a reviewer to create image for a proposal review that is already published', async () => {
         const reviewer = generateRandomIdentity();
         await createReviewer(actor, reviewer);
 
@@ -251,14 +230,10 @@ describe('Proposal Review Image', () => {
         );
         await publishProposalReview(actor, reviewer, proposalId);
 
-        const res = await actor.update_proposal_review_image({
+        const res = await actor.create_proposal_review_image({
           proposal_id: proposalId,
-          operation: {
-            upsert: {
-              content_type: 'image/png',
-              content_bytes: VALID_IMAGE_BYTES,
-            },
-          },
+          content_type: 'image/png',
+          content_bytes: VALID_IMAGE_BYTES,
         });
         const resErr = extractErrResponse(res);
 
@@ -282,14 +257,10 @@ describe('Proposal Review Image', () => {
 
         actor.setIdentity(reviewer);
 
-        const resUpdate = await actor.update_proposal_review_image({
+        const resUpdate = await actor.create_proposal_review_image({
           proposal_id: proposalId,
-          operation: {
-            upsert: {
-              content_type: 'image/png',
-              content_bytes: CODEGOV_LOGO_PNG,
-            },
-          },
+          content_type: 'image/png',
+          content_bytes: CODEGOV_LOGO_PNG,
         });
         const resUpdateOk = extractOkResponse(resUpdate);
 
@@ -306,84 +277,7 @@ describe('Proposal Review Image', () => {
         );
       });
 
-      it('should allow a reviewer to replace image for a proposal review', async () => {
-        const reviewer = generateRandomIdentity();
-        await createReviewer(actor, reviewer);
-
-        const {
-          proposalId,
-          proposalReviewId,
-          imagePath: originalImagePath,
-        } = await createProposalReviewWithImage(
-          actor,
-          governance,
-          reviewer,
-          VALID_IMAGE_BYTES,
-        );
-
-        actor.setIdentity(reviewer);
-
-        const resUpdate = await actor.update_proposal_review_image({
-          proposal_id: proposalId,
-          operation: {
-            upsert: {
-              content_type: 'image/png',
-              content_bytes: VALID_IMAGE_BYTES,
-            },
-          },
-        });
-        const resUpdateOk = extractOkResponse(resUpdate);
-
-        const originalImageId = originalImagePath.split('/').pop()!;
-        const imagePath = resUpdateOk.path[0]!;
-        const imageId = resUpdateOk.path[0]!.split('/').pop()!;
-        expect(imageId).not.toEqual(originalImageId);
-
-        const resGet = await actor.get_proposal_review({
-          proposal_review_id: proposalReviewId,
-        });
-        const resGetOk = extractOkResponse(resGet);
-
-        expect(resGetOk.proposal_review.reproduced_build_image_path[0]).toEqual(
-          imagePath,
-        );
-      });
-
-      it('should allow a reviewer to delete image for a proposal review', async () => {
-        const reviewer = generateRandomIdentity();
-        await createReviewer(actor, reviewer);
-
-        const { proposalId, proposalReviewId } =
-          await createProposalReviewWithImage(
-            actor,
-            governance,
-            reviewer,
-            VALID_IMAGE_BYTES,
-          );
-
-        actor.setIdentity(reviewer);
-
-        const resUpdate = await actor.update_proposal_review_image({
-          proposal_id: proposalId,
-          operation: {
-            delete: null,
-          },
-        });
-        const resUpdateOk = extractOkResponse(resUpdate);
-
-        expect(resUpdateOk.path).toEqual([]);
-
-        const resGet = await actor.get_proposal_review({
-          proposal_review_id: proposalReviewId,
-        });
-        const resGetOk = extractOkResponse(resGet);
-
-        expect(resGetOk.proposal_review.reproduced_build_image_path).toEqual(
-          [],
-        );
-      });
-
-      it('should not allow to update image for a review with invalid fields', async () => {
+      it('should not allow to create image for a review with invalid fields', async () => {
         const reviewer = generateRandomIdentity();
         await createReviewer(actor, reviewer);
 
@@ -395,14 +289,10 @@ describe('Proposal Review Image', () => {
 
         actor.setIdentity(reviewer);
 
-        const resEmptyContentType = await actor.update_proposal_review_image({
+        const resEmptyContentType = await actor.create_proposal_review_image({
           proposal_id: proposalId,
-          operation: {
-            upsert: {
-              content_type: '',
-              content_bytes: VALID_IMAGE_BYTES,
-            },
-          },
+          content_type: '',
+          content_bytes: VALID_IMAGE_BYTES,
         });
         const resEmptyContentTypeErr = extractErrResponse(resEmptyContentType);
 
@@ -411,14 +301,10 @@ describe('Proposal Review Image', () => {
           message: 'Content type cannot be empty',
         });
 
-        const resWrongContentType = await actor.update_proposal_review_image({
+        const resWrongContentType = await actor.create_proposal_review_image({
           proposal_id: proposalId,
-          operation: {
-            upsert: {
-              content_type: 'wrong-content-type',
-              content_bytes: VALID_IMAGE_BYTES,
-            },
-          },
+          content_type: 'wrong-content-type',
+          content_bytes: VALID_IMAGE_BYTES,
         });
         const resWrongContentTypeErr = extractErrResponse(resWrongContentType);
 
@@ -427,14 +313,10 @@ describe('Proposal Review Image', () => {
           message: 'Content type wrong-content-type not allowed',
         });
 
-        const resEmptyContent = await actor.update_proposal_review_image({
+        const resEmptyContent = await actor.create_proposal_review_image({
           proposal_id: proposalId,
-          operation: {
-            upsert: {
-              content_type: 'image/png',
-              content_bytes: new Uint8Array(),
-            },
-          },
+          content_type: 'image/png',
+          content_bytes: new Uint8Array(),
         });
         const resEmptyContentErr = extractErrResponse(resEmptyContent);
 
@@ -443,6 +325,76 @@ describe('Proposal Review Image', () => {
           message: 'Image content cannot be empty',
         });
       });
+    });
+  });
+
+  describe('delete proposal review image', () => {
+    it('should allow a reviewer to delete image for a proposal review', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const { proposalId, proposalReviewId, imagePath } =
+        await createProposalReviewWithImage(
+          actor,
+          governance,
+          reviewer,
+          VALID_IMAGE_BYTES,
+        );
+
+      actor.setIdentity(reviewer);
+
+      const resUpdate = await actor.delete_proposal_review_image({
+        proposal_id: proposalId,
+        image_path: imagePath,
+      });
+      const resUpdateOk = extractOkResponse(resUpdate);
+
+      expect(resUpdateOk).toEqual(null);
+
+      const resGet = await actor.get_proposal_review({
+        proposal_review_id: proposalReviewId,
+      });
+      const resGetOk = extractOkResponse(resGet);
+
+      expect(resGetOk.proposal_review.reproduced_build_image_path).toEqual([]);
+    });
+
+    it('should not allow a reviewer to delete non-existent image for a proposal review', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const nonExistentImagePath =
+        '/images/reviews/5d98f6d8-a337-47d5-b8fc-e0f230444950';
+
+      const { proposalId, proposalReviewId, imagePath } =
+        await createProposalReviewWithImage(
+          actor,
+          governance,
+          reviewer,
+          VALID_IMAGE_BYTES,
+        );
+
+      actor.setIdentity(reviewer);
+
+      const resDelete = await actor.delete_proposal_review_image({
+        proposal_id: proposalId,
+        image_path: nonExistentImagePath,
+      });
+      const resDeleteErr = extractErrResponse(resDelete);
+
+      expect(resDeleteErr).toEqual({
+        code: 404,
+        message: `Image with path ${nonExistentImagePath} not found in proposal review for proposal with Id ${proposalId}`,
+      });
+
+      const resGet = await actor.get_proposal_review({
+        proposal_review_id: proposalReviewId,
+      });
+      const resGetOk = extractOkResponse(resGet);
+
+      expect(resGetOk.proposal_review.reproduced_build_image_path[0]).toEqual(
+        imagePath,
+      );
     });
   });
 
@@ -521,14 +473,10 @@ describe('Proposal Review Image', () => {
         );
 
         actor.setIdentity(reviewer);
-        const resUpdate = await actor.update_proposal_review_image({
+        const resUpdate = await actor.create_proposal_review_image({
           proposal_id: proposalId,
-          operation: {
-            upsert: {
-              content_type: 'image/png',
-              content_bytes: VALID_IMAGE_BYTES,
-            },
-          },
+          content_type: 'image/png',
+          content_bytes: VALID_IMAGE_BYTES,
         });
         const resUpdateOk = extractOkResponse(resUpdate);
 
@@ -558,11 +506,9 @@ describe('Proposal Review Image', () => {
         );
 
         actor.setIdentity(reviewer);
-        const resDelete = await actor.update_proposal_review_image({
+        const resDelete = await actor.delete_proposal_review_image({
           proposal_id: proposalId,
-          operation: {
-            delete: null,
-          },
+          image_path: imagePath,
         });
         extractOkResponse(resDelete);
 

@@ -50,28 +50,21 @@ pub struct UpdateProposalReviewRequest {
 }
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
-pub struct UpdateProposalReviewImageRequest {
+pub struct CreateProposalReviewImageRequest {
     pub proposal_id: String,
-    pub operation: UpdateProposalReviewImageRequestOperation,
-}
-
-#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
-pub enum UpdateProposalReviewImageRequestOperation {
-    #[serde(rename = "upsert")]
-    Upsert(UpsertProposalReviewImageRequestData),
-    #[serde(rename = "delete")]
-    Delete,
-}
-
-#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
-pub struct UpsertProposalReviewImageRequestData {
     pub content_type: String,
     pub content_bytes: Vec<u8>,
 }
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
-pub struct UpdateProposalReviewImageResponse {
-    pub path: Option<String>,
+pub struct CreateProposalReviewImageResponse {
+    pub path: String,
+}
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub struct DeleteProposalReviewImageRequest {
+    pub proposal_id: String,
+    pub image_path: String,
 }
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]

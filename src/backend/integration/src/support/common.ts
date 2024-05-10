@@ -169,14 +169,10 @@ export async function createProposalReviewWithImage(
   );
 
   actor.setIdentity(reviewer);
-  const res = await actor.update_proposal_review_image({
+  const res = await actor.create_proposal_review_image({
     proposal_id: proposalId,
-    operation: {
-      upsert: {
-        content_type: 'image/png',
-        content_bytes: imageBytes,
-      },
-    },
+    content_type: 'image/png',
+    content_bytes: imageBytes,
   });
   const resOk = extractOkResponse(res);
 

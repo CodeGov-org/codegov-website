@@ -1,8 +1,8 @@
 use backend_api::{
-    ApiError, ApiResult, CreateProposalReviewRequest, CreateProposalReviewResponse,
+    ApiError, ApiResult, CreateProposalReviewImageRequest, CreateProposalReviewImageResponse,
+    CreateProposalReviewRequest, CreateProposalReviewResponse, DeleteProposalReviewImageRequest,
     GetProposalReviewRequest, GetProposalReviewResponse, ListProposalReviewsRequest,
-    ListProposalReviewsResponse, UpdateProposalReviewImageRequest,
-    UpdateProposalReviewImageResponse, UpdateProposalReviewRequest,
+    ListProposalReviewsResponse, UpdateProposalReviewRequest,
 };
 use candid::Principal;
 use ic_cdk::*;
@@ -60,14 +60,23 @@ fn get_proposal_review(request: GetProposalReviewRequest) -> ApiResult<GetPropos
 }
 
 #[update]
-async fn update_proposal_review_image(
-    request: UpdateProposalReviewImageRequest,
-) -> ApiResult<UpdateProposalReviewImageResponse> {
+async fn create_proposal_review_image(
+    request: CreateProposalReviewImageRequest,
+) -> ApiResult<CreateProposalReviewImageResponse> {
     let calling_principal = caller();
 
     ProposalReviewController::default()
-        .update_proposal_review_image(calling_principal, request)
+        .create_proposal_review_image(calling_principal, request)
         .await
+        .into()
+}
+
+#[update]
+fn delete_proposal_review_image(request: DeleteProposalReviewImageRequest) -> ApiResult<()> {
+    let calling_principal = caller();
+
+    ProposalReviewController::default()
+        .delete_proposal_review_image(calling_principal, request)
         .into()
 }
 
@@ -150,17 +159,29 @@ impl<A: AccessControlService, P: ProposalReviewService> ProposalReviewController
             .get_proposal_review(calling_principal, request)
     }
 
-    async fn update_proposal_review_image(
+    async fn create_proposal_review_image(
         &self,
         calling_principal: Principal,
-        request: UpdateProposalReviewImageRequest,
-    ) -> Result<UpdateProposalReviewImageResponse, ApiError> {
+        request: CreateProposalReviewImageRequest,
+    ) -> Result<CreateProposalReviewImageResponse, ApiError> {
         self.access_control_service
             .assert_principal_is_reviewer(&calling_principal)?;
 
         self.proposal_review_service
-            .update_proposal_review_image(calling_principal, request)
+            .create_proposal_review_image(calling_principal, request)
             .await
+    }
+
+    fn delete_proposal_review_image(
+        &self,
+        calling_principal: Principal,
+        request: DeleteProposalReviewImageRequest,
+    ) -> Result<(), ApiError> {
+        self.access_control_service
+            .assert_principal_is_reviewer(&calling_principal)?;
+
+        self.proposal_review_service
+            .delete_proposal_review_image(calling_principal, request)
     }
 }
 
@@ -170,9 +191,6 @@ mod tests {
     use crate::{
         fixtures,
         services::{MockAccessControlService, MockProposalReviewService},
-    };
-    use backend_api::{
-        UpdateProposalReviewImageRequestOperation, UpsertProposalReviewImageRequestData,
     };
     use mockall::predicate::*;
     use rstest::*;
@@ -333,19 +351,15 @@ mod tests {
     }
 
     #[rstest]
-    async fn update_proposal_review_image() {
+    async fn create_proposal_review_image() {
         let calling_principal = fixtures::principal();
-        let request = UpdateProposalReviewImageRequest {
+        let request = CreateProposalReviewImageRequest {
             proposal_id: fixtures::proposal_id().to_string(),
-            operation: UpdateProposalReviewImageRequestOperation::Upsert(
-                UpsertProposalReviewImageRequestData {
-                    content_type: "image/png".to_string(),
-                    content_bytes: vec![1, 2, 3],
-                },
-            ),
+            content_type: "image/png".to_string(),
+            content_bytes: vec![1, 2, 3],
         };
-        let response = UpdateProposalReviewImageResponse {
-            path: Some("/images/dummy-image-id".to_string()),
+        let response = CreateProposalReviewImageResponse {
+            path: "/images/dummy-image-id".to_string(),
         };
 
         let mut access_control_service_mock = MockAccessControlService::new();
@@ -357,7 +371,7 @@ mod tests {
 
         let mut proposal_review_service_mock = MockProposalReviewService::new();
         proposal_review_service_mock
-            .expect_update_proposal_review_image()
+            .expect_create_proposal_review_image()
             .once()
             .with(eq(calling_principal), eq(request.clone()))
             .return_const(Ok(response.clone()));
@@ -368,7 +382,7 @@ mod tests {
         );
 
         let result = controller
-            .update_proposal_review_image(calling_principal, request)
+            .create_proposal_review_image(calling_principal, request)
             .await
             .unwrap();
 
@@ -376,16 +390,12 @@ mod tests {
     }
 
     #[rstest]
-    async fn update_proposal_review_image_unauthorized() {
+    async fn create_proposal_review_image_unauthorized() {
         let calling_principal = fixtures::principal();
-        let request = UpdateProposalReviewImageRequest {
+        let request = CreateProposalReviewImageRequest {
             proposal_id: fixtures::proposal_id().to_string(),
-            operation: UpdateProposalReviewImageRequestOperation::Upsert(
-                UpsertProposalReviewImageRequestData {
-                    content_type: "image/png".to_string(),
-                    content_bytes: vec![1, 2, 3],
-                },
-            ),
+            content_type: "image/png".to_string(),
+            content_bytes: vec![1, 2, 3],
         };
         let error = ApiError::permission_denied(&format!(
             "Principal {} must be a reviewer to call this endpoint",
@@ -401,7 +411,7 @@ mod tests {
 
         let mut proposal_review_service_mock = MockProposalReviewService::new();
         proposal_review_service_mock
-            .expect_update_proposal_review_image()
+            .expect_create_proposal_review_image()
             .never();
 
         let controller = ProposalReviewController::new(
@@ -410,8 +420,76 @@ mod tests {
         );
 
         let result = controller
-            .update_proposal_review_image(calling_principal, request)
+            .create_proposal_review_image(calling_principal, request)
             .await
+            .unwrap_err();
+
+        assert_eq!(result, error);
+    }
+
+    #[rstest]
+    async fn delete_proposal_review_image() {
+        let calling_principal = fixtures::principal();
+        let request = DeleteProposalReviewImageRequest {
+            proposal_id: fixtures::proposal_id().to_string(),
+            image_path: "/images/reviews/dummy-image-id".to_string(),
+        };
+
+        let mut access_control_service_mock = MockAccessControlService::new();
+        access_control_service_mock
+            .expect_assert_principal_is_reviewer()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Ok(()));
+
+        let mut proposal_review_service_mock = MockProposalReviewService::new();
+        proposal_review_service_mock
+            .expect_delete_proposal_review_image()
+            .once()
+            .with(eq(calling_principal), eq(request.clone()))
+            .return_const(Ok(()));
+
+        let controller = ProposalReviewController::new(
+            access_control_service_mock,
+            proposal_review_service_mock,
+        );
+
+        controller
+            .delete_proposal_review_image(calling_principal, request)
+            .unwrap();
+    }
+
+    #[rstest]
+    async fn delete_proposal_review_image_unauthorized() {
+        let calling_principal = fixtures::principal();
+        let request = DeleteProposalReviewImageRequest {
+            proposal_id: fixtures::proposal_id().to_string(),
+            image_path: "/images/reviews/dummy-image-id".to_string(),
+        };
+        let error = ApiError::permission_denied(&format!(
+            "Principal {} must be a reviewer to call this endpoint",
+            calling_principal.to_text()
+        ));
+
+        let mut access_control_service_mock = MockAccessControlService::new();
+        access_control_service_mock
+            .expect_assert_principal_is_reviewer()
+            .once()
+            .with(eq(calling_principal))
+            .return_const(Err(error.clone()));
+
+        let mut proposal_review_service_mock = MockProposalReviewService::new();
+        proposal_review_service_mock
+            .expect_delete_proposal_review_image()
+            .never();
+
+        let controller = ProposalReviewController::new(
+            access_control_service_mock,
+            proposal_review_service_mock,
+        );
+
+        let result = controller
+            .delete_proposal_review_image(calling_principal, request)
             .unwrap_err();
 
         assert_eq!(result, error);

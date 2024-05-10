@@ -25,9 +25,11 @@ pnpm -F backend-integration test -- proposal_review_commit.spec -t "update propo
 pnpm -F backend-integration test -- proposal_review_commit.spec -t "delete proposal review commit batch one"
 pnpm -F backend-integration test -- proposal_review_commit.spec -t "delete proposal review commit batch two"
 
-pnpm -F backend-integration test -- proposal_review_image.spec -t "update proposal review image batch one"
-pnpm -F backend-integration test -- proposal_review_image.spec -t "update proposal review image batch two"
-pnpm -F backend-integration test -- proposal_review_image.spec -t "update proposal review image batch three"
-pnpm -F backend-integration test -- proposal_review_image.spec -t "update proposal review image batch four"
+pnpm -F backend-integration test -- proposal_review_image.spec -t "create proposal review image batch one"
+pnpm -F backend-integration test -- proposal_review_image.spec -t "create proposal review image batch two"
+pnpm -F backend-integration test -- proposal_review_image.spec -t "create proposal review image batch three"
+pnpm -F backend-integration test -- proposal_review_image.spec -t "create proposal review image batch four"
+
+pnpm -F backend-integration test -- proposal_review_image.spec -t "delete proposal review image"
 
 pnpm -F backend-integration test -- proposal_review_image.spec -t "http proposal review image batch one"

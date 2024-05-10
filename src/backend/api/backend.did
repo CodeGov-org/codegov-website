@@ -249,25 +249,26 @@ type UpdateProposalReviewResponse = variant {
   err : Err;
 };
 
-type UpdateProposalReviewImageRequest = record {
+type CreateProposalReviewImageRequest = record {
   proposal_id : text;
-  operation : UpdateProposalReviewImageRequestOperation;
-};
-
-type UpdateProposalReviewImageRequestOperation = variant {
-  upsert : UpsertProposalReviewImageRequestData;
-  delete;
-};
-
-type UpsertProposalReviewImageRequestData = record {
   content_type : text;
   content_bytes : blob;
 };
 
-type UpdateProposalReviewImageResponse = variant {
+type CreateProposalReviewImageResponse = variant {
   ok : record {
-    path : opt text;
+    path : text;
   };
+  err : Err;
+};
+
+type DeleteProposalReviewImageRequest = record {
+  proposal_id : text;
+  image_path : text;
+};
+
+type DeleteProposalReviewImageResponse = variant {
+  ok;
   err : Err;
 };
 
@@ -376,7 +377,8 @@ service : {
   update_proposal_review : (UpdateProposalReviewRequest) -> (UpdateProposalReviewResponse);
   list_proposal_reviews : (ListProposalReviewsRequest) -> (ListProposalReviewsResponse) query;
   get_proposal_review : (GetProposalReviewRequest) -> (GetProposalReviewResponse) query;
-  update_proposal_review_image : (UpdateProposalReviewImageRequest) -> (UpdateProposalReviewImageResponse);
+  create_proposal_review_image : (CreateProposalReviewImageRequest) -> (CreateProposalReviewImageResponse);
+  delete_proposal_review_image : (DeleteProposalReviewImageRequest) -> (DeleteProposalReviewImageResponse);
   create_proposal_review_commit : (CreateProposalReviewCommitRequest) -> (CreateProposalReviewCommitResponse);
   update_proposal_review_commit : (UpdateProposalReviewCommitRequest) -> (UpdateProposalReviewCommitResponse);
   delete_proposal_review_commit : (DeleteProposalReviewCommitRequest) -> (DeleteProposalReviewCommitResponse);
