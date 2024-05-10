@@ -176,7 +176,7 @@ export async function createProposalReviewWithImage(
   });
   const resOk = extractOkResponse(res);
 
-  const imagePath = resOk.path[0]!;
+  const imagePath = resOk.path;
 
   return { proposalId, proposalReviewId, imagePath };
 }

@@ -257,14 +257,14 @@ describe('Proposal Review Image', () => {
 
         actor.setIdentity(reviewer);
 
-        const resUpdate = await actor.create_proposal_review_image({
+        const resCreate = await actor.create_proposal_review_image({
           proposal_id: proposalId,
           content_type: 'image/png',
           content_bytes: CODEGOV_LOGO_PNG,
         });
-        const resUpdateOk = extractOkResponse(resUpdate);
+        const resCreateOk = extractOkResponse(resCreate);
 
-        const imagePath = resUpdateOk.path;
+        const imagePath = resCreateOk.path;
         expect(imagePath.startsWith('/images/reviews/')).toBe(true);
 
         const resGet = await actor.get_proposal_review({
@@ -341,13 +341,13 @@ describe('Proposal Review Image', () => {
 
       actor.setIdentity(reviewer);
 
-      const resUpdate = await actor.delete_proposal_review_image({
+      const resDelete = await actor.delete_proposal_review_image({
         proposal_id: proposalId,
         image_path: imagePath,
       });
-      const resUpdateOk = extractOkResponse(resUpdate);
+      const resDeleteOk = extractOkResponse(resDelete);
 
-      expect(resUpdateOk).toEqual(null);
+      expect(resDeleteOk).toEqual(null);
 
       const resGet = await actor.get_proposal_review({
         proposal_review_id: proposalReviewId,
@@ -461,7 +461,7 @@ describe('Proposal Review Image', () => {
         const reviewer = generateRandomIdentity();
         await createReviewer(actor, reviewer);
 
-        const { proposalId } = await createProposalReviewWithImage(
+        const { proposalId, imagePath } = await createProposalReviewWithImage(
           actor,
           governance,
           reviewer,
@@ -469,14 +469,20 @@ describe('Proposal Review Image', () => {
         );
 
         actor.setIdentity(reviewer);
-        const resUpdate = await actor.create_proposal_review_image({
+        const resDelete = await actor.delete_proposal_review_image({
+          proposal_id: proposalId,
+          image_path: imagePath,
+        });
+        extractOkResponse(resDelete);
+
+        const resCreate = await actor.create_proposal_review_image({
           proposal_id: proposalId,
           content_type: 'image/png',
           content_bytes: VALID_IMAGE_BYTES,
         });
-        const resUpdateOk = extractOkResponse(resUpdate);
+        const resCreateOk = extractOkResponse(resCreate);
 
-        const imagePathUpdated = resUpdateOk.path;
+        const imagePathUpdated = resCreateOk.path;
 
         const request: Request = {
           url: imagePathUpdated,
