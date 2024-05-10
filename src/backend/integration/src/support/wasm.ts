@@ -10,18 +10,16 @@ export const BACKEND_WASM_PATH = resolve(
   '..',
   '..',
   '..',
-  'target',
-  'wasm32-unknown-unknown',
-  'release',
-  'backend_impl.wasm',
+  '.dfx',
+  'local',
+  'canisters',
+  'backend',
+  'backend.wasm.gz',
 );
 
 export async function setupBackendCanister(
   pic: PocketIc,
-  initialDate: Date = new Date(),
 ): Promise<CanisterFixture<_SERVICE>> {
-  await pic.setTime(initialDate.getTime());
-
   const fixture = await pic.setupCanister<_SERVICE>({
     idlFactory,
     wasm: BACKEND_WASM_PATH,

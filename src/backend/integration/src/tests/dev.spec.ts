@@ -10,9 +10,7 @@ describe('Dev features', () => {
   const controller = controllerIdentity.getPrincipal();
 
   beforeEach(async () => {
-    pic = await PocketIc.create(process.env.PIC_URL, {
-      processingTimeoutMs: 10_000,
-    });
+    pic = await PocketIc.create(process.env.PIC_URL);
 
     canisterId = await pic.createCanister({
       sender: controller,
@@ -37,7 +35,7 @@ describe('Dev features', () => {
           arg: IDL.encode([IDL.Text], ['e716b277-cea0-40ba-b458-2e4585bc2a2f']),
         }),
     ).rejects.toThrow(
-      `Canister ${canisterId.toText()} has no update method 'close_proposal'`,
+      `Error from Canister ${canisterId.toText()}: Canister has no update method 'close_proposal'`,
     );
   });
 });
