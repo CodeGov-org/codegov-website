@@ -264,7 +264,7 @@ describe('Proposal Review Image', () => {
         });
         const resUpdateOk = extractOkResponse(resUpdate);
 
-        const imagePath = resUpdateOk.path[0]!;
+        const imagePath = resUpdateOk.path;
         expect(imagePath.startsWith('/images/reviews/')).toBe(true);
 
         const resGet = await actor.get_proposal_review({
@@ -272,9 +272,7 @@ describe('Proposal Review Image', () => {
         });
         const resGetOk = extractOkResponse(resGet);
 
-        expect(resGetOk.proposal_review.reproduced_build_image_path[0]).toEqual(
-          imagePath,
-        );
+        expect(resGetOk.proposal_review.images_paths).toEqual([imagePath]);
       });
 
       it('should not allow to create image for a review with invalid fields', async () => {
@@ -356,7 +354,7 @@ describe('Proposal Review Image', () => {
       });
       const resGetOk = extractOkResponse(resGet);
 
-      expect(resGetOk.proposal_review.reproduced_build_image_path).toEqual([]);
+      expect(resGetOk.proposal_review.images_paths).toEqual([]);
     });
 
     it('should not allow a reviewer to delete non-existent image for a proposal review', async () => {
@@ -392,9 +390,7 @@ describe('Proposal Review Image', () => {
       });
       const resGetOk = extractOkResponse(resGet);
 
-      expect(resGetOk.proposal_review.reproduced_build_image_path[0]).toEqual(
-        imagePath,
-      );
+      expect(resGetOk.proposal_review.images_paths).toEqual([imagePath]);
     });
   });
 
@@ -480,7 +476,7 @@ describe('Proposal Review Image', () => {
         });
         const resUpdateOk = extractOkResponse(resUpdate);
 
-        const imagePathUpdated = resUpdateOk.path[0]!;
+        const imagePathUpdated = resUpdateOk.path;
 
         const request: Request = {
           url: imagePathUpdated,

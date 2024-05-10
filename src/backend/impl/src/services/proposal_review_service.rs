@@ -165,7 +165,7 @@ impl<
             summary: request.summary.unwrap_or("".to_string()),
             review_duration_mins: request.review_duration_mins.unwrap_or(0),
             build_reproduced: request.build_reproduced.unwrap_or(false),
-            reproduced_build_image_id: None,
+            images_ids: vec![],
         };
 
         let id = self
@@ -173,7 +173,7 @@ impl<
             .create_proposal_review(proposal_review.clone())
             .await?;
 
-        Ok(map_proposal_review(id, proposal_review, vec![], None))
+        Ok(map_proposal_review(id, proposal_review, vec![], vec![]))
     }
 
     fn update_proposal_review(
@@ -338,7 +338,8 @@ impl<
         let (id, mut current_proposal_review) =
             self.get_current_proposal_review(request.proposal_id.clone(), user_id, None)?;
 
-        if current_proposal_review.reproduced_build_image_id.is_some() {
+        // for now, we only allow one image
+        if !current_proposal_review.images_ids.is_empty() {
             return Err(ApiError::conflict(&format!(
                 "Proposal review for proposal with Id {} already has an image",
                 request.proposal_id
@@ -359,7 +360,7 @@ impl<
 
         let image_id = self.image_repository.create_image(image.clone()).await?;
 
-        current_proposal_review.reproduced_build_image_id = Some(image_id);
+        current_proposal_review.images_ids = vec![image_id];
 
         self.save_proposal_review(id, current_proposal_review)?;
 
@@ -393,17 +394,14 @@ impl<
             .to_string_lossy()
             .to_string();
 
-        if let Some(existing_image_id) = current_proposal_review
-            .reproduced_build_image_id
-            .take()
-            .and_then(|image_id| {
-                if image_id_to_delete == image_id.to_string() {
-                    Some(image_id)
-                } else {
-                    None
-                }
-            })
+        if let Some(existing_image_id_idx) = current_proposal_review
+            .images_ids
+            .iter()
+            .position(|image_id| image_id.to_string() == image_id_to_delete)
         {
+            let existing_image_id = current_proposal_review
+                .images_ids
+                .remove(existing_image_id_idx);
             self.image_repository.delete_image(&existing_image_id)?;
         } else {
             return Err(ApiError::not_found(&format!(
@@ -531,20 +529,22 @@ impl<
             .proposal_review_commit_repository
             .get_proposal_review_commits_by_proposal_review_id(id)?;
 
-        let reproduced_build_image_path =
-            proposal_review
-                .reproduced_build_image_id
-                .and_then(|image_id| {
-                    let image = self.image_repository.get_image_by_id(&image_id);
-
-                    image.map(|image| image.path(&image_id))
-                });
+        let images_paths = proposal_review
+            .images_ids
+            .iter()
+            .filter_map(|image_id| {
+                // the None case should never happen
+                self.image_repository
+                    .get_image_by_id(image_id)
+                    .map(|image| image.path(image_id))
+            })
+            .collect();
 
         Ok(map_proposal_review(
             id,
             proposal_review,
             proposal_review_commits,
-            reproduced_build_image_path,
+            images_paths,
         ))
     }
 
@@ -1738,7 +1738,7 @@ mod tests {
             proposal_review_create_image();
 
         let proposal_review_with_image = ProposalReview {
-            reproduced_build_image_id: Some(image_id),
+            images_ids: vec![image_id],
             ..original_proposal_review
         };
 
@@ -1823,8 +1823,10 @@ mod tests {
             .expect_delete_image()
             .once()
             .with(eq(original_proposal_review
-                .reproduced_build_image_id
-                .unwrap()))
+                .images_ids
+                .first()
+                .unwrap()
+                .to_owned()))
             .return_const(Ok(()));
 
         let service = ProposalReviewServiceImpl::new(
@@ -1847,7 +1849,7 @@ mod tests {
         let (id, original_proposal_review, request, _) = proposal_review_update_image_delete();
 
         let original_proposal_review = ProposalReview {
-            reproduced_build_image_id: None,
+            images_ids: vec![],
             ..original_proposal_review
         };
 
@@ -1910,7 +1912,7 @@ mod tests {
         let user_id = fixtures::uuid_a();
         let original_proposal_review = ProposalReview {
             user_id,
-            reproduced_build_image_id: None,
+            images_ids: vec![],
             ..fixtures::proposal_review_draft()
         };
         let image = Image {
@@ -1933,7 +1935,7 @@ mod tests {
             },
             ProposalReview {
                 last_updated_at: Some(DateTime::new(date_time).unwrap()),
-                reproduced_build_image_id: Some(image_id),
+                images_ids: vec![image_id],
                 ..original_proposal_review
             },
             CreateProposalReviewImageResponse {
@@ -1957,7 +1959,7 @@ mod tests {
         let user_id = fixtures::uuid_a();
         let original_proposal_review = ProposalReview {
             user_id,
-            reproduced_build_image_id: Some(fixtures::uuid_b()),
+            images_ids: vec![fixtures::uuid_b()],
             ..fixtures::proposal_review_draft()
         };
         let image = Image {
@@ -1980,7 +1982,7 @@ mod tests {
             },
             ProposalReview {
                 last_updated_at: Some(DateTime::new(date_time).unwrap()),
-                reproduced_build_image_id: Some(image_id),
+                images_ids: vec![image_id],
                 ..original_proposal_review
             },
             CreateProposalReviewImageResponse {
@@ -2001,7 +2003,7 @@ mod tests {
         let image_id = fixtures::uuid_b();
         let original_proposal_review = ProposalReview {
             user_id: fixtures::uuid_a(),
-            reproduced_build_image_id: Some(image_id),
+            images_ids: vec![image_id],
             ..fixtures::proposal_review_draft()
         };
 
@@ -2017,7 +2019,7 @@ mod tests {
             },
             ProposalReview {
                 last_updated_at: Some(DateTime::new(date_time).unwrap()),
-                reproduced_build_image_id: None,
+                images_ids: vec![],
                 ..original_proposal_review
             },
         )

@@ -27,7 +27,7 @@ pub struct ProposalReview {
     pub summary: String,
     pub review_duration_mins: u16,
     pub build_reproduced: bool,
-    pub reproduced_build_image_id: Option<ImageId>,
+    pub images_ids: Vec<ImageId>,
 }
 
 impl ProposalReview {
