@@ -102,114 +102,110 @@ describe('Proposal Review Image', () => {
   });
 
   describe('create proposal review image', () => {
-    describe('batch one', () => {
-      it('should not allow anonymous principals', async () => {
-        actor.setIdentity(anonymousIdentity);
+    it('should not allow anonymous principals', async () => {
+      actor.setIdentity(anonymousIdentity);
 
-        const res = await actor.create_proposal_review_image({
-          proposal_id: 'proposal-id',
-          content_type: 'image/png',
-          content_bytes: VALID_IMAGE_BYTES,
-        });
-        const resErr = extractErrResponse(res);
-
-        expect(resErr).toEqual({
-          code: 404,
-          message: `Principal ${anonymousIdentity
-            .getPrincipal()
-            .toText()} must have a profile to call this endpoint`,
-        });
+      const res = await actor.create_proposal_review_image({
+        proposal_id: 'proposal-id',
+        content_type: 'image/png',
+        content_bytes: VALID_IMAGE_BYTES,
       });
+      const resErr = extractErrResponse(res);
 
-      it('should not allow non-reviewer principals', async () => {
-        // as anonymous user
-        const alice = generateRandomIdentity();
-        actor.setIdentity(alice);
-
-        await actor.create_my_user_profile();
-
-        const resAnonymous = await actor.create_proposal_review_image({
-          proposal_id: 'proposal-id',
-          content_type: 'image/png',
-          content_bytes: VALID_IMAGE_BYTES,
-        });
-        const resAnonymousErr = extractErrResponse(resAnonymous);
-
-        expect(resAnonymousErr).toEqual({
-          code: 403,
-          message: `Principal ${alice
-            .getPrincipal()
-            .toText()} must be a reviewer to call this endpoint`,
-        });
-
-        // as admin
-        actor.setIdentity(controllerIdentity);
-
-        const resAdmin = await actor.create_proposal_review_image({
-          proposal_id: 'proposal-id',
-          content_type: 'image/png',
-          content_bytes: VALID_IMAGE_BYTES,
-        });
-        const resAdminErr = extractErrResponse(resAdmin);
-
-        expect(resAdminErr).toEqual({
-          code: 403,
-          message: `Principal ${controllerIdentity
-            .getPrincipal()
-            .toText()} must be a reviewer to call this endpoint`,
-        });
-      });
-
-      it('should not allow to create image for a proposal review that does not exist', async () => {
-        const reviewer = generateRandomIdentity();
-        await createReviewer(actor, reviewer);
-
-        const nonExistentProposalId = 'c61d2984-16c6-4918-9e8b-ed8ee1b05680';
-
-        actor.setIdentity(reviewer);
-
-        const res = await actor.create_proposal_review_image({
-          proposal_id: nonExistentProposalId,
-          content_type: 'image/png',
-          content_bytes: VALID_IMAGE_BYTES,
-        });
-        const resErr = extractErrResponse(res);
-
-        expect(resErr).toEqual({
-          code: 404,
-          message: `Proposal review for proposal with Id ${nonExistentProposalId} not found`,
-        });
-      });
-
-      it('should not allow a reviewer to create image of a proposal review that belongs to another reviewer', async () => {
-        const alice = generateRandomIdentity();
-        const bob = generateRandomIdentity();
-        await createReviewer(actor, alice);
-        await createReviewer(actor, bob);
-
-        const { proposalId } = await createProposalReview(
-          actor,
-          governance,
-          alice,
-        );
-
-        actor.setIdentity(bob);
-
-        const res = await actor.create_proposal_review_image({
-          proposal_id: proposalId,
-          content_type: 'image/png',
-          content_bytes: VALID_IMAGE_BYTES,
-        });
-        const resErr = extractErrResponse(res);
-
-        expect(resErr).toEqual({
-          code: 404,
-          message: `Proposal review for proposal with Id ${proposalId} not found`,
-        });
+      expect(resErr).toEqual({
+        code: 404,
+        message: `Principal ${anonymousIdentity
+          .getPrincipal()
+          .toText()} must have a profile to call this endpoint`,
       });
     });
 
-    describe('batch two', () => {
+    it('should not allow non-reviewer principals', async () => {
+      // as anonymous user
+      const alice = generateRandomIdentity();
+      actor.setIdentity(alice);
+
+      await actor.create_my_user_profile();
+
+      const resAnonymous = await actor.create_proposal_review_image({
+        proposal_id: 'proposal-id',
+        content_type: 'image/png',
+        content_bytes: VALID_IMAGE_BYTES,
+      });
+      const resAnonymousErr = extractErrResponse(resAnonymous);
+
+      expect(resAnonymousErr).toEqual({
+        code: 403,
+        message: `Principal ${alice
+          .getPrincipal()
+          .toText()} must be a reviewer to call this endpoint`,
+      });
+
+      // as admin
+      actor.setIdentity(controllerIdentity);
+
+      const resAdmin = await actor.create_proposal_review_image({
+        proposal_id: 'proposal-id',
+        content_type: 'image/png',
+        content_bytes: VALID_IMAGE_BYTES,
+      });
+      const resAdminErr = extractErrResponse(resAdmin);
+
+      expect(resAdminErr).toEqual({
+        code: 403,
+        message: `Principal ${controllerIdentity
+          .getPrincipal()
+          .toText()} must be a reviewer to call this endpoint`,
+      });
+    });
+
+    it('should not allow to create image for a proposal review that does not exist', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const nonExistentProposalId = 'c61d2984-16c6-4918-9e8b-ed8ee1b05680';
+
+      actor.setIdentity(reviewer);
+
+      const res = await actor.create_proposal_review_image({
+        proposal_id: nonExistentProposalId,
+        content_type: 'image/png',
+        content_bytes: VALID_IMAGE_BYTES,
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 404,
+        message: `Proposal review for proposal with Id ${nonExistentProposalId} not found`,
+      });
+    });
+
+    it('should not allow a reviewer to create image of a proposal review that belongs to another reviewer', async () => {
+      const alice = generateRandomIdentity();
+      const bob = generateRandomIdentity();
+      await createReviewer(actor, alice);
+      await createReviewer(actor, bob);
+
+      const { proposalId } = await createProposalReview(
+        actor,
+        governance,
+        alice,
+      );
+
+      actor.setIdentity(bob);
+
+      const res = await actor.create_proposal_review_image({
+        proposal_id: proposalId,
+        content_type: 'image/png',
+        content_bytes: VALID_IMAGE_BYTES,
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 404,
+        message: `Proposal review for proposal with Id ${proposalId} not found`,
+      });
+
       it('should not allow a reviewer to create image for a proposal review of a completed proposal', async () => {
         const reviewer = generateRandomIdentity();
         await createReviewer(actor, reviewer);
@@ -235,9 +231,7 @@ describe('Proposal Review Image', () => {
             'The proposal associated with this review is already completed',
         });
       });
-    });
 
-    describe('batch three', () => {
       it('should not allow a reviewer to create image for a proposal review that is already published', async () => {
         const reviewer = generateRandomIdentity();
         await createReviewer(actor, reviewer);
@@ -263,84 +257,82 @@ describe('Proposal Review Image', () => {
       });
     });
 
-    describe('batch four', () => {
-      it('should allow a reviewer to upload image for a proposal review', async () => {
-        const reviewer = generateRandomIdentity();
-        await createReviewer(actor, reviewer);
+    it('should allow a reviewer to upload image for a proposal review', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
 
-        const { proposalId, proposalReviewId } = await createProposalReview(
-          actor,
-          governance,
-          reviewer,
-        );
+      const { proposalId, proposalReviewId } = await createProposalReview(
+        actor,
+        governance,
+        reviewer,
+      );
 
-        actor.setIdentity(reviewer);
+      actor.setIdentity(reviewer);
 
-        const resCreate = await actor.create_proposal_review_image({
-          proposal_id: proposalId,
-          content_type: 'image/png',
-          content_bytes: CODEGOV_LOGO_PNG,
-        });
-        const resCreateOk = extractOkResponse(resCreate);
+      const resCreate = await actor.create_proposal_review_image({
+        proposal_id: proposalId,
+        content_type: 'image/png',
+        content_bytes: CODEGOV_LOGO_PNG,
+      });
+      const resCreateOk = extractOkResponse(resCreate);
 
-        const imagePath = resCreateOk.path;
-        expect(imagePath.startsWith('/images/reviews/')).toBe(true);
+      const imagePath = resCreateOk.path;
+      expect(imagePath.startsWith('/images/reviews/')).toBe(true);
 
-        const resGet = await actor.get_proposal_review({
-          proposal_review_id: proposalReviewId,
-        });
-        const resGetOk = extractOkResponse(resGet);
+      const resGet = await actor.get_proposal_review({
+        proposal_review_id: proposalReviewId,
+      });
+      const resGetOk = extractOkResponse(resGet);
 
-        expect(resGetOk.proposal_review.images_paths).toEqual([imagePath]);
+      expect(resGetOk.proposal_review.images_paths).toEqual([imagePath]);
+    });
+
+    it('should not allow to create image for a review with invalid fields', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const { proposalId } = await createProposalReview(
+        actor,
+        governance,
+        reviewer,
+      );
+
+      actor.setIdentity(reviewer);
+
+      const resEmptyContentType = await actor.create_proposal_review_image({
+        proposal_id: proposalId,
+        content_type: '',
+        content_bytes: VALID_IMAGE_BYTES,
+      });
+      const resEmptyContentTypeErr = extractErrResponse(resEmptyContentType);
+
+      expect(resEmptyContentTypeErr).toEqual({
+        code: 400,
+        message: 'Content type cannot be empty',
       });
 
-      it('should not allow to create image for a review with invalid fields', async () => {
-        const reviewer = generateRandomIdentity();
-        await createReviewer(actor, reviewer);
+      const resWrongContentType = await actor.create_proposal_review_image({
+        proposal_id: proposalId,
+        content_type: 'wrong-content-type',
+        content_bytes: VALID_IMAGE_BYTES,
+      });
+      const resWrongContentTypeErr = extractErrResponse(resWrongContentType);
 
-        const { proposalId } = await createProposalReview(
-          actor,
-          governance,
-          reviewer,
-        );
+      expect(resWrongContentTypeErr).toEqual({
+        code: 400,
+        message: 'Content type wrong-content-type not allowed',
+      });
 
-        actor.setIdentity(reviewer);
+      const resEmptyContent = await actor.create_proposal_review_image({
+        proposal_id: proposalId,
+        content_type: 'image/png',
+        content_bytes: new Uint8Array(),
+      });
+      const resEmptyContentErr = extractErrResponse(resEmptyContent);
 
-        const resEmptyContentType = await actor.create_proposal_review_image({
-          proposal_id: proposalId,
-          content_type: '',
-          content_bytes: VALID_IMAGE_BYTES,
-        });
-        const resEmptyContentTypeErr = extractErrResponse(resEmptyContentType);
-
-        expect(resEmptyContentTypeErr).toEqual({
-          code: 400,
-          message: 'Content type cannot be empty',
-        });
-
-        const resWrongContentType = await actor.create_proposal_review_image({
-          proposal_id: proposalId,
-          content_type: 'wrong-content-type',
-          content_bytes: VALID_IMAGE_BYTES,
-        });
-        const resWrongContentTypeErr = extractErrResponse(resWrongContentType);
-
-        expect(resWrongContentTypeErr).toEqual({
-          code: 400,
-          message: 'Content type wrong-content-type not allowed',
-        });
-
-        const resEmptyContent = await actor.create_proposal_review_image({
-          proposal_id: proposalId,
-          content_type: 'image/png',
-          content_bytes: new Uint8Array(),
-        });
-        const resEmptyContentErr = extractErrResponse(resEmptyContent);
-
-        expect(resEmptyContentErr).toEqual({
-          code: 400,
-          message: 'Image content cannot be empty',
-        });
+      expect(resEmptyContentErr).toEqual({
+        code: 400,
+        message: 'Image content cannot be empty',
       });
     });
   });
@@ -452,136 +444,134 @@ describe('Proposal Review Image', () => {
       expect(verificationResult.response?.body).toEqual(responseBody);
     };
 
-    describe('batch one', () => {
-      it('should return the proposal review image with certificate', async () => {
-        const reviewer = generateRandomIdentity();
-        await createReviewer(actor, reviewer);
+    it('should return the proposal review image with certificate', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
 
-        const { imagePath } = await createProposalReviewWithImage(
-          actor,
-          governance,
-          reviewer,
-          CODEGOV_LOGO_PNG,
-        );
+      const { imagePath } = await createProposalReviewWithImage(
+        actor,
+        governance,
+        reviewer,
+        CODEGOV_LOGO_PNG,
+      );
 
-        const request: Request = {
-          url: imagePath,
-          method: 'GET',
-          headers: [],
-          body: new Uint8Array(),
-        };
-        const canisterRequest = mapToCanisterRequest(request);
+      const request: Request = {
+        url: imagePath,
+        method: 'GET',
+        headers: [],
+        body: new Uint8Array(),
+      };
+      const canisterRequest = mapToCanisterRequest(request);
 
-        const canisterResponse = await actor.http_request(canisterRequest);
-        verifyHttpResponse(request, canisterResponse, CODEGOV_LOGO_PNG);
+      const canisterResponse = await actor.http_request(canisterRequest);
+      verifyHttpResponse(request, canisterResponse, CODEGOV_LOGO_PNG);
+    });
+
+    it('should return the proposal review image with certificate after update', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
+
+      const { proposalId, imagePath } = await createProposalReviewWithImage(
+        actor,
+        governance,
+        reviewer,
+        CODEGOV_LOGO_PNG,
+      );
+
+      actor.setIdentity(reviewer);
+      const resDelete = await actor.delete_proposal_review_image({
+        proposal_id: proposalId,
+        image_path: imagePath,
       });
+      extractOkResponse(resDelete);
 
-      it('should return the proposal review image with certificate after update', async () => {
-        const reviewer = generateRandomIdentity();
-        await createReviewer(actor, reviewer);
-
-        const { proposalId, imagePath } = await createProposalReviewWithImage(
-          actor,
-          governance,
-          reviewer,
-          CODEGOV_LOGO_PNG,
-        );
-
-        actor.setIdentity(reviewer);
-        const resDelete = await actor.delete_proposal_review_image({
-          proposal_id: proposalId,
-          image_path: imagePath,
-        });
-        extractOkResponse(resDelete);
-
-        const resCreate = await actor.create_proposal_review_image({
-          proposal_id: proposalId,
-          content_type: 'image/png',
-          content_bytes: VALID_IMAGE_BYTES,
-        });
-        const resCreateOk = extractOkResponse(resCreate);
-
-        const imagePathUpdated = resCreateOk.path;
-
-        const request: Request = {
-          url: imagePathUpdated,
-          method: 'GET',
-          headers: [],
-          body: new Uint8Array(),
-        };
-        const canisterRequest = mapToCanisterRequest(request);
-
-        const canisterResponse = await actor.http_request(canisterRequest);
-        verifyHttpResponse(request, canisterResponse, VALID_IMAGE_BYTES);
+      const resCreate = await actor.create_proposal_review_image({
+        proposal_id: proposalId,
+        content_type: 'image/png',
+        content_bytes: VALID_IMAGE_BYTES,
       });
+      const resCreateOk = extractOkResponse(resCreate);
 
-      it('should return 404 when proposal review image is deleted', async () => {
-        const reviewer = generateRandomIdentity();
-        await createReviewer(actor, reviewer);
+      const imagePathUpdated = resCreateOk.path;
 
-        const { proposalId, imagePath } = await createProposalReviewWithImage(
-          actor,
-          governance,
-          reviewer,
-          CODEGOV_LOGO_PNG,
-        );
+      const request: Request = {
+        url: imagePathUpdated,
+        method: 'GET',
+        headers: [],
+        body: new Uint8Array(),
+      };
+      const canisterRequest = mapToCanisterRequest(request);
 
-        actor.setIdentity(reviewer);
-        const resDelete = await actor.delete_proposal_review_image({
-          proposal_id: proposalId,
-          image_path: imagePath,
-        });
-        extractOkResponse(resDelete);
+      const canisterResponse = await actor.http_request(canisterRequest);
+      verifyHttpResponse(request, canisterResponse, VALID_IMAGE_BYTES);
+    });
 
-        const request: Request = {
-          url: imagePath,
-          method: 'GET',
-          headers: [],
-          body: new Uint8Array(),
-        };
-        const canisterRequest = mapToCanisterRequest(request);
+    it('should return 404 when proposal review image is deleted', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
 
-        const canisterResponse = await actor.http_request(canisterRequest);
-        expect(canisterResponse.status_code).toBe(404);
+      const { proposalId, imagePath } = await createProposalReviewWithImage(
+        actor,
+        governance,
+        reviewer,
+        CODEGOV_LOGO_PNG,
+      );
+
+      actor.setIdentity(reviewer);
+      const resDelete = await actor.delete_proposal_review_image({
+        proposal_id: proposalId,
+        image_path: imagePath,
       });
+      extractOkResponse(resDelete);
 
-      it('should return 404 when image does not exist', async () => {
-        const nonExistentImageId = 'f8cbe268-fb3d-48e5-8d6b-3d0262c644b4';
+      const request: Request = {
+        url: imagePath,
+        method: 'GET',
+        headers: [],
+        body: new Uint8Array(),
+      };
+      const canisterRequest = mapToCanisterRequest(request);
 
-        const request: Request = {
-          url: `/images/reviews/${nonExistentImageId}`,
-          method: 'GET',
-          headers: [],
-          body: new Uint8Array(),
-        };
-        const canisterRequest = mapToCanisterRequest(request);
+      const canisterResponse = await actor.http_request(canisterRequest);
+      expect(canisterResponse.status_code).toBe(404);
+    });
 
-        const canisterResponse = await actor.http_request(canisterRequest);
-        expect(canisterResponse.status_code).toBe(404);
-      });
+    it('should return 404 when image does not exist', async () => {
+      const nonExistentImageId = 'f8cbe268-fb3d-48e5-8d6b-3d0262c644b4';
 
-      it('should return 405 when requesting image with invalid method', async () => {
-        const reviewer = generateRandomIdentity();
-        await createReviewer(actor, reviewer);
+      const request: Request = {
+        url: `/images/reviews/${nonExistentImageId}`,
+        method: 'GET',
+        headers: [],
+        body: new Uint8Array(),
+      };
+      const canisterRequest = mapToCanisterRequest(request);
 
-        const { imagePath } = await createProposalReviewWithImage(
-          actor,
-          governance,
-          reviewer,
-          CODEGOV_LOGO_PNG,
-        );
+      const canisterResponse = await actor.http_request(canisterRequest);
+      expect(canisterResponse.status_code).toBe(404);
+    });
 
-        const request: Request = {
-          url: imagePath,
-          method: 'POST',
-          headers: [],
-          body: new Uint8Array(),
-        };
-        const canisterRequest = mapToCanisterRequest(request);
+    it('should return 405 when requesting image with invalid method', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
 
-        const canisterResponse = await actor.http_request(canisterRequest);
-        expect(canisterResponse.status_code).toBe(405);
-      });
+      const { imagePath } = await createProposalReviewWithImage(
+        actor,
+        governance,
+        reviewer,
+        CODEGOV_LOGO_PNG,
+      );
+
+      const request: Request = {
+        url: imagePath,
+        method: 'POST',
+        headers: [],
+        body: new Uint8Array(),
+      };
+      const canisterRequest = mapToCanisterRequest(request);
+
+      const canisterResponse = await actor.http_request(canisterRequest);
+      expect(canisterResponse.status_code).toBe(405);
     });
   });
 });
