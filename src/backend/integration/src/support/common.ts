@@ -148,6 +148,11 @@ export async function createProposalReview(
 }
 
 /**
+ * This is not a real image, but passes the checks on the canister.
+ */
+export const VALID_IMAGE_BYTES = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+/**
  * Same as {@link createProposalReview} function,
  * but uploads the provided image too.
  *

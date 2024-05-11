@@ -7,7 +7,7 @@ import {
   expect,
 } from 'bun:test';
 import { resolve } from 'path';
-import { HttpResponse, type _SERVICE } from '@cg/backend';
+import { type _SERVICE } from '@cg/backend';
 import {
   PocketIc,
   type Actor,
@@ -16,12 +16,8 @@ import {
 } from '@hadronous/pic';
 import { Principal } from '@dfinity/principal';
 import {
-  verifyRequestResponsePair,
-  Request,
-} from '@dfinity/response-verification';
-import {
-  CERTIFICATE_VERSION,
   Governance,
+  VALID_IMAGE_BYTES,
   anonymousIdentity,
   completeProposal,
   controllerIdentity,
@@ -30,9 +26,6 @@ import {
   createReviewer,
   extractErrResponse,
   extractOkResponse,
-  filterCertificateHeaders,
-  mapFromCanisterResponse,
-  mapToCanisterRequest,
   publishProposalReview,
   resetBackendCanister,
   setupBackendCanister,
@@ -52,19 +45,10 @@ const NNS_STATE_PATH = resolve(
   'state',
 );
 
-const NS_PER_MS = 1e6;
-
-/**
- * This is not a real image, but passes the checks on the canister.
- */
-const VALID_IMAGE_BYTES = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-
 describe('Proposal Review Image', () => {
   let actor: Actor<_SERVICE>;
   let pic: PocketIc;
   let canisterId: Principal;
-
-  let rootKey: ArrayBufferLike;
 
   // set to any date after the NNS state has been generated
   const initialDate = new Date(2024, 3, 25, 0, 0, 0, 0);
@@ -88,9 +72,6 @@ describe('Proposal Review Image', () => {
     actor = fixture.actor;
     canisterId = fixture.canisterId;
     governance = new Governance(pic);
-
-    const subnets = pic.getApplicationSubnets();
-    rootKey = await pic.getPubKey(subnets[0].id);
   });
 
   beforeEach(async () => {
@@ -402,176 +383,6 @@ describe('Proposal Review Image', () => {
       const resGetOk = extractOkResponse(resGet);
 
       expect(resGetOk.proposal_review.images_paths).toEqual([imagePath]);
-    });
-  });
-
-  describe('http proposal review image', () => {
-    const maxCertTimeOffsetNs = BigInt(5 * 60 * 1000) * BigInt(NS_PER_MS); // 5 minutes
-    const currentTimeNs = BigInt(initialDate.getTime() * NS_PER_MS);
-
-    const verifyHttpResponse = (
-      request: Request,
-      canisterResponse: HttpResponse,
-      imageBytes: Uint8Array,
-    ) => {
-      const response = mapFromCanisterResponse(canisterResponse);
-      expect(response.statusCode).toBe(200);
-      expect(response.headers.find(h => h[0] === 'content-type')![1]).toEqual(
-        'image/png',
-      );
-      const responseBody = response.body;
-      expect(response.headers.find(h => h[0] === 'content-length')![1]).toEqual(
-        imageBytes.byteLength.toString(),
-      );
-      expect(responseBody).toEqual(imageBytes);
-
-      const verificationResult = verifyRequestResponsePair(
-        request,
-        response,
-        canisterId.toUint8Array(),
-        currentTimeNs,
-        maxCertTimeOffsetNs,
-        new Uint8Array(rootKey),
-        CERTIFICATE_VERSION,
-      );
-
-      expect(verificationResult.verificationVersion).toEqual(
-        CERTIFICATE_VERSION,
-      );
-      expect(verificationResult.response).toEqual(
-        filterCertificateHeaders(response),
-      );
-      expect(verificationResult.response?.body).toEqual(responseBody);
-    };
-
-    it('should return the proposal review image with certificate', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
-
-      const { imagePath } = await createProposalReviewWithImage(
-        actor,
-        governance,
-        reviewer,
-        CODEGOV_LOGO_PNG,
-      );
-
-      const request: Request = {
-        url: imagePath,
-        method: 'GET',
-        headers: [],
-        body: new Uint8Array(),
-      };
-      const canisterRequest = mapToCanisterRequest(request);
-
-      const canisterResponse = await actor.http_request(canisterRequest);
-      verifyHttpResponse(request, canisterResponse, CODEGOV_LOGO_PNG);
-    });
-
-    it('should return the proposal review image with certificate after update', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
-
-      const { proposalId, imagePath } = await createProposalReviewWithImage(
-        actor,
-        governance,
-        reviewer,
-        CODEGOV_LOGO_PNG,
-      );
-
-      actor.setIdentity(reviewer);
-      const resDelete = await actor.delete_proposal_review_image({
-        proposal_id: proposalId,
-        image_path: imagePath,
-      });
-      extractOkResponse(resDelete);
-
-      const resCreate = await actor.create_proposal_review_image({
-        proposal_id: proposalId,
-        content_type: 'image/png',
-        content_bytes: VALID_IMAGE_BYTES,
-      });
-      const resCreateOk = extractOkResponse(resCreate);
-
-      const imagePathUpdated = resCreateOk.path;
-
-      const request: Request = {
-        url: imagePathUpdated,
-        method: 'GET',
-        headers: [],
-        body: new Uint8Array(),
-      };
-      const canisterRequest = mapToCanisterRequest(request);
-
-      const canisterResponse = await actor.http_request(canisterRequest);
-      verifyHttpResponse(request, canisterResponse, VALID_IMAGE_BYTES);
-    });
-
-    it('should return 404 when proposal review image is deleted', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
-
-      const { proposalId, imagePath } = await createProposalReviewWithImage(
-        actor,
-        governance,
-        reviewer,
-        CODEGOV_LOGO_PNG,
-      );
-
-      actor.setIdentity(reviewer);
-      const resDelete = await actor.delete_proposal_review_image({
-        proposal_id: proposalId,
-        image_path: imagePath,
-      });
-      extractOkResponse(resDelete);
-
-      const request: Request = {
-        url: imagePath,
-        method: 'GET',
-        headers: [],
-        body: new Uint8Array(),
-      };
-      const canisterRequest = mapToCanisterRequest(request);
-
-      const canisterResponse = await actor.http_request(canisterRequest);
-      expect(canisterResponse.status_code).toBe(404);
-    });
-
-    it('should return 404 when image does not exist', async () => {
-      const nonExistentImageId = 'f8cbe268-fb3d-48e5-8d6b-3d0262c644b4';
-
-      const request: Request = {
-        url: `/images/reviews/${nonExistentImageId}`,
-        method: 'GET',
-        headers: [],
-        body: new Uint8Array(),
-      };
-      const canisterRequest = mapToCanisterRequest(request);
-
-      const canisterResponse = await actor.http_request(canisterRequest);
-      expect(canisterResponse.status_code).toBe(404);
-    });
-
-    it('should return 405 when requesting image with invalid method', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
-
-      const { imagePath } = await createProposalReviewWithImage(
-        actor,
-        governance,
-        reviewer,
-        CODEGOV_LOGO_PNG,
-      );
-
-      const request: Request = {
-        url: imagePath,
-        method: 'POST',
-        headers: [],
-        body: new Uint8Array(),
-      };
-      const canisterRequest = mapToCanisterRequest(request);
-
-      const canisterResponse = await actor.http_request(canisterRequest);
-      expect(canisterResponse.status_code).toBe(405);
     });
   });
 });
