@@ -79,8 +79,8 @@ describe('http proposal review image', () => {
     canisterId = fixture.canisterId;
     governance = new Governance(pic);
 
-    const subnets = pic.getApplicationSubnets();
-    rootKey = await pic.getPubKey(subnets[0].id);
+    const nnsSubnet = pic.getNnsSubnet()!;
+    rootKey = await pic.getPubKey(nnsSubnet.id);
   });
 
   beforeEach(async () => {

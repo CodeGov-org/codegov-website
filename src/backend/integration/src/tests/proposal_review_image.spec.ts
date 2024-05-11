@@ -186,55 +186,55 @@ describe('Proposal Review Image', () => {
         code: 404,
         message: `Proposal review for proposal with Id ${proposalId} not found`,
       });
+    });
 
-      it('should not allow a reviewer to create image for a proposal review of a completed proposal', async () => {
-        const reviewer = generateRandomIdentity();
-        await createReviewer(actor, reviewer);
+    it('should not allow a reviewer to create image for a proposal review of a completed proposal', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
 
-        const { proposalId } = await createProposalReview(
-          actor,
-          governance,
-          reviewer,
-        );
-        await completeProposal(pic, actor, proposalId);
+      const { proposalId } = await createProposalReview(
+        actor,
+        governance,
+        reviewer,
+      );
+      await completeProposal(pic, actor, proposalId);
 
-        actor.setIdentity(reviewer);
-        const res = await actor.create_proposal_review_image({
-          proposal_id: proposalId,
-          content_type: 'image/png',
-          content_bytes: VALID_IMAGE_BYTES,
-        });
-        const resErr = extractErrResponse(res);
-
-        expect(resErr).toEqual({
-          code: 409,
-          message:
-            'The proposal associated with this review is already completed',
-        });
+      actor.setIdentity(reviewer);
+      const res = await actor.create_proposal_review_image({
+        proposal_id: proposalId,
+        content_type: 'image/png',
+        content_bytes: VALID_IMAGE_BYTES,
       });
+      const resErr = extractErrResponse(res);
 
-      it('should not allow a reviewer to create image for a proposal review that is already published', async () => {
-        const reviewer = generateRandomIdentity();
-        await createReviewer(actor, reviewer);
+      expect(resErr).toEqual({
+        code: 409,
+        message:
+          'The proposal associated with this review is already completed',
+      });
+    });
 
-        const { proposalId } = await createProposalReview(
-          actor,
-          governance,
-          reviewer,
-        );
-        await publishProposalReview(actor, reviewer, proposalId);
+    it('should not allow a reviewer to create image for a proposal review that is already published', async () => {
+      const reviewer = generateRandomIdentity();
+      await createReviewer(actor, reviewer);
 
-        const res = await actor.create_proposal_review_image({
-          proposal_id: proposalId,
-          content_type: 'image/png',
-          content_bytes: VALID_IMAGE_BYTES,
-        });
-        const resErr = extractErrResponse(res);
+      const { proposalId } = await createProposalReview(
+        actor,
+        governance,
+        reviewer,
+      );
+      await publishProposalReview(actor, reviewer, proposalId);
 
-        expect(resErr).toEqual({
-          code: 409,
-          message: `Proposal review for proposal with Id ${proposalId} is already published`,
-        });
+      const res = await actor.create_proposal_review_image({
+        proposal_id: proposalId,
+        content_type: 'image/png',
+        content_bytes: VALID_IMAGE_BYTES,
+      });
+      const resErr = extractErrResponse(res);
+
+      expect(resErr).toEqual({
+        code: 409,
+        message: `Proposal review for proposal with Id ${proposalId} is already published`,
       });
     });
 
