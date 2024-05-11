@@ -30,7 +30,7 @@ jobs:
         run: dfx build --check
 
       - name: Backend integration tests
-        run: ./scripts/run-integration-tests.sh
+        run: pnpm -F backend-integration test
 
       - name: Frontend unit tests
         run: pnpm -F frontend test

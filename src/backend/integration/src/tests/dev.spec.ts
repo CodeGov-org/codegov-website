@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect } from 'bun:test';
 import { Principal } from '@dfinity/principal';
 import { PocketIc } from '@hadronous/pic';
 import { BACKEND_WASM_PATH, controllerIdentity } from '../support';
@@ -9,10 +10,8 @@ describe('Dev features', () => {
 
   const controller = controllerIdentity.getPrincipal();
 
-  beforeEach(async () => {
-    pic = await PocketIc.create(process.env.PIC_URL, {
-      processingTimeoutMs: 10_000,
-    });
+  beforeAll(async () => {
+    pic = await PocketIc.create(process.env.PIC_URL);
 
     canisterId = await pic.createCanister({
       sender: controller,
@@ -24,20 +23,20 @@ describe('Dev features', () => {
     });
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await pic.tearDown();
   });
 
-  it('should not allow closing proposals', async () => {
-    await expect(
+  it('should not allow closing proposals', () => {
+    expect(
       async () =>
         await pic.updateCall({
           canisterId,
           method: 'close_proposal',
           arg: IDL.encode([IDL.Text], ['e716b277-cea0-40ba-b458-2e4585bc2a2f']),
         }),
-    ).rejects.toThrow(
-      `Canister ${canisterId.toText()} has no update method 'close_proposal'`,
+    ).toThrow(
+      `Error from Canister ${canisterId.toText()}: Canister has no update method 'close_proposal'`,
     );
   });
 });

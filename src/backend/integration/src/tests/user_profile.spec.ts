@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect } from 'bun:test';
 import { SocialLink, type _SERVICE } from '@cg/backend';
 import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
 import {
@@ -15,18 +16,18 @@ describe('User Profile', () => {
   let actor: Actor<_SERVICE>;
   let canisterId: Principal;
   let pic: PocketIc;
-  const currentDate = new Date(1988, 1, 14, 0, 0, 0, 0);
+  const initialDate = new Date(1988, 1, 14, 0, 0, 0, 0);
 
-  beforeEach(async () => {
-    pic = await PocketIc.create(process.env.PIC_URL, {
-      processingTimeoutMs: 10_000,
-    });
-    const fixture = await setupBackendCanister(pic, currentDate);
+  beforeAll(async () => {
+    pic = await PocketIc.create(process.env.PIC_URL);
+    await pic.setTime(initialDate.getTime());
+
+    const fixture = await setupBackendCanister(pic);
     actor = fixture.actor;
     canisterId = fixture.canisterId;
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await pic.tearDown();
   });
 
@@ -65,7 +66,7 @@ describe('User Profile', () => {
       expect(historyOk.history[0]).toEqual({
         action: { create: null },
         user: controllerIdentity.getPrincipal(),
-        date_time: dateToRfc3339(currentDate),
+        date_time: dateToRfc3339(initialDate),
         data: {
           username: resOk.username,
           config: resOk.config,
@@ -109,11 +110,18 @@ describe('User Profile', () => {
       expect(historyOk.history[0]).toEqual({
         action: { create: null },
         user: newControllerIdentity.getPrincipal(),
-        date_time: dateToRfc3339(currentDate),
+        date_time: dateToRfc3339(initialDate),
         data: {
           username: resOk.username,
           config: resOk.config,
         },
+      });
+
+      // restore original canister controller
+      await pic.updateCanisterSettings({
+        canisterId,
+        controllers: [controllerIdentity.getPrincipal()],
+        sender: newControllerIdentity.getPrincipal(),
       });
     });
 
@@ -162,7 +170,7 @@ describe('User Profile', () => {
       expect(aliceGetHistory.history[0]).toEqual({
         action: { create: null },
         user: alice.getPrincipal(),
-        date_time: dateToRfc3339(currentDate),
+        date_time: dateToRfc3339(initialDate),
         data: {
           username: aliceCreate.username,
           config: aliceCreate.config,
@@ -176,7 +184,7 @@ describe('User Profile', () => {
       expect(bobGetHistory.history[0]).toEqual({
         action: { create: null },
         user: bob.getPrincipal(),
-        date_time: dateToRfc3339(currentDate),
+        date_time: dateToRfc3339(initialDate),
         data: {
           username: bobCreate.username,
           config: bobCreate.config,
@@ -211,7 +219,7 @@ describe('User Profile', () => {
       expect(aliceGetHistory.history[0]).toEqual({
         action: { create: null },
         user: alice.getPrincipal(),
-        date_time: dateToRfc3339(currentDate),
+        date_time: dateToRfc3339(initialDate),
         data: {
           username: aliceCreate.username,
           config: aliceCreate.config,
@@ -429,7 +437,7 @@ describe('User Profile', () => {
         {
           action: { create: null },
           user: alice.getPrincipal(),
-          date_time: dateToRfc3339(currentDate),
+          date_time: dateToRfc3339(initialDate),
           data: {
             username: aliceCreate.username,
             config: aliceCreate.config,
@@ -472,7 +480,7 @@ describe('User Profile', () => {
         {
           action: { create: null },
           user: bob.getPrincipal(),
-          date_time: dateToRfc3339(currentDate),
+          date_time: dateToRfc3339(initialDate),
           data: {
             username: bobCreate.username,
             config: bobCreate.config,
@@ -522,7 +530,7 @@ describe('User Profile', () => {
         {
           action: { create: null },
           user: controllerIdentity.getPrincipal(),
-          date_time: dateToRfc3339(currentDate),
+          date_time: dateToRfc3339(initialDate),
           data: {
             username: 'Admin',
             config: {
@@ -623,6 +631,7 @@ describe('User Profile', () => {
     it('should allow admins to promote other users', async () => {
       const alice = generateRandomIdentity();
       const bob = generateRandomIdentity();
+      const currentDate = new Date(await pic.getTime());
 
       actor.setIdentity(alice);
       const aliceCreateRes = await actor.create_my_user_profile();
@@ -632,7 +641,7 @@ describe('User Profile', () => {
       const bobCreateRes = await actor.create_my_user_profile();
       const bobCreate = extractOkResponse(bobCreateRes);
 
-      const aliceUpdateDate = new Date(1988, 1, 15, 0, 0, 0, 0);
+      const aliceUpdateDate = new Date(1988, 1, 20, 0, 0, 0, 0);
       await pic.setTime(aliceUpdateDate.getTime());
 
       actor.setIdentity(controllerIdentity);
@@ -644,7 +653,7 @@ describe('User Profile', () => {
         config: [{ admin: { bio: [aliceUpdateBio] } }],
       });
 
-      const bobUpdateDate = new Date(1988, 1, 16, 0, 0, 0, 0);
+      const bobUpdateDate = new Date(1988, 1, 21, 0, 0, 0, 0);
       await pic.setTime(bobUpdateDate.getTime());
 
       actor.setIdentity(alice);

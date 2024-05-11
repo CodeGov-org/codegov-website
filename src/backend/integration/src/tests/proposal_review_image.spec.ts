@@ -1,6 +1,19 @@
+import {
+  describe,
+  beforeEach,
+  beforeAll,
+  afterAll,
+  it,
+  expect,
+} from 'bun:test';
 import { resolve } from 'path';
 import { HttpResponse, type _SERVICE } from '@cg/backend';
-import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
+import {
+  PocketIc,
+  type Actor,
+  generateRandomIdentity,
+  SubnetStateType,
+} from '@hadronous/pic';
 import { Principal } from '@dfinity/principal';
 import {
   verifyRequestResponsePair,
@@ -21,6 +34,7 @@ import {
   mapFromCanisterResponse,
   mapToCanisterRequest,
   publishProposalReview,
+  resetBackendCanister,
   setupBackendCanister,
 } from '../support';
 import { CODEGOV_LOGO_PNG } from '../fixtures';
@@ -53,7 +67,7 @@ describe('Proposal Review Image', () => {
   let rootKey: ArrayBufferLike;
 
   // set to any date after the NNS state has been generated
-  const currentDate = new Date(2024, 3, 25, 0, 0, 0, 0);
+  const initialDate = new Date(2024, 3, 25, 0, 0, 0, 0);
 
   let governance: Governance;
 
@@ -61,21 +75,26 @@ describe('Proposal Review Image', () => {
     pic = await PocketIc.create(process.env.PIC_URL, {
       processingTimeoutMs: 10_000,
       nns: {
-        fromPath: NNS_STATE_PATH,
-        subnetId: Principal.fromText(NNS_SUBNET_ID),
+        state: {
+          type: SubnetStateType.FromPath,
+          path: NNS_STATE_PATH,
+          subnetId: Principal.fromText(NNS_SUBNET_ID),
+        },
       },
     });
+    await pic.setTime(initialDate.getTime());
+
+    const fixture = await setupBackendCanister(pic);
+    actor = fixture.actor;
+    canisterId = fixture.canisterId;
+    governance = new Governance(pic);
 
     const subnets = pic.getApplicationSubnets();
     rootKey = await pic.getPubKey(subnets[0].id);
   });
 
   beforeEach(async () => {
-    const fixture = await setupBackendCanister(pic, currentDate);
-    actor = fixture.actor;
-    canisterId = fixture.canisterId;
-
-    governance = new Governance(pic);
+    await resetBackendCanister(pic, canisterId);
   });
 
   afterAll(async () => {
@@ -396,7 +415,7 @@ describe('Proposal Review Image', () => {
 
   describe('http proposal review image', () => {
     const maxCertTimeOffsetNs = BigInt(5 * 60 * 1000) * BigInt(NS_PER_MS); // 5 minutes
-    const currentTimeNs = BigInt(currentDate.getTime() * NS_PER_MS);
+    const currentTimeNs = BigInt(initialDate.getTime() * NS_PER_MS);
 
     const verifyHttpResponse = (
       request: Request,

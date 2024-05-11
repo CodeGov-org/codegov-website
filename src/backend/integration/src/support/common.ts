@@ -1,4 +1,10 @@
-import { type _SERVICE } from '@cg/backend';
+import { expect } from 'bun:test';
+import {
+  ProposalReviewCommitWithId,
+  ProposalReviewStatus,
+  ProposalReviewWithId,
+  type _SERVICE,
+} from '@cg/backend';
 import { Actor, PocketIc } from '@hadronous/pic';
 import { Governance } from './governance';
 import { controllerIdentity, nnsProposerIdentity } from './identity';
@@ -254,4 +260,48 @@ export async function createProposalReviewCommit(
     proposalReviewId,
     proposalReviewCommitId,
   };
+}
+
+export type ExpectedProposalReviewFields = {
+  proposalId: string;
+  userId: string;
+  reviewStatus: ProposalReviewStatus;
+  lastUpdatedAt?: string;
+  commits: {
+    commitSha: string[];
+  };
+};
+
+export function validateProposalReview(
+  proposalReview: ProposalReviewWithId,
+  expected: ExpectedProposalReviewFields,
+) {
+  expect(proposalReview).toEqual({
+    id: expect.any(String),
+    proposal_review: {
+      proposal_id: expected.proposalId,
+      user_id: expected.userId,
+      status: expected.reviewStatus,
+      created_at: expect.any(String),
+      last_updated_at: expected.lastUpdatedAt ? [expected.lastUpdatedAt] : [],
+      summary: expect.any(String),
+      review_duration_mins: expect.any(Number),
+      build_reproduced: expect.any(Boolean),
+      images_paths: expect.any(Array),
+      proposal_review_commits: expected.commits.commitSha.map(
+        commitSha =>
+          ({
+            id: expect.any(String),
+            proposal_review_commit: {
+              commit_sha: commitSha,
+              user_id: expected.userId,
+              proposal_review_id: expect.any(String),
+              created_at: expect.any(String),
+              last_updated_at: [],
+              state: expect.anything(),
+            },
+          }) satisfies ProposalReviewCommitWithId,
+      ),
+    },
+  } satisfies ProposalReviewWithId);
 }
