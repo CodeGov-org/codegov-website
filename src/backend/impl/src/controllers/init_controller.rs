@@ -1,6 +1,8 @@
 use crate::{
-    repositories::{ImageRepositoryImpl, UserProfileRepositoryImpl},
-    services::{ImageService, ImageServiceImpl, InitService, InitServiceImpl},
+    repositories::{CertificationRepositoryImpl, ImageRepositoryImpl, UserProfileRepositoryImpl},
+    services::{
+        HttpService, HttpServiceImpl, ImageService, ImageServiceImpl, InitService, InitServiceImpl,
+    },
 };
 use backend_api::ApiError;
 use candid::Principal;
@@ -16,7 +18,7 @@ fn init() {
         spawn(init_admin(calling_principal))
     });
 
-    InitController::default().init_images();
+    InitController::default().init_http_certification();
 
     jobs::start_jobs();
 }
@@ -29,7 +31,7 @@ fn post_upgrade() {
         spawn(init_admin(calling_principal))
     });
 
-    InitController::default().init_images();
+    InitController::default().init_http_certification();
 
     jobs::start_jobs();
 }
@@ -40,27 +42,34 @@ async fn init_admin(calling_principal: Principal) {
     }
 }
 
-struct InitController<T: InitService, I: ImageService> {
+struct InitController<T: InitService, I: ImageService, H: HttpService> {
     init_service: T,
     image_service: I,
+    http_service: H,
 }
 
 impl Default
     for InitController<
         InitServiceImpl<UserProfileRepositoryImpl>,
-        ImageServiceImpl<ImageRepositoryImpl>,
+        ImageServiceImpl<ImageRepositoryImpl, CertificationRepositoryImpl>,
+        HttpServiceImpl<CertificationRepositoryImpl>,
     >
 {
     fn default() -> Self {
-        Self::new(InitServiceImpl::default(), ImageServiceImpl::default())
+        Self::new(
+            InitServiceImpl::default(),
+            ImageServiceImpl::default(),
+            HttpServiceImpl::default(),
+        )
     }
 }
 
-impl<T: InitService, I: ImageService> InitController<T, I> {
-    fn new(init_service: T, image_service: I) -> Self {
+impl<T: InitService, I: ImageService, H: HttpService> InitController<T, I, H> {
+    fn new(init_service: T, image_service: I, http_service: H) -> Self {
         Self {
             init_service,
             image_service,
+            http_service,
         }
     }
 
@@ -68,8 +77,9 @@ impl<T: InitService, I: ImageService> InitController<T, I> {
         self.init_service.init(calling_principal).await
     }
 
-    fn init_images(&self) {
-        self.image_service.certify_all_images()
+    fn init_http_certification(&self) {
+        self.image_service.certify_all_http_responses();
+        self.http_service.certify_default_responses();
     }
 }
 

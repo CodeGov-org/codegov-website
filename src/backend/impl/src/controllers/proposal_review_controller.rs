@@ -9,8 +9,9 @@ use ic_cdk::*;
 
 use crate::{
     repositories::{
-        ImageRepositoryImpl, ProposalRepositoryImpl, ProposalReviewCommitRepositoryImpl,
-        ProposalReviewRepositoryImpl, UserProfileRepositoryImpl,
+        CertificationRepositoryImpl, ImageRepositoryImpl, ProposalRepositoryImpl,
+        ProposalReviewCommitRepositoryImpl, ProposalReviewRepositoryImpl,
+        UserProfileRepositoryImpl,
     },
     services::{
         AccessControlService, AccessControlServiceImpl, ProposalReviewService,
@@ -94,6 +95,7 @@ impl Default
             ProposalRepositoryImpl,
             ProposalReviewCommitRepositoryImpl,
             ImageRepositoryImpl,
+            CertificationRepositoryImpl,
         >,
     >
 {

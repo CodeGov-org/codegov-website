@@ -92,24 +92,13 @@ describe('http proposal review image', () => {
   });
 
   const maxCertTimeOffsetNs = BigInt(5 * 60 * 1000) * BigInt(NS_PER_MS); // 5 minutes
-  const currentTimeNs = BigInt(initialDate.getTime() * NS_PER_MS);
+  const currentTimeNs = BigInt(initialDate.getTime()) * BigInt(NS_PER_MS);
 
   const verifyHttpResponse = (
     request: Request,
     canisterResponse: HttpResponse,
-    imageBytes: Uint8Array,
   ) => {
     const response = mapFromCanisterResponse(canisterResponse);
-    expect(response.statusCode).toBe(200);
-    expect(response.headers.find(h => h[0] === 'content-type')![1]).toEqual(
-      'image/png',
-    );
-    const responseBody = response.body;
-    expect(response.headers.find(h => h[0] === 'content-length')![1]).toEqual(
-      imageBytes.byteLength.toString(),
-    );
-    expect(responseBody).toEqual(imageBytes);
-
     const verificationResult = verifyRequestResponsePair(
       request,
       response,
@@ -124,7 +113,25 @@ describe('http proposal review image', () => {
     expect(verificationResult.response).toEqual(
       filterCertificateHeaders(response),
     );
-    expect(verificationResult.response?.body).toEqual(responseBody);
+    expect(verificationResult.response?.body).toEqual(response.body);
+  };
+
+  const verifyImageHttpResponse = (
+    request: Request,
+    canisterResponse: HttpResponse,
+    imageBytes: Uint8Array,
+  ) => {
+    const response = mapFromCanisterResponse(canisterResponse);
+    expect(response.statusCode).toBe(200);
+    expect(
+      response.headers.find(h => h[0].toLowerCase() === 'content-type')![1],
+    ).toEqual('image/png');
+    expect(
+      response.headers.find(h => h[0].toLowerCase() === 'content-length')![1],
+    ).toEqual(imageBytes.byteLength.toString());
+    expect(response.body).toEqual(imageBytes);
+
+    verifyHttpResponse(request, canisterResponse);
   };
 
   it('should return the proposal review image with certificate', async () => {
@@ -147,7 +154,7 @@ describe('http proposal review image', () => {
     const canisterRequest = mapToCanisterRequest(request);
 
     const canisterResponse = await actor.http_request(canisterRequest);
-    verifyHttpResponse(request, canisterResponse, CODEGOV_LOGO_PNG);
+    verifyImageHttpResponse(request, canisterResponse, CODEGOV_LOGO_PNG);
   });
 
   it('should return the proposal review image with certificate after update', async () => {
@@ -186,7 +193,7 @@ describe('http proposal review image', () => {
     const canisterRequest = mapToCanisterRequest(request);
 
     const canisterResponse = await actor.http_request(canisterRequest);
-    verifyHttpResponse(request, canisterResponse, VALID_IMAGE_BYTES);
+    verifyImageHttpResponse(request, canisterResponse, VALID_IMAGE_BYTES);
   });
 
   it('should return 404 when proposal review image is deleted', async () => {
@@ -217,6 +224,8 @@ describe('http proposal review image', () => {
 
     const canisterResponse = await actor.http_request(canisterRequest);
     expect(canisterResponse.status_code).toBe(404);
+
+    verifyHttpResponse(request, canisterResponse);
   });
 
   it('should return 404 when image does not exist', async () => {
@@ -232,6 +241,8 @@ describe('http proposal review image', () => {
 
     const canisterResponse = await actor.http_request(canisterRequest);
     expect(canisterResponse.status_code).toBe(404);
+
+    verifyHttpResponse(request, canisterResponse);
   });
 
   it('should return 405 when requesting image with invalid method', async () => {
@@ -255,5 +266,7 @@ describe('http proposal review image', () => {
 
     const canisterResponse = await actor.http_request(canisterRequest);
     expect(canisterResponse.status_code).toBe(405);
+
+    verifyHttpResponse(request, canisterResponse);
   });
 });

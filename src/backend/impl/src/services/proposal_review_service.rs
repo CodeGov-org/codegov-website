@@ -9,10 +9,12 @@ use backend_api::{
 use candid::Principal;
 
 use crate::{
+    helpers::create_image_http_response,
     mappings::map_proposal_review,
     repositories::{
-        CreateImageRequest, DateTime, Image, ImageRepository, ImageRepositoryImpl, ProposalId,
-        ProposalRepository, ProposalRepositoryImpl, ProposalReview, ProposalReviewCommitRepository,
+        CertificationRepository, CertificationRepositoryImpl, CreateImageRequest, DateTime, Image,
+        ImageRepository, ImageRepositoryImpl, ProposalId, ProposalRepository,
+        ProposalRepositoryImpl, ProposalReview, ProposalReviewCommitRepository,
         ProposalReviewCommitRepositoryImpl, ProposalReviewId, ProposalReviewRepository,
         ProposalReviewRepositoryImpl, ProposalReviewStatus, UserId, UserProfileRepository,
         UserProfileRepositoryImpl,
@@ -70,12 +72,14 @@ pub struct ProposalReviewServiceImpl<
     P: ProposalRepository,
     PRC: ProposalReviewCommitRepository,
     I: ImageRepository,
+    C: CertificationRepository,
 > {
     proposal_review_repository: PR,
     user_profile_repository: U,
     proposal_repository: P,
     proposal_review_commit_repository: PRC,
     image_repository: I,
+    certification_repository: C,
 }
 
 impl Default
@@ -85,6 +89,7 @@ impl Default
         ProposalRepositoryImpl,
         ProposalReviewCommitRepositoryImpl,
         ImageRepositoryImpl,
+        CertificationRepositoryImpl,
     >
 {
     fn default() -> Self {
@@ -94,6 +99,7 @@ impl Default
             ProposalRepositoryImpl::default(),
             ProposalReviewCommitRepositoryImpl::default(),
             ImageRepositoryImpl::default(),
+            CertificationRepositoryImpl::default(),
         )
     }
 }
@@ -104,7 +110,8 @@ impl<
         P: ProposalRepository,
         PRC: ProposalReviewCommitRepository,
         I: ImageRepository,
-    > ProposalReviewService for ProposalReviewServiceImpl<PR, U, P, PRC, I>
+        C: CertificationRepository,
+    > ProposalReviewService for ProposalReviewServiceImpl<PR, U, P, PRC, I, C>
 {
     async fn create_proposal_review(
         &self,
@@ -360,6 +367,12 @@ impl<
 
         let image_id = self.image_repository.create_image(image.clone()).await?;
 
+        // certify the image response
+        let image_http_request_path = image.path(&image_id);
+        let image_http_response = create_image_http_response(&image);
+        self.certification_repository
+            .certify_http_response(image_http_request_path, &image_http_response);
+
         current_proposal_review.images_ids = vec![image_id];
 
         self.save_proposal_review(id, current_proposal_review)?;
@@ -402,7 +415,12 @@ impl<
             let existing_image_id = current_proposal_review
                 .images_ids
                 .remove(existing_image_id_idx);
-            self.image_repository.delete_image(&existing_image_id)?;
+            let deleted_image = self.image_repository.delete_image(&existing_image_id)?;
+
+            let image_http_request_path = deleted_image.path(&existing_image_id);
+            let image_http_response = create_image_http_response(&deleted_image);
+            self.certification_repository
+                .remove_http_response_certificate(image_http_request_path, &image_http_response);
         } else {
             return Err(ApiError::not_found(&format!(
                 "Image with path {} not found in proposal review for proposal with Id {}",
@@ -422,7 +440,8 @@ impl<
         P: ProposalRepository,
         PRC: ProposalReviewCommitRepository,
         I: ImageRepository,
-    > ProposalReviewServiceImpl<PR, U, P, PRC, I>
+        C: CertificationRepository,
+    > ProposalReviewServiceImpl<PR, U, P, PRC, I, C>
 {
     fn new(
         proposal_review_repository: PR,
@@ -430,6 +449,7 @@ impl<
         proposal_repository: P,
         proposal_review_commit_repository: PRC,
         image_repository: I,
+        certification_repository: C,
     ) -> Self {
         Self {
             proposal_review_repository,
@@ -437,6 +457,7 @@ impl<
             proposal_repository,
             proposal_review_commit_repository,
             image_repository,
+            certification_repository,
         }
     }
 
@@ -567,7 +588,7 @@ mod tests {
     use crate::{
         fixtures,
         repositories::{
-            ImageId, MockImageRepository, MockProposalRepository,
+            ImageId, MockCertificationRepository, MockImageRepository, MockProposalRepository,
             MockProposalReviewCommitRepository, MockProposalReviewRepository,
             MockUserProfileRepository, ProposalReviewId, IMAGES_BASE_PATH,
         },
@@ -612,6 +633,7 @@ mod tests {
             .return_const(Ok(id));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -619,6 +641,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -657,6 +680,7 @@ mod tests {
         pr_repository_mock.expect_create_proposal_review().never();
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -664,6 +688,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -694,6 +719,7 @@ mod tests {
         pr_repository_mock.expect_create_proposal_review().never();
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -701,6 +727,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -743,6 +770,7 @@ mod tests {
         pr_repository_mock.expect_create_proposal_review().never();
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -750,6 +778,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -794,6 +823,7 @@ mod tests {
         pr_repository_mock.expect_create_proposal_review().never();
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -801,6 +831,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -846,6 +877,7 @@ mod tests {
         pr_repository_mock.expect_create_proposal_review().never();
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -853,6 +885,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -1018,6 +1051,7 @@ mod tests {
             .return_const(Some(fixtures::nns_replica_version_management_proposal()));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -1025,6 +1059,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         service
@@ -1052,6 +1087,7 @@ mod tests {
         p_repository_mock.expect_get_proposal_by_id().never();
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -1059,6 +1095,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -1097,6 +1134,7 @@ mod tests {
         p_repository_mock.expect_get_proposal_by_id().never();
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -1104,6 +1142,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -1148,6 +1187,7 @@ mod tests {
             ));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -1155,6 +1195,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -1204,6 +1245,7 @@ mod tests {
         p_repository_mock.expect_get_proposal_by_id().never();
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -1211,6 +1253,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -1258,6 +1301,7 @@ mod tests {
             .return_const(Some(fixtures::nns_replica_version_management_proposal()));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -1265,6 +1309,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         service
@@ -1292,6 +1337,7 @@ mod tests {
         p_repository_mock.expect_get_proposal_by_id().never();
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -1299,6 +1345,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -1346,6 +1393,7 @@ mod tests {
             .return_const(Some(fixtures::nns_replica_version_management_proposal()));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
+        let certification_repository_mock = MockCertificationRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -1353,6 +1401,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -1711,8 +1760,17 @@ mod tests {
         image_repository_mock
             .expect_create_image()
             .once()
-            .with(eq(image))
+            .with(eq(image.clone()))
             .return_const(Ok(image_id));
+        let mut certification_repository_mock = MockCertificationRepository::new();
+        certification_repository_mock
+            .expect_certify_http_response()
+            .with(
+                eq(image.path(&image_id)),
+                eq(create_image_http_response(&image)),
+            )
+            .once()
+            .return_const(());
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -1720,6 +1778,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -1764,6 +1823,10 @@ mod tests {
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let mut image_repository_mock = MockImageRepository::new();
         image_repository_mock.expect_create_image().never();
+        let mut certification_repository_mock = MockCertificationRepository::new();
+        certification_repository_mock
+            .expect_certify_http_response()
+            .never();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -1771,6 +1834,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
@@ -1793,6 +1857,16 @@ mod tests {
         let user_id = fixtures::uuid_a();
         let (id, original_proposal_review, request, updated_proposal_review) =
             proposal_review_update_image_delete();
+
+        let image_to_delete = Image {
+            sub_path: Some(PathBuf::from_str(PROPOSAL_REVIEW_IMAGES_SUB_PATH).unwrap()),
+            ..fixtures::image_without_subpath()
+        };
+        let image_id_to_delete = original_proposal_review
+            .images_ids
+            .first()
+            .unwrap()
+            .to_owned();
 
         let mut u_repository_mock = MockUserProfileRepository::new();
         u_repository_mock
@@ -1822,12 +1896,17 @@ mod tests {
         image_repository_mock
             .expect_delete_image()
             .once()
-            .with(eq(original_proposal_review
-                .images_ids
-                .first()
-                .unwrap()
-                .to_owned()))
-            .return_const(Ok(()));
+            .with(eq(image_id_to_delete))
+            .return_const(Ok(image_to_delete.clone()));
+        let mut certification_repository_mock = MockCertificationRepository::new();
+        certification_repository_mock
+            .expect_remove_http_response_certificate()
+            .with(
+                eq(image_to_delete.path(&image_id_to_delete)),
+                eq(create_image_http_response(&image_to_delete)),
+            )
+            .once()
+            .return_const(());
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -1835,6 +1914,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         service
@@ -1875,6 +1955,10 @@ mod tests {
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let mut image_repository_mock = MockImageRepository::new();
         image_repository_mock.expect_delete_image().never();
+        let mut certification_repository_mock = MockCertificationRepository::new();
+        certification_repository_mock
+            .expect_remove_http_response_certificate()
+            .never();
 
         let service = ProposalReviewServiceImpl::new(
             pr_repository_mock,
@@ -1882,6 +1966,7 @@ mod tests {
             p_repository_mock,
             prc_repository_mock,
             image_repository_mock,
+            certification_repository_mock,
         );
 
         let result = service
