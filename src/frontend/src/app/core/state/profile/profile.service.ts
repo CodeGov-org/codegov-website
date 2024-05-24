@@ -32,6 +32,10 @@ export class ProfileService {
     map(role => role === UserRole.Reviewer),
   );
 
+  public readonly isAdmin$ = this.userRole$.pipe(
+    map(role => role === UserRole.Admin),
+  );
+
   private createProfileMessage: LoadingDialogInput = {
     message: 'Creating new profile...',
   };

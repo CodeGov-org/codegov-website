@@ -1,7 +1,8 @@
 use backend_api::{
     ApiError, ApiResult, CreateProposalReviewRequest, CreateProposalReviewResponse,
-    GetProposalReviewRequest, GetProposalReviewResponse, ListProposalReviewsRequest,
-    ListProposalReviewsResponse, UpdateProposalReviewRequest,
+    GetMyProposalReviewRequest, GetMyProposalReviewResponse, GetProposalReviewRequest,
+    GetProposalReviewResponse, ListProposalReviewsRequest, ListProposalReviewsResponse,
+    UpdateProposalReviewRequest,
 };
 use candid::Principal;
 use ic_cdk::*;
@@ -55,6 +56,17 @@ fn get_proposal_review(request: GetProposalReviewRequest) -> ApiResult<GetPropos
 
     ProposalReviewController::default()
         .get_proposal_review(calling_principal, request)
+        .into()
+}
+
+#[query]
+fn get_my_proposal_review(
+    request: GetMyProposalReviewRequest,
+) -> ApiResult<GetMyProposalReviewResponse> {
+    let calling_principal = caller();
+
+    ProposalReviewController::default()
+        .get_my_proposal_review(calling_principal, request)
         .into()
 }
 
@@ -134,6 +146,20 @@ impl<A: AccessControlService, P: ProposalReviewService> ProposalReviewController
     ) -> Result<GetProposalReviewResponse, ApiError> {
         self.proposal_review_service
             .get_proposal_review(calling_principal, request)
+    }
+
+    fn get_my_proposal_review(
+        &self,
+        calling_principal: Principal,
+        request: GetMyProposalReviewRequest,
+    ) -> Result<GetMyProposalReviewResponse, ApiError> {
+        self.access_control_service
+            .assert_principal_not_anonymous(&calling_principal)?;
+        self.access_control_service
+            .assert_principal_is_reviewer(&calling_principal)?;
+
+        self.proposal_review_service
+            .get_my_proposal_review(calling_principal, request)
     }
 }
 

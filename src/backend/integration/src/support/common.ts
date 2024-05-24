@@ -44,6 +44,47 @@ export async function createReviewer(
 }
 
 /**
+ * Creates a user profile and sets the role to admin using the {@link controllerIdentity} identity.
+ */
+export async function createAdmin(
+  actor: BackendActorService,
+  admin: Identity,
+): Promise<string> {
+  actor.setIdentity(admin);
+  const adminCreateRes = await actor.create_my_user_profile();
+  const adminCreate = extractOkResponse(adminCreateRes);
+
+  actor.setIdentity(controllerIdentity);
+  await actor.update_user_profile({
+    user_id: adminCreate.id,
+    username: ['admin'],
+    config: [
+      {
+        admin: {
+          bio: [],
+        },
+      },
+    ],
+  });
+
+  return adminCreate.id;
+}
+
+/**
+ * Creates an anonymous user profile using the {@link anonymousIdentity} identity.
+ */
+export async function createAnonymous(
+  actor: BackendActorService,
+  anonymous: Identity,
+): Promise<string> {
+  actor.setIdentity(anonymous);
+  const anonymousCreateRes = await actor.create_my_user_profile();
+  const anonymousCreate = extractOkResponse(anonymousCreateRes);
+
+  return anonymousCreate.id;
+}
+
+/**
  * Creates an RVM proposal and syncs the proposals on the backend canister.
  *
  * Make sure the `title` param is unique, as it is used to find
@@ -246,9 +287,9 @@ export function validateProposalReview(
       status: expected.reviewStatus,
       created_at: expect.any(String),
       last_updated_at: expected.lastUpdatedAt ? [expected.lastUpdatedAt] : [],
-      summary: expect.any(String),
-      review_duration_mins: expect.any(Number),
-      build_reproduced: expect.any(Boolean),
+      summary: expect.any(Array),
+      review_duration_mins: expect.any(Array),
+      build_reproduced: expect.any(Array),
       reproduced_build_image_id: expect.any(Array),
       proposal_review_commits: expected.commits.commitSha.map(
         commitSha =>

@@ -10,6 +10,7 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
+import { ProposalReviewStatus } from '~core/api';
 import { FormatDatePipe } from '~core/pipes';
 import {
   ProfileService,
@@ -264,14 +265,18 @@ interface FilterForm {
                   >
                     Create review
                   </a>
-                } @else if (proposal.reviewState === 'Draft') {
+                } @else if (
+                  proposal.reviewState === ProposalReviewStatus().Draft
+                ) {
                   <a
                     class="btn btn--outline"
                     [routerLink]="['/review', proposal.id, 'edit']"
                   >
                     Edit review
                   </a>
-                } @else if (proposal.reviewState === 'Completed') {
+                } @else if (
+                  proposal.reviewState === ProposalReviewStatus().Published
+                ) {
                   <a
                     class="btn btn--outline"
                     [routerLink]="['/review', proposal.reviewId, 'view']"
@@ -291,6 +296,8 @@ interface FilterForm {
   `,
 })
 export class ProposalListComponent {
+  public readonly ProposalReviewStatus = signal(ProposalReviewStatus);
+
   public readonly proposalList = toSignal(
     this.proposalService.currentProposalList$,
   );
@@ -307,7 +314,7 @@ export class ProposalListComponent {
       return {
         ...proposal,
         reviewId: review?.id,
-        reviewState: review?.state,
+        reviewState: review?.status,
       };
     });
   });
@@ -331,7 +338,7 @@ export class ProposalListComponent {
   ) {
     this.proposalService.loadProposalList(ProposalState.InProgress);
     if (this.userProfile()) {
-      this.reviewService.loadReviewListByReviewerlId(this.userProfile()!.id);
+      this.reviewService.loadReviewListByReviewerId(this.userProfile()!.id);
     }
 
     this.filterForm()

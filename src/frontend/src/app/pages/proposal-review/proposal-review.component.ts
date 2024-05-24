@@ -5,11 +5,11 @@ import {
   computed,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { filter, map } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 
 import { CardComponent } from '@cg/angular-ui';
+import { ProposalReviewStatus, ProposalReviewVote } from '~core/api';
 import {
   ProfileService,
   ProposalService,
@@ -21,7 +21,7 @@ import {
   KeyValueGridComponent,
   ValueColComponent,
 } from '~core/ui';
-import { isNotNil } from '~core/utils';
+import { isNotNil, routeParam } from '~core/utils';
 
 @Component({
   selector: 'app-proposal-review',
@@ -85,17 +85,23 @@ import { isNotNil } from '~core/utils';
               <app-value-col
                 aria-labelledby="review-vote"
                 [ngClass]="{
-                  'review__vote--adopt': review.reviewerVote === 'ADOPT',
-                  'review__vote--reject': review.reviewerVote === 'REJECT'
+                  'review__vote--adopt':
+                    review.vote === ProposalReviewVote().Adopt,
+                  'review__vote--reject':
+                    review.vote === ProposalReviewVote().Reject
                 }"
               >
-                {{ review.reviewerVote }}
+                {{ review.vote }}
               </app-value-col>
 
               <app-key-col id="review-time">Time spent</app-key-col>
               <app-value-col aria-labelledby="review-time">
-                {{ review.timeSpent / 60 | number: '1.0-0' }} hours
-                {{ review.timeSpent % 60 }} minutes
+                @if (review.reviewDurationMins) {
+                  {{ review.reviewDurationMins / 60 | number: '1.0-0' }} hours
+                  {{ review.reviewDurationMins % 60 }} minutes
+                } @else {
+                  N/A
+                }
               </app-value-col>
 
               <app-key-col id="review-summary">Summary</app-key-col>
@@ -112,7 +118,10 @@ import { isNotNil } from '~core/utils';
                 Build verification images
               </app-key-col>
               <app-value-col aria-labelledby="review-mages">
-                @for (image of review.buildImages; track image.sm.url) {
+                @for (
+                  image of review.reproducedBuildImageId;
+                  track image.sm.url
+                ) {
                   <a [href]="image.xxl.url" target="_blank">
                     <img [src]="image.sm.url" class="review__image" />
                   </a>
@@ -123,8 +132,8 @@ import { isNotNil } from '~core/utils';
             <div class="btn-group">
               @if (
                 isReviewOwner() &&
-                proposal.state === proposalState().InProgress &&
-                review.state === 'Completed'
+                proposal.state === ProposalState().InProgress &&
+                review.status === ProposalReviewStatus().Published
               ) {
                 <a
                   class="btn btn--outline"
@@ -138,7 +147,7 @@ import { isNotNil } from '~core/utils';
         </cg-card>
 
         <h2 class="h4">Commits</h2>
-        @for (commit of review.reviewCommits; track commit.id; let i = $index) {
+        @for (commit of review.commits; track commit.id; let i = $index) {
           <cg-card class="review__commit">
             <div slot="cardContent">
               <app-key-value-grid [columnNumber]="1">
@@ -157,29 +166,29 @@ import { isNotNil } from '~core/utils';
 
                 <app-key-col [id]="'reviewed-' + i">Reviewed</app-key-col>
                 <app-value-col [attr.labelledby]="'reviewed-' + i">
-                  {{ commit.reviewed ? 'Yes' : 'No' }}
+                  {{ commit.details.reviewed ? 'Yes' : 'No' }}
                 </app-value-col>
 
-                @if (commit.reviewed) {
+                @if (commit.details.reviewed) {
                   <app-key-col [id]="'matches-descr-id-' + i">
                     Matches description
                   </app-key-col>
                   <app-value-col [attr.labelledby]="'matches-descr-id-' + i">
-                    {{ commit.matchesDescription ? 'Yes' : 'No' }}
+                    {{ commit.details.matchesDescription ? 'Yes' : 'No' }}
                   </app-value-col>
 
                   <app-key-col [id]="'summary-id-' + i">
                     Commit summary
                   </app-key-col>
                   <app-value-col [attr.labelledby]="'summary-id-' + i">
-                    {{ commit.summary }}
+                    {{ commit.details.comment }}
                   </app-value-col>
 
                   <app-key-col [id]="'highlights-id-' + i">
                     Commit highlights
                   </app-key-col>
                   <app-value-col [attr.labelledby]="'highlights-id-' + i">
-                    {{ commit.highlights }}
+                    {{ commit.details.highlights }}
                   </app-value-col>
                 }
               </app-key-value-grid>
@@ -191,19 +200,13 @@ import { isNotNil } from '~core/utils';
   `,
 })
 export class ProposalReviewComponent {
-  public readonly reviewIdFromRoute$ = this.route.params.pipe(
-    map(params => {
-      try {
-        return params['id'];
-      } catch (error) {
-        return null;
-      }
-    }),
-    filter(Boolean),
-  );
+  public readonly ProposalReviewStatus = signal(ProposalReviewStatus);
+  public readonly ProposalReviewVote = signal(ProposalReviewVote);
+  public readonly ProposalState = signal(ProposalState);
+
   public readonly userProfile = toSignal(this.profileService.userProfile$);
   public readonly isReviewOwner = computed(
-    () => this.userProfile()?.id === this.currentReview()?.reviewerId,
+    () => this.userProfile()?.id === this.currentReview()?.userId,
   );
 
   public readonly currentReview = toSignal(this.reviewService.currentReview$);
@@ -213,15 +216,13 @@ export class ProposalReviewComponent {
   public readonly currentProposal = toSignal(
     this.proposalService.currentProposal$,
   );
-  public readonly proposalState = signal(ProposalState);
 
   constructor(
-    private readonly route: ActivatedRoute,
     private readonly reviewService: ReviewService,
     private readonly proposalService: ProposalService,
     private readonly profileService: ProfileService,
   ) {
-    this.reviewIdFromRoute$.pipe(takeUntilDestroyed()).subscribe(reviewId => {
+    routeParam('id').subscribe(reviewId => {
       this.reviewService.loadReview(reviewId);
     });
 

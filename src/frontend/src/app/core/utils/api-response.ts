@@ -27,3 +27,17 @@ export function extractOkResponse<T>(res: ApiResponse<T>): T {
 
   return res.ok;
 }
+
+export class ApiError extends Error {
+  constructor(public readonly err: Err) {
+    super(`${err.code}: ${err.message}`);
+  }
+}
+
+export function handleErr<T>(res: ApiResponse<T>): T {
+  if (isErr(res)) {
+    throw new ApiError(res.err);
+  }
+
+  return res.ok;
+}

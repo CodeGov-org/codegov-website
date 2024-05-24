@@ -1,5 +1,6 @@
 use backend_api::{
-    ApiError, CreateProposalReviewRequest, CreateProposalReviewResponse, GetProposalReviewRequest,
+    ApiError, CreateProposalReviewRequest, CreateProposalReviewResponse,
+    GetMyProposalReviewRequest, GetMyProposalReviewResponse, GetProposalReviewRequest,
     GetProposalReviewResponse, ListProposalReviewsRequest, ListProposalReviewsResponse,
     UpdateProposalReviewRequest,
 };
@@ -44,6 +45,12 @@ pub trait ProposalReviewService {
         calling_principal: Principal,
         request: GetProposalReviewRequest,
     ) -> Result<GetProposalReviewResponse, ApiError>;
+
+    fn get_my_proposal_review(
+        &self,
+        calling_principal: Principal,
+        request: GetMyProposalReviewRequest,
+    ) -> Result<GetMyProposalReviewResponse, ApiError>;
 }
 
 pub struct ProposalReviewServiceImpl<
@@ -139,9 +146,9 @@ impl<
             status: ProposalReviewStatus::Draft,
             created_at: DateTime::new(date_time)?,
             last_updated_at: None,
-            summary: request.summary.unwrap_or("".to_string()),
-            review_duration_mins: request.review_duration_mins.unwrap_or(0),
-            build_reproduced: request.build_reproduced.unwrap_or(false),
+            summary: request.summary,
+            review_duration_mins: request.review_duration_mins,
+            build_reproduced: request.build_reproduced,
             // TODO: use reproduced_build_image_id from request
             reproduced_build_image_id: None,
         };
@@ -212,14 +219,14 @@ impl<
             }
         }
 
-        if let Some(summary) = request.summary {
-            current_proposal_review.summary = summary;
+        if request.summary.is_some() {
+            current_proposal_review.summary = request.summary;
         }
-        if let Some(review_duration_mins) = request.review_duration_mins {
-            current_proposal_review.review_duration_mins = review_duration_mins;
+        if request.review_duration_mins.is_some() {
+            current_proposal_review.review_duration_mins = request.review_duration_mins;
         }
-        if let Some(build_reproduced) = request.build_reproduced {
-            current_proposal_review.build_reproduced = build_reproduced;
+        if request.build_reproduced.is_some() {
+            current_proposal_review.build_reproduced = request.build_reproduced;
         }
         // TODO: use reproduced_build_image_id from request
 
@@ -227,9 +234,10 @@ impl<
             if status == backend_api::ProposalReviewStatus::Published {
                 // validate the fields again since it won't be possible to update them anymore
                 // unless the review is set back to draft
-                self.validate_fields(
-                    Some(&current_proposal_review.summary),
-                    Some(current_proposal_review.review_duration_mins),
+                self.validate_published_fields(
+                    current_proposal_review.summary.as_ref(),
+                    current_proposal_review.review_duration_mins,
+                    current_proposal_review.build_reproduced,
                 )
                 .map_err(|e| {
                     ApiError::conflict(&format!(
@@ -351,6 +359,44 @@ impl<
             proposal_review_commits,
         ))
     }
+
+    fn get_my_proposal_review(
+        &self,
+        calling_principal: Principal,
+        request: GetMyProposalReviewRequest,
+    ) -> Result<GetMyProposalReviewResponse, ApiError> {
+        let proposal_id = ProposalId::try_from(request.proposal_id.as_str())?;
+
+        let user_id = self
+            .user_profile_repository
+            .get_user_id_by_principal(&calling_principal)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "User id for principal {} not found",
+                    calling_principal.to_text()
+                ))
+            })?;
+
+        let (proposal_review_id, proposal_review) = self
+            .proposal_review_repository
+            .get_proposal_review_by_proposal_id_and_user_id(proposal_id, user_id)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "Proposal review for proposal {} for principal {} not found",
+                    request.proposal_id,
+                    calling_principal.to_text()
+                ))
+            })?;
+
+        let proposal_review_commits = self
+            .proposal_review_commit_repository
+            .get_proposal_review_commits_by_proposal_review_id(proposal_review_id)?;
+
+        let response =
+            map_proposal_review(proposal_review_id, proposal_review, proposal_review_commits);
+
+        Ok(response)
+    }
 }
 
 impl<
@@ -404,6 +450,33 @@ impl<
                 )));
             }
         }
+
+        Ok(())
+    }
+
+    fn validate_published_fields(
+        &self,
+        summary: Option<&String>,
+        review_duration_mins: Option<u16>,
+        build_reproduced: Option<bool>,
+    ) -> Result<(), ApiError> {
+        if summary.is_none() {
+            return Err(ApiError::invalid_argument("Summary cannot be empty"));
+        }
+
+        if review_duration_mins.is_none() {
+            return Err(ApiError::invalid_argument(
+                "Review duration cannot be empty",
+            ));
+        }
+
+        if build_reproduced.is_none() {
+            return Err(ApiError::invalid_argument(
+                "Build reproduced cannot be empty",
+            ));
+        }
+
+        self.validate_fields(summary, review_duration_mins)?;
 
         Ok(())
     }
@@ -717,9 +790,9 @@ mod tests {
             proposal_review.clone(),
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
-                summary: Some(proposal_review.summary.clone()),
-                review_duration_mins: Some(proposal_review.review_duration_mins),
-                build_reproduced: Some(proposal_review.build_reproduced),
+                summary: proposal_review.summary.clone(),
+                review_duration_mins: proposal_review.review_duration_mins,
+                build_reproduced: proposal_review.build_reproduced,
                 reproduced_build_image_id: None,
             },
         )
@@ -730,9 +803,9 @@ mod tests {
         let date_time = get_date_time().unwrap();
         let proposal_review = ProposalReview {
             created_at: DateTime::new(date_time).unwrap(),
-            summary: "".to_string(),
-            review_duration_mins: 0,
-            build_reproduced: false,
+            summary: None,
+            review_duration_mins: None,
+            build_reproduced: None,
             ..fixtures::proposal_review_draft()
         };
 
@@ -740,9 +813,9 @@ mod tests {
             proposal_review.clone(),
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
-                summary: None,
-                review_duration_mins: None,
-                build_reproduced: None,
+                summary: proposal_review.summary,
+                review_duration_mins: proposal_review.review_duration_mins,
+                build_reproduced: proposal_review.build_reproduced,
                 reproduced_build_image_id: None,
             },
         )
@@ -756,8 +829,8 @@ mod tests {
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
                 summary: Some("".to_string()),
-                review_duration_mins: Some(proposal_review.review_duration_mins),
-                build_reproduced: Some(proposal_review.build_reproduced),
+                review_duration_mins: proposal_review.review_duration_mins,
+                build_reproduced: proposal_review.build_reproduced,
                 reproduced_build_image_id: None,
             },
             ApiError::invalid_argument("Summary cannot be empty"),
@@ -772,8 +845,8 @@ mod tests {
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
                 summary: Some("a".repeat(MAX_PROPOSAL_REVIEW_SUMMARY_CHARS + 1)),
-                review_duration_mins: Some(proposal_review.review_duration_mins),
-                build_reproduced: Some(proposal_review.build_reproduced),
+                review_duration_mins: proposal_review.review_duration_mins,
+                build_reproduced: proposal_review.build_reproduced,
                 reproduced_build_image_id: None,
             },
             ApiError::invalid_argument(&format!(
@@ -790,9 +863,9 @@ mod tests {
         (
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
-                summary: Some(proposal_review.summary),
+                summary: proposal_review.summary,
                 review_duration_mins: Some(0),
-                build_reproduced: Some(proposal_review.build_reproduced),
+                build_reproduced: proposal_review.build_reproduced,
                 reproduced_build_image_id: None,
             },
             ApiError::invalid_argument("Review duration cannot be 0"),
@@ -807,9 +880,9 @@ mod tests {
         (
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
-                summary: Some(proposal_review.summary),
+                summary: proposal_review.summary,
                 review_duration_mins: Some(MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS + 1),
-                build_reproduced: Some(proposal_review.build_reproduced),
+                build_reproduced: proposal_review.build_reproduced,
                 reproduced_build_image_id: None,
             },
             ApiError::invalid_argument(&format!(
@@ -1139,7 +1212,9 @@ mod tests {
     #[case::summary_empty(proposal_review_update_publish_summary_empty())]
     #[case::summary_too_long(proposal_review_update_publish_summary_too_long())]
     #[case::review_duration_zero(proposal_review_update_publish_duration_zero())]
-    #[case::review_duration_too_long(proposal_review_update_publish_duration_too_long())]
+    #[case::no_summary(proposal_review_update_publish_duration_too_long())]
+    #[case::no_duration(proposal_review_update_publish_no_duration())]
+    #[case::no_build_reproduced(proposal_review_update_publish_no_build_reproduced())]
     fn proposal_review_update_publish_invalid(
         #[case] fixture: (
             ProposalReviewId,
@@ -1216,9 +1291,9 @@ mod tests {
                 reproduced_build_image_id: None,
             },
             ProposalReview {
-                summary,
-                review_duration_mins,
-                build_reproduced,
+                summary: Some(summary),
+                review_duration_mins: Some(review_duration_mins),
+                build_reproduced: Some(build_reproduced),
                 last_updated_at: Some(DateTime::new(date_time).unwrap()),
                 ..original_proposal_review
             },
@@ -1256,9 +1331,9 @@ mod tests {
             },
             ProposalReview {
                 status,
-                summary,
-                review_duration_mins,
-                build_reproduced,
+                summary: Some(summary),
+                review_duration_mins: Some(review_duration_mins),
+                build_reproduced: Some(build_reproduced),
                 last_updated_at: Some(DateTime::new(date_time).unwrap()),
                 ..original_proposal_review
             },
@@ -1296,9 +1371,9 @@ mod tests {
             },
             ProposalReview {
                 status,
-                summary,
-                review_duration_mins,
-                build_reproduced,
+                summary: Some(summary),
+                review_duration_mins: Some(review_duration_mins),
+                build_reproduced: Some(build_reproduced),
                 last_updated_at: Some(DateTime::new(date_time).unwrap()),
                 ..original_proposal_review
             },
@@ -1381,7 +1456,7 @@ mod tests {
         let id = fixtures::proposal_review_id();
         let original_proposal_review = ProposalReview {
             user_id: fixtures::uuid_a(),
-            summary: "".to_string(),
+            summary: Some("".to_string()),
             ..fixtures::proposal_review_draft()
         };
 
@@ -1412,7 +1487,7 @@ mod tests {
         let id = fixtures::proposal_review_id();
         let original_proposal_review = ProposalReview {
             user_id: fixtures::uuid_a(),
-            summary: "a".repeat(MAX_PROPOSAL_REVIEW_SUMMARY_CHARS + 1),
+            summary: Some("a".repeat(MAX_PROPOSAL_REVIEW_SUMMARY_CHARS + 1)),
             ..fixtures::proposal_review_draft()
         };
         let error_message = format!(
@@ -1448,7 +1523,7 @@ mod tests {
         let id = fixtures::proposal_review_id();
         let original_proposal_review = ProposalReview {
             user_id: fixtures::uuid_a(),
-            review_duration_mins: 0,
+            review_duration_mins: Some(0),
             ..fixtures::proposal_review_draft()
         };
 
@@ -1479,7 +1554,7 @@ mod tests {
         let id = fixtures::proposal_review_id();
         let original_proposal_review = ProposalReview {
             user_id: fixtures::uuid_a(),
-            review_duration_mins: MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS + 1,
+            review_duration_mins: Some(MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS + 1),
             ..fixtures::proposal_review_draft()
         };
         let error_message = format!(
@@ -1502,6 +1577,99 @@ mod tests {
                 "Proposal review cannot be published due to invalid field: {}",
                 error_message
             )),
+        )
+    }
+
+    #[fixture]
+    fn proposal_review_update_publish_no_summary() -> (
+        ProposalReviewId,
+        ProposalReview,
+        UpdateProposalReviewRequest,
+        ApiError,
+    ) {
+        let id = fixtures::proposal_review_id();
+        let original_proposal_review = ProposalReview {
+            user_id: fixtures::uuid_a(),
+            summary: None,
+            ..fixtures::proposal_review_draft()
+        };
+
+        (
+            id,
+            original_proposal_review.clone(),
+            UpdateProposalReviewRequest {
+                proposal_id: original_proposal_review.proposal_id.to_string(),
+                status: Some(backend_api::ProposalReviewStatus::Published),
+                summary: None,
+                review_duration_mins: None,
+                build_reproduced: None,
+                reproduced_build_image_id: None,
+            },
+            ApiError::conflict(
+                "Proposal review cannot be published due to invalid field: Summary cannot be empty",
+            ),
+        )
+    }
+
+    #[fixture]
+    fn proposal_review_update_publish_no_duration() -> (
+        ProposalReviewId,
+        ProposalReview,
+        UpdateProposalReviewRequest,
+        ApiError,
+    ) {
+        let id = fixtures::proposal_review_id();
+        let original_proposal_review = ProposalReview {
+            user_id: fixtures::uuid_a(),
+            review_duration_mins: None,
+            ..fixtures::proposal_review_draft()
+        };
+
+        (
+            id,
+            original_proposal_review.clone(),
+            UpdateProposalReviewRequest {
+                proposal_id: original_proposal_review.proposal_id.to_string(),
+                status: Some(backend_api::ProposalReviewStatus::Published),
+                summary: None,
+                review_duration_mins: None,
+                build_reproduced: None,
+                reproduced_build_image_id: None,
+            },
+            ApiError::conflict(
+                "Proposal review cannot be published due to invalid field: Review duration cannot be empty",
+            ),
+        )
+    }
+
+    #[fixture]
+    fn proposal_review_update_publish_no_build_reproduced() -> (
+        ProposalReviewId,
+        ProposalReview,
+        UpdateProposalReviewRequest,
+        ApiError,
+    ) {
+        let id = fixtures::proposal_review_id();
+        let original_proposal_review = ProposalReview {
+            user_id: fixtures::uuid_a(),
+            build_reproduced: None,
+            ..fixtures::proposal_review_draft()
+        };
+
+        (
+            id,
+            original_proposal_review.clone(),
+            UpdateProposalReviewRequest {
+                proposal_id: original_proposal_review.proposal_id.to_string(),
+                status: Some(backend_api::ProposalReviewStatus::Published),
+                summary: None,
+                review_duration_mins: None,
+                build_reproduced: None,
+                reproduced_build_image_id: None,
+            },
+            ApiError::conflict(
+                "Proposal review cannot be published due to invalid field: Build reproduced cannot be empty",
+            ),
         )
     }
 }

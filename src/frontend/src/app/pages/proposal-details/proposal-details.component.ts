@@ -6,13 +6,12 @@ import {
   computed,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { marked } from 'marked';
-import { filter, map } from 'rxjs';
 
 import { CardComponent } from '@cg/angular-ui';
+import { GetProposalReviewResponse, ProposalReviewStatus } from '~core/api';
 import { FormatDatePipe } from '~core/pipes';
 import {
   ProfileService,
@@ -26,6 +25,7 @@ import {
   KeyValueGridComponent,
   ValueColComponent,
 } from '~core/ui';
+import { routeParam, toSyncSignal } from '~core/utils';
 import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
 
 @Component({
@@ -86,7 +86,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
             <app-key-col id="proposal-id">ID</app-key-col>
             <app-value-col aria-labelledby="proposal-id">
               <a
-                [href]="linkBaseUrl().Proposal + proposal.ns_proposal_id"
+                [href]="LinkBaseUrl().Proposal + proposal.ns_proposal_id"
                 target="_blank"
                 rel="nofollow noreferrer"
               >
@@ -132,7 +132,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               class="proposal__proposer"
             >
               <a
-                [href]="linkBaseUrl().Neuron + proposal.proposedBy"
+                [href]="LinkBaseUrl().Neuron + proposal.proposedBy"
                 target="_blank"
                 rel="nofollow noreferrer"
               >
@@ -177,7 +177,10 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
           </app-key-value-grid>
 
           <div class="btn-group">
-            @if (proposal.state === proposalState().InProgress) {
+            @if (
+              proposal.state === ProposalState().InProgress &&
+              (isReviewer() || isAdmin())
+            ) {
               <button type="button" class="btn" (click)="onToggleSummary()">
                 {{
                   showSummary()
@@ -187,23 +190,27 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               </button>
             }
             @if (
-              isReviewer() && proposal.state === proposalState().InProgress
+              isReviewer() && proposal.state === ProposalState().InProgress
             ) {
-              @if (userReview() === undefined) {
+              @if (userReview() === null) {
                 <a
                   class="btn btn--outline"
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Create review
                 </a>
-              } @else if (userReview()!.state === 'Draft') {
+              } @else if (
+                userReview()!.status === ProposalReviewStatus().Draft
+              ) {
                 <a
                   class="btn btn--outline"
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Edit review
                 </a>
-              } @else if (userReview()!.state === 'Completed') {
+              } @else if (
+                userReview()!.status === ProposalReviewStatus().Published
+              ) {
                 <a
                   class="btn btn--outline"
                   [routerLink]="['/review', userReview()!.id, 'view']"
@@ -216,7 +223,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
         </div>
       </cg-card>
 
-      @if (showSummary() || proposal.state === proposalState().Completed) {
+      @if (showSummary() || proposal.state === ProposalState().Completed) {
         <app-closed-proposal-summary [proposal]="proposal" />
       } @else {
         <h2 class="h4">Proposal summary</h2>
@@ -231,63 +238,54 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
   `,
 })
 export class ProposalDetailsComponent {
-  public readonly proposalState = signal(ProposalState);
-  public readonly linkBaseUrl = signal(ProposalLinkBaseUrl);
+  public readonly ProposalReviewStatus = signal(ProposalReviewStatus);
+  public readonly ProposalState = signal(ProposalState);
+  public readonly LinkBaseUrl = signal(ProposalLinkBaseUrl);
 
-  public readonly currentProposal = toSignal(
+  public readonly currentProposal = toSyncSignal(
     this.proposalService.currentProposal$,
   );
-  public readonly currentProposalReviews = toSignal(
+  public readonly currentProposalReviews = toSyncSignal(
     this.reviewService.proposalReviewList$,
   );
 
-  public readonly proposalSummaryInMarkdown = computed(() =>
+  public readonly proposalSummaryInMarkdown = computed<string | null>(() =>
     this.sanitizer.sanitize(
       SecurityContext.HTML,
       marked.parse(this.currentProposal()?.summary ?? ''),
     ),
   );
 
-  public readonly isReviewer = toSignal(this.profileService.isReviewer$);
-  public readonly userProfile = toSignal(this.profileService.userProfile$);
+  public readonly isAdmin = toSyncSignal(this.profileService.isAdmin$);
+  public readonly isReviewer = toSyncSignal(this.profileService.isReviewer$);
+  public readonly userProfile = toSyncSignal(this.profileService.userProfile$);
 
-  public readonly userReviewList = toSignal(this.reviewService.userReviewList$);
-  public readonly userReview = computed(() =>
-    this.userReviewList()?.find(
-      review => review.proposalId === this.currentProposal()?.id,
-    ),
+  public readonly userReviewList = toSyncSignal(
+    this.reviewService.userReviewList$,
+  );
+  public readonly userReview = computed<GetProposalReviewResponse | null>(
+    () =>
+      this.userReviewList().find(
+        review => review.proposalId === this.currentProposal()?.id,
+      ) ?? null,
   );
 
   public readonly showSummary = signal(false);
 
-  private readonly proposalIdFromRoute$ = this.route.params.pipe(
-    map(params => {
-      try {
-        return params['id'];
-      } catch (error) {
-        return null;
-      }
-    }),
-    filter(Boolean),
-  );
-
   constructor(
     private readonly proposalService: ProposalService,
-    private readonly route: ActivatedRoute,
     private readonly sanitizer: DomSanitizer,
     private readonly profileService: ProfileService,
     private readonly reviewService: ReviewService,
   ) {
-    this.proposalIdFromRoute$
-      .pipe(takeUntilDestroyed())
-      .subscribe(proposalId => {
-        this.proposalService.setCurrentProposalId(proposalId);
-      });
+    routeParam('id').subscribe(proposalId => {
+      this.proposalService.setCurrentProposalId(proposalId);
+    });
 
     this.proposalService.loadProposalList();
   }
 
   public onToggleSummary(): void {
-    this.showSummary.set(!this.showSummary().valueOf());
+    this.showSummary.set(!this.showSummary());
   }
 }

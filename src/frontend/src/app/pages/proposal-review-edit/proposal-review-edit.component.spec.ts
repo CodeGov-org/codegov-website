@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 
 import {
@@ -8,11 +8,16 @@ import {
   ProposalState,
   ProposalTopic,
   ProposalVotingLinkType,
+  ReviewService,
 } from '~core/state';
 import {
   ProposalServiceMock,
   proposalServiceMockFactory,
 } from '~core/state/proposal/proposal.service.mock';
+import {
+  ReviewServiceMock,
+  reviewServiceMockFactory,
+} from '~core/state/review/review.service.mock';
 import {
   ActivatedRouteMock,
   activatedRouteMockFactory,
@@ -20,12 +25,13 @@ import {
 } from '~testing';
 import { ProposalReviewEditComponent } from './proposal-review-edit.component';
 
-describe('EditProposalReviewComponent', () => {
+describe('ProposalReviewEditComponent', () => {
   let component: ProposalReviewEditComponent;
   let fixture: ComponentFixture<ProposalReviewEditComponent>;
 
   let proposalServiceMock: ProposalServiceMock;
-  let activatedRoute: ActivatedRouteMock;
+  let reviewServiceMock: ReviewServiceMock;
+  let activatedRouteMock: ActivatedRouteMock;
 
   beforeEach(async () => {
     proposalServiceMock = proposalServiceMockFactory();
@@ -44,6 +50,7 @@ describe('EditProposalReviewComponent', () => {
         proposedAt: new Date(2024, 1, 15, 1, 1, 25),
         proposedBy: 432432432423n,
         summary: 'Elect new replica binary revision',
+        reviewCompletedAt: null,
         proposalLinks: [
           {
             type: ProposalVotingLinkType.NNSDApp,
@@ -53,16 +60,24 @@ describe('EditProposalReviewComponent', () => {
       }),
     );
 
-    activatedRoute = activatedRouteMockFactory();
-    activatedRoute.params = of([{ id: 1 }]);
+    reviewServiceMock = reviewServiceMockFactory();
+    defineProp(reviewServiceMock, 'currentReview$', of(null));
+
+    activatedRouteMock = activatedRouteMockFactory();
+    defineProp(
+      activatedRouteMock,
+      'paramMap',
+      of(convertToParamMap([{ id: 1 }])),
+    );
 
     await TestBed.configureTestingModule({
       imports: [ProposalReviewEditComponent],
       providers: [
         { provide: ProposalService, useValue: proposalServiceMock },
+        { provide: ReviewService, useValue: reviewServiceMock },
         {
           provide: ActivatedRoute,
-          useValue: activatedRoute,
+          useValue: activatedRouteMock,
         },
       ],
     }).compileComponents();
