@@ -6,7 +6,7 @@ import {
   it,
   expect,
 } from 'bun:test';
-import type { ProposalReview } from '@cg/backend';
+import type { ProposalReview, UpdateProposalReviewRequest } from '@cg/backend';
 import { generateRandomIdentity } from '@hadronous/pic';
 import {
   anonymousIdentity,
@@ -718,42 +718,67 @@ describe('Proposal Review', () => {
       });
     });
 
-    it('should not allow to publish a review that has invalid fields', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+    it.each<[Partial<UpdateProposalReviewRequest>, string]>([
+      [
+        {
+          summary: [],
+          review_duration_mins: [60],
+          build_reproduced: [false],
+        },
+        'Summary cannot be empty',
+      ],
+      [
+        {
+          summary: ['Summary'],
+          review_duration_mins: [60],
+          build_reproduced: [],
+        },
+        'Build reproduced cannot be empty',
+      ],
+      [
+        {
+          summary: ['Summary'],
+          review_duration_mins: [],
+          build_reproduced: [false],
+        },
+        'Review duration cannot be empty',
+      ],
+    ])(
+      'should not allow to publish a review that has invalid fields',
+      async (updateReq, errMsg) => {
+        const reviewer = generateRandomIdentity();
+        await createReviewer(driver.actor, reviewer);
 
-      const proposalId = await createProposal(
-        driver.actor,
-        governance,
-        'Test proposal',
-      );
+        const proposalId = await createProposal(
+          driver.actor,
+          governance,
+          'Test proposal',
+        );
 
-      driver.actor.setIdentity(reviewer);
+        driver.actor.setIdentity(reviewer);
 
-      const resProposalReview = await driver.actor.create_proposal_review({
-        proposal_id: proposalId,
-        summary: [],
-        review_duration_mins: [60],
-        build_reproduced: [true],
-        reproduced_build_image_id: [],
-      });
-      extractOkResponse(resProposalReview);
+        const resProposalReview = await driver.actor.create_proposal_review({
+          proposal_id: proposalId,
+          summary: [],
+          review_duration_mins: [],
+          build_reproduced: [],
+          reproduced_build_image_id: [],
+        });
+        extractOkResponse(resProposalReview);
 
-      const res = await driver.actor.update_proposal_review({
-        proposal_id: proposalId,
-        status: [{ published: null }],
-        summary: [],
-        review_duration_mins: [],
-        build_reproduced: [],
-        reproduced_build_image_id: [],
-      });
-      const resErr = extractErrResponse(res);
+        const res = await driver.actor.update_proposal_review({
+          ...updateReq,
+          proposal_id: proposalId,
+          status: [{ published: null }],
+          reproduced_build_image_id: [],
+        } as UpdateProposalReviewRequest);
+        const resErr = extractErrResponse(res);
 
-      expect(resErr).toEqual({
-        code: 409,
-        message:
-          'Proposal review cannot be published due to invalid field: Summary cannot be empty',
-      });
-    });
+        expect(resErr).toEqual({
+          code: 409,
+          message: `Proposal review cannot be published due to invalid field: ${errMsg}`,
+        });
+      },
+    );
   });
 });
