@@ -4,20 +4,31 @@
     "target": "ES2022",
     "module": "ES2022",
     "moduleResolution": "node",
-    "lib": ["ES2022", "dom"],
+    "lib": [
+      "ES2022",
+      "dom"
+    ],
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
-    "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
     "baseUrl": ".",
     "resolveJsonModule": true,
     "paths": {
-      "~env": ["./src/environments/environment.ts"],
-      "~testing": ["./src/app/testing/index.ts"],
-      "~core/*": ["./src/app/core/*"]
-    }
+      "~env": [
+        "./src/environments/environment.ts"
+      ],
+      "~testing": [
+        "./src/app/testing/index.ts"
+      ],
+      "~core/*": [
+        "./src/app/core/*"
+      ]
+    },
+    "types": [
+      "jasmine"
+    ]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

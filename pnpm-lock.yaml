@@ -72,6 +72,9 @@ importers:
       '@types/bun':
         specifier: ^1.1.1
         version: 1.1.1
+      '@types/jasmine':
+        specifier: ~5.1.4
+        version: 5.1.4
       '@types/node':
         specifier: ^20.0.0
         version: 20.12.6
@@ -288,9 +291,6 @@ importers:
       '@hadronous/ic-build-angular':
         specifier: ^0.3.0
         version: 0.3.0(@angular-devkit/architect@0.1703.3(chokidar@3.6.0))(@angular-devkit/build-angular@17.3.3(@angular/compiler-cli@17.3.3(@angular/compiler@17.3.3(@angular/core@17.3.3(rxjs@7.8.1)(zone.js@0.14.4)))(typescript@5.4.4))(@types/express@4.17.21)(@types/node@20.12.6)(browser-sync@2.29.3)(chokidar@3.6.0)(html-webpack-plugin@5.6.0(webpack@5.91.0(esbuild@0.20.2)))(jest@29.7.0(@types/node@20.12.6))(karma@6.4.3)(ng-packagr@17.3.0(@angular/compiler-cli@17.3.3(@angular/compiler@17.3.3(@angular/core@17.3.3(rxjs@7.8.1)(zone.js@0.14.4)))(typescript@5.4.4))(tslib@2.6.2)(typescript@5.4.4))(typescript@5.4.4))(dotenv@16.4.5)(esbuild@0.20.2)(rxjs@7.8.1)
-      '@types/jasmine':
-        specifier: ~5.1.4
-        version: 5.1.4
       globalthis:
         specifier: ^1.0.3
         version: 1.0.3
@@ -10313,7 +10313,7 @@ snapshots:
       undici: 6.7.1
       vite: 5.1.5(@types/node@20.12.6)(less@4.2.0)(sass@1.71.1)(terser@5.29.1)
       watchpack: 2.4.0
-      webpack: 5.90.3(esbuild@0.20.1)
+      webpack: 5.90.3
       webpack-dev-middleware: 6.1.2(webpack@5.90.3(esbuild@0.20.1))
       webpack-dev-server: 4.15.1(webpack@5.90.3(esbuild@0.20.1))
       webpack-merge: 5.10.0
@@ -18295,7 +18295,7 @@ snapshots:
       pretty-error: 4.0.0
       tapable: 2.2.1
     optionalDependencies:
-      webpack: 5.90.3(esbuild@0.20.1)
+      webpack: 5.90.3
     optional: true
 
   html-webpack-plugin@5.6.0(webpack@5.91.0(esbuild@0.20.2)):
@@ -22631,6 +22631,15 @@ snapshots:
       esbuild: 0.20.2
     optional: true
 
+  terser-webpack-plugin@5.3.10(webpack@5.90.3(esbuild@0.20.1)):
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.25
+      jest-worker: 27.5.1
+      schema-utils: 3.3.0
+      serialize-javascript: 6.0.2
+      terser: 5.29.1
+      webpack: 5.90.3
+
   terser-webpack-plugin@5.3.10(webpack@5.91.0):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
@@ -23466,7 +23475,7 @@ snapshots:
   webpack-subresource-integrity@5.1.0(html-webpack-plugin@5.6.0(webpack@5.90.3))(webpack@5.90.3(esbuild@0.20.1)):
     dependencies:
       typed-assert: 1.0.9
-      webpack: 5.90.3(esbuild@0.20.1)
+      webpack: 5.90.3
     optionalDependencies:
       html-webpack-plugin: 5.6.0(webpack@5.90.3)
 
@@ -23478,6 +23487,37 @@ snapshots:
       html-webpack-plugin: 5.6.0(webpack@5.91.0(esbuild@0.20.2))
 
   webpack-virtual-modules@0.6.1: {}
+
+  webpack@5.90.3:
+    dependencies:
+      '@types/eslint-scope': 3.7.7
+      '@types/estree': 1.0.5
+      '@webassemblyjs/ast': 1.12.1
+      '@webassemblyjs/wasm-edit': 1.12.1
+      '@webassemblyjs/wasm-parser': 1.12.1
+      acorn: 8.11.3
+      acorn-import-assertions: 1.9.0(acorn@8.11.3)
+      browserslist: 4.23.0
+      chrome-trace-event: 1.0.3
+      enhanced-resolve: 5.16.0
+      es-module-lexer: 1.5.0
+      eslint-scope: 5.1.1
+      events: 3.3.0
+      glob-to-regexp: 0.4.1
+      graceful-fs: 4.2.11
+      json-parse-even-better-errors: 2.3.1
+      loader-runner: 4.3.0
+      mime-types: 2.1.35
+      neo-async: 2.6.2
+      schema-utils: 3.3.0
+      tapable: 2.2.1
+      terser-webpack-plugin: 5.3.10(webpack@5.90.3(esbuild@0.20.1))
+      watchpack: 2.4.0
+      webpack-sources: 3.2.3
+    transitivePeerDependencies:
+      - '@swc/core'
+      - esbuild
+      - uglify-js
 
   webpack@5.90.3(esbuild@0.20.1):
     dependencies:

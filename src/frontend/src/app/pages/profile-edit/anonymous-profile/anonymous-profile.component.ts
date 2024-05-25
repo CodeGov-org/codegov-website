@@ -4,8 +4,8 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { GLOBAL_CONFIG } from 'src/global-config';
 
+import { GLOBAL_CONFIG } from '../../../../global-config';
 import { CardComponent, CopyToClipboardComponent } from '@cg/angular-ui';
 import { AnonymousProfile } from '~core/state';
 

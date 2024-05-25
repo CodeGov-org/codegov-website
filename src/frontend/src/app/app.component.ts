@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { GLOBAL_CONFIG } from 'src/global-config';
 
+import { GLOBAL_CONFIG } from '../global-config';
 import { FooterComponent, NavbarComponent } from '@cg/angular-ui';
 import { SecondaryNavbarComponent } from '~core/layout';
 import { ProfileService } from '~core/state';

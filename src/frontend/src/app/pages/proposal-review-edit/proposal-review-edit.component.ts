@@ -72,6 +72,7 @@ export class ProposalReviewEditComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly proposalService = inject(ProposalService);
   private readonly reviewService = inject(ReviewService);
+  private readonly reviewSubmissionService = inject(ReviewSubmissionService);
 
   public readonly currentProposal = toSyncSignal(
     this.proposalService.currentProposal$,
@@ -84,6 +85,7 @@ export class ProposalReviewEditComponent implements OnInit {
   constructor() {
     routeParam('id').subscribe(proposalId => {
       this.proposalService.setCurrentProposalId(proposalId);
+      this.reviewSubmissionService.loadOrCreateReview(proposalId);
     });
 
     this.proposalService.currentProposal$
@@ -91,6 +93,8 @@ export class ProposalReviewEditComponent implements OnInit {
       .subscribe(proposal => {
         if (proposal.state === ProposalState.Completed) {
           this.router.navigate(['review', 'view', { id: proposal.id }]);
+        } else {
+          this.reviewSubmissionService.loadOrCreateReview();
         }
       });
   }
