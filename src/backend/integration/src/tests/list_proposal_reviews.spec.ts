@@ -1,13 +1,9 @@
 import { AnonymousIdentity, Identity } from '@dfinity/agent';
-import {
-  Actor,
-  PocketIc,
-  SubnetStateType,
-  generateRandomIdentity,
-} from '@hadronous/pic';
+import { generateRandomIdentity } from '@hadronous/pic';
 import { describe, beforeAll, afterAll, it, expect } from 'bun:test';
 import {
   Governance,
+  TestDriver,
   VALID_COMMIT_SHA_A,
   VALID_COMMIT_SHA_B,
   controllerIdentity,
@@ -18,32 +14,11 @@ import {
   extractErrResponse,
   extractOkResponse,
   publishProposalReview,
-  setupBackendCanister,
   validateProposalReview,
 } from '../support';
-import { _SERVICE } from '@cg/backend';
-import { Principal } from '@dfinity/principal';
-import { resolve } from 'path';
-
-const NNS_SUBNET_ID =
-  '2o3zy-oo4hc-r3mtq-ylrpf-g6qge-qmuzn-2bsuv-d3yhd-e4qjc-6ff2b-6ae';
-
-const NNS_STATE_PATH = resolve(
-  __dirname,
-  '..',
-  '..',
-  'state',
-  'proposal_reviews_nns_state',
-  'node-100',
-  'state',
-);
 
 describe('list proposal reviews', () => {
-  let actor: Actor<_SERVICE>;
-  let pic: PocketIc;
-  // set to any date after the NNS state has been generated
-  const initialDate = new Date(2024, 3, 25, 0, 0, 0, 0);
-
+  let driver: TestDriver;
   let governance: Governance;
 
   let alice: Identity;
@@ -55,25 +30,13 @@ describe('list proposal reviews', () => {
   let proposal2Id: string;
 
   beforeAll(async () => {
-    pic = await PocketIc.create(process.env.PIC_URL, {
-      nns: {
-        state: {
-          type: SubnetStateType.FromPath,
-          path: NNS_STATE_PATH,
-          subnetId: Principal.fromText(NNS_SUBNET_ID),
-        },
-      },
-    });
-    await pic.setTime(initialDate.getTime());
+    driver = await TestDriver.createWithNnsState();
 
-    const fixture = await setupBackendCanister(pic);
-    actor = fixture.actor;
-
-    governance = new Governance(pic);
+    governance = new Governance(driver.pic);
   });
 
   afterAll(async () => {
-    await pic.tearDown();
+    await driver.tearDown();
   });
 
   beforeAll(async () => {
@@ -104,21 +67,29 @@ describe('list proposal reviews', () => {
     alice = generateRandomIdentity();
     bob = generateRandomIdentity();
 
-    aliceId = await createReviewer(actor, alice);
-    bobId = await createReviewer(actor, bob);
+    aliceId = await createReviewer(driver.actor, alice);
+    bobId = await createReviewer(driver.actor, bob);
 
-    proposal1Id = await createProposal(actor, governance, 'Test proposal 1');
-    proposal2Id = await createProposal(actor, governance, 'Test proposal 2');
+    proposal1Id = await createProposal(
+      driver.actor,
+      governance,
+      'Test proposal 1',
+    );
+    proposal2Id = await createProposal(
+      driver.actor,
+      governance,
+      'Test proposal 2',
+    );
 
     const proposal1ReviewAliceData = await createProposalReview(
-      actor,
+      driver.actor,
       governance,
       alice,
       proposal1Id,
     );
     for (const commitSha of [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B]) {
       await createProposalReviewCommit(
-        actor,
+        driver.actor,
         governance,
         alice,
         commitSha,
@@ -126,18 +97,18 @@ describe('list proposal reviews', () => {
       );
     }
     await publishProposalReview(
-      actor,
+      driver.actor,
       alice,
       proposal1ReviewAliceData.proposalId,
     );
     const proposal2ReviewAliceData = await createProposalReview(
-      actor,
+      driver.actor,
       governance,
       alice,
       proposal2Id,
     );
     await createProposalReviewCommit(
-      actor,
+      driver.actor,
       governance,
       alice,
       VALID_COMMIT_SHA_A,
@@ -145,40 +116,44 @@ describe('list proposal reviews', () => {
     );
 
     const proposal1ReviewBobData = await createProposalReview(
-      actor,
+      driver.actor,
       governance,
       bob,
       proposal1Id,
     );
     await createProposalReviewCommit(
-      actor,
+      driver.actor,
       governance,
       bob,
       VALID_COMMIT_SHA_A,
       proposal1ReviewBobData,
     );
     const proposal2ReviewBobData = await createProposalReview(
-      actor,
+      driver.actor,
       governance,
       bob,
       proposal2Id,
     );
     for (const commitSha of [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B]) {
       await createProposalReviewCommit(
-        actor,
+        driver.actor,
         governance,
         bob,
         commitSha,
         proposal2ReviewBobData,
       );
     }
-    await publishProposalReview(actor, bob, proposal2ReviewBobData.proposalId);
+    await publishProposalReview(
+      driver.actor,
+      bob,
+      proposal2ReviewBobData.proposalId,
+    );
   });
 
   it('should allow anonymous principals', async () => {
-    actor.setIdentity(new AnonymousIdentity());
+    driver.actor.setIdentity(new AnonymousIdentity());
 
-    const resProposal1 = await actor.list_proposal_reviews({
+    const resProposal1 = await driver.actor.list_proposal_reviews({
       proposal_id: [proposal1Id],
       user_id: [],
     });
@@ -192,7 +167,7 @@ describe('list proposal reviews', () => {
       lastUpdatedAt: expect.any(String),
     });
 
-    const resProposal2 = await actor.list_proposal_reviews({
+    const resProposal2 = await driver.actor.list_proposal_reviews({
       proposal_id: [proposal2Id],
       user_id: [],
     });
@@ -206,7 +181,7 @@ describe('list proposal reviews', () => {
       lastUpdatedAt: expect.any(String),
     });
 
-    const resAlice = await actor.list_proposal_reviews({
+    const resAlice = await driver.actor.list_proposal_reviews({
       proposal_id: [],
       user_id: [aliceId],
     });
@@ -220,7 +195,7 @@ describe('list proposal reviews', () => {
       lastUpdatedAt: expect.any(String),
     });
 
-    const resBob = await actor.list_proposal_reviews({
+    const resBob = await driver.actor.list_proposal_reviews({
       proposal_id: [],
       user_id: [bobId],
     });
@@ -236,9 +211,9 @@ describe('list proposal reviews', () => {
   });
 
   it('should not allow invalid arguments', async () => {
-    actor.setIdentity(new AnonymousIdentity());
+    driver.actor.setIdentity(new AnonymousIdentity());
 
-    const resEmpty = await actor.list_proposal_reviews({
+    const resEmpty = await driver.actor.list_proposal_reviews({
       proposal_id: [],
       user_id: [],
     });
@@ -248,7 +223,7 @@ describe('list proposal reviews', () => {
       message: 'Must specify either proposal_id or user_id parameter',
     });
 
-    const resTooMany = await actor.list_proposal_reviews({
+    const resTooMany = await driver.actor.list_proposal_reviews({
       proposal_id: [proposal1Id],
       user_id: [aliceId],
     });
@@ -260,9 +235,9 @@ describe('list proposal reviews', () => {
   });
 
   it('should allow review owners to see their draft reviews', async () => {
-    actor.setIdentity(alice);
+    driver.actor.setIdentity(alice);
 
-    const resAlice = await actor.list_proposal_reviews({
+    const resAlice = await driver.actor.list_proposal_reviews({
       proposal_id: [],
       user_id: [aliceId],
     });
@@ -282,7 +257,7 @@ describe('list proposal reviews', () => {
       commits: { commitSha: [VALID_COMMIT_SHA_A] },
     });
 
-    const resBob = await actor.list_proposal_reviews({
+    const resBob = await driver.actor.list_proposal_reviews({
       proposal_id: [],
       user_id: [bobId],
     });
@@ -298,9 +273,9 @@ describe('list proposal reviews', () => {
   });
 
   it('should allow admins to see all reviews', async () => {
-    actor.setIdentity(controllerIdentity);
+    driver.actor.setIdentity(controllerIdentity);
 
-    const resProposal1 = await actor.list_proposal_reviews({
+    const resProposal1 = await driver.actor.list_proposal_reviews({
       proposal_id: [proposal1Id],
       user_id: [],
     });
@@ -320,7 +295,7 @@ describe('list proposal reviews', () => {
       commits: { commitSha: [VALID_COMMIT_SHA_A] },
     });
 
-    const resProposal2 = await actor.list_proposal_reviews({
+    const resProposal2 = await driver.actor.list_proposal_reviews({
       proposal_id: [proposal2Id],
       user_id: [],
     });
@@ -344,8 +319,8 @@ describe('list proposal reviews', () => {
   it('should return an empty list when the proposal does not exist', async () => {
     const nonExistentProposalId = 'a79710dc-e275-4775-9bf3-4a67b30e9c30';
 
-    actor.setIdentity(new AnonymousIdentity());
-    const res = await actor.list_proposal_reviews({
+    driver.actor.setIdentity(new AnonymousIdentity());
+    const res = await driver.actor.list_proposal_reviews({
       proposal_id: [nonExistentProposalId],
       user_id: [],
     });
@@ -355,13 +330,13 @@ describe('list proposal reviews', () => {
 
   it('should return an empty list when there are no reviews', async () => {
     const proposalId = await createProposal(
-      actor,
+      driver.actor,
       governance,
       'Test Proposal with no reviews',
     );
 
-    actor.setIdentity(new AnonymousIdentity());
-    const res = await actor.list_proposal_reviews({
+    driver.actor.setIdentity(new AnonymousIdentity());
+    const res = await driver.actor.list_proposal_reviews({
       proposal_id: [proposalId],
       user_id: [],
     });
@@ -372,8 +347,8 @@ describe('list proposal reviews', () => {
   it('should return an empty list when the user does not exist', async () => {
     const nonExistentUserId = 'b456a69a-3fef-44c4-b85e-e40ebb8f2f5e';
 
-    actor.setIdentity(new AnonymousIdentity());
-    const res = await actor.list_proposal_reviews({
+    driver.actor.setIdentity(new AnonymousIdentity());
+    const res = await driver.actor.list_proposal_reviews({
       proposal_id: [],
       user_id: [nonExistentUserId],
     });
