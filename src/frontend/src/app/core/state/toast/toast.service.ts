@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 import { Toast, ToastType } from './toast.model';
 
@@ -9,8 +9,6 @@ import { Toast, ToastType } from './toast.model';
 export class ToastService {
   private toastSubject = new BehaviorSubject<Toast | null>(null);
   public readonly toast$ = this.toastSubject.asObservable();
-
-  public readonly isVisible$ = this.toast$.pipe(map(toast => toast?.visible));
 
   public async show(
     title: string,
@@ -23,10 +21,13 @@ export class ToastService {
       message: message,
       type: type,
       durationInMs: durationInMs,
-      visible: true,
     };
 
     this.toastSubject.next(toast);
     setTimeout(() => this.toastSubject.next(null)), durationInMs;
+  }
+
+  public close(): void {
+    this.toastSubject.next(null);
   }
 }

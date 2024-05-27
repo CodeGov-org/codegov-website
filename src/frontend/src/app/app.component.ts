@@ -6,6 +6,7 @@ import { GLOBAL_CONFIG } from 'src/global-config';
 import { FooterComponent, NavbarComponent } from '@cg/angular-ui';
 import { SecondaryNavbarComponent } from '~core/layout';
 import { ProfileService } from '~core/state';
+import { ToastComponent } from '~core/ui/toast/toast.component';
 
 @Component({
   standalone: true,
@@ -16,6 +17,7 @@ import { ProfileService } from '~core/state';
     NavbarComponent,
     SecondaryNavbarComponent,
     FooterComponent,
+    ToastComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -41,6 +43,7 @@ import { ProfileService } from '~core/state';
   ],
   template: `
     <div class="app-container">
+      <app-toast></app-toast>
       <cg-navbar [homeUrl]="'/'" [links]="navbarLinks" />
       <app-secondary-navbar />
 

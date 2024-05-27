@@ -3,7 +3,6 @@ export interface Toast {
   message: string;
   type: ToastType;
   durationInMs: number;
-  visible: boolean;
 }
 
 export enum ToastType {
