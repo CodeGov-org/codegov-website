@@ -34,9 +34,7 @@ impl From<ProposalReview> for backend_api::ProposalReview {
             summary: proposal_review.summary,
             review_duration_mins: proposal_review.review_duration_mins,
             build_reproduced: proposal_review.build_reproduced,
-            reproduced_build_image_id: proposal_review
-                .reproduced_build_image_id
-                .map(|id| id.to_string()),
+            images_paths: vec![],
             proposal_review_commits: vec![],
         }
     }
@@ -46,11 +44,13 @@ pub fn map_proposal_review(
     id: ProposalReviewId,
     proposal_review: ProposalReview,
     proposal_review_commits: Vec<(ProposalReviewCommitId, ProposalReviewCommit)>,
+    images_paths: Vec<String>,
 ) -> backend_api::ProposalReviewWithId {
     backend_api::ProposalReviewWithId {
         id: id.to_string(),
         proposal_review: backend_api::ProposalReview {
             proposal_review_commits: map_proposal_review_commits(proposal_review_commits),
+            images_paths,
             ..proposal_review.into()
         },
     }

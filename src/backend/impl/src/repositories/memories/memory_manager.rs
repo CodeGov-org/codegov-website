@@ -25,3 +25,4 @@ pub(super) const PROPOSAL_REVIEWS_USER_ID_INDEX_MEMORY_ID: MemoryId = MemoryId::
 pub(super) const PROPOSAL_REVIEW_COMMITS_MEMORY_ID: MemoryId = MemoryId::new(11);
 pub(super) const PROPOSAL_REVIEW_COMMIT_PROPOSAL_REVIEW_ID_USER_ID_MEMORY_ID: MemoryId =
     MemoryId::new(12);
+pub(super) const IMAGES_MEMORY_ID: MemoryId = MemoryId::new(13);

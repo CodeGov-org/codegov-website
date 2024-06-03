@@ -60,7 +60,6 @@ export class ReviewService {
       summary: [],
       proposal_id: proposalId,
       build_reproduced: [],
-      reproduced_build_image_id: [],
     });
 
     if (isErr(createResponse)) {
