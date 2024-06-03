@@ -8,6 +8,7 @@ import {
 } from '@hadronous/pic';
 import { resolve } from 'node:path';
 import { controllerIdentity } from './identity';
+import { UsersOM } from './users';
 
 const NNS_SUBNET_ID =
   '2o3zy-oo4hc-r3mtq-ylrpf-g6qge-qmuzn-2bsuv-d3yhd-e4qjc-6ff2b-6ae';
@@ -47,10 +48,14 @@ export class TestDriver {
     return this.fixture.canisterId;
   }
 
+  public readonly users: UsersOM;
+
   private constructor(
     public readonly pic: PocketIc,
     private readonly fixture: CanisterFixture<BackendService>,
-  ) {}
+  ) {
+    this.users = new UsersOM(this.createActor());
+  }
 
   public static async create(initialDate = new Date()): Promise<TestDriver> {
     const pic = await PocketIc.create(process.env.PIC_URL);
@@ -110,5 +115,9 @@ export class TestDriver {
 
   public async tearDown(): Promise<void> {
     await this.pic.tearDown();
+  }
+
+  private createActor(): Actor<BackendService> {
+    return this.pic.createActor(idlFactory, this.canisterId);
   }
 }

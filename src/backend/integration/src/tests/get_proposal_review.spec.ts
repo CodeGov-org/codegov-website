@@ -1,6 +1,5 @@
 import { describe, beforeAll, afterAll, it, expect } from 'bun:test';
 import { AnonymousIdentity, Identity } from '@dfinity/agent';
-import { generateRandomIdentity } from '@hadronous/pic';
 import {
   Governance,
   TestDriver,
@@ -10,7 +9,6 @@ import {
   controllerIdentity,
   createProposalReview,
   createProposalReviewCommit,
-  createReviewer,
   extractErrResponse,
   extractOkResponse,
   publishProposalReview,
@@ -41,8 +39,7 @@ describe('get proposal review', () => {
   });
 
   beforeAll(async () => {
-    alice = generateRandomIdentity();
-    aliceId = await createReviewer(driver.actor, alice);
+    [alice, { id: aliceId }] = await driver.users.createReviewer();
 
     proposalReviewData = await createProposalReview(
       driver.actor,
@@ -101,8 +98,7 @@ describe('get proposal review', () => {
   });
 
   it('should fail for a draft review if the user is not an admin or the owner', async () => {
-    const bob = generateRandomIdentity();
-    await createReviewer(driver.actor, bob);
+    const [bob] = await driver.users.createReviewer();
 
     driver.actor.setIdentity(bob);
     const resBob = await driver.actor.get_proposal_review({

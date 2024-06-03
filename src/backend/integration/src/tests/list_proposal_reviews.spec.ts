@@ -1,5 +1,4 @@
 import { AnonymousIdentity, Identity } from '@dfinity/agent';
-import { generateRandomIdentity } from '@hadronous/pic';
 import { describe, beforeAll, afterAll, it, expect } from 'bun:test';
 import {
   Governance,
@@ -10,7 +9,6 @@ import {
   createProposal,
   createProposalReview,
   createProposalReviewCommit,
-  createReviewer,
   extractErrResponse,
   extractOkResponse,
   publishProposalReview,
@@ -64,11 +62,8 @@ describe('list proposal reviews', () => {
      *     commits: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B]
      */
 
-    alice = generateRandomIdentity();
-    bob = generateRandomIdentity();
-
-    aliceId = await createReviewer(driver.actor, alice);
-    bobId = await createReviewer(driver.actor, bob);
+    [alice, { id: aliceId }] = await driver.users.createReviewer();
+    [bob, { id: bobId }] = await driver.users.createReviewer();
 
     proposal1Id = await createProposal(
       driver.actor,

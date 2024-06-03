@@ -6,7 +6,6 @@ import {
   it,
   expect,
 } from 'bun:test';
-import { generateRandomIdentity } from '@hadronous/pic';
 import {
   Governance,
   TestDriver,
@@ -17,7 +16,6 @@ import {
   controllerIdentity,
   createProposalReview,
   createProposalReviewCommit,
-  createReviewer,
   dateToRfc3339,
   extractErrResponse,
   extractOkResponse,
@@ -70,10 +68,8 @@ describe('Proposal Review Commit', () => {
 
     it('should not allow non-reviewer principals', async () => {
       // as anonymous user
-      const alice = generateRandomIdentity();
-      driver.actor.setIdentity(alice);
-
-      await driver.actor.create_my_user_profile();
+      const [anonymousIdentity] = await driver.users.createAnonymous();
+      driver.actor.setIdentity(anonymousIdentity);
 
       const resAnonymous = await driver.actor.create_proposal_review_commit({
         proposal_review_id: 'proposal-id',
@@ -90,7 +86,7 @@ describe('Proposal Review Commit', () => {
 
       expect(resAnonymousErr).toEqual({
         code: 403,
-        message: `Principal ${alice
+        message: `Principal ${anonymousIdentity
           .getPrincipal()
           .toText()} must be a reviewer to call this endpoint`,
       });
@@ -120,8 +116,8 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should allow reviewers to create a proposal review commit', async () => {
-      const reviewer = generateRandomIdentity();
-      const reviewerId = await createReviewer(driver.actor, reviewer);
+      const [reviewer, { id: reviewerId }] =
+        await driver.users.createReviewer();
 
       const { proposalReviewId } = await createProposalReview(
         driver.actor,
@@ -165,8 +161,7 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow to create a review commit for a non-existing proposal review', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const nonExistentProposalReviewId =
         '6f4bc04d-e0eb-4a9e-806e-e54b0cb1c270';
@@ -188,8 +183,7 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow to create a review commit for a published proposal review', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId, proposalReviewId } = await createProposalReview(
         driver.actor,
@@ -219,10 +213,8 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow to create a review commit for a proposal review that belongs to another reviewer', async () => {
-      const alice = generateRandomIdentity();
-      const bob = generateRandomIdentity();
-      await createReviewer(driver.actor, alice);
-      const bobId = await createReviewer(driver.actor, bob);
+      const [alice] = await driver.users.createReviewer();
+      const [bob, { id: bobId }] = await driver.users.createReviewer();
 
       const { proposalReviewId } = await createProposalReview(
         driver.actor,
@@ -251,8 +243,7 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow to create a review commit for a review associated to a completed proposal', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId, proposalReviewId } = await createProposalReview(
         driver.actor,
@@ -282,8 +273,8 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow a reviewer to create a review commit for the same commit sha', async () => {
-      const reviewer = generateRandomIdentity();
-      const reviewerId = await createReviewer(driver.actor, reviewer);
+      const [reviewer, { id: reviewerId }] =
+        await driver.users.createReviewer();
 
       const { proposalReviewId } = await createProposalReview(
         driver.actor,
@@ -325,8 +316,8 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should allow a reviewer to create multiple review commits for the same review', async () => {
-      const reviewer = generateRandomIdentity();
-      const reviewerId = await createReviewer(driver.actor, reviewer);
+      const [reviewer, { id: reviewerId }] =
+        await driver.users.createReviewer();
 
       const { proposalReviewId } = await createProposalReview(
         driver.actor,
@@ -399,10 +390,8 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should allow multiple reviewers to create review commits for the same review', async () => {
-      const alice = generateRandomIdentity();
-      const bob = generateRandomIdentity();
-      const aliceId = await createReviewer(driver.actor, alice);
-      const bobId = await createReviewer(driver.actor, bob);
+      const [alice, { id: aliceId }] = await driver.users.createReviewer();
+      const [bob, { id: bobId }] = await driver.users.createReviewer();
 
       const { proposalId, proposalReviewId: aliceProposalReviewId } =
         await createProposalReview(driver.actor, governance, alice);
@@ -476,8 +465,8 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow a reviewer to create too many review commits', async () => {
-      const reviewer = generateRandomIdentity();
-      const reviewerId = await createReviewer(driver.actor, reviewer);
+      const [reviewer, { id: reviewerId }] =
+        await driver.users.createReviewer();
 
       const { proposalReviewId: proposalReviewId1 } =
         await createProposalReview(driver.actor, governance, reviewer);
@@ -569,10 +558,8 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow multiple reviewers to create too many review commits', async () => {
-      const alice = generateRandomIdentity();
-      const bob = generateRandomIdentity();
-      const aliceId = await createReviewer(driver.actor, alice);
-      const bobId = await createReviewer(driver.actor, bob);
+      const [alice, { id: aliceId }] = await driver.users.createReviewer();
+      const [bob, { id: bobId }] = await driver.users.createReviewer();
 
       const { proposalId, proposalReviewId: aliceProposalReviewId } =
         await createProposalReview(driver.actor, governance, alice);
@@ -662,8 +649,7 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow to create an invalid review commit', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalReviewId } = await createProposalReview(
         driver.actor,
@@ -832,10 +818,8 @@ describe('Proposal Review Commit', () => {
 
     it('should not allow non-reviewer principals', async () => {
       // as anonymous user
-      const alice = generateRandomIdentity();
+      const [alice] = await driver.users.createAnonymous();
       driver.actor.setIdentity(alice);
-
-      await driver.actor.create_my_user_profile();
 
       const resAnonymous = await driver.actor.update_proposal_review_commit({
         id: 'proposal-review-commit-id',
@@ -880,8 +864,7 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should allow a reviewer to update a proposal review commit', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalReviewCommitId } = await createProposalReviewCommit(
         driver.actor,
@@ -907,8 +890,7 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow a reviewer to update a non-existent proposal review commit', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const nonExistentProposalReviewCommitId =
         '57bb5dbd-77b4-41c2-abde-1b48a512f420';
@@ -929,10 +911,8 @@ describe('Proposal Review Commit', () => {
     });
 
     it("should not allow a reviewer to update another reviewer's proposal review commit", async () => {
-      const alice = generateRandomIdentity();
-      const bob = generateRandomIdentity();
-      await createReviewer(driver.actor, alice);
-      const bobId = await createReviewer(driver.actor, bob);
+      const [alice] = await driver.users.createReviewer();
+      const [bob, { id: bobId }] = await driver.users.createReviewer();
 
       const { proposalReviewCommitId } = await createProposalReviewCommit(
         driver.actor,
@@ -961,8 +941,7 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow a reviewer to update a review commit associated to an already published review', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId, proposalReviewId, proposalReviewCommitId } =
         await createProposalReviewCommit(
@@ -993,8 +972,7 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow a reviewer to update a review commit associated to an already completed proposal', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId, proposalReviewCommitId } =
         await createProposalReviewCommit(
@@ -1025,8 +1003,7 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow to update with invalid input', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalReviewCommitId } = await createProposalReviewCommit(
         driver.actor,
@@ -1142,10 +1119,8 @@ describe('Proposal Review Commit', () => {
 
     it('should not allow non-reviewer principals', async () => {
       // as anonymous user
-      const alice = generateRandomIdentity();
+      const [alice] = await driver.users.createAnonymous();
       driver.actor.setIdentity(alice);
-
-      await driver.actor.create_my_user_profile();
 
       const resAnonymous = await driver.actor.delete_proposal_review_commit({
         id: 'proposal-review-commit-id',
@@ -1176,8 +1151,7 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should allow a reviewer to delete a proposal review commit', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalReviewCommitId } = await createProposalReviewCommit(
         driver.actor,
@@ -1196,8 +1170,7 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow a reviewer to delete a non-existent proposal review commit', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const nonExistentProposalReviewCommitId =
         '57bb5dbd-77b4-41c2-abde-1b48a512f420';
@@ -1215,10 +1188,8 @@ describe('Proposal Review Commit', () => {
     });
 
     it("should not allow a reviewer to delete another reviewer's proposal review commit", async () => {
-      const alice = generateRandomIdentity();
-      const bob = generateRandomIdentity();
-      await createReviewer(driver.actor, alice);
-      const bobId = await createReviewer(driver.actor, bob);
+      const [alice] = await driver.users.createReviewer();
+      const [bob, { id: bobId }] = await driver.users.createReviewer();
 
       const { proposalReviewCommitId } = await createProposalReviewCommit(
         driver.actor,
@@ -1240,8 +1211,7 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow a reviewer to delete a review commit associated to an already published review', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId, proposalReviewId, proposalReviewCommitId } =
         await createProposalReviewCommit(
@@ -1265,8 +1235,7 @@ describe('Proposal Review Commit', () => {
     });
 
     it('should not allow a reviewer to delete a review commit associated to an already completed proposal', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId, proposalReviewCommitId } =
         await createProposalReviewCommit(
