@@ -2,12 +2,13 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "moduleResolution": "Node",
+    "lib": ["ES2022", "dom"],
     "experimentalDecorators": true,
     "declaration": true,
     "declarationMap": true,
     "inlineSources": true,
     "sourceMap": true,
     "outDir": "../../out-tsc/lib",
-    "types": []
+    "types": ["jasmine"]
   }
 }
