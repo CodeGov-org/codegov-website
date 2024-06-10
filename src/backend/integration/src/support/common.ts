@@ -216,9 +216,9 @@ export function validateProposalReview(
       status: expected.reviewStatus,
       created_at: expect.any(String),
       last_updated_at: expected.lastUpdatedAt ? [expected.lastUpdatedAt] : [],
-      summary: expect.any(String),
-      review_duration_mins: expect.any(Number),
-      build_reproduced: expect.any(Boolean),
+      summary: expect.any(Array),
+      review_duration_mins: expect.any(Array),
+      build_reproduced: expect.any(Array),
       reproduced_build_image_id: expect.any(Array),
       proposal_review_commits: expected.commits.commitSha.map(
         commitSha =>

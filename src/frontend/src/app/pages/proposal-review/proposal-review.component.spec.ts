@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 
 import { ProfileService, ProposalService, ReviewService } from '~core/state';
@@ -42,7 +42,11 @@ describe('ProposalReviewComponent', () => {
     defineProp(profileServiceMock, 'isReviewer$', of(true));
 
     activatedRouteMock = activatedRouteMockFactory();
-    activatedRouteMock.params = of([{ id: 1 }]);
+    defineProp(
+      activatedRouteMock,
+      'paramMap',
+      of(convertToParamMap([{ id: 1 }])),
+    );
 
     await TestBed.configureTestingModule({
       imports: [ProposalReviewComponent],
