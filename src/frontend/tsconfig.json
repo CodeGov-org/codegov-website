@@ -7,7 +7,6 @@
     "lib": ["ES2022", "dom"],
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
-    "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
@@ -17,7 +16,8 @@
       "~env": ["./src/environments/environment.ts"],
       "~testing": ["./src/app/testing/index.ts"],
       "~core/*": ["./src/app/core/*"]
-    }
+    },
+    "types": ["jasmine"]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
