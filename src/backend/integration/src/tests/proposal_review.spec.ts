@@ -6,84 +6,42 @@ import {
   it,
   expect,
 } from 'bun:test';
-import { resolve } from 'path';
-import type { ProposalReview, _SERVICE } from '@cg/backend';
-import {
-  PocketIc,
-  type Actor,
-  generateRandomIdentity,
-  SubnetStateType,
-} from '@hadronous/pic';
-import { Principal } from '@dfinity/principal';
+import type { ProposalReview, UpdateProposalReviewRequest } from '@cg/backend';
 import {
   anonymousIdentity,
   controllerIdentity,
   extractErrResponse,
   extractOkResponse,
-  setupBackendCanister,
   Governance,
   dateToRfc3339,
   createProposal,
   completeProposal,
   createProposalReview,
-  createReviewer,
-  resetBackendCanister,
+  TestDriver,
 } from '../support';
 
-const NNS_SUBNET_ID =
-  '2o3zy-oo4hc-r3mtq-ylrpf-g6qge-qmuzn-2bsuv-d3yhd-e4qjc-6ff2b-6ae';
-
-const NNS_STATE_PATH = resolve(
-  __dirname,
-  '..',
-  '..',
-  'state',
-  'proposal_reviews_nns_state',
-  'node-100',
-  'state',
-);
-
 describe('Proposal Review', () => {
-  let actor: Actor<_SERVICE>;
-  let canisterId: Principal;
-  let pic: PocketIc;
-  // set to any date after the NNS state has been generated
-  const initialDate = new Date(2024, 3, 25, 0, 0, 0, 0);
-
+  let driver: TestDriver;
   let governance: Governance;
 
   beforeAll(async () => {
-    pic = await PocketIc.create(process.env.PIC_URL, {
-      nns: {
-        state: {
-          type: SubnetStateType.FromPath,
-          path: NNS_STATE_PATH,
-          subnetId: Principal.fromText(NNS_SUBNET_ID),
-        },
-      },
-    });
-    await pic.setTime(initialDate.getTime());
-
-    const fixture = await setupBackendCanister(pic);
-    actor = fixture.actor;
-    canisterId = fixture.canisterId;
-
-    governance = new Governance(pic);
+    driver = await TestDriver.createWithNnsState();
+    governance = new Governance(driver.pic);
   });
 
   beforeEach(async () => {
-    await resetBackendCanister(pic, canisterId);
+    await driver.resetBackendCanister();
   });
 
   afterAll(async () => {
-    await pic.tearDown();
+    await driver.tearDown();
   });
 
   describe('create proposal review', () => {
     it('should not allow anonymous principals', async () => {
-      actor.setIdentity(anonymousIdentity);
+      driver.actor.setIdentity(anonymousIdentity);
 
-      const res = await actor.create_proposal_review({
+      const res = await driver.actor.create_proposal_review({
         proposal_id: 'proposal-id',
         summary: ['summary'],
         review_duration_mins: [60],
@@ -102,12 +60,10 @@ describe('Proposal Review', () => {
 
     it('should not allow non-reviewer principals', async () => {
       // as anonymous user
-      const alice = generateRandomIdentity();
-      actor.setIdentity(alice);
+      const [alice] = await driver.users.createAnonymous();
+      driver.actor.setIdentity(alice);
 
-      await actor.create_my_user_profile();
-
-      const resAnonymous = await actor.create_proposal_review({
+      const resAnonymous = await driver.actor.create_proposal_review({
         proposal_id: 'proposal-id',
         summary: ['summary'],
         review_duration_mins: [60],
@@ -124,9 +80,9 @@ describe('Proposal Review', () => {
       });
 
       // as admin
-      actor.setIdentity(controllerIdentity);
+      driver.actor.setIdentity(controllerIdentity);
 
-      const resAdmin = await actor.create_proposal_review({
+      const resAdmin = await driver.actor.create_proposal_review({
         proposal_id: 'proposal-id',
         summary: ['summary'],
         review_duration_mins: [60],
@@ -144,18 +100,19 @@ describe('Proposal Review', () => {
     });
 
     it('should allow reviewers to create a proposal review', async () => {
-      const reviewer = generateRandomIdentity();
-      const reviewerId = await createReviewer(actor, reviewer);
+      const [reviewer, { id: reviewerId }] =
+        await driver.users.createReviewer();
 
       const proposalId = await createProposal(
-        actor,
+        driver.actor,
         governance,
         'Test proposal',
       );
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const resFull = await actor.create_proposal_review({
+      const proposalReviewCreationDate = await driver.getCurrentDate();
+      const resFull = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['summary'],
         review_duration_mins: [60],
@@ -170,7 +127,7 @@ describe('Proposal Review', () => {
           proposal_id: proposalId,
           user_id: reviewerId,
           status: { draft: null },
-          created_at: dateToRfc3339(initialDate),
+          created_at: dateToRfc3339(proposalReviewCreationDate),
           last_updated_at: [],
           summary: ['summary'],
           review_duration_mins: [60],
@@ -182,18 +139,19 @@ describe('Proposal Review', () => {
     });
 
     it('should allow reviewers to create an empty proposal review', async () => {
-      const reviewer = generateRandomIdentity();
-      const reviewerId = await createReviewer(actor, reviewer);
+      const [reviewer, { id: reviewerId }] =
+        await driver.users.createReviewer();
 
       const proposalId = await createProposal(
-        actor,
+        driver.actor,
         governance,
         'Test proposal',
       );
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const resEmpty = await actor.create_proposal_review({
+      const proposalReviewCreationDate = await driver.getCurrentDate();
+      const resEmpty = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: [],
         review_duration_mins: [],
@@ -208,7 +166,7 @@ describe('Proposal Review', () => {
           proposal_id: proposalId,
           user_id: reviewerId,
           status: { draft: null },
-          created_at: dateToRfc3339(initialDate),
+          created_at: dateToRfc3339(proposalReviewCreationDate),
           last_updated_at: [],
           summary: [],
           review_duration_mins: [],
@@ -220,13 +178,12 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow to create a review for a proposal that does not exist', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const nonExistentProposalId = 'c61d2984-16c6-4918-9e8b-ed8ee1b05680';
 
-      actor.setIdentity(reviewer);
-      const res = await actor.create_proposal_review({
+      driver.actor.setIdentity(reviewer);
+      const res = await driver.actor.create_proposal_review({
         proposal_id: nonExistentProposalId,
         summary: ['summary'],
         review_duration_mins: [60],
@@ -242,18 +199,17 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow to create a review for a proposal that is completed', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const proposalId = await createProposal(
-        actor,
+        driver.actor,
         governance,
         'Test proposal',
       );
-      await completeProposal(pic, actor, proposalId);
+      await completeProposal(driver.pic, driver.actor, proposalId);
 
-      actor.setIdentity(reviewer);
-      const res = await actor.create_proposal_review({
+      driver.actor.setIdentity(reviewer);
+      const res = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['summary'],
         review_duration_mins: [60],
@@ -269,18 +225,17 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow to create multiple reviews for the same reviewer and proposal', async () => {
-      const alice = generateRandomIdentity();
-      const aliceId = await createReviewer(actor, alice);
+      const [alice, { id: aliceId }] = await driver.users.createReviewer();
 
       const proposalId = await createProposal(
-        actor,
+        driver.actor,
         governance,
         'Test proposal',
       );
 
-      actor.setIdentity(alice);
+      driver.actor.setIdentity(alice);
 
-      const resAliceCreated = await actor.create_proposal_review({
+      const resAliceCreated = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['summary'],
         review_duration_mins: [60],
@@ -289,7 +244,7 @@ describe('Proposal Review', () => {
       });
       extractOkResponse(resAliceCreated);
 
-      const res = await actor.create_proposal_review({
+      const res = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['summary'],
         review_duration_mins: [60],
@@ -302,10 +257,9 @@ describe('Proposal Review', () => {
         message: `User with Id ${aliceId} has already submitted a review for proposal with Id ${proposalId}`,
       });
 
-      const bob = generateRandomIdentity();
-      await createReviewer(actor, bob);
-      actor.setIdentity(bob);
-      const resBobCreated = await actor.create_proposal_review({
+      const [bob] = await driver.users.createReviewer();
+      driver.actor.setIdentity(bob);
+      const resBobCreated = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['summary'],
         review_duration_mins: [60],
@@ -316,18 +270,17 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow to create an invalid review', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const proposalId = await createProposal(
-        actor,
+        driver.actor,
         governance,
         'Test proposal',
       );
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const resEmptySummary = await actor.create_proposal_review({
+      const resEmptySummary = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: [''],
         review_duration_mins: [60],
@@ -341,7 +294,7 @@ describe('Proposal Review', () => {
         message: 'Summary cannot be empty',
       });
 
-      const resLongSummary = await actor.create_proposal_review({
+      const resLongSummary = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['a'.repeat(1501)],
         review_duration_mins: [60],
@@ -355,7 +308,7 @@ describe('Proposal Review', () => {
         message: 'Summary must be less than 1500 characters',
       });
 
-      const resZeroDuration = await actor.create_proposal_review({
+      const resZeroDuration = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['summary'],
         review_duration_mins: [0],
@@ -369,7 +322,7 @@ describe('Proposal Review', () => {
         message: 'Review duration cannot be 0',
       });
 
-      const resLongDuration = await actor.create_proposal_review({
+      const resLongDuration = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['summary'],
         review_duration_mins: [3 * 60 + 1],
@@ -387,9 +340,9 @@ describe('Proposal Review', () => {
 
   describe('update proposal review', () => {
     it('should not allow anonymous principals', async () => {
-      actor.setIdentity(anonymousIdentity);
+      driver.actor.setIdentity(anonymousIdentity);
 
-      const res = await actor.update_proposal_review({
+      const res = await driver.actor.update_proposal_review({
         proposal_id: 'proposal-id',
         status: [{ draft: null }],
         summary: ['summary'],
@@ -409,12 +362,10 @@ describe('Proposal Review', () => {
 
     it('should not allow non-reviewer principals', async () => {
       // as anonymous user
-      const alice = generateRandomIdentity();
-      actor.setIdentity(alice);
+      const [alice] = await driver.users.createAnonymous();
+      driver.actor.setIdentity(alice);
 
-      await actor.create_my_user_profile();
-
-      const resAnonymous = await actor.update_proposal_review({
+      const resAnonymous = await driver.actor.update_proposal_review({
         proposal_id: 'proposal-id',
         status: [{ draft: null }],
         summary: ['summary'],
@@ -432,9 +383,9 @@ describe('Proposal Review', () => {
       });
 
       // as admin
-      actor.setIdentity(controllerIdentity);
+      driver.actor.setIdentity(controllerIdentity);
 
-      const resAdmin = await actor.update_proposal_review({
+      const resAdmin = await driver.actor.update_proposal_review({
         proposal_id: 'proposal-id',
         status: [{ draft: null }],
         summary: ['summary'],
@@ -453,14 +404,13 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow to update a proposal review that does not exist', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const nonExistentProposalId = 'c61d2984-16c6-4918-9e8b-ed8ee1b05680';
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const res = await actor.update_proposal_review({
+      const res = await driver.actor.update_proposal_review({
         proposal_id: nonExistentProposalId,
         status: [{ draft: null }],
         summary: ['summary'],
@@ -477,20 +427,18 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow a reviewer to update a proposal review that belongs to another reviewer', async () => {
-      const alice = generateRandomIdentity();
-      const bob = generateRandomIdentity();
-      await createReviewer(actor, alice);
-      await createReviewer(actor, bob);
+      const [alice] = await driver.users.createReviewer();
+      const [bob] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
-        actor,
+        driver.actor,
         governance,
         alice,
       );
 
-      actor.setIdentity(bob);
+      driver.actor.setIdentity(bob);
 
-      const res = await actor.update_proposal_review({
+      const res = await driver.actor.update_proposal_review({
         proposal_id: proposalId,
         status: [{ draft: null }],
         summary: ['summary'],
@@ -507,18 +455,17 @@ describe('Proposal Review', () => {
     });
 
     it('should allow a reviewer to update a proposal review', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
-        actor,
+        driver.actor,
         governance,
         reviewer,
       );
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const res = await actor.update_proposal_review({
+      const res = await driver.actor.update_proposal_review({
         proposal_id: proposalId,
         status: [{ draft: null }],
         summary: ['updated summary'],
@@ -532,18 +479,17 @@ describe('Proposal Review', () => {
     });
 
     it('should allow a reviewer to publish a proposal review', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
-        actor,
+        driver.actor,
         governance,
         reviewer,
       );
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const res = await actor.update_proposal_review({
+      const res = await driver.actor.update_proposal_review({
         proposal_id: proposalId,
         status: [{ published: null }],
         summary: [],
@@ -557,17 +503,16 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow a reviewer to update a proposal review for a completed proposal', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const proposalId = await createProposal(
-        actor,
+        driver.actor,
         governance,
         'Test proposal',
       );
 
-      actor.setIdentity(reviewer);
-      const resProposalReview = await actor.create_proposal_review({
+      driver.actor.setIdentity(reviewer);
+      const resProposalReview = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: [],
         review_duration_mins: [60],
@@ -576,9 +521,9 @@ describe('Proposal Review', () => {
       });
       extractOkResponse(resProposalReview);
 
-      await completeProposal(pic, actor, proposalId);
+      await completeProposal(driver.pic, driver.actor, proposalId);
 
-      const res = await actor.update_proposal_review({
+      const res = await driver.actor.update_proposal_review({
         proposal_id: proposalId,
         status: [{ draft: null }],
         summary: ['updated summary'],
@@ -596,18 +541,17 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow a reviewer to update a proposal review that is already published', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
-        actor,
+        driver.actor,
         governance,
         reviewer,
       );
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const resPublished = await actor.update_proposal_review({
+      const resPublished = await driver.actor.update_proposal_review({
         proposal_id: proposalId,
         status: [{ published: null }],
         summary: [],
@@ -617,7 +561,7 @@ describe('Proposal Review', () => {
       });
       extractOkResponse(resPublished);
 
-      const resNoStatus = await actor.update_proposal_review({
+      const resNoStatus = await driver.actor.update_proposal_review({
         proposal_id: proposalId,
         status: [],
         summary: ['updated summary'],
@@ -632,7 +576,7 @@ describe('Proposal Review', () => {
         message: `Proposal review for proposal with Id ${proposalId} is already published`,
       });
 
-      const resPublish = await actor.update_proposal_review({
+      const resPublish = await driver.actor.update_proposal_review({
         proposal_id: proposalId,
         status: [{ published: null }],
         summary: ['updated summary'],
@@ -649,18 +593,17 @@ describe('Proposal Review', () => {
     });
 
     it('should allow a reviewer to set a published proposal review back to draft', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
-        actor,
+        driver.actor,
         governance,
         reviewer,
       );
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const resPublished = await actor.update_proposal_review({
+      const resPublished = await driver.actor.update_proposal_review({
         proposal_id: proposalId,
         status: [{ published: null }],
         summary: [],
@@ -670,7 +613,7 @@ describe('Proposal Review', () => {
       });
       extractOkResponse(resPublished);
 
-      const res = await actor.update_proposal_review({
+      const res = await driver.actor.update_proposal_review({
         proposal_id: proposalId,
         status: [{ draft: null }],
         summary: ['updated summary'],
@@ -684,18 +627,17 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow to update a review with invalid fields', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
-        actor,
+        driver.actor,
         governance,
         reviewer,
       );
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const resEmptySummary = await actor.update_proposal_review({
+      const resEmptySummary = await driver.actor.update_proposal_review({
         proposal_id: proposalId,
         status: [],
         summary: [''],
@@ -710,7 +652,7 @@ describe('Proposal Review', () => {
         message: 'Summary cannot be empty',
       });
 
-      const resLongSummary = await actor.update_proposal_review({
+      const resLongSummary = await driver.actor.update_proposal_review({
         proposal_id: proposalId,
         status: [],
         summary: ['a'.repeat(1501)],
@@ -725,7 +667,7 @@ describe('Proposal Review', () => {
         message: 'Summary must be less than 1500 characters',
       });
 
-      const resZeroDuration = await actor.update_proposal_review({
+      const resZeroDuration = await driver.actor.update_proposal_review({
         proposal_id: proposalId,
         status: [],
         summary: ['summary'],
@@ -740,7 +682,7 @@ describe('Proposal Review', () => {
         message: 'Review duration cannot be 0',
       });
 
-      const resLongDuration = await actor.update_proposal_review({
+      const resLongDuration = await driver.actor.update_proposal_review({
         proposal_id: proposalId,
         status: [],
         summary: ['summary'],
@@ -756,42 +698,66 @@ describe('Proposal Review', () => {
       });
     });
 
-    it('should not allow to publish a review that has invalid fields', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+    it.each<[Partial<UpdateProposalReviewRequest>, string]>([
+      [
+        {
+          summary: [],
+          review_duration_mins: [60],
+          build_reproduced: [false],
+        },
+        'Summary cannot be empty',
+      ],
+      [
+        {
+          summary: ['Summary'],
+          review_duration_mins: [60],
+          build_reproduced: [],
+        },
+        'Build reproduced cannot be empty',
+      ],
+      [
+        {
+          summary: ['Summary'],
+          review_duration_mins: [],
+          build_reproduced: [false],
+        },
+        'Review duration cannot be empty',
+      ],
+    ])(
+      'should not allow to publish a review that has invalid fields',
+      async (updateReq, errMsg) => {
+        const [reviewer] = await driver.users.createReviewer();
 
-      const proposalId = await createProposal(
-        actor,
-        governance,
-        'Test proposal',
-      );
+        const proposalId = await createProposal(
+          driver.actor,
+          governance,
+          'Test proposal',
+        );
 
-      actor.setIdentity(reviewer);
+        driver.actor.setIdentity(reviewer);
 
-      const resProposalReview = await actor.create_proposal_review({
-        proposal_id: proposalId,
-        summary: [],
-        review_duration_mins: [60],
-        build_reproduced: [true],
-        reproduced_build_image_id: [],
-      });
-      extractOkResponse(resProposalReview);
+        const resProposalReview = await driver.actor.create_proposal_review({
+          proposal_id: proposalId,
+          summary: [],
+          review_duration_mins: [],
+          build_reproduced: [],
+          reproduced_build_image_id: [],
+        });
+        extractOkResponse(resProposalReview);
 
-      const res = await actor.update_proposal_review({
-        proposal_id: proposalId,
-        status: [{ published: null }],
-        summary: [],
-        review_duration_mins: [],
-        build_reproduced: [],
-        reproduced_build_image_id: [],
-      });
-      const resErr = extractErrResponse(res);
+        const res = await driver.actor.update_proposal_review({
+          ...updateReq,
+          proposal_id: proposalId,
+          status: [{ published: null }],
+          reproduced_build_image_id: [],
+        } as UpdateProposalReviewRequest);
+        const resErr = extractErrResponse(res);
 
-      expect(resErr).toEqual({
-        code: 409,
-        message:
-          'Proposal review cannot be published due to invalid field: Summary cannot be empty',
-      });
-    });
+        expect(resErr).toEqual({
+          code: 409,
+          message: `Proposal review cannot be published due to invalid field: ${errMsg}`,
+        });
+      },
+    );
   });
 });
