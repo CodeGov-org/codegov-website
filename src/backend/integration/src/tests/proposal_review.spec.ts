@@ -7,7 +7,6 @@ import {
   expect,
 } from 'bun:test';
 import type { ProposalReview, UpdateProposalReviewRequest } from '@cg/backend';
-import { generateRandomIdentity } from '@hadronous/pic';
 import {
   anonymousIdentity,
   controllerIdentity,
@@ -18,7 +17,6 @@ import {
   createProposal,
   completeProposal,
   createProposalReview,
-  createReviewer,
   TestDriver,
 } from '../support';
 
@@ -62,10 +60,8 @@ describe('Proposal Review', () => {
 
     it('should not allow non-reviewer principals', async () => {
       // as anonymous user
-      const alice = generateRandomIdentity();
+      const [alice] = await driver.users.createAnonymous();
       driver.actor.setIdentity(alice);
-
-      await driver.actor.create_my_user_profile();
 
       const resAnonymous = await driver.actor.create_proposal_review({
         proposal_id: 'proposal-id',
@@ -104,8 +100,8 @@ describe('Proposal Review', () => {
     });
 
     it('should allow reviewers to create a proposal review', async () => {
-      const reviewer = generateRandomIdentity();
-      const reviewerId = await createReviewer(driver.actor, reviewer);
+      const [reviewer, { id: reviewerId }] =
+        await driver.users.createReviewer();
 
       const proposalId = await createProposal(
         driver.actor,
@@ -143,8 +139,8 @@ describe('Proposal Review', () => {
     });
 
     it('should allow reviewers to create an empty proposal review', async () => {
-      const reviewer = generateRandomIdentity();
-      const reviewerId = await createReviewer(driver.actor, reviewer);
+      const [reviewer, { id: reviewerId }] =
+        await driver.users.createReviewer();
 
       const proposalId = await createProposal(
         driver.actor,
@@ -182,8 +178,7 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow to create a review for a proposal that does not exist', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const nonExistentProposalId = 'c61d2984-16c6-4918-9e8b-ed8ee1b05680';
 
@@ -204,8 +199,7 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow to create a review for a proposal that is completed', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const proposalId = await createProposal(
         driver.actor,
@@ -231,8 +225,7 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow to create multiple reviews for the same reviewer and proposal', async () => {
-      const alice = generateRandomIdentity();
-      const aliceId = await createReviewer(driver.actor, alice);
+      const [alice, { id: aliceId }] = await driver.users.createReviewer();
 
       const proposalId = await createProposal(
         driver.actor,
@@ -264,8 +257,7 @@ describe('Proposal Review', () => {
         message: `User with Id ${aliceId} has already submitted a review for proposal with Id ${proposalId}`,
       });
 
-      const bob = generateRandomIdentity();
-      await createReviewer(driver.actor, bob);
+      const [bob] = await driver.users.createReviewer();
       driver.actor.setIdentity(bob);
       const resBobCreated = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
@@ -278,8 +270,7 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow to create an invalid review', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const proposalId = await createProposal(
         driver.actor,
@@ -371,10 +362,8 @@ describe('Proposal Review', () => {
 
     it('should not allow non-reviewer principals', async () => {
       // as anonymous user
-      const alice = generateRandomIdentity();
+      const [alice] = await driver.users.createAnonymous();
       driver.actor.setIdentity(alice);
-
-      await driver.actor.create_my_user_profile();
 
       const resAnonymous = await driver.actor.update_proposal_review({
         proposal_id: 'proposal-id',
@@ -415,8 +404,7 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow to update a proposal review that does not exist', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const nonExistentProposalId = 'c61d2984-16c6-4918-9e8b-ed8ee1b05680';
 
@@ -439,10 +427,8 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow a reviewer to update a proposal review that belongs to another reviewer', async () => {
-      const alice = generateRandomIdentity();
-      const bob = generateRandomIdentity();
-      await createReviewer(driver.actor, alice);
-      await createReviewer(driver.actor, bob);
+      const [alice] = await driver.users.createReviewer();
+      const [bob] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
         driver.actor,
@@ -469,8 +455,7 @@ describe('Proposal Review', () => {
     });
 
     it('should allow a reviewer to update a proposal review', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
         driver.actor,
@@ -494,8 +479,7 @@ describe('Proposal Review', () => {
     });
 
     it('should allow a reviewer to publish a proposal review', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
         driver.actor,
@@ -519,8 +503,7 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow a reviewer to update a proposal review for a completed proposal', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const proposalId = await createProposal(
         driver.actor,
@@ -558,8 +541,7 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow a reviewer to update a proposal review that is already published', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
         driver.actor,
@@ -611,8 +593,7 @@ describe('Proposal Review', () => {
     });
 
     it('should allow a reviewer to set a published proposal review back to draft', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
         driver.actor,
@@ -646,8 +627,7 @@ describe('Proposal Review', () => {
     });
 
     it('should not allow to update a review with invalid fields', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(driver.actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
         driver.actor,
@@ -746,8 +726,7 @@ describe('Proposal Review', () => {
     ])(
       'should not allow to publish a review that has invalid fields',
       async (updateReq, errMsg) => {
-        const reviewer = generateRandomIdentity();
-        await createReviewer(driver.actor, reviewer);
+        const [reviewer] = await driver.users.createReviewer();
 
         const proposalId = await createProposal(
           driver.actor,

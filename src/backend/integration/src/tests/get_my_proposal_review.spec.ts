@@ -1,5 +1,4 @@
 import { Identity } from '@dfinity/agent';
-import { generateRandomIdentity } from '@hadronous/pic';
 import { describe, beforeAll, afterAll, expect, it } from 'bun:test';
 import {
   Governance,
@@ -7,11 +6,8 @@ import {
   VALID_COMMIT_SHA_A,
   VALID_COMMIT_SHA_B,
   anonymousIdentity,
-  createAdmin,
-  createAnonymous,
   createProposalReview,
   createProposalReviewCommit,
-  createReviewer,
   extractErrResponse,
   extractOkResponse,
   validateProposalReview,
@@ -34,6 +30,7 @@ describe('get my proposal review', () => {
 
   beforeAll(async () => {
     driver = await TestDriver.createWithNnsState();
+
     governance = new Governance(driver.pic);
   });
 
@@ -42,14 +39,9 @@ describe('get my proposal review', () => {
   });
 
   beforeAll(async () => {
-    alice = generateRandomIdentity();
-    aliceId = await createReviewer(driver.actor, alice);
-
-    bob = generateRandomIdentity();
-    await createAdmin(driver.actor, bob);
-
-    charlie = generateRandomIdentity();
-    await createAnonymous(driver.actor, charlie);
+    [alice, { id: aliceId }] = await driver.users.createReviewer();
+    [bob] = await driver.users.createAdmin();
+    [charlie] = await driver.users.createAnonymous();
 
     proposalReviewData = await createProposalReview(
       driver.actor,
