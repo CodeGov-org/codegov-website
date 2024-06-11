@@ -5,7 +5,7 @@ import {
   SocialLink as ApiSocialLink,
   SocialLinkPlatform,
 } from '@cg/backend';
-import { Ok, optional } from '~core/utils';
+import { Ok, toCandidOpt } from '~core/utils';
 import {
   Profile,
   ProfileUpdate,
@@ -99,21 +99,21 @@ export function mapUpdateProfileRequest(
     case UserRole.Anonymous:
     default: {
       return {
-        username: optional(profile.username),
+        username: toCandidOpt(profile.username),
         config: [],
       };
     }
 
     case UserRole.Reviewer: {
       return {
-        username: optional(profile.username),
-        config: optional(
+        username: toCandidOpt(profile.username),
+        config: toCandidOpt(
           profile.bio || profile.walletAddress || profile.socialMedia
             ? {
                 reviewer: {
-                  bio: optional(profile.bio),
-                  wallet_address: optional(profile.walletAddress),
-                  social_links: optional(
+                  bio: toCandidOpt(profile.bio),
+                  wallet_address: toCandidOpt(profile.walletAddress),
+                  social_links: toCandidOpt(
                     mapProfileUpdateSocialLinksRequest(profile.socialMedia),
                   ),
                 },
@@ -125,12 +125,12 @@ export function mapUpdateProfileRequest(
 
     case UserRole.Admin: {
       return {
-        username: optional(profile.username),
-        config: optional(
+        username: toCandidOpt(profile.username),
+        config: toCandidOpt(
           profile.bio
             ? {
                 admin: {
-                  bio: optional(profile.bio),
+                  bio: toCandidOpt(profile.bio),
                 },
               }
             : null,

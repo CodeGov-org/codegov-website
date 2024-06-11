@@ -1,40 +1,34 @@
-import { SocialLink, type _SERVICE } from '@cg/backend';
-import { PocketIc, type Actor, generateRandomIdentity } from '@hadronous/pic';
+import { describe, beforeAll, afterAll, it, expect } from 'bun:test';
+import { SocialLink } from '@cg/backend';
+import { generateRandomIdentity } from '@hadronous/pic';
 import {
   BACKEND_WASM_PATH,
+  TestDriver,
   anonymousIdentity,
   controllerIdentity,
   dateToRfc3339,
   extractErrResponse,
   extractOkResponse,
-  setupBackendCanister,
 } from '../support';
-import { Principal } from '@dfinity/principal';
+
+const initialDate = new Date(1988, 1, 14, 0, 0, 0, 0);
 
 describe('User Profile', () => {
-  let actor: Actor<_SERVICE>;
-  let canisterId: Principal;
-  let pic: PocketIc;
-  const currentDate = new Date(1988, 1, 14, 0, 0, 0, 0);
+  let driver: TestDriver;
 
-  beforeEach(async () => {
-    pic = await PocketIc.create(process.env.PIC_URL, {
-      processingTimeoutMs: 10_000,
-    });
-    const fixture = await setupBackendCanister(pic, currentDate);
-    actor = fixture.actor;
-    canisterId = fixture.canisterId;
+  beforeAll(async () => {
+    driver = await TestDriver.create(initialDate);
   });
 
-  afterEach(async () => {
-    await pic.tearDown();
+  afterAll(async () => {
+    await driver.tearDown();
   });
 
   describe('create user profile', () => {
     it('should not allow the anonymous principal', async () => {
-      actor.setIdentity(anonymousIdentity);
+      driver.actor.setIdentity(anonymousIdentity);
 
-      const res = await actor.get_my_user_profile();
+      const res = await driver.actor.get_my_user_profile();
       const resErr = extractErrResponse(res);
 
       expect(resErr).toEqual({
@@ -44,12 +38,12 @@ describe('User Profile', () => {
     });
 
     it('should auto create an admin profile for the controller', async () => {
-      actor.setIdentity(controllerIdentity);
+      driver.actor.setIdentity(controllerIdentity);
 
-      const res = await actor.get_my_user_profile();
+      const res = await driver.actor.get_my_user_profile();
       const resOk = extractOkResponse(res);
 
-      const historyRes = await actor.get_my_user_profile_history();
+      const historyRes = await driver.actor.get_my_user_profile_history();
       const historyOk = extractOkResponse(historyRes);
 
       expect(resOk).toEqual({
@@ -65,7 +59,7 @@ describe('User Profile', () => {
       expect(historyOk.history[0]).toEqual({
         action: { create: null },
         user: controllerIdentity.getPrincipal(),
-        date_time: dateToRfc3339(currentDate),
+        date_time: dateToRfc3339(initialDate),
         data: {
           username: resOk.username,
           config: resOk.config,
@@ -75,25 +69,25 @@ describe('User Profile', () => {
 
     it('should auto create an admin profile for a new controller', async () => {
       const newControllerIdentity = generateRandomIdentity();
-      actor.setIdentity(newControllerIdentity);
+      driver.actor.setIdentity(newControllerIdentity);
 
-      await pic.updateCanisterSettings({
-        canisterId,
+      await driver.pic.updateCanisterSettings({
+        canisterId: driver.canisterId,
         controllers: [newControllerIdentity.getPrincipal()],
         sender: controllerIdentity.getPrincipal(),
       });
-      await pic.upgradeCanister({
-        canisterId,
+      await driver.pic.upgradeCanister({
+        canisterId: driver.canisterId,
         wasm: BACKEND_WASM_PATH,
         sender: newControllerIdentity.getPrincipal(),
       });
       // make sure init timers run
-      await pic.tick(2);
+      await driver.pic.tick(2);
 
-      const res = await actor.get_my_user_profile();
+      const res = await driver.actor.get_my_user_profile();
       const resOk = extractOkResponse(res);
 
-      const historyRes = await actor.get_my_user_profile_history();
+      const historyRes = await driver.actor.get_my_user_profile_history();
       const historyOk = extractOkResponse(historyRes);
 
       expect(resOk).toEqual({
@@ -109,19 +103,26 @@ describe('User Profile', () => {
       expect(historyOk.history[0]).toEqual({
         action: { create: null },
         user: newControllerIdentity.getPrincipal(),
-        date_time: dateToRfc3339(currentDate),
+        date_time: dateToRfc3339(initialDate),
         data: {
           username: resOk.username,
           config: resOk.config,
         },
       });
+
+      // restore original canister controller
+      await driver.pic.updateCanisterSettings({
+        canisterId: driver.canisterId,
+        controllers: [controllerIdentity.getPrincipal()],
+        sender: newControllerIdentity.getPrincipal(),
+      });
     });
 
     it('should not return a profile that does not exist', async () => {
       const alice = generateRandomIdentity();
-      actor.setIdentity(alice);
+      driver.actor.setIdentity(alice);
 
-      const res = await actor.get_my_user_profile();
+      const res = await driver.actor.get_my_user_profile();
       const resErr = extractErrResponse(res);
 
       const principal = alice.getPrincipal().toText();
@@ -135,24 +136,25 @@ describe('User Profile', () => {
       const alice = generateRandomIdentity();
       const bob = generateRandomIdentity();
 
-      actor.setIdentity(alice);
-      const aliceCreateRes = await actor.create_my_user_profile();
+      driver.actor.setIdentity(alice);
+      const aliceCreateRes = await driver.actor.create_my_user_profile();
       const aliceCreate = extractOkResponse(aliceCreateRes);
 
-      actor.setIdentity(bob);
-      const bobCreateRes = await actor.create_my_user_profile();
+      driver.actor.setIdentity(bob);
+      const bobCreateRes = await driver.actor.create_my_user_profile();
       const bobCreate = extractOkResponse(bobCreateRes);
 
-      actor.setIdentity(alice);
-      const aliceGetRes = await actor.get_my_user_profile();
+      driver.actor.setIdentity(alice);
+      const aliceGetRes = await driver.actor.get_my_user_profile();
       const aliceGet = extractOkResponse(aliceGetRes);
-      const aliceGetHistoryRes = await actor.get_my_user_profile_history();
+      const aliceGetHistoryRes =
+        await driver.actor.get_my_user_profile_history();
       const aliceGetHistory = extractOkResponse(aliceGetHistoryRes);
 
-      actor.setIdentity(bob);
-      const bobGetRes = await actor.get_my_user_profile();
+      driver.actor.setIdentity(bob);
+      const bobGetRes = await driver.actor.get_my_user_profile();
       const bobGet = extractOkResponse(bobGetRes);
-      const bobGetHistoryRes = await actor.get_my_user_profile_history();
+      const bobGetHistoryRes = await driver.actor.get_my_user_profile_history();
       const bobGetHistory = extractOkResponse(bobGetHistoryRes);
 
       expect(typeof aliceCreate.id).toBe('string');
@@ -162,7 +164,7 @@ describe('User Profile', () => {
       expect(aliceGetHistory.history[0]).toEqual({
         action: { create: null },
         user: alice.getPrincipal(),
-        date_time: dateToRfc3339(currentDate),
+        date_time: dateToRfc3339(initialDate),
         data: {
           username: aliceCreate.username,
           config: aliceCreate.config,
@@ -176,7 +178,7 @@ describe('User Profile', () => {
       expect(bobGetHistory.history[0]).toEqual({
         action: { create: null },
         user: bob.getPrincipal(),
-        date_time: dateToRfc3339(currentDate),
+        date_time: dateToRfc3339(initialDate),
         data: {
           username: bobCreate.username,
           config: bobCreate.config,
@@ -191,17 +193,18 @@ describe('User Profile', () => {
 
     it('should not allow the same user to create multiple profiles', async () => {
       const alice = generateRandomIdentity();
-      actor.setIdentity(alice);
+      driver.actor.setIdentity(alice);
 
-      const aliceCreateRes = await actor.create_my_user_profile();
+      const aliceCreateRes = await driver.actor.create_my_user_profile();
       const aliceCreate = extractOkResponse(aliceCreateRes);
 
-      const aliceCreateAgainRes = await actor.create_my_user_profile();
+      const aliceCreateAgainRes = await driver.actor.create_my_user_profile();
       const aliceCreateAgainErr = extractErrResponse(aliceCreateAgainRes);
 
-      const aliceGetRes = await actor.get_my_user_profile();
+      const aliceGetRes = await driver.actor.get_my_user_profile();
       const aliceGet = extractOkResponse(aliceGetRes);
-      const aliceGetHistoryRes = await actor.get_my_user_profile_history();
+      const aliceGetHistoryRes =
+        await driver.actor.get_my_user_profile_history();
       const aliceGetHistory = extractOkResponse(aliceGetHistoryRes);
 
       expect(typeof aliceCreate.id).toBe('string');
@@ -211,7 +214,7 @@ describe('User Profile', () => {
       expect(aliceGetHistory.history[0]).toEqual({
         action: { create: null },
         user: alice.getPrincipal(),
-        date_time: dateToRfc3339(currentDate),
+        date_time: dateToRfc3339(initialDate),
         data: {
           username: aliceCreate.username,
           config: aliceCreate.config,
@@ -230,9 +233,9 @@ describe('User Profile', () => {
 
   describe('update my user profile', () => {
     it('should not allow anonymous principals', async () => {
-      actor.setIdentity(anonymousIdentity);
+      driver.actor.setIdentity(anonymousIdentity);
 
-      const res = await actor.update_my_user_profile({
+      const res = await driver.actor.update_my_user_profile({
         username: ['Alice'],
         config: [],
       });
@@ -246,9 +249,9 @@ describe('User Profile', () => {
 
     it('should not allow unregistered principals', async () => {
       const alice = generateRandomIdentity();
-      actor.setIdentity(alice);
+      driver.actor.setIdentity(alice);
 
-      const res = await actor.update_my_user_profile({
+      const res = await driver.actor.update_my_user_profile({
         username: ['Alice'],
         config: [],
       });
@@ -264,11 +267,11 @@ describe('User Profile', () => {
 
     it('should not allow anonymous users to change their role', async () => {
       const alice = generateRandomIdentity();
-      actor.setIdentity(alice);
+      driver.actor.setIdentity(alice);
 
-      await actor.create_my_user_profile();
+      await driver.actor.create_my_user_profile();
 
-      const res = await actor.update_my_user_profile({
+      const res = await driver.actor.update_my_user_profile({
         username: ['Alice'],
         config: [{ admin: { bio: ['Alice is a good admin...'] } }],
       });
@@ -282,11 +285,11 @@ describe('User Profile', () => {
 
     it('should not allow reviewers to change their role', async () => {
       const alice = generateRandomIdentity();
-      actor.setIdentity(alice);
+      driver.actor.setIdentity(alice);
 
-      await actor.create_my_user_profile();
+      await driver.actor.create_my_user_profile();
 
-      const res = await actor.update_my_user_profile({
+      const res = await driver.actor.update_my_user_profile({
         username: ['Alice'],
         config: [{ admin: { bio: ['Alice is a good admin...'] } }],
       });
@@ -302,30 +305,30 @@ describe('User Profile', () => {
       const alice = generateRandomIdentity();
       const bob = generateRandomIdentity();
 
-      actor.setIdentity(alice);
-      const aliceCreateRes = await actor.create_my_user_profile();
+      driver.actor.setIdentity(alice);
+      const aliceCreateRes = await driver.actor.create_my_user_profile();
       const aliceCreate = extractOkResponse(aliceCreateRes);
 
-      actor.setIdentity(bob);
-      const bobCreateRes = await actor.create_my_user_profile();
+      driver.actor.setIdentity(bob);
+      const bobCreateRes = await driver.actor.create_my_user_profile();
       const bobCreate = extractOkResponse(bobCreateRes);
 
       const aliceUpdateDate = new Date(1988, 1, 15, 0, 0, 0, 0);
-      await pic.setTime(aliceUpdateDate.getTime());
+      await driver.pic.setTime(aliceUpdateDate.getTime());
 
-      actor.setIdentity(controllerIdentity);
+      driver.actor.setIdentity(controllerIdentity);
       const aliceUpdateUsername = 'Alice';
       const aliceUpdateBio = 'Alice is a good admin...';
-      await actor.update_user_profile({
+      await driver.actor.update_user_profile({
         user_id: aliceCreate.id,
         username: [aliceUpdateUsername],
         config: [{ admin: { bio: [aliceUpdateBio] } }],
       });
 
       const bobUpdateDate = new Date(1988, 1, 16, 0, 0, 0, 0);
-      await pic.setTime(bobUpdateDate.getTime());
+      await driver.pic.setTime(bobUpdateDate.getTime());
 
-      actor.setIdentity(controllerIdentity);
+      driver.actor.setIdentity(controllerIdentity);
       const bobUpdateUsername = 'Bob';
       const bobUpdateBio = 'Bob is a good reviewer...';
       const bobUpdateNeuronId = 7862326246190316138n;
@@ -337,7 +340,7 @@ describe('User Profile', () => {
           username: 'bob',
         },
       ];
-      await actor.update_user_profile({
+      await driver.actor.update_user_profile({
         user_id: bobCreate.id,
         username: [bobUpdateUsername],
         config: [
@@ -353,20 +356,20 @@ describe('User Profile', () => {
       });
 
       const aliceFinalUpdateDate = new Date(1988, 1, 17, 0, 0, 0, 0);
-      await pic.setTime(aliceFinalUpdateDate.getTime());
+      await driver.pic.setTime(aliceFinalUpdateDate.getTime());
 
-      actor.setIdentity(alice);
+      driver.actor.setIdentity(alice);
       const aliceFinalUpdateUsername = 'InfiniteAlice';
       const aliceFinalUpdateBio = 'Alice is an infinitely good admin...';
-      await actor.update_my_user_profile({
+      await driver.actor.update_my_user_profile({
         username: [aliceFinalUpdateUsername],
         config: [{ admin: { bio: [aliceFinalUpdateBio] } }],
       });
 
       const bobFinalUpdateDate = new Date(1988, 1, 18, 0, 0, 0, 0);
-      await pic.setTime(bobFinalUpdateDate.getTime());
+      await driver.pic.setTime(bobFinalUpdateDate.getTime());
 
-      actor.setIdentity(bob);
+      driver.actor.setIdentity(bob);
       const bobFinalUpdateUsername = 'InfiniteBob';
       const bobFinalUpdateBio = 'Bob is an infinitely good reviewer...';
       const bobFinalUpdateWalletAddress =
@@ -377,7 +380,7 @@ describe('User Profile', () => {
           username: 'infinitebob',
         },
       ];
-      await actor.update_my_user_profile({
+      await driver.actor.update_my_user_profile({
         username: [bobFinalUpdateUsername],
         config: [
           {
@@ -391,32 +394,34 @@ describe('User Profile', () => {
       });
 
       const adminFinalUpdateDate = new Date(1988, 1, 19, 0, 0, 0, 0);
-      await pic.setTime(adminFinalUpdateDate.getTime());
+      await driver.pic.setTime(adminFinalUpdateDate.getTime());
 
-      actor.setIdentity(controllerIdentity);
+      driver.actor.setIdentity(controllerIdentity);
       const adminFinalUpdateUsername = 'InfiniteAdmin';
       const adminFinalUpdateBio = 'Admin is an infinitely good admin...';
-      await actor.update_my_user_profile({
+      await driver.actor.update_my_user_profile({
         username: [adminFinalUpdateUsername],
         config: [{ admin: { bio: [adminFinalUpdateBio] } }],
       });
 
-      actor.setIdentity(alice);
-      const aliceGetRes = await actor.get_my_user_profile();
+      driver.actor.setIdentity(alice);
+      const aliceGetRes = await driver.actor.get_my_user_profile();
       const aliceGet = extractOkResponse(aliceGetRes);
-      const aliceGetHistoryRes = await actor.get_my_user_profile_history();
+      const aliceGetHistoryRes =
+        await driver.actor.get_my_user_profile_history();
       const aliceGetHistory = extractOkResponse(aliceGetHistoryRes);
 
-      actor.setIdentity(bob);
-      const bobGetRes = await actor.get_my_user_profile();
+      driver.actor.setIdentity(bob);
+      const bobGetRes = await driver.actor.get_my_user_profile();
       const bobGet = extractOkResponse(bobGetRes);
-      const bobGetHistoryRes = await actor.get_my_user_profile_history();
+      const bobGetHistoryRes = await driver.actor.get_my_user_profile_history();
       const bobGetHistory = extractOkResponse(bobGetHistoryRes);
 
-      actor.setIdentity(controllerIdentity);
-      const adminGetRes = await actor.get_my_user_profile();
+      driver.actor.setIdentity(controllerIdentity);
+      const adminGetRes = await driver.actor.get_my_user_profile();
       const adminGet = extractOkResponse(adminGetRes);
-      const adminGetHistoryRes = await actor.get_my_user_profile_history();
+      const adminGetHistoryRes =
+        await driver.actor.get_my_user_profile_history();
       const adminGetHistory = extractOkResponse(adminGetHistoryRes);
 
       expect(aliceGet).toEqual({
@@ -429,7 +434,7 @@ describe('User Profile', () => {
         {
           action: { create: null },
           user: alice.getPrincipal(),
-          date_time: dateToRfc3339(currentDate),
+          date_time: dateToRfc3339(initialDate),
           data: {
             username: aliceCreate.username,
             config: aliceCreate.config,
@@ -472,7 +477,7 @@ describe('User Profile', () => {
         {
           action: { create: null },
           user: bob.getPrincipal(),
-          date_time: dateToRfc3339(currentDate),
+          date_time: dateToRfc3339(initialDate),
           data: {
             username: bobCreate.username,
             config: bobCreate.config,
@@ -522,7 +527,7 @@ describe('User Profile', () => {
         {
           action: { create: null },
           user: controllerIdentity.getPrincipal(),
-          date_time: dateToRfc3339(currentDate),
+          date_time: dateToRfc3339(initialDate),
           data: {
             username: 'Admin',
             config: {
@@ -549,9 +554,9 @@ describe('User Profile', () => {
     const unknown_user_id = 'acb10f05-8b6c-42ab-b760-c7da49353305';
 
     it('should not allow anonymous principals', async () => {
-      actor.setIdentity(anonymousIdentity);
+      driver.actor.setIdentity(anonymousIdentity);
 
-      const res = await actor.update_user_profile({
+      const res = await driver.actor.update_user_profile({
         user_id: unknown_user_id,
         username: ['Alice'],
         config: [],
@@ -566,9 +571,9 @@ describe('User Profile', () => {
 
     it('should not allow unregistered principals', async () => {
       const alice = generateRandomIdentity();
-      actor.setIdentity(alice);
+      driver.actor.setIdentity(alice);
 
-      const res = await actor.update_user_profile({
+      const res = await driver.actor.update_user_profile({
         user_id: unknown_user_id,
         username: ['Alice'],
         config: [],
@@ -585,11 +590,11 @@ describe('User Profile', () => {
 
     it('should not allow non-admin principals', async () => {
       const alice = generateRandomIdentity();
-      actor.setIdentity(alice);
+      driver.actor.setIdentity(alice);
 
-      await actor.create_my_user_profile();
+      await driver.actor.create_my_user_profile();
 
-      const res = await actor.update_user_profile({
+      const res = await driver.actor.update_user_profile({
         user_id: unknown_user_id,
         username: ['Alice'],
         config: [],
@@ -605,9 +610,9 @@ describe('User Profile', () => {
     });
 
     it('should not allow updating a profile that does not exist', async () => {
-      actor.setIdentity(controllerIdentity);
+      driver.actor.setIdentity(controllerIdentity);
 
-      const res = await actor.update_user_profile({
+      const res = await driver.actor.update_user_profile({
         user_id: unknown_user_id,
         username: ['Alice'],
         config: [],
@@ -623,31 +628,32 @@ describe('User Profile', () => {
     it('should allow admins to promote other users', async () => {
       const alice = generateRandomIdentity();
       const bob = generateRandomIdentity();
+      const currentDate = new Date(await driver.pic.getTime());
 
-      actor.setIdentity(alice);
-      const aliceCreateRes = await actor.create_my_user_profile();
+      driver.actor.setIdentity(alice);
+      const aliceCreateRes = await driver.actor.create_my_user_profile();
       const aliceCreate = extractOkResponse(aliceCreateRes);
 
-      actor.setIdentity(bob);
-      const bobCreateRes = await actor.create_my_user_profile();
+      driver.actor.setIdentity(bob);
+      const bobCreateRes = await driver.actor.create_my_user_profile();
       const bobCreate = extractOkResponse(bobCreateRes);
 
-      const aliceUpdateDate = new Date(1988, 1, 15, 0, 0, 0, 0);
-      await pic.setTime(aliceUpdateDate.getTime());
+      const aliceUpdateDate = new Date(1988, 1, 20, 0, 0, 0, 0);
+      await driver.pic.setTime(aliceUpdateDate.getTime());
 
-      actor.setIdentity(controllerIdentity);
+      driver.actor.setIdentity(controllerIdentity);
       const aliceUpdateUsername = 'Alice';
       const aliceUpdateBio = 'Alice is a good admin...';
-      await actor.update_user_profile({
+      await driver.actor.update_user_profile({
         user_id: aliceCreate.id,
         username: [aliceUpdateUsername],
         config: [{ admin: { bio: [aliceUpdateBio] } }],
       });
 
-      const bobUpdateDate = new Date(1988, 1, 16, 0, 0, 0, 0);
-      await pic.setTime(bobUpdateDate.getTime());
+      const bobUpdateDate = new Date(1988, 1, 21, 0, 0, 0, 0);
+      await driver.pic.setTime(bobUpdateDate.getTime());
 
-      actor.setIdentity(alice);
+      driver.actor.setIdentity(alice);
       const bobUpdateUsername = 'Bob';
       const bobUpdateBio = 'Bob is a good reviewer...';
       const bobUpdateNeuronId = 7862326246190316138n;
@@ -659,7 +665,7 @@ describe('User Profile', () => {
           username: 'bob',
         },
       ];
-      await actor.update_user_profile({
+      await driver.actor.update_user_profile({
         user_id: bobCreate.id,
         username: [bobUpdateUsername],
         config: [
@@ -674,16 +680,17 @@ describe('User Profile', () => {
         ],
       });
 
-      actor.setIdentity(alice);
-      const aliceGetRes = await actor.get_my_user_profile();
+      driver.actor.setIdentity(alice);
+      const aliceGetRes = await driver.actor.get_my_user_profile();
       const aliceGet = extractOkResponse(aliceGetRes);
-      const aliceGetHistoryRes = await actor.get_my_user_profile_history();
+      const aliceGetHistoryRes =
+        await driver.actor.get_my_user_profile_history();
       const aliceGetHistory = extractOkResponse(aliceGetHistoryRes);
 
-      actor.setIdentity(bob);
-      const bobGetRes = await actor.get_my_user_profile();
+      driver.actor.setIdentity(bob);
+      const bobGetRes = await driver.actor.get_my_user_profile();
       const bobGet = extractOkResponse(bobGetRes);
-      const bobGetHistoryRes = await actor.get_my_user_profile_history();
+      const bobGetHistoryRes = await driver.actor.get_my_user_profile_history();
       const bobGetHistory = extractOkResponse(bobGetHistoryRes);
 
       expect(aliceGet).toEqual({

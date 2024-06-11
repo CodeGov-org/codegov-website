@@ -9,7 +9,7 @@ export interface Proposal {
   votingPeriodEnd: Date;
   proposedAt: Date;
   proposedBy: bigint;
-  reviewCompletedAt?: Date;
+  reviewCompletedAt: Date | null;
   decidedAt?: Date;
   summary: string;
   proposalLinks: ProposalVotingLink[];

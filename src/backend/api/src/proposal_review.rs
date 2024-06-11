@@ -17,9 +17,9 @@ pub struct ProposalReview {
     pub created_at: String,
     pub last_updated_at: Option<String>,
     pub status: ProposalReviewStatus,
-    pub summary: String,
-    pub review_duration_mins: u16,
-    pub build_reproduced: bool,
+    pub summary: Option<String>,
+    pub review_duration_mins: Option<u16>,
+    pub build_reproduced: Option<bool>,
     pub reproduced_build_image_id: Option<String>,
     pub proposal_review_commits: Vec<ProposalReviewCommitWithId>,
 }
@@ -68,3 +68,10 @@ pub struct GetProposalReviewRequest {
 }
 
 pub type GetProposalReviewResponse = ProposalReviewWithId;
+
+#[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
+pub struct GetMyProposalReviewRequest {
+    pub proposal_id: String,
+}
+
+pub type GetMyProposalReviewResponse = ProposalReviewWithId;

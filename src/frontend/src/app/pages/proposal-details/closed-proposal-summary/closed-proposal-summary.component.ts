@@ -5,6 +5,7 @@ import {
   OnInit,
   computed,
   input,
+  signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -14,11 +15,8 @@ import {
   DashCircleIconComponent,
   CheckCircleIconComponent,
 } from '@cg/angular-ui';
-import {
-  Proposal,
-  ProposalCommitReviewSummary,
-  ReviewService,
-} from '~core/state';
+import { ProposalCommitReviewSummary, ProposalReviewVote } from '~core/api';
+import { Proposal, ReviewService } from '~core/state';
 import {
   KeyColComponent,
   KeyValueGridComponent,
@@ -105,48 +103,55 @@ import {
       <cg-card class="summary">
         <div slot="cardContent">
           <h3 class="h5">
-            CodeGov voted to
-            <span
-              [ngClass]="{
-                'summary__vote--adopt': proposal().codeGovVote === 'ADOPT',
-                'summary__vote--reject': proposal().codeGovVote === 'REJECT'
-              }"
-            >
-              {{ proposal().codeGovVote }}
-            </span>
-            this proposal
+            @if (proposal().codeGovVote === 'NO VOTE') {
+              No CodeGov vote cast
+            } @else {
+              CodeGov voted to
+              <span
+                [ngClass]="{
+                  'summary__vote--adopt': proposal().codeGovVote === 'ADOPT',
+                  'summary__vote--reject': proposal().codeGovVote === 'REJECT'
+                }"
+              >
+                {{ proposal().codeGovVote }}
+              </span>
+              this proposal
+            }
           </h3>
 
-          <div class="summary__vote">
-            <div class="summary__vote-position">
-              <cg-check-circle-icon class="adopt-icon"></cg-check-circle-icon>
+          @if (reviewList.length !== 0) {
+            <div class="summary__vote">
+              <div class="summary__vote-position">
+                <cg-check-circle-icon class="adopt-icon"></cg-check-circle-icon>
 
+                <p>
+                  {{ proposalStats()?.adopt }} reviewer(s) voted to
+                  <span class="summary__vote--adopt">adopt</span>
+                  this proposal
+                </p>
+              </div>
+              <div class="summary__vote-position">
+                <cg-dash-circle-icon class="reject-icon"></cg-dash-circle-icon>
+
+                <p>
+                  {{ proposalStats()?.reject }} reviewer(s) voted to
+                  <span class="summary__vote--reject">reject</span>
+                  this proposal
+                </p>
+              </div>
+            </div>
+
+            <div class="summary__verification">
               <p>
-                {{ proposalStats()?.adopt }} reviewer(s) voted to
-                <span class="summary__vote--adopt">adopt</span>
-                this proposal
+                {{ commitList().length }} commits reviewed by
+                {{ reviewList.length }} reviewers
+              </p>
+              <p>
+                Build verified by
+                {{ proposalStats()?.buildReproduced }} reviewers
               </p>
             </div>
-            <div class="summary__vote-position">
-              <cg-dash-circle-icon class="reject-icon"></cg-dash-circle-icon>
-
-              <p>
-                {{ proposalStats()?.reject }} reviewer(s) voted to
-                <span class="summary__vote--reject">reject</span>
-                this proposal
-              </p>
-            </div>
-          </div>
-
-          <div class="summary__verification">
-            <p>
-              {{ commitList().length }} commits reviewed by
-              {{ reviewList.length }} reviewers
-            </p>
-            <p>
-              Build verified by {{ proposalStats()?.buildReproduced }} reviewers
-            </p>
-          </div>
+          }
         </div>
       </cg-card>
 
@@ -171,18 +176,20 @@ import {
               <app-value-col
                 [attr.labelledby]="'vote-id-' + i"
                 [ngClass]="{
-                  'summary__vote--adopt': review.reviewerVote === 'ADOPT',
-                  'summary__vote--reject': review.reviewerVote === 'REJECT'
+                  'summary__vote--adopt':
+                    review.vote === ProposalReviewVote().Adopt,
+                  'summary__vote--reject':
+                    review.vote === ProposalReviewVote().Reject
                 }"
               >
-                {{ review.reviewerVote }}
+                {{ review.vote }}
               </app-value-col>
 
               <app-key-col [id]="'reviewed-commits-id-' + i">
                 Reviewed commits
               </app-key-col>
               <app-value-col [attr.labelledby]="'reviewed-commits-' + i">
-                {{ review.reviewCommits.length }} out of
+                {{ review.commits.length }} out of
                 {{ commitList().length }}
               </app-value-col>
 
@@ -195,6 +202,12 @@ import {
                 </a>
               </app-value-col>
             </app-key-value-grid>
+          </div>
+        </cg-card>
+      } @empty {
+        <cg-card class="review">
+          <div slot="cardContent">
+            <p>No reviews submitted</p>
           </div>
         </cg-card>
       }
@@ -254,11 +267,18 @@ import {
             </div>
           </div>
         </cg-card>
+      } @empty {
+        <cg-card class="commit">
+          <div slot="cardContent">
+            <p>No commits reviewed</p>
+          </div>
+        </cg-card>
       }
     }
   `,
 })
 export class ClosedProposalSummaryComponent implements OnInit {
+  public readonly ProposalReviewVote = signal(ProposalReviewVote);
   public readonly proposal = input.required<Proposal>();
 
   public readonly reviewList = toSignal(this.reviewService.proposalReviewList$);
@@ -268,9 +288,13 @@ export class ClosedProposalSummaryComponent implements OnInit {
       this.reviewList()?.reduce(
         (accum, review) => ({
           adopt:
-            review.reviewerVote === 'ADOPT' ? accum.adopt + 1 : accum.adopt,
+            review.vote === ProposalReviewVote.Adopt
+              ? accum.adopt + 1
+              : accum.adopt,
           reject:
-            review.reviewerVote === 'REJECT' ? accum.reject + 1 : accum.reject,
+            review.vote === ProposalReviewVote.Reject
+              ? accum.reject + 1
+              : accum.reject,
           buildReproduced: review.buildReproduced
             ? accum.buildReproduced + 1
             : accum.buildReproduced,
@@ -283,28 +307,39 @@ export class ClosedProposalSummaryComponent implements OnInit {
     const map: Map<string, ProposalCommitReviewSummary> = new Map();
 
     this.reviewList()?.forEach(review => {
-      for (const commit of review.reviewCommits) {
-        const existingCommit = map.get(commit.id) ?? {
-          proposalId: this.proposal().id,
-          commitId: commit.id,
-          commitSha: commit.commitSha,
-          totalReviewers: 0,
-          reviewedCount: 0,
-          matchesDescriptionCount: 0,
-          highlights: [],
-        };
-        if (commit.highlights)
-          existingCommit.highlights.push({
-            reviewerId: review.reviewerId,
-            text: commit.highlights,
-          });
-        existingCommit.totalReviewers++;
-        existingCommit.reviewedCount += commit.reviewed ? 1 : 0;
-        existingCommit.matchesDescriptionCount += commit.matchesDescription
-          ? 1
-          : 0;
+      for (const commit of review.commits) {
+        const existingCommit =
+          map.get(commit.id ?? commit.listId) ??
+          ({
+            proposalId: this.proposal().id,
+            commitId: commit.id ?? commit.listId,
+            commitSha: commit.commitSha,
+            totalReviewers: 0,
+            reviewedCount: 0,
+            matchesDescriptionCount: 0,
+            highlights: [],
+          } satisfies ProposalCommitReviewSummary);
 
-        map.set(commit.id, existingCommit);
+        if (commit.details.reviewed) {
+          commit.details.highlights.forEach(highlight => {
+            existingCommit.highlights.push({
+              reviewerId: review.userId,
+              text: highlight,
+            });
+          });
+        }
+
+        existingCommit.totalReviewers++;
+
+        if (commit.details.reviewed) {
+          existingCommit.reviewedCount++;
+
+          if (commit.details.matchesDescription) {
+            existingCommit.matchesDescriptionCount++;
+          }
+        }
+
+        map.set(commit.id ?? commit.listId, existingCommit);
       }
     });
     return Array.from(map.values());

@@ -3,7 +3,7 @@ import { BehaviorSubject, map, switchMap } from 'rxjs';
 
 import { ListProposalsResponse } from '@cg/backend';
 import { BackendActorService } from '~core/services';
-import { extractOkResponse, isNil, optional } from '~core/utils';
+import { extractOkResponse, isNil, toCandidOpt } from '~core/utils';
 import { mapProposalListResponse } from './proposal.mapper';
 import { Proposal, ProposalState } from './proposal.model';
 
@@ -65,7 +65,7 @@ export class ProposalService {
     }
 
     const getResponse = await this.actorService.list_proposals({
-      state: optional({ in_progress: null }),
+      state: toCandidOpt({ in_progress: null }),
     });
     this.currentProposalListSubject.next(this.getProposalList(getResponse));
     this.openProposalList = this.currentProposalListSubject.getValue();
@@ -78,7 +78,7 @@ export class ProposalService {
       return;
     }
     const getResponse = await this.actorService.list_proposals({
-      state: optional({ completed: null }),
+      state: toCandidOpt({ completed: null }),
     });
     this.currentProposalListSubject.next(this.getProposalList(getResponse));
     this.closedProposalList = this.currentProposalListSubject.getValue();
