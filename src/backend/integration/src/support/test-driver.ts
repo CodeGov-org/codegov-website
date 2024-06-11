@@ -117,6 +117,12 @@ export class TestDriver {
     await this.pic.tearDown();
   }
 
+  public async advanceTime(millis: number): Promise<void> {
+    await this.pic.advanceTime(millis);
+    // make sure eventual timers run
+    await this.pic.tick(2);
+  }
+
   private createActor(): Actor<BackendService> {
     return this.pic.createActor(idlFactory, this.canisterId);
   }
