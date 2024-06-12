@@ -94,7 +94,7 @@ describe('Proposal', () => {
       }
     });
 
-    it('should not allow non admin users to sync proposals', async () => {
+    it('should not allow non admins to sync proposals', async () => {
       const notAuthenticatedIdentity = new AnonymousIdentity();
       driver.actor.setIdentity(notAuthenticatedIdentity);
       const resUnauthenticated = await driver.actor.sync_proposals();
