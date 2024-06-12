@@ -58,6 +58,11 @@ export async function createProposal(
 }
 
 /**
+ * The review period is **48 hours** in milliseconds.
+ */
+export const REVIEW_PERIOD_MS = 48 * 60 * 60 * 1000;
+
+/**
  * Advances PIC's time in order to make the proposal complete.
  */
 export async function completeProposal(
@@ -66,7 +71,7 @@ export async function completeProposal(
   proposalId: string,
 ) {
   // advance time to make the proposal expire
-  await pic.advanceTime(48 * 60 * 60 * 1000); // 48 hours
+  await pic.advanceTime(REVIEW_PERIOD_MS);
   // ensure timers run
   await pic.tick(2);
 
