@@ -16,12 +16,23 @@ import {
 } from '../support';
 import { AnonymousIdentity } from '@dfinity/agent';
 import { generateRandomIdentity } from '@hadronous/pic';
+import { ProposalResponse, type ListProposalsResponse } from '@cg/backend';
 
-const PROPOSAL_SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const MS_IN_MINUTE = 60 * 1000;
+
+const PROPOSAL_SYNC_INTERVAL_MS = 5 * MS_IN_MINUTE; // 5 minutes
 
 const advanceTimeToSyncProposals = async (driver: TestDriver) => {
   await driver.advanceTime(PROPOSAL_SYNC_INTERVAL_MS + 1);
 };
+
+/**
+ * The state loaded into PIC already has this number of proposals in it.
+ *
+ * They are old, so they'll be marked as completed as soon as they're synced
+ * by the backend canister cron job.
+ */
+const RVM_PROPOSALS_STATE_COUNT = 1;
 
 const createRvmProposalsBatch = async (
   governance: Governance,
@@ -47,7 +58,8 @@ const createRvmProposalsBatch = async (
 describe('Proposal', () => {
   let driver: TestDriver;
   let governance: Governance;
-  const rvmProposalsCount = 10;
+  const newRvmProposalsCount = 10;
+  const totalRvmProposalsCount = 10 + RVM_PROPOSALS_STATE_COUNT;
   let rvmProposalIds: bigint[] = [];
 
   beforeAll(async () => {
@@ -57,7 +69,7 @@ describe('Proposal', () => {
     rvmProposalIds = await createRvmProposalsBatch(
       governance,
       neuronId,
-      rvmProposalsCount,
+      newRvmProposalsCount,
     );
   });
 
@@ -69,13 +81,28 @@ describe('Proposal', () => {
     await driver.tearDown();
   });
 
+  const expectListProposalsResult = (
+    res: ListProposalsResponse,
+    expectedCount?: number,
+  ) => {
+    const { proposals } = extractOkResponse(res);
+    expect(proposals.length).toEqual(expectedCount ?? totalRvmProposalsCount);
+    for (const rvmProposalId of rvmProposalIds) {
+      expect(
+        proposals.findIndex(
+          p => p.proposal.nervous_system.network.id === rvmProposalId,
+        ),
+      ).toBeGreaterThan(-1);
+    }
+  };
+
   describe('sync proposals', () => {
     it('should sync proposals on intervals', async () => {
       const resEmpty = await driver.actor.list_proposals({
         state: [],
       });
       const { proposals: proposalsEmpty } = extractOkResponse(resEmpty);
-      expect(proposalsEmpty.length).toBe(0);
+      expect(proposalsEmpty.length).toEqual(0);
 
       // fire the intervals
       await advanceTimeToSyncProposals(driver);
@@ -83,15 +110,7 @@ describe('Proposal', () => {
       const res = await driver.actor.list_proposals({
         state: [],
       });
-      const { proposals } = extractOkResponse(res);
-      expect(proposals.length).toBe(rvmProposalsCount);
-      for (const rvmProposalId of rvmProposalIds) {
-        expect(
-          proposals.findIndex(
-            p => p.proposal.nervous_system.network.id === rvmProposalId,
-          ),
-        ).toBeGreaterThan(-1);
-      }
+      expectListProposalsResult(res);
     });
 
     it('should not allow non admins to sync proposals', async () => {
@@ -139,7 +158,7 @@ describe('Proposal', () => {
         state: [],
       });
       const { proposals: proposalsEmpty } = extractOkResponse(resEmpty);
-      expect(proposalsEmpty.length).toBe(0);
+      expect(proposalsEmpty.length).toEqual(0);
 
       driver.actor.setIdentity(adminIdentity);
       const resSync = await driver.actor.sync_proposals();
@@ -148,15 +167,7 @@ describe('Proposal', () => {
       const res = await driver.actor.list_proposals({
         state: [],
       });
-      const { proposals } = extractOkResponse(res);
-      expect(proposals.length).toBe(rvmProposalsCount);
-      for (const rvmProposalId of rvmProposalIds) {
-        expect(
-          proposals.findIndex(
-            p => p.proposal.nervous_system.network.id === rvmProposalId,
-          ),
-        ).toBeGreaterThan(-1);
-      }
+      expectListProposalsResult(res);
     });
   });
 
@@ -167,9 +178,7 @@ describe('Proposal', () => {
       const resInProgress = await driver.actor.list_proposals({
         state: [{ in_progress: null }],
       });
-      const { proposals: proposalsInProgress } =
-        extractOkResponse(resInProgress);
-      expect(proposalsInProgress.length).toBe(rvmProposalsCount);
+      expectListProposalsResult(resInProgress, newRvmProposalsCount);
 
       // advance time, but do not reach the review deadline
       await driver.advanceTime(REVIEW_PERIOD_MS - driver.advancedTimeMs - 1);
@@ -178,14 +187,12 @@ describe('Proposal', () => {
         state: [{ completed: null }],
       });
       const { proposals: proposalsCompleted } = extractOkResponse(resCompleted);
-      expect(proposalsCompleted.length).toBe(0);
+      expect(proposalsCompleted.length).toEqual(RVM_PROPOSALS_STATE_COUNT);
 
       const resInProgress2 = await driver.actor.list_proposals({
         state: [{ in_progress: null }],
       });
-      const { proposals: proposalsInProgress2 } =
-        extractOkResponse(resInProgress2);
-      expect(proposalsInProgress2.length).toBe(rvmProposalsCount);
+      expectListProposalsResult(resInProgress2, newRvmProposalsCount);
     });
 
     it('should complete proposals after review deadline', async () => {
@@ -196,7 +203,7 @@ describe('Proposal', () => {
       });
       const { proposals: proposalsInProgress } =
         extractOkResponse(resInProgress);
-      expect(proposalsInProgress.length).toBe(0);
+      expect(proposalsInProgress.length).toEqual(0);
 
       await advanceTimeToSyncProposals(driver);
       // make proposals complete
@@ -207,15 +214,7 @@ describe('Proposal', () => {
       const resCompleted = await driver.actor.list_proposals({
         state: [{ completed: null }],
       });
-      const { proposals: proposalsCompleted } = extractOkResponse(resCompleted);
-      expect(proposalsCompleted.length).toBe(rvmProposalsCount);
-      for (const rvmProposalId of rvmProposalIds) {
-        expect(
-          proposalsCompleted.findIndex(
-            p => p.proposal.nervous_system.network.id === rvmProposalId,
-          ),
-        ).toBeGreaterThan(-1);
-      }
+      expectListProposalsResult(resCompleted);
 
       const resInProgressAfterComplete = await driver.actor.list_proposals({
         state: [{ in_progress: null }],
@@ -223,7 +222,120 @@ describe('Proposal', () => {
       const { proposals: proposalsInProgressAfterComplete } = extractOkResponse(
         resInProgressAfterComplete,
       );
-      expect(proposalsInProgressAfterComplete.length).toBe(0);
+      expect(proposalsInProgressAfterComplete.length).toEqual(0);
+    });
+  });
+
+  describe('list proposals', () => {
+    const expectProposalsSortedByTimestampDesc = (
+      proposals: ProposalResponse[],
+    ) => {
+      const lastFetchedProposalsTimestamps = proposals.map(p =>
+        new Date(p.proposal.proposed_at).getTime(),
+      );
+      for (let i = 1; i < lastFetchedProposalsTimestamps.length; i++) {
+        expect(lastFetchedProposalsTimestamps[i - 1]).toBeGreaterThan(
+          lastFetchedProposalsTimestamps[i],
+        );
+      }
+    };
+
+    const createProposalsEveryHour = async (
+      proposalsCount: number,
+    ): Promise<bigint[]> => {
+      const neuronId = await governance.createNeuron(nnsProposerIdentity);
+      const ids: bigint[] = [];
+      for (let i = 0; i < proposalsCount; i++) {
+        await driver.advanceTime(60 * MS_IN_MINUTE); // 1 hour
+
+        const proposalId = await governance.createRvmProposal(
+          nnsProposerIdentity,
+          {
+            neuronId,
+            title: `Test Proposal Title Last ${i}`,
+            summary: `Test Proposal Summary Last ${i}`,
+            replicaVersion: 'd19fa446ab35780b2c6d8b82ea32d808cca558d5',
+          },
+        );
+        ids.push(proposalId);
+      }
+
+      return ids;
+    };
+
+    it('should allow anyone to list proposals', async () => {
+      await advanceTimeToSyncProposals(driver);
+
+      // it.each doesn't seem to work here, using a for loop instead
+      const identities = [
+        new AnonymousIdentity(),
+        generateRandomIdentity(),
+        (await driver.users.createAnonymous())[0],
+        (await driver.users.createReviewer())[0],
+        (await driver.users.createAdmin())[0],
+      ];
+
+      for (const identity of identities) {
+        driver.actor.setIdentity(identity);
+        const res = await driver.actor.list_proposals({ state: [] });
+        expectListProposalsResult(res);
+      }
+    });
+
+    it('should list proposals in reverse chronological order', async () => {
+      await advanceTimeToSyncProposals(driver);
+
+      // only these proposals will be in progress
+      const lastRvmProposalIds = await createProposalsEveryHour(2);
+      lastRvmProposalIds.reverse();
+
+      await advanceTimeToSyncProposals(driver);
+
+      const res = await driver.actor.list_proposals({ state: [] });
+      expectListProposalsResult(
+        res,
+        totalRvmProposalsCount + lastRvmProposalIds.length,
+      );
+      const { proposals } = extractOkResponse(res);
+      expectProposalsSortedByTimestampDesc(
+        proposals.filter(p =>
+          lastRvmProposalIds.includes(p.proposal.nervous_system.network.id),
+        ),
+      );
+    });
+
+    it('should list proposals by state in reverse chronological order', async () => {
+      await advanceTimeToSyncProposals(driver);
+
+      // only these proposals will be in progress
+      const lastRvmProposalIds = await createProposalsEveryHour(2);
+      lastRvmProposalIds.reverse();
+
+      await advanceTimeToSyncProposals(driver);
+
+      const resInProgress = await driver.actor.list_proposals({
+        state: [{ in_progress: null }],
+      });
+      const { proposals: proposalsInProgress } =
+        extractOkResponse(resInProgress);
+      expectProposalsSortedByTimestampDesc(
+        proposalsInProgress.filter(p =>
+          lastRvmProposalIds.includes(p.proposal.nervous_system.network.id),
+        ),
+      );
+
+      // make proposals complete
+      await driver.advanceTime(REVIEW_PERIOD_MS);
+
+      const resCompleted = await driver.actor.list_proposals({
+        state: [{ completed: null }],
+      });
+      const { proposals: proposalsCompleted } = extractOkResponse(resCompleted);
+      expectProposalsSortedByTimestampDesc(
+        proposalsCompleted.filter(p =>
+          lastRvmProposalIds.includes(p.proposal.nervous_system.network.id),
+        ),
+      );
     });
   });
 });
