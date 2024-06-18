@@ -286,7 +286,7 @@ describe('Proposal', () => {
       await advanceTimeToSyncProposals(driver);
 
       // only these proposals will be in progress
-      const lastRvmProposalIds = await createProposalsEveryHour(2);
+      const lastRvmProposalIds = await createProposalsEveryHour(5);
       lastRvmProposalIds.reverse();
 
       await advanceTimeToSyncProposals(driver);
@@ -308,7 +308,7 @@ describe('Proposal', () => {
       await advanceTimeToSyncProposals(driver);
 
       // only these proposals will be in progress
-      const lastRvmProposalIds = await createProposalsEveryHour(2);
+      const lastRvmProposalIds = await createProposalsEveryHour(5);
       lastRvmProposalIds.reverse();
 
       await advanceTimeToSyncProposals(driver);
