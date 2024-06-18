@@ -8,9 +8,7 @@ use crate::{
 use backend_api::{ApiError, GetProposalResponse, ListProposalsRequest, ListProposalsResponse};
 use candid::Principal;
 use external_canisters::nns::GovernanceCanisterService;
-use ic_nns_governance::pb::v1::{
-    ListProposalInfo, ListProposalInfoResponse, ProposalStatus, Topic,
-};
+use ic_nns_governance::pb::v1::{ListProposalInfo, ListProposalInfoResponse, Topic};
 
 const NNS_GOVERNANCE_CANISTER_ID: &str = "rrkah-fqaaa-aaaaa-aaaaq-cai";
 
@@ -60,6 +58,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
             .proposal_repository
             .get_proposals(proposal_state)?
             .into_iter()
+            .rev()
             .map(|(id, proposal)| map_get_proposal_response(id, proposal))
             .collect();
 
@@ -95,7 +94,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
                     Topic::ApiBoundaryNodeManagement.into(),
                 ],
                 include_all_manage_neuron_proposals: Some(false),
-                include_status: vec![ProposalStatus::Open.into()],
+                include_status: vec![],
             })
             .await
         {
@@ -221,6 +220,7 @@ mod tests {
 
         let expected: Vec<_> = fixtures::nns_proposals_with_ids()
             .into_iter()
+            .rev()
             .map(|(id, proposal)| map_get_proposal_response(id, proposal))
             .collect();
 
