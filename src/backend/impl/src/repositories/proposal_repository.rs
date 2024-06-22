@@ -1,3 +1,5 @@
+use crate::system_api::get_date_time;
+
 use super::{
     init_proposal_timestamp_index, init_proposals_nervous_system_id_index,
     init_proposals_status_timestamp_index,
@@ -26,6 +28,8 @@ pub trait ProposalRepository {
     ) -> Result<Vec<(ProposalId, Proposal)>, ApiError>;
 
     async fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError>;
+
+    fn update_proposal(&self, proposal_id: ProposalId, proposal: Proposal) -> Result<(), ApiError>;
 
     fn complete_pending_proposals(&self, current_time: DateTime) -> Result<(), ApiError>;
 
@@ -92,7 +96,7 @@ impl ProposalRepository for ProposalRepositoryImpl {
     }
 
     fn complete_pending_proposals(&self, current_time: DateTime) -> Result<(), ApiError> {
-        let range = ProposalStatusTimestampRange::new(ReviewPeriodState::InProgress.into())?;
+        let range = ProposalStatusTimestampRange::new(ReviewPeriodState::InProgress)?;
 
         let pending_proposals = STATE.with_borrow_mut(|s| {
             s.proposals_status_timestamp_index
@@ -127,32 +131,16 @@ impl ProposalRepository for ProposalRepositoryImpl {
             )));
         }
 
-        STATE.with_borrow_mut(|s| {
-            let old_key = ProposalStatusTimestampKey::new(
-                ReviewPeriodState::InProgress.into(),
-                proposal.proposed_at()?,
-                proposal_id,
-            )?;
-            let new_key = ProposalStatusTimestampKey::new(
-                ReviewPeriodState::Completed.into(),
-                proposal.proposed_at()?,
-                proposal_id,
-            )?;
+        let current_time = get_date_time()?;
 
-            s.proposals_status_timestamp_index.remove(&old_key);
-            s.proposals_status_timestamp_index
-                .insert(new_key, proposal_id);
-
-            s.proposals.insert(
-                proposal_id,
-                Proposal {
-                    state: ReviewPeriodState::Completed,
-                    ..proposal
-                },
-            );
-
-            Ok(())
-        })
+        self.update_proposal(
+            proposal_id,
+            Proposal {
+                state: ReviewPeriodState::Completed,
+                review_completed_at: Some(DateTime::new(current_time)?),
+                ..proposal
+            },
+        )
     }
 
     async fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError> {
@@ -196,6 +184,50 @@ impl ProposalRepository for ProposalRepositoryImpl {
 
         Ok(proposal_id)
     }
+
+    fn update_proposal(&self, proposal_id: ProposalId, proposal: Proposal) -> Result<(), ApiError> {
+        let existing_proposal = self.get_proposal_by_id(&proposal_id).ok_or_else(|| {
+            ApiError::not_found(&format!(
+                "Proposal with id {} not found",
+                proposal_id.to_string()
+            ))
+        })?;
+
+        if existing_proposal.nervous_system.nervous_system_id()
+            != proposal.nervous_system.nervous_system_id()
+        {
+            return Err(ApiError::conflict(
+                "Updated proposal has a different nervous system id",
+            ));
+        }
+        if existing_proposal.nervous_system.proposal_id() != proposal.nervous_system.proposal_id() {
+            return Err(ApiError::conflict(
+                "Updated proposal has a different nervous system proposal id",
+            ));
+        }
+
+        STATE.with_borrow_mut(|s| {
+            if existing_proposal.state != proposal.state {
+                let old_status_key = ProposalStatusTimestampKey::new(
+                    existing_proposal.state.into(),
+                    existing_proposal.proposed_at()?,
+                    proposal_id,
+                )?;
+                let new_status_key = ProposalStatusTimestampKey::new(
+                    proposal.state.into(),
+                    proposal.proposed_at()?,
+                    proposal_id,
+                )?;
+                s.proposals_status_timestamp_index.remove(&old_status_key);
+                s.proposals_status_timestamp_index
+                    .insert(new_status_key, proposal_id);
+            }
+
+            s.proposals.insert(proposal_id, proposal);
+
+            Ok(())
+        })
+    }
 }
 
 impl ProposalRepositoryImpl {
@@ -231,7 +263,7 @@ mod tests {
     use super::*;
     use crate::{
         fixtures::{self, date_time_a, date_time_b, date_time_c},
-        repositories::ReviewPeriodState,
+        repositories::NervousSystem,
         system_api::get_date_time,
     };
     use chrono::Duration;
@@ -429,5 +461,63 @@ mod tests {
                 )
             },
         ]
+    }
+
+    #[rstest]
+    async fn update_proposal() {
+        STATE.set(ProposalState::default());
+
+        let repository = ProposalRepositoryImpl::default();
+
+        let proposal = fixtures::nns_replica_version_management_proposal(None, None);
+        let updated_proposal = Proposal {
+            state: ReviewPeriodState::Completed,
+            ..proposal.clone()
+        };
+
+        let proposal_id = repository.create_proposal(proposal.clone()).await.unwrap();
+        repository
+            .update_proposal(proposal_id, updated_proposal.clone())
+            .unwrap();
+
+        let result = repository.get_proposal_by_id(&proposal_id).unwrap();
+        assert_eq!(result, updated_proposal);
+        assert_ne!(result, proposal);
+    }
+
+    #[rstest]
+    #[case(proposal_update_nervous_system_proposal_id_change())]
+    async fn update_proposal_with_different_nervous_system_proposal_id(
+        #[case] inputs: (Proposal, Proposal, ApiError),
+    ) {
+        let (proposal, updated_proposal, expected_error) = inputs;
+        STATE.set(ProposalState::default());
+
+        let repository = ProposalRepositoryImpl::default();
+
+        let proposal_id = repository.create_proposal(proposal).await.unwrap();
+        let result = repository
+            .update_proposal(proposal_id, updated_proposal)
+            .unwrap_err();
+        assert_eq!(result, expected_error);
+    }
+
+    #[fixture]
+    fn proposal_update_nervous_system_proposal_id_change() -> (Proposal, Proposal, ApiError) {
+        let proposal = fixtures::nns_replica_version_management_proposal(None, None);
+        (
+            proposal.clone(),
+            Proposal {
+                nervous_system: {
+                    let NervousSystem::Network { proposal_info, .. } = proposal.nervous_system;
+                    NervousSystem::Network {
+                        proposal_id: 1,
+                        proposal_info,
+                    }
+                },
+                ..proposal
+            },
+            ApiError::conflict("Updated proposal has a different nervous system proposal id"),
+        )
     }
 }
