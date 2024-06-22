@@ -4,9 +4,13 @@ use backend_api::GetProposalResponse;
 impl From<NervousSystem> for backend_api::NervousSystem {
     fn from(value: NervousSystem) -> Self {
         match value {
-            NervousSystem::Network { id, proposal_info } => {
-                backend_api::NervousSystem::Network { id, proposal_info }
-            }
+            NervousSystem::Network {
+                proposal_id,
+                proposal_info,
+            } => backend_api::NervousSystem::Network {
+                id: proposal_id,
+                proposal_info,
+            },
         }
     }
 }

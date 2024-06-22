@@ -13,23 +13,52 @@ use std::{borrow::Cow, ops::RangeBounds};
 pub type ProposalId = Uuid;
 pub type NervousSystemProposalId = u64;
 pub type NeuronId = u64;
+/// The internal Nervous System identifier.
+///
+/// Practically, to get the identifier of the nervous system that you need, you can use the [NervousSystem] enum:
+///
+/// ```rust
+/// let nervous_system_id = NervousSystem::NNS_ID;
+/// assert_eq!(nervous_system_id, 0);
+/// ```
+pub type NervousSystemId = u64;
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq)]
 pub enum NervousSystem {
     Network {
-        id: NervousSystemProposalId,
+        proposal_id: NervousSystemProposalId,
         proposal_info: ProposalInfo,
     },
 }
 
 impl NervousSystem {
-    pub fn new_network(id: NervousSystemProposalId, proposal_info: ProposalInfo) -> Self {
-        Self::Network { id, proposal_info }
+    pub const NNS_ID: NervousSystemId = 0;
+    // add new nervous system ids here, for example:
+    // const OPEN_CHAT_ID: NervousSystemId = 1;
+}
+
+impl NervousSystem {
+    pub fn new_network(proposal_id: NervousSystemProposalId, proposal_info: ProposalInfo) -> Self {
+        Self::Network {
+            proposal_id,
+            proposal_info,
+        }
     }
 
-    pub fn id(&self) -> NervousSystemProposalId {
+    pub fn proposal_id(&self) -> NervousSystemProposalId {
         match self {
-            Self::Network { id, .. } => *id,
+            Self::Network { proposal_id, .. } => *proposal_id,
+        }
+    }
+
+    /// Returns the id of the nervous system that the proposal belongs to.
+    ///
+    /// This id is not related with the Nervous Systems at all.
+    /// It's just decided by us and mainly used for grouping the the proposals
+    /// in the [ProposalNervousSystemIdKey] index key.
+    pub fn nervous_system_id(&self) -> NervousSystemId {
+        match self {
+            Self::Network { .. } => Self::NNS_ID,
         }
     }
 }
@@ -174,18 +203,10 @@ pub struct ProposalStatusTimestampRange {
 }
 
 impl ProposalStatusTimestampRange {
-    pub fn new(state: Option<ReviewPeriodState>) -> Result<Self, ApiError> {
+    pub fn new(state: ReviewPeriodState) -> Result<Self, ApiError> {
         Ok(Self {
-            start_bound: ProposalStatusTimestampKey::new(
-                state.map(Into::into).unwrap_or(u8::MIN),
-                DateTime::min(),
-                Uuid::MIN,
-            )?,
-            end_bound: ProposalStatusTimestampKey::new(
-                state.map(Into::into).unwrap_or(u8::MAX),
-                DateTime::max()?,
-                Uuid::MAX,
-            )?,
+            start_bound: ProposalStatusTimestampKey::new(state.into(), DateTime::min(), Uuid::MIN)?,
+            end_bound: ProposalStatusTimestampKey::new(state.into(), DateTime::max()?, Uuid::MAX)?,
         })
     }
 }
@@ -200,6 +221,141 @@ impl RangeBounds<ProposalStatusTimestampKey> for ProposalStatusTimestampRange {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ProposalNervousSystemIdKey(Blob<{ Self::MAX_SIZE as usize }>);
+
+impl ProposalNervousSystemIdKey {
+    const MAX_SIZE: u32 =
+        <((NervousSystemId, NervousSystemProposalId), ProposalId)>::BOUND.max_size();
+
+    pub fn new(
+        nervous_system_id: NervousSystemId,
+        nervous_system_proposal_id: NervousSystemProposalId,
+        proposal_id: ProposalId,
+    ) -> Result<Self, ApiError> {
+        Ok(Self(
+            Blob::try_from(
+                ((nervous_system_id, nervous_system_proposal_id), proposal_id)
+                    .to_bytes()
+                    .as_ref(),
+            )
+            .map_err(|_| {
+                ApiError::internal(&format!(
+                    "Failed to convert nervous system id {:?}, nervous system proposal id {:?} and proposal id {:?} to bytes.",
+                    nervous_system_id, nervous_system_proposal_id, proposal_id
+                ))
+            })?,
+        ))
+    }
+}
+
+impl Storable for ProposalNervousSystemIdKey {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        self.0.to_bytes()
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Self(Blob::from_bytes(bytes))
+    }
+
+    const BOUND: Bound = Bound::Bounded {
+        max_size: Self::MAX_SIZE,
+        is_fixed_size: true,
+    };
+}
+
+pub struct ProposalNervousSystemIdRange {
+    start_bound: ProposalNervousSystemIdKey,
+    end_bound: ProposalNervousSystemIdKey,
+}
+
+impl ProposalNervousSystemIdRange {
+    pub fn new(
+        nervous_system_id: NervousSystemId,
+        nervous_system_proposal_id: NervousSystemProposalId,
+    ) -> Result<Self, ApiError> {
+        Ok(Self {
+            start_bound: ProposalNervousSystemIdKey::new(
+                nervous_system_id,
+                nervous_system_proposal_id,
+                Uuid::MIN,
+            )?,
+            end_bound: ProposalNervousSystemIdKey::new(
+                nervous_system_id,
+                nervous_system_proposal_id,
+                Uuid::MAX,
+            )?,
+        })
+    }
+}
+
+impl RangeBounds<ProposalNervousSystemIdKey> for ProposalNervousSystemIdRange {
+    fn start_bound(&self) -> std::ops::Bound<&ProposalNervousSystemIdKey> {
+        std::ops::Bound::Included(&self.start_bound)
+    }
+
+    fn end_bound(&self) -> std::ops::Bound<&ProposalNervousSystemIdKey> {
+        std::ops::Bound::Included(&self.end_bound)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ProposalTimestampKey(Blob<{ Self::MAX_SIZE as usize }>);
+
+impl ProposalTimestampKey {
+    const MAX_SIZE: u32 = <(DateTime, ProposalId)>::BOUND.max_size();
+
+    pub fn new(date_time: DateTime, proposal_id: ProposalId) -> Result<Self, ApiError> {
+        Ok(Self(
+            Blob::try_from((date_time, proposal_id).to_bytes().as_ref()).map_err(|_| {
+                ApiError::internal(&format!(
+                    "Failed to convert date time {:?} and proposal id {:?} to bytes.",
+                    date_time, proposal_id
+                ))
+            })?,
+        ))
+    }
+}
+
+impl Storable for ProposalTimestampKey {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        self.0.to_bytes()
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Self(Blob::from_bytes(bytes))
+    }
+
+    const BOUND: Bound = Bound::Bounded {
+        max_size: Self::MAX_SIZE,
+        is_fixed_size: true,
+    };
+}
+
+pub struct ProposalTimestampRange {
+    start_bound: ProposalTimestampKey,
+    end_bound: ProposalTimestampKey,
+}
+
+impl ProposalTimestampRange {
+    pub fn new() -> Result<Self, ApiError> {
+        Ok(Self {
+            start_bound: ProposalTimestampKey::new(DateTime::min(), Uuid::MIN)?,
+            end_bound: ProposalTimestampKey::new(DateTime::max()?, Uuid::MAX)?,
+        })
+    }
+}
+
+impl RangeBounds<ProposalTimestampKey> for ProposalTimestampRange {
+    fn start_bound(&self) -> std::ops::Bound<&ProposalTimestampKey> {
+        std::ops::Bound::Included(&self.start_bound)
+    }
+
+    fn end_bound(&self) -> std::ops::Bound<&ProposalTimestampKey> {
+        std::ops::Bound::Included(&self.end_bound)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -207,7 +363,7 @@ mod tests {
     use rstest::*;
 
     #[rstest]
-    #[case::nns_proposal(fixtures::nns_replica_version_management_proposal(None))]
+    #[case::nns_proposal(fixtures::nns_replica_version_management_proposal(None, None))]
     fn proposal_storable_impl(#[case] proposal: Proposal) {
         let serialized_proposal = proposal.to_bytes();
         let deserialized_proposal = Proposal::from_bytes(serialized_proposal);
@@ -234,6 +390,37 @@ mod tests {
     }
 
     #[rstest]
+    fn proposal_nervous_system_id_key_storable_impl() {
+        let nervous_system =
+            fixtures::nns_replica_version_management_proposal(None, None).nervous_system;
+        let proposal_id = fixtures::proposal_id();
+
+        let key = ProposalNervousSystemIdKey::new(
+            nervous_system.nervous_system_id(),
+            nervous_system.proposal_id(),
+            proposal_id,
+        )
+        .unwrap();
+        let serialized_key = key.to_bytes();
+        let deserialized_key = ProposalNervousSystemIdKey::from_bytes(serialized_key);
+
+        assert_eq!(key, deserialized_key);
+    }
+
+    #[rstest]
+    fn proposal_timestamp_key_storable_impl() {
+        let date_time = get_date_time().unwrap();
+        let proposal_id = fixtures::proposal_id();
+
+        let key =
+            ProposalTimestampKey::new(DateTime::new(date_time).unwrap(), proposal_id).unwrap();
+        let serialized_key = key.to_bytes();
+        let deserialized_key = ProposalTimestampKey::from_bytes(serialized_key);
+
+        assert_eq!(key, deserialized_key);
+    }
+
+    #[rstest]
     fn proposal_is_pending_and_is_completed() {
         let current_time = DateTime::new(get_date_time().unwrap()).unwrap();
         let in_progress_proposals = in_progress_proposals();
@@ -249,7 +436,8 @@ mod tests {
             assert!(!proposal.is_completed());
         }
 
-        let completed_proposal = fixtures::nns_replica_version_management_proposal_completed();
+        let completed_proposal =
+            fixtures::nns_replica_version_management_proposal_completed(None, None);
 
         assert!(!completed_proposal.is_pending(&current_time));
         assert!(completed_proposal.is_completed());
@@ -262,27 +450,31 @@ mod tests {
         vec![
             Proposal {
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal(Some(
-                    DateTime::new(current_time).unwrap(),
-                ))
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(DateTime::new(current_time).unwrap()),
+                    None,
+                )
             },
             Proposal {
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal(Some(
-                    DateTime::new(current_time - Duration::hours(12)).unwrap(),
-                ))
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(DateTime::new(current_time - Duration::hours(12)).unwrap()),
+                    None,
+                )
             },
             Proposal {
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal(Some(
-                    DateTime::new(current_time - Duration::hours(24)).unwrap(),
-                ))
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(DateTime::new(current_time - Duration::hours(24)).unwrap()),
+                    None,
+                )
             },
             Proposal {
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal(Some(
-                    DateTime::new(current_time - Duration::hours(36)).unwrap(),
-                ))
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(DateTime::new(current_time - Duration::hours(36)).unwrap()),
+                    None,
+                )
             },
         ]
     }
@@ -294,16 +486,20 @@ mod tests {
         vec![
             Proposal {
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal(Some(
-                    DateTime::new(current_time - Duration::hours(48) - Duration::minutes(1))
-                        .unwrap(),
-                ))
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(
+                        DateTime::new(current_time - Duration::hours(48) - Duration::minutes(1))
+                            .unwrap(),
+                    ),
+                    None,
+                )
             },
             Proposal {
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal(Some(
-                    DateTime::new(current_time - Duration::hours(60)).unwrap(),
-                ))
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(DateTime::new(current_time - Duration::hours(60)).unwrap()),
+                    None,
+                )
             },
         ]
     }

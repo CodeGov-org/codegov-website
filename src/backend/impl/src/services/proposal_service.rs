@@ -122,7 +122,9 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
                 .proposal_repository
                 .get_proposals(None)?
                 .iter()
-                .any(|(_, p)| p.nervous_system.id() == proposal.nervous_system.id())
+                .any(|(_, p)| {
+                    p.nervous_system.proposal_id() == proposal.nervous_system.proposal_id()
+                })
             {
                 self.proposal_repository.create_proposal(proposal).await?;
             }
@@ -162,7 +164,7 @@ mod tests {
     #[rstest]
     async fn get_proposal() {
         let proposal_id = fixtures::proposal_id();
-        let proposal = fixtures::nns_replica_version_management_proposal(None);
+        let proposal = fixtures::nns_replica_version_management_proposal(None, None);
 
         let mut repository_mock = MockProposalRepository::new();
         repository_mock

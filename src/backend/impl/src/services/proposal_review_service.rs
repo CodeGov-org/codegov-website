@@ -519,7 +519,7 @@ mod tests {
             .once()
             .with(eq(proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal(
-                None,
+                None, None,
             )));
         let mut pr_repository_mock = MockProposalReviewRepository::new();
         pr_repository_mock
@@ -699,7 +699,7 @@ mod tests {
             .once()
             .with(eq(proposal_id))
             .return_const(Some(
-                fixtures::nns_replica_version_management_proposal_completed(),
+                fixtures::nns_replica_version_management_proposal_completed(None, None),
             ));
         let mut pr_repository_mock = MockProposalReviewRepository::new();
         pr_repository_mock
@@ -749,7 +749,7 @@ mod tests {
             .once()
             .with(eq(proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal(
-                None,
+                None, None,
             )));
         let mut pr_repository_mock = MockProposalReviewRepository::new();
         pr_repository_mock
@@ -934,7 +934,7 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal(
-                None,
+                None, None,
             )));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
 
@@ -1058,7 +1058,7 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(
-                fixtures::nns_replica_version_management_proposal_completed(),
+                fixtures::nns_replica_version_management_proposal_completed(None, None),
             ));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
 
@@ -1166,7 +1166,7 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal(
-                None,
+                None, None,
             )));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
 
@@ -1254,7 +1254,7 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(fixtures::nns_replica_version_management_proposal(
-                None,
+                None, None,
             )));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
 

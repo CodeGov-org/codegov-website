@@ -809,7 +809,7 @@ mod tests {
             user_id,
             ..fixtures::proposal_review_draft()
         };
-        let proposal = fixtures::nns_replica_version_management_proposal(None);
+        let proposal = fixtures::nns_replica_version_management_proposal(None, None);
 
         (
             proposal_review_commit.clone(),
@@ -841,7 +841,7 @@ mod tests {
             user_id,
             ..fixtures::proposal_review_draft()
         };
-        let proposal = fixtures::nns_replica_version_management_proposal(None);
+        let proposal = fixtures::nns_replica_version_management_proposal(None, None);
 
         (
             proposal_review_commit.clone(),
@@ -940,7 +940,7 @@ mod tests {
         (
             prc,
             pr,
-            fixtures::nns_replica_version_management_proposal_completed(),
+            fixtures::nns_replica_version_management_proposal_completed(None, None),
             request,
         )
     }
@@ -1448,7 +1448,7 @@ mod tests {
             user_id,
             ..fixtures::proposal_review_draft()
         };
-        let proposal = fixtures::nns_replica_version_management_proposal(None);
+        let proposal = fixtures::nns_replica_version_management_proposal(None, None);
         let state = backend_api::ReviewCommitState::Reviewed {
             comment: Some("Review commit comment".to_string()),
             matches_description: Some(true),
@@ -1492,7 +1492,7 @@ mod tests {
             user_id,
             ..fixtures::proposal_review_draft()
         };
-        let proposal = fixtures::nns_replica_version_management_proposal(None);
+        let proposal = fixtures::nns_replica_version_management_proposal(None, None);
         let state = backend_api::ReviewCommitState::NotReviewed;
 
         (
@@ -1597,7 +1597,7 @@ mod tests {
             id,
             prc,
             pr,
-            fixtures::nns_replica_version_management_proposal_completed(),
+            fixtures::nns_replica_version_management_proposal_completed(None, None),
             request,
         )
     }
@@ -1715,7 +1715,7 @@ mod tests {
             user_id: proposal_review_commit.user_id,
             ..fixtures::proposal_review_draft()
         };
-        let proposal = fixtures::nns_replica_version_management_proposal(None);
+        let proposal = fixtures::nns_replica_version_management_proposal(None, None);
 
         let mut u_repository_mock = MockUserProfileRepository::new();
         u_repository_mock
@@ -1987,7 +1987,7 @@ mod tests {
             user_id: proposal_review_commit.user_id,
             ..fixtures::proposal_review_draft()
         };
-        let proposal = fixtures::nns_replica_version_management_proposal_completed();
+        let proposal = fixtures::nns_replica_version_management_proposal_completed(None, None);
 
         let mut u_repository_mock = MockUserProfileRepository::new();
         u_repository_mock
