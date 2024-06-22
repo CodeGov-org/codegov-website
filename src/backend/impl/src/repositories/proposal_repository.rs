@@ -20,7 +20,7 @@ pub trait ProposalRepository {
         &self,
         nervous_system_id: NervousSystemId,
         nervous_system_proposal_id: NervousSystemProposalId,
-    ) -> Option<Proposal>;
+    ) -> Option<(ProposalId, Proposal)>;
 
     fn get_proposals(
         &self,
@@ -53,7 +53,7 @@ impl ProposalRepository for ProposalRepositoryImpl {
         &self,
         nervous_system_id: NervousSystemId,
         nervous_system_proposal_id: NervousSystemProposalId,
-    ) -> Option<Proposal> {
+    ) -> Option<(ProposalId, Proposal)> {
         // we can just return None if the range is invalid
         let range =
             ProposalNervousSystemIdRange::new(nervous_system_id, nervous_system_proposal_id)
@@ -62,7 +62,7 @@ impl ProposalRepository for ProposalRepositoryImpl {
         STATE.with_borrow(|s| {
             s.proposals_nervous_system_id_index
                 .range(range)
-                .filter_map(|(_, id)| s.proposals.get(&id))
+                .map(|(_, id)| (id, s.proposals.get(&id).unwrap()))
                 .next()
         })
     }
@@ -370,18 +370,20 @@ mod tests {
 
         let repository = ProposalRepositoryImpl::default();
 
-        for proposal in proposals.iter() {
-            repository.create_proposal(proposal.clone()).await.unwrap();
+        let mut proposals_with_ids: Vec<(ProposalId, Proposal)> = vec![];
+        for proposal in proposals {
+            let proposal_id = repository.create_proposal(proposal.clone()).await.unwrap();
+            proposals_with_ids.push((proposal_id, proposal));
         }
 
-        for proposal in proposals {
+        for (id, proposal) in proposals_with_ids {
             let result = repository
                 .get_proposal_by_nervous_system_id(
                     proposal.nervous_system.nervous_system_id(),
                     proposal.nervous_system.proposal_id(),
                 )
                 .unwrap();
-            assert_eq!(result, proposal);
+            assert_eq!(result, (id, proposal));
         }
     }
 
