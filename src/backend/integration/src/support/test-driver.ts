@@ -11,19 +11,19 @@ import { controllerIdentity } from './identity';
 import { UsersOM } from './users';
 
 const NNS_SUBNET_ID =
-  '2o3zy-oo4hc-r3mtq-ylrpf-g6qge-qmuzn-2bsuv-d3yhd-e4qjc-6ff2b-6ae';
+  'k4k2h-6cowo-iv7vz-folng-s4kpf-4gip2-ctegr-vpamy-t4fwp-4pau6-xqe';
 
 const NNS_STATE_PATH = resolve(
   __dirname,
   '..',
   '..',
   'state',
-  'proposal_reviews_nns_state',
+  'nns_state',
   'node-100',
   'state',
 );
 
-const NNS_CREATION_DATE = new Date(2024, 3, 25, 0, 0, 0, 0);
+const NNS_CREATION_DATE = new Date(2024, 6, 22, 15, 0, 0, 0);
 
 export const BACKEND_WASM_PATH = resolve(
   __dirname,
