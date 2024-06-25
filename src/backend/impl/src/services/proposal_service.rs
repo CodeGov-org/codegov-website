@@ -8,9 +8,12 @@ use crate::{
 use backend_api::{ApiError, GetProposalResponse, ListProposalsRequest, ListProposalsResponse};
 use candid::Principal;
 use external_canisters::nns::GovernanceCanisterService;
-use ic_nns_governance::pb::v1::{ListProposalInfo, ListProposalInfoResponse, Topic};
+use ic_nns_common::pb::v1::ProposalId as NnsProposalId;
+use ic_nns_governance::pb::v1::{ListProposalInfo, ProposalInfo, ProposalStatus, Topic};
 
 const NNS_GOVERNANCE_CANISTER_ID: &str = "rrkah-fqaaa-aaaaa-aaaaq-cai";
+
+const LIST_PROPOSALS_LIMIT: u32 = 50;
 
 #[cfg_attr(test, mockall::automock)]
 pub trait ProposalService {
@@ -21,9 +24,9 @@ pub trait ProposalService {
         request: ListProposalsRequest,
     ) -> Result<ListProposalsResponse, ApiError>;
 
-    async fn fetch_and_save_nns_proposals(&self) -> Result<(), ApiError>;
+    async fn fetch_and_save_nns_proposals(&self) -> Result<usize, ApiError>;
 
-    fn complete_pending_proposals(&self) -> Result<(), ApiError>;
+    fn complete_pending_proposals(&self) -> Result<usize, ApiError>;
 }
 
 pub struct ProposalServiceImpl<T: ProposalRepository> {
@@ -65,81 +68,100 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
         Ok(ListProposalsResponse { proposals })
     }
 
-    async fn fetch_and_save_nns_proposals(&self) -> Result<(), ApiError> {
-        let nns_governance_canister =
-            GovernanceCanisterService(Principal::from_str(NNS_GOVERNANCE_CANISTER_ID).unwrap());
-
-        let ListProposalInfoResponse {
-            proposal_info: proposals,
-        } = match nns_governance_canister
-            .list_proposals(ListProposalInfo {
-                include_reward_status: vec![],
-                omit_large_fields: Some(true),
-                before_proposal: None,
-                limit: 50,
-                exclude_topic: vec![
-                    Topic::Unspecified.into(),
-                    Topic::NeuronManagement.into(),
-                    Topic::ExchangeRate.into(),
-                    Topic::NetworkEconomics.into(),
-                    Topic::Governance.into(),
-                    Topic::NodeAdmin.into(),
-                    Topic::ParticipantManagement.into(),
-                    Topic::SubnetManagement.into(),
-                    Topic::Kyc.into(),
-                    Topic::NodeProviderRewards.into(),
-                    Topic::SnsDecentralizationSale.into(),
-                    Topic::SubnetReplicaVersionManagement.into(),
-                    Topic::SnsAndCommunityFund.into(),
-                    Topic::ApiBoundaryNodeManagement.into(),
-                ],
-                include_all_manage_neuron_proposals: Some(false),
-                include_status: vec![],
-            })
-            .await
-        {
-            Ok(res) => res,
-            Err(err) => {
-                return Err(ApiError::internal(&format!(
-                    "Failed to fetch proposals: {:?}",
-                    err
-                )))
-            }
-        };
-
-        for nns_proposal in proposals {
-            let proposal = match Proposal::try_from(nns_proposal) {
-                Ok(proposal) => proposal,
-                Err(err) => {
-                    return Err(ApiError::internal(&format!(
-                        "Failed to map NNS proposal: {:?}",
-                        err
-                    )))
-                }
-            };
-
-            if !self
-                .proposal_repository
-                .get_proposals(None)?
-                .iter()
-                .any(|(_, p)| {
-                    p.nervous_system.proposal_id() == proposal.nervous_system.proposal_id()
+    async fn fetch_and_save_nns_proposals(&self) -> Result<usize, ApiError> {
+        async fn fetch_open_nns_proposals(
+            before_proposal: Option<NnsProposalId>,
+        ) -> Result<Vec<ProposalInfo>, ApiError> {
+            GovernanceCanisterService(Principal::from_str(NNS_GOVERNANCE_CANISTER_ID).unwrap())
+                .list_proposals(ListProposalInfo {
+                    include_reward_status: vec![],
+                    omit_large_fields: Some(true),
+                    before_proposal,
+                    limit: LIST_PROPOSALS_LIMIT,
+                    // only fetch for:
+                    // - NetworkCanisterManagement
+                    // - ReplicaVersionManagement
+                    exclude_topic: vec![
+                        Topic::Unspecified,
+                        Topic::NeuronManagement,
+                        Topic::ExchangeRate,
+                        Topic::NetworkEconomics,
+                        Topic::Governance,
+                        Topic::NodeAdmin,
+                        Topic::ParticipantManagement,
+                        Topic::SubnetManagement,
+                        Topic::Kyc,
+                        Topic::NodeProviderRewards,
+                        Topic::SnsDecentralizationSale,
+                        Topic::SubnetReplicaVersionManagement,
+                        Topic::SnsAndCommunityFund,
+                        Topic::ApiBoundaryNodeManagement,
+                    ]
+                    .into_iter()
+                    .map(Into::into)
+                    .collect(),
+                    include_all_manage_neuron_proposals: Some(false),
+                    include_status: vec![ProposalStatus::Open]
+                        .into_iter()
+                        .map(Into::into)
+                        .collect(),
                 })
-            {
-                self.proposal_repository.create_proposal(proposal).await?;
+                .await
+                .map(|res| res.proposal_info)
+                .map_err(|err| ApiError::internal(&format!("Failed to fetch proposals: {:?}", err)))
+        }
+
+        // recursively fetch all proposals until the canister returns less proposals than the limit
+        let mut proposals = vec![];
+        let mut before_proposal = None;
+        loop {
+            let fetched_proposals = fetch_open_nns_proposals(before_proposal).await?;
+            proposals.extend(fetched_proposals.clone());
+            if fetched_proposals.len() < LIST_PROPOSALS_LIMIT as usize {
+                break;
+            }
+            before_proposal = fetched_proposals.last().and_then(|p| p.id);
+        }
+
+        for nns_proposal in proposals.iter() {
+            let proposal = Proposal::try_from(nns_proposal.clone()).map_err(|err| {
+                ApiError::internal(&format!("Failed to map NNS proposal: {:?}", err))
+            })?;
+
+            match self.proposal_repository.get_proposal_by_nervous_system_id(
+                proposal.nervous_system.nervous_system_id(),
+                proposal.nervous_system.proposal_id(),
+            ) {
+                Some((id, existing_proposal)) => {
+                    self.proposal_repository.update_proposal(
+                        id,
+                        Proposal {
+                            nervous_system: proposal.nervous_system.clone(),
+                            // overwrite the state if the fetched proposal
+                            // is not open anymore
+                            state: if proposal.is_completed() {
+                                proposal.state
+                            } else {
+                                existing_proposal.state
+                            },
+                            ..existing_proposal
+                        },
+                    )?;
+                }
+                None => {
+                    self.proposal_repository.create_proposal(proposal).await?;
+                }
             }
         }
 
-        Ok(())
+        Ok(proposals.len())
     }
 
-    fn complete_pending_proposals(&self) -> Result<(), ApiError> {
+    fn complete_pending_proposals(&self) -> Result<usize, ApiError> {
         let current_time = get_date_time().and_then(DateTime::new)?;
 
         self.proposal_repository
-            .complete_pending_proposals(current_time)?;
-
-        Ok(())
+            .complete_pending_proposals(current_time)
     }
 }
 
@@ -241,16 +263,18 @@ mod tests {
     #[rstest]
     fn complete_pending_proposals() {
         let current_time: DateTime = get_date_time().and_then(DateTime::new).unwrap();
+        let completed_proposals_count = 2;
 
         let mut repository_mock = MockProposalRepository::new();
         repository_mock
             .expect_complete_pending_proposals()
             .once()
             .with(eq(current_time))
-            .return_const(Ok(()));
+            .return_const(Ok(completed_proposals_count));
 
         let service = ProposalServiceImpl::new(repository_mock);
 
-        service.complete_pending_proposals().unwrap();
+        let result = service.complete_pending_proposals().unwrap();
+        assert_eq!(result, completed_proposals_count);
     }
 }

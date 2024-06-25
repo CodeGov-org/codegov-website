@@ -23,7 +23,7 @@ const NNS_STATE_PATH = resolve(
   'state',
 );
 
-const NNS_CREATION_DATE = new Date(2024, 6, 22, 15, 0, 0, 0);
+const NNS_CREATION_DATE = new Date(2024, 5, 22, 15, 5, 0, 0);
 
 export const BACKEND_WASM_PATH = resolve(
   __dirname,

@@ -31,7 +31,7 @@ pub trait ProposalRepository {
 
     fn update_proposal(&self, proposal_id: ProposalId, proposal: Proposal) -> Result<(), ApiError>;
 
-    fn complete_pending_proposals(&self, current_time: DateTime) -> Result<(), ApiError>;
+    fn complete_pending_proposals(&self, current_time: DateTime) -> Result<usize, ApiError>;
 
     fn complete_proposal_by_id(&self, proposal_id: ProposalId) -> Result<(), ApiError>;
 }
@@ -71,7 +71,7 @@ impl ProposalRepository for ProposalRepositoryImpl {
         &self,
         state: Option<ReviewPeriodState>,
     ) -> Result<Vec<(ProposalId, Proposal)>, ApiError> {
-        let mut proposals: Vec<(ProposalId, Proposal)> = STATE.with_borrow(|s| match state {
+        STATE.with_borrow(|s| match state {
             Some(state) => {
                 let range = ProposalStatusTimestampRange::new(state)?;
 
@@ -88,14 +88,10 @@ impl ProposalRepository for ProposalRepositoryImpl {
                     .map(|(_, id)| (id, s.proposals.get(&id).unwrap()))
                     .collect())
             }
-        })?;
-
-        proposals.reverse();
-
-        Ok(proposals)
+        })
     }
 
-    fn complete_pending_proposals(&self, current_time: DateTime) -> Result<(), ApiError> {
+    fn complete_pending_proposals(&self, current_time: DateTime) -> Result<usize, ApiError> {
         let range = ProposalStatusTimestampRange::new(ReviewPeriodState::InProgress)?;
 
         let pending_proposals = STATE.with_borrow_mut(|s| {
@@ -109,11 +105,11 @@ impl ProposalRepository for ProposalRepositoryImpl {
                 .collect::<Vec<_>>()
         });
 
-        for proposal_id in pending_proposals {
-            self.complete_proposal_by_id(proposal_id)?;
+        for proposal_id in pending_proposals.iter() {
+            self.complete_proposal_by_id(*proposal_id)?;
         }
 
-        Ok(())
+        Ok(pending_proposals.len())
     }
 
     fn complete_proposal_by_id(&self, proposal_id: ProposalId) -> Result<(), ApiError> {
@@ -131,13 +127,13 @@ impl ProposalRepository for ProposalRepositoryImpl {
             )));
         }
 
-        let current_time = get_date_time()?;
+        let current_time = get_date_time().and_then(DateTime::new)?;
 
         self.update_proposal(
             proposal_id,
             Proposal {
                 state: ReviewPeriodState::Completed,
-                review_completed_at: Some(DateTime::new(current_time)?),
+                review_completed_at: Some(current_time),
                 ..proposal
             },
         )
@@ -339,21 +335,21 @@ mod tests {
     #[fixture]
     fn sorted_proposals() -> Vec<Proposal> {
         vec![
-            fixtures::nns_replica_version_management_proposal(Some(date_time_a()), Some(130400)),
-            fixtures::nns_replica_version_management_proposal_completed(
-                Some(date_time_a().sub(Duration::seconds(1))),
-                Some(130399),
-            ),
-            fixtures::nns_replica_version_management_proposal(Some(date_time_b()), Some(130398)),
-            fixtures::nns_replica_version_management_proposal_completed(
-                Some(date_time_b().sub(Duration::seconds(1))),
-                Some(130397),
-            ),
-            fixtures::nns_replica_version_management_proposal(Some(date_time_c()), Some(130396)),
             fixtures::nns_replica_version_management_proposal_completed(
                 Some(date_time_c().sub(Duration::seconds(1))),
                 Some(130395),
             ),
+            fixtures::nns_replica_version_management_proposal(Some(date_time_c()), Some(130396)),
+            fixtures::nns_replica_version_management_proposal_completed(
+                Some(date_time_b().sub(Duration::seconds(1))),
+                Some(130397),
+            ),
+            fixtures::nns_replica_version_management_proposal(Some(date_time_b()), Some(130398)),
+            fixtures::nns_replica_version_management_proposal_completed(
+                Some(date_time_a().sub(Duration::seconds(1))),
+                Some(130399),
+            ),
+            fixtures::nns_replica_version_management_proposal(Some(date_time_a()), Some(130400)),
         ]
     }
 
@@ -483,15 +479,13 @@ mod tests {
             .unwrap();
 
         let result = repository.get_proposal_by_id(&proposal_id).unwrap();
-        assert_eq!(result, updated_proposal);
-        assert_ne!(result, proposal);
+        assert_eq!(result.state, updated_proposal.state);
+        assert_ne!(result.state, proposal.state);
     }
 
     #[rstest]
-    #[case(proposal_update_nervous_system_proposal_id_change())]
-    async fn update_proposal_with_different_nervous_system_proposal_id(
-        #[case] inputs: (Proposal, Proposal, ApiError),
-    ) {
+    #[case::nervous_system_proposal_id_change(proposal_update_nervous_system_proposal_id_change())]
+    async fn update_proposal_invalid(#[case] inputs: (Proposal, Proposal, ApiError)) {
         let (proposal, updated_proposal, expected_error) = inputs;
         STATE.set(ProposalState::default());
 

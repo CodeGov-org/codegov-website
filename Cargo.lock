@@ -333,6 +333,7 @@ dependencies = [
  "ic-cdk",
  "ic-cdk-macros",
  "ic-cdk-timers",
+ "ic-nns-common",
  "ic-nns-governance",
  "ic-stable-structures",
  "mockall 0.12.1",

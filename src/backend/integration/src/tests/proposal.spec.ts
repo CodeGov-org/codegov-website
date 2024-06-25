@@ -1,11 +1,4 @@
-import {
-  describe,
-  beforeEach,
-  beforeAll,
-  afterAll,
-  it,
-  expect,
-} from 'bun:test';
+import { describe, beforeEach, afterEach, it, expect } from 'bun:test';
 import {
   Governance,
   REVIEW_PERIOD_MS,
@@ -22,71 +15,46 @@ const MS_IN_MINUTE = 60 * 1000;
 
 const PROPOSAL_SYNC_INTERVAL_MS = 5 * MS_IN_MINUTE; // 5 minutes
 
-const advanceTimeToSyncProposals = async (driver: TestDriver) => {
-  await driver.advanceTime(PROPOSAL_SYNC_INTERVAL_MS + 1);
-};
-
-/**
- * The state loaded into PIC already has this number of proposals in it.
- *
- * They are old, so they'll be marked as completed as soon as they're synced
- * by the backend canister cron job.
- */
-const RVM_PROPOSALS_STATE_COUNT = 1;
-
-const createRvmProposalsBatch = async (
-  governance: Governance,
-  neuronId: bigint,
-  count: number,
-): Promise<bigint[]> => {
-  const rvmProposalIds = [];
-  for (let i = 0; i < count; i++) {
-    const rvmProposalId = await governance.createRvmProposal(
-      nnsProposerIdentity,
-      {
-        neuronId,
-        title: `Test Proposal Title ${i}`,
-        summary: `Test Proposal Summary ${i}`,
-        replicaVersion: 'd19fa446ab35780b2c6d8b82ea32d808cca558d5',
-      },
-    );
-    rvmProposalIds.push(rvmProposalId);
-  }
-  return rvmProposalIds;
-};
-
 describe('Proposal', () => {
   let driver: TestDriver;
   let governance: Governance;
-  const newRvmProposalsCount = 10;
-  const totalRvmProposalsCount = 10 + RVM_PROPOSALS_STATE_COUNT;
+  const rvmProposalsCount = 10;
   let rvmProposalIds: bigint[] = [];
 
-  beforeAll(async () => {
-    driver = await TestDriver.createWithNnsState();
-    governance = new Governance(driver.pic);
-    const neuronId = await governance.createNeuron(nnsProposerIdentity);
-    rvmProposalIds = await createRvmProposalsBatch(
-      governance,
-      neuronId,
-      newRvmProposalsCount,
-    );
-  });
+  const advanceTimeToSyncProposals = async () => {
+    await driver.advanceTime(PROPOSAL_SYNC_INTERVAL_MS + 1);
+  };
 
-  beforeEach(async () => {
-    await driver.resetBackendCanister();
-  });
+  const advanceTimeToCompleteProposals = async () => {
+    await driver.advanceTime(REVIEW_PERIOD_MS + 1);
+  };
 
-  afterAll(async () => {
-    await driver.tearDown();
-  });
+  const createRvmProposalsBatch = async (
+    neuronId: bigint,
+    count: number,
+  ): Promise<bigint[]> => {
+    const ids = [];
+    for (let i = 0; i < count; i++) {
+      const rvmProposalId = await governance.createRvmProposal(
+        nnsProposerIdentity,
+        {
+          neuronId,
+          title: `Test Proposal Title ${i}`,
+          summary: `Test Proposal Summary ${i}`,
+          replicaVersion: 'd19fa446ab35780b2c6d8b82ea32d808cca558d5',
+        },
+      );
+      ids.push(rvmProposalId);
+    }
+    return ids;
+  };
 
   const expectListProposalsResult = (
     res: ListProposalsResponse,
     expectedCount?: number,
   ) => {
     const { proposals } = extractOkResponse(res);
-    expect(proposals.length).toEqual(expectedCount ?? totalRvmProposalsCount);
+    expect(proposals.length).toEqual(expectedCount ?? rvmProposalsCount);
     for (const rvmProposalId of rvmProposalIds) {
       expect(
         proposals.findIndex(
@@ -95,6 +63,17 @@ describe('Proposal', () => {
       ).toBeGreaterThan(-1);
     }
   };
+
+  beforeEach(async () => {
+    driver = await TestDriver.createWithNnsState();
+    governance = new Governance(driver.pic);
+    const neuronId = await governance.createNeuron(nnsProposerIdentity);
+    rvmProposalIds = await createRvmProposalsBatch(neuronId, rvmProposalsCount);
+  });
+
+  afterEach(async () => {
+    await driver.tearDown();
+  });
 
   describe('sync proposals', () => {
     it('should sync proposals on intervals', async () => {
@@ -105,7 +84,7 @@ describe('Proposal', () => {
       expect(proposalsEmpty.length).toEqual(0);
 
       // fire the intervals
-      await advanceTimeToSyncProposals(driver);
+      await advanceTimeToSyncProposals();
 
       const res = await driver.actor.list_proposals({
         state: [],
@@ -162,23 +141,23 @@ describe('Proposal', () => {
 
       driver.actor.setIdentity(adminIdentity);
       const resSync = await driver.actor.sync_proposals();
-      extractOkResponse(resSync);
+      const proposalsCount = extractOkResponse(resSync);
 
       const res = await driver.actor.list_proposals({
         state: [],
       });
-      expectListProposalsResult(res);
+      expectListProposalsResult(res, Number(proposalsCount));
     });
   });
 
   describe('complete proposals', () => {
     it('should not complete proposals before review deadline', async () => {
-      await advanceTimeToSyncProposals(driver);
+      await advanceTimeToSyncProposals();
 
       const resInProgress = await driver.actor.list_proposals({
         state: [{ in_progress: null }],
       });
-      expectListProposalsResult(resInProgress, newRvmProposalsCount);
+      expectListProposalsResult(resInProgress);
 
       // advance time, but do not reach the review deadline
       await driver.advanceTime(REVIEW_PERIOD_MS - driver.advancedTimeMs - 1);
@@ -187,29 +166,23 @@ describe('Proposal', () => {
         state: [{ completed: null }],
       });
       const { proposals: proposalsCompleted } = extractOkResponse(resCompleted);
-      expect(proposalsCompleted.length).toEqual(RVM_PROPOSALS_STATE_COUNT);
+      expect(proposalsCompleted.length).toEqual(0);
 
       const resInProgress2 = await driver.actor.list_proposals({
         state: [{ in_progress: null }],
       });
-      expectListProposalsResult(resInProgress2, newRvmProposalsCount);
+      expectListProposalsResult(resInProgress2);
     });
 
     it('should complete proposals after review deadline', async () => {
-      const advancedTimeMs = driver.advancedTimeMs;
+      await advanceTimeToSyncProposals();
 
       const resInProgress = await driver.actor.list_proposals({
         state: [{ in_progress: null }],
       });
-      const { proposals: proposalsInProgress } =
-        extractOkResponse(resInProgress);
-      expect(proposalsInProgress.length).toEqual(0);
+      expectListProposalsResult(resInProgress);
 
-      await advanceTimeToSyncProposals(driver);
-      // make proposals complete
-      await driver.advanceTime(
-        REVIEW_PERIOD_MS - (driver.advancedTimeMs - advancedTimeMs),
-      );
+      await advanceTimeToCompleteProposals();
 
       const resCompleted = await driver.actor.list_proposals({
         state: [{ completed: null }],
@@ -264,7 +237,7 @@ describe('Proposal', () => {
     };
 
     it('should allow anyone to list proposals', async () => {
-      await advanceTimeToSyncProposals(driver);
+      await advanceTimeToSyncProposals();
 
       // it.each doesn't seem to work here, using a for loop instead
       const identities = [
@@ -283,18 +256,18 @@ describe('Proposal', () => {
     });
 
     it('should list proposals in reverse chronological order', async () => {
-      await advanceTimeToSyncProposals(driver);
+      await advanceTimeToSyncProposals();
 
       // only these proposals will be in progress
       const lastRvmProposalIds = await createProposalsEveryHour(5);
       lastRvmProposalIds.reverse();
 
-      await advanceTimeToSyncProposals(driver);
+      await advanceTimeToSyncProposals();
 
       const res = await driver.actor.list_proposals({ state: [] });
       expectListProposalsResult(
         res,
-        totalRvmProposalsCount + lastRvmProposalIds.length,
+        rvmProposalsCount + lastRvmProposalIds.length,
       );
       const { proposals } = extractOkResponse(res);
       expectProposalsSortedByTimestampDesc(
@@ -305,13 +278,15 @@ describe('Proposal', () => {
     });
 
     it('should list proposals by state in reverse chronological order', async () => {
-      await advanceTimeToSyncProposals(driver);
+      await advanceTimeToSyncProposals();
+      // make proposals complete
+      await advanceTimeToCompleteProposals();
 
       // only these proposals will be in progress
       const lastRvmProposalIds = await createProposalsEveryHour(5);
       lastRvmProposalIds.reverse();
 
-      await advanceTimeToSyncProposals(driver);
+      await advanceTimeToSyncProposals();
 
       const resInProgress = await driver.actor.list_proposals({
         state: [{ in_progress: null }],
@@ -324,8 +299,7 @@ describe('Proposal', () => {
         ),
       );
 
-      // make proposals complete
-      await driver.advanceTime(REVIEW_PERIOD_MS);
+      await advanceTimeToCompleteProposals();
 
       const resCompleted = await driver.actor.list_proposals({
         state: [{ completed: null }],
