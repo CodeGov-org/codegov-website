@@ -192,7 +192,7 @@ type ListLogsResponse = variant {
 };
 
 type SyncProposalsResponse = variant {
-  ok : nat64;
+  ok : record { nat64; nat64 };
   err : Err;
 };
 

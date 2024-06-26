@@ -2,7 +2,10 @@ use std::str::FromStr;
 
 use crate::{
     mappings::map_get_proposal_response,
-    repositories::{DateTime, Proposal, ProposalId, ProposalRepository, ProposalRepositoryImpl},
+    repositories::{
+        DateTime, Proposal, ProposalId, ProposalRepository, ProposalRepositoryImpl,
+        ReviewPeriodState,
+    },
     system_api::get_date_time,
 };
 use backend_api::{ApiError, GetProposalResponse, ListProposalsRequest, ListProposalsResponse};
@@ -12,6 +15,56 @@ use ic_nns_common::pb::v1::ProposalId as NnsProposalId;
 use ic_nns_governance::pb::v1::{ListProposalInfo, ProposalInfo, ProposalStatus, Topic};
 
 const NNS_GOVERNANCE_CANISTER_ID: &str = "rrkah-fqaaa-aaaaa-aaaaq-cai";
+
+async fn fetch_open_nns_proposals(
+    before_proposal: Option<NnsProposalId>,
+) -> Result<Vec<ProposalInfo>, ApiError> {
+    GovernanceCanisterService(Principal::from_str(NNS_GOVERNANCE_CANISTER_ID).unwrap())
+        .list_proposals(ListProposalInfo {
+            include_reward_status: vec![],
+            omit_large_fields: Some(true),
+            before_proposal,
+            limit: LIST_PROPOSALS_LIMIT,
+            // only fetch for:
+            // - NetworkCanisterManagement
+            // - ReplicaVersionManagement
+            exclude_topic: vec![
+                Topic::Unspecified,
+                Topic::NeuronManagement,
+                Topic::ExchangeRate,
+                Topic::NetworkEconomics,
+                Topic::Governance,
+                Topic::NodeAdmin,
+                Topic::ParticipantManagement,
+                Topic::SubnetManagement,
+                Topic::Kyc,
+                Topic::NodeProviderRewards,
+                Topic::SnsDecentralizationSale,
+                Topic::SubnetReplicaVersionManagement,
+                Topic::SnsAndCommunityFund,
+                Topic::ApiBoundaryNodeManagement,
+            ]
+            .into_iter()
+            .map(Into::into)
+            .collect(),
+            include_all_manage_neuron_proposals: Some(false),
+            include_status: vec![ProposalStatus::Open]
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+        })
+        .await
+        .map(|res| res.proposal_info)
+        .map_err(|err| ApiError::internal(&format!("Failed to fetch proposals: {:?}", err)))
+}
+
+async fn fetch_proposal_info(proposal_id: u64) -> Result<ProposalInfo, ApiError> {
+    GovernanceCanisterService(Principal::from_str(NNS_GOVERNANCE_CANISTER_ID).unwrap())
+        .get_proposal_info(proposal_id)
+        .await
+        .map_err(|err| ApiError::internal(&format!("Failed to fetch proposal info: {:?}", err)))
+        .and_then(|res| res.ok_or_else(|| ApiError::not_found("Proposal not found")))
+}
 
 const LIST_PROPOSALS_LIMIT: u32 = 50;
 
@@ -24,7 +77,7 @@ pub trait ProposalService {
         request: ListProposalsRequest,
     ) -> Result<ListProposalsResponse, ApiError>;
 
-    async fn fetch_and_save_nns_proposals(&self) -> Result<usize, ApiError>;
+    async fn fetch_and_save_nns_proposals(&self) -> Result<(usize, usize), ApiError>;
 
     fn complete_pending_proposals(&self) -> Result<usize, ApiError>;
 }
@@ -68,49 +121,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
         Ok(ListProposalsResponse { proposals })
     }
 
-    async fn fetch_and_save_nns_proposals(&self) -> Result<usize, ApiError> {
-        async fn fetch_open_nns_proposals(
-            before_proposal: Option<NnsProposalId>,
-        ) -> Result<Vec<ProposalInfo>, ApiError> {
-            GovernanceCanisterService(Principal::from_str(NNS_GOVERNANCE_CANISTER_ID).unwrap())
-                .list_proposals(ListProposalInfo {
-                    include_reward_status: vec![],
-                    omit_large_fields: Some(true),
-                    before_proposal,
-                    limit: LIST_PROPOSALS_LIMIT,
-                    // only fetch for:
-                    // - NetworkCanisterManagement
-                    // - ReplicaVersionManagement
-                    exclude_topic: vec![
-                        Topic::Unspecified,
-                        Topic::NeuronManagement,
-                        Topic::ExchangeRate,
-                        Topic::NetworkEconomics,
-                        Topic::Governance,
-                        Topic::NodeAdmin,
-                        Topic::ParticipantManagement,
-                        Topic::SubnetManagement,
-                        Topic::Kyc,
-                        Topic::NodeProviderRewards,
-                        Topic::SnsDecentralizationSale,
-                        Topic::SubnetReplicaVersionManagement,
-                        Topic::SnsAndCommunityFund,
-                        Topic::ApiBoundaryNodeManagement,
-                    ]
-                    .into_iter()
-                    .map(Into::into)
-                    .collect(),
-                    include_all_manage_neuron_proposals: Some(false),
-                    include_status: vec![ProposalStatus::Open]
-                        .into_iter()
-                        .map(Into::into)
-                        .collect(),
-                })
-                .await
-                .map(|res| res.proposal_info)
-                .map_err(|err| ApiError::internal(&format!("Failed to fetch proposals: {:?}", err)))
-        }
-
+    async fn fetch_and_save_nns_proposals(&self) -> Result<(usize, usize), ApiError> {
         // recursively fetch all proposals until the canister returns less proposals than the limit
         let mut proposals = vec![];
         let mut before_proposal = None;
@@ -124,9 +135,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
         }
 
         for nns_proposal in proposals.iter() {
-            let proposal = Proposal::try_from(nns_proposal.clone()).map_err(|err| {
-                ApiError::internal(&format!("Failed to map NNS proposal: {:?}", err))
-            })?;
+            let proposal = Proposal::try_from(nns_proposal.clone())?;
 
             match self.proposal_repository.get_proposal_by_nervous_system_id(
                 proposal.nervous_system.nervous_system_id(),
@@ -149,7 +158,11 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
             }
         }
 
-        Ok(proposals.len())
+        let completed_proposals_count = self
+            .fetch_and_complete_missing_proposals(&proposals)
+            .await?;
+
+        Ok((proposals.len(), completed_proposals_count))
     }
 
     fn complete_pending_proposals(&self) -> Result<usize, ApiError> {
@@ -165,6 +178,61 @@ impl<T: ProposalRepository> ProposalServiceImpl<T> {
         Self {
             proposal_repository,
         }
+    }
+
+    async fn fetch_and_complete_missing_proposals(
+        &self,
+        nns_proposals: &[ProposalInfo],
+    ) -> Result<usize, ApiError> {
+        let in_progress_proposals = self
+            .proposal_repository
+            .get_proposals(Some(ReviewPeriodState::InProgress))?;
+        let missing_proposals: Vec<(ProposalId, Proposal)> = in_progress_proposals
+            .iter()
+            .filter_map(|(internal_id, proposal)| {
+                let proposal_id = proposal.nervous_system.proposal_id();
+                let is_missing = nns_proposals
+                    .iter()
+                    .all(|p| p.id.map_or(true, |nns_id| nns_id.id != proposal_id));
+                if is_missing {
+                    Some((*internal_id, proposal.clone()))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        for (id, existing_proposal) in missing_proposals.iter() {
+            let proposal_info =
+                fetch_proposal_info(existing_proposal.nervous_system.proposal_id()).await?;
+            let proposal = Proposal::try_from(proposal_info)?;
+
+            self.proposal_repository.update_proposal(
+                *id,
+                Proposal {
+                    nervous_system: proposal.nervous_system.clone(),
+                    synced_at: proposal.synced_at,
+                    // overwrite the state if the fetched proposal
+                    // is not open anymore (expected)
+                    state: if proposal.is_completed() {
+                        proposal.state
+                    } else {
+                        existing_proposal.state
+                    },
+                    // overwrite the review_completed_at if the fetched proposal
+                    // is not open anymore (expected) and the existing proposal does not have it
+                    review_completed_at: if proposal.is_completed()
+                        && existing_proposal.review_completed_at.is_none()
+                    {
+                        proposal.review_completed_at
+                    } else {
+                        existing_proposal.review_completed_at
+                    },
+                },
+            )?;
+        }
+
+        Ok(missing_proposals.len())
     }
 }
 

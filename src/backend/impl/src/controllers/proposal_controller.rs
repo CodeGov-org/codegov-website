@@ -10,7 +10,7 @@ use candid::Principal;
 use ic_cdk::*;
 
 #[update]
-async fn sync_proposals() -> ApiResult<usize> {
+async fn sync_proposals() -> ApiResult<(usize, usize)> {
     let calling_principal = caller();
 
     ProposalController::default()
@@ -55,7 +55,10 @@ impl<A: AccessControlService, L: LogService, P: ProposalService> ProposalControl
         }
     }
 
-    async fn sync_proposals(&self, calling_principal: Principal) -> Result<usize, ApiError> {
+    async fn sync_proposals(
+        &self,
+        calling_principal: Principal,
+    ) -> Result<(usize, usize), ApiError> {
         self.access_control_service
             .assert_principal_is_admin(&calling_principal)?;
 
@@ -69,9 +72,9 @@ impl<A: AccessControlService, L: LogService, P: ProposalService> ProposalControl
         );
 
         match self.proposal_service.fetch_and_save_nns_proposals().await {
-            Ok(count) => {
+            Ok((synced_count, completed_count)) => {
                 let _ = self.log_service.log_info(
-                    format!("Successfully synced {count} proposals"),
+                    format!("Successfully synced {synced_count} proposals and completed {completed_count} proposals"),
                     Some("sync_proposals".to_string()),
                 );
             }
@@ -165,6 +168,7 @@ mod tests {
     async fn sync_proposals() {
         let calling_principal = fixtures::principal();
         let synced_proposals_count = 2;
+        let completed_proposals_count = 1;
 
         let mut access_control_service_mock = MockAccessControlService::new();
         access_control_service_mock
@@ -178,7 +182,7 @@ mod tests {
         proposal_service_mock
             .expect_fetch_and_save_nns_proposals()
             .once()
-            .return_const(Ok(synced_proposals_count));
+            .return_const(Ok((synced_proposals_count, completed_proposals_count)));
 
         let controller = ProposalController::new(
             access_control_service_mock,
@@ -187,7 +191,7 @@ mod tests {
         );
 
         let result = controller.sync_proposals(calling_principal).await.unwrap();
-        assert_eq!(result, synced_proposals_count);
+        assert_eq!(result, (synced_proposals_count, completed_proposals_count));
     }
 
     #[rstest]
@@ -224,6 +228,7 @@ mod tests {
     async fn sync_proposals_success() {
         let access_control_service_mock = MockAccessControlService::new();
         let synced_proposals_count = 2;
+        let completed_proposals_count = 1;
 
         let mut log_service_mock = MockLogService::new();
         log_service_mock
@@ -239,7 +244,7 @@ mod tests {
             .once()
             .with(
                 eq(format!(
-                    "Successfully synced {synced_proposals_count} proposals"
+                    "Successfully synced {synced_proposals_count} proposals and completed {completed_proposals_count} proposals"
                 )),
                 eq(Some("sync_proposals".to_string())),
             )
@@ -249,7 +254,7 @@ mod tests {
         proposal_service_mock
             .expect_fetch_and_save_nns_proposals()
             .once()
-            .return_const(Ok(synced_proposals_count));
+            .return_const(Ok((synced_proposals_count, completed_proposals_count)));
 
         let controller = ProposalController::new(
             access_control_service_mock,

@@ -24,6 +24,8 @@ describe('Proposal', () => {
 
   const advanceTimeToSyncProposals = async () => {
     await driver.advanceTime(PROPOSAL_SYNC_INTERVAL_MS + 1);
+    // extra ticks to make sure all timer are completed
+    await driver.pic.tick(2);
   };
 
   const advanceTimeToCompleteProposals = async () => {
@@ -141,12 +143,13 @@ describe('Proposal', () => {
 
       driver.actor.setIdentity(adminIdentity);
       const resSync = await driver.actor.sync_proposals();
-      const proposalsCount = extractOkResponse(resSync);
+      const [syncedProposalsCount, completedProposalsCount] = extractOkResponse(resSync);
 
       const res = await driver.actor.list_proposals({
         state: [],
       });
-      expectListProposalsResult(res, Number(proposalsCount));
+      expectListProposalsResult(res, Number(syncedProposalsCount));
+      expect(Number(completedProposalsCount)).toEqual(0);
     });
 
     it('should sync proposals recursively', async () => {
@@ -158,8 +161,6 @@ describe('Proposal', () => {
       rvmProposalIds = rvmProposalIds.concat(createdIds);
 
       await advanceTimeToSyncProposals();
-      // extra ticks to make fetch complete
-      await driver.pic.tick(2);
 
       const res = await driver.actor.list_proposals({ state: [] });
       expectListProposalsResult(res, totalProposals);

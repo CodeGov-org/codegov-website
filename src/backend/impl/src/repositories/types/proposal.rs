@@ -118,7 +118,9 @@ impl TryFrom<ProposalInfo> for Proposal {
     fn try_from(nns_proposal: ProposalInfo) -> Result<Self, Self::Error> {
         let proposal_id = nns_proposal
             .id
-            .ok_or(ApiError::internal("Proposal id is None"))?
+            .ok_or(ApiError::internal(
+                "Failed to map NNS proposal: Proposal id is None",
+            ))?
             .id;
 
         let nervous_system = NervousSystem::new_network(proposal_id, nns_proposal.clone());
