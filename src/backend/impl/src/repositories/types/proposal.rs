@@ -127,13 +127,17 @@ impl TryFrom<ProposalInfo> for Proposal {
 
         // the NNS proposal is casted to our proposal when it is fetched
         // from the NNS, so here it's fine to set the synced_at time to now
-        let date_time = get_date_time()?;
+        let date_time = get_date_time().and_then(DateTime::new)?;
 
         Ok(Proposal {
             nervous_system,
             state,
-            synced_at: DateTime::new(date_time)?,
-            review_completed_at: None,
+            synced_at: date_time,
+            review_completed_at: if let ReviewPeriodState::Completed = state {
+                Some(date_time)
+            } else {
+                None
+            },
         })
     }
 }
