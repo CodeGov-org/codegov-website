@@ -14,6 +14,7 @@ import { ProposalResponse, type ListProposalsResponse } from '@cg/backend';
 const MS_IN_MINUTE = 60 * 1000;
 
 const PROPOSAL_SYNC_INTERVAL_MS = 5 * MS_IN_MINUTE; // 5 minutes
+const FETCH_PROPOSALS_LIMIT = 50; // same as on the canister
 
 describe('Proposal', () => {
   let driver: TestDriver;
@@ -29,12 +30,12 @@ describe('Proposal', () => {
     await driver.advanceTime(REVIEW_PERIOD_MS + 1);
   };
 
-  const createRvmProposalsBatch = async (
-    neuronId: bigint,
-    count: number,
-  ): Promise<bigint[]> => {
+  const createRvmProposalsBatch = async (count: number): Promise<bigint[]> => {
     const ids = [];
     for (let i = 0; i < count; i++) {
+      // Create a neuron for each proposal to avoid incurring in neuron's lack of funds.
+      // Not an optimal solution, but increasing the staked ICPs doesn't seem to work
+      const neuronId = await governance.createNeuron(nnsProposerIdentity);
       const rvmProposalId = await governance.createRvmProposal(
         nnsProposerIdentity,
         {
@@ -67,8 +68,7 @@ describe('Proposal', () => {
   beforeEach(async () => {
     driver = await TestDriver.createWithNnsState();
     governance = new Governance(driver.pic);
-    const neuronId = await governance.createNeuron(nnsProposerIdentity);
-    rvmProposalIds = await createRvmProposalsBatch(neuronId, rvmProposalsCount);
+    rvmProposalIds = await createRvmProposalsBatch(rvmProposalsCount);
   });
 
   afterEach(async () => {
@@ -147,6 +147,22 @@ describe('Proposal', () => {
         state: [],
       });
       expectListProposalsResult(res, Number(proposalsCount));
+    });
+
+    it('should sync proposals recursively', async () => {
+      // create more proposals than FETCH_PROPOSALS_LIMIT
+      const totalProposals = FETCH_PROPOSALS_LIMIT + 5;
+      const createdIds = await createRvmProposalsBatch(
+        totalProposals - rvmProposalsCount,
+      );
+      rvmProposalIds = rvmProposalIds.concat(createdIds);
+
+      await advanceTimeToSyncProposals();
+      // extra ticks to make fetch complete
+      await driver.pic.tick(2);
+
+      const res = await driver.actor.list_proposals({ state: [] });
+      expectListProposalsResult(res, totalProposals);
     });
   });
 
