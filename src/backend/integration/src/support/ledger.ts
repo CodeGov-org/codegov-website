@@ -69,7 +69,7 @@ export class Ledger {
     });
     if ('Err' in result) {
       const error = result.Err;
-      throw new Error(`${error}`);
+      throw new Error(JSON.stringify(error));
     }
 
     const updatedFromBalance = await this.actor.icrc1_balance_of({
