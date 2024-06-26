@@ -136,23 +136,8 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
                     self.proposal_repository.update_proposal(
                         id,
                         Proposal {
+                            // only patch the proposal info
                             nervous_system: proposal.nervous_system.clone(),
-                            // overwrite the state if the fetched proposal
-                            // is not open anymore
-                            state: if proposal.is_completed() {
-                                proposal.state
-                            } else {
-                                existing_proposal.state
-                            },
-                            // overwrite the review_completed_at if the fetched proposal
-                            // is not open anymore and the existing proposal does not have it
-                            review_completed_at: if proposal.is_completed()
-                                && existing_proposal.review_completed_at.is_none()
-                            {
-                                proposal.review_completed_at
-                            } else {
-                                existing_proposal.review_completed_at
-                            },
                             ..existing_proposal
                         },
                     )?;
