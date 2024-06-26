@@ -136,8 +136,9 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
                     self.proposal_repository.update_proposal(
                         id,
                         Proposal {
-                            // only patch the proposal info
+                            // only patch the proposal info and the synced_at field
                             nervous_system: proposal.nervous_system.clone(),
+                            synced_at: proposal.synced_at,
                             ..existing_proposal
                         },
                     )?;
