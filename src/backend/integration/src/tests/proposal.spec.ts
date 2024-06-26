@@ -143,7 +143,8 @@ describe('Proposal', () => {
 
       driver.actor.setIdentity(adminIdentity);
       const resSync = await driver.actor.sync_proposals();
-      const [syncedProposalsCount, completedProposalsCount] = extractOkResponse(resSync);
+      const [syncedProposalsCount, completedProposalsCount] =
+        extractOkResponse(resSync);
 
       const res = await driver.actor.list_proposals({
         state: [],
