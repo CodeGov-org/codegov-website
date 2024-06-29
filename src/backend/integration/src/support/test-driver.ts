@@ -11,7 +11,7 @@ import { controllerIdentity } from './identity';
 import { UsersOM } from './users';
 
 const NNS_SUBNET_ID =
-  'k4k2h-6cowo-iv7vz-folng-s4kpf-4gip2-ctegr-vpamy-t4fwp-4pau6-xqe';
+  'rtjtm-svxtv-4remx-pabjc-u5viw-am5ew-v4ppc-ozs5u-xmzbc-4ndhz-3ae';
 
 const NNS_STATE_PATH = resolve(
   __dirname,
@@ -23,7 +23,7 @@ const NNS_STATE_PATH = resolve(
   'state',
 );
 
-const NNS_CREATION_DATE = new Date(2024, 5, 22, 15, 5, 0, 0);
+const NNS_CREATION_DATE = new Date(2024, 6, 29, 13, 55, 0, 0);
 
 export const BACKEND_WASM_PATH = resolve(
   __dirname,
