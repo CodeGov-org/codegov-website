@@ -1,27 +1,15 @@
-use crate::repositories::{
-    NervousSystem, NnsProposalTopic, Proposal, ProposalId, ReviewPeriodState,
-};
+use crate::repositories::{NervousSystem, Proposal, ProposalId, ReviewPeriodState};
 use backend_api::GetProposalResponse;
-
-impl From<NnsProposalTopic> for backend_api::NnsProposalTopic {
-    fn from(value: NnsProposalTopic) -> Self {
-        match value {
-            NnsProposalTopic::ReplicaVersionManagement => {
-                backend_api::NnsProposalTopic::ReplicaVersionManagement
-            }
-            NnsProposalTopic::SystemCanisterManagement => {
-                backend_api::NnsProposalTopic::SystemCanisterManagement
-            }
-        }
-    }
-}
 
 impl From<NervousSystem> for backend_api::NervousSystem {
     fn from(value: NervousSystem) -> Self {
         match value {
-            NervousSystem::Network { id, topic } => backend_api::NervousSystem::Network {
-                id,
-                topic: topic.into(),
+            NervousSystem::Network {
+                proposal_id,
+                proposal_info,
+            } => backend_api::NervousSystem::Network {
+                id: proposal_id,
+                proposal_info,
             },
         }
     }
@@ -48,11 +36,9 @@ impl From<backend_api::ReviewPeriodState> for ReviewPeriodState {
 impl From<Proposal> for backend_api::Proposal {
     fn from(value: Proposal) -> Self {
         backend_api::Proposal {
-            title: value.title,
-            nervous_system: value.nervous_system.into(),
+            nervous_system: value.nervous_system.clone().into(),
             state: value.state.into(),
-            proposed_at: value.proposed_at.to_string(),
-            proposed_by: value.proposed_by,
+            proposed_at: value.proposed_at().unwrap().to_string(),
             synced_at: value.synced_at.to_string(),
             review_completed_at: value.review_completed_at.map(|dt| dt.to_string()),
         }

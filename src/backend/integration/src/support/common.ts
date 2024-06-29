@@ -16,9 +16,6 @@ type BackendActorService = Actor<_SERVICE>;
 /**
  * Creates an RVM proposal and syncs the proposals on the backend canister.
  *
- * Make sure the `title` param is unique, as it is used to find
- * the newly created proposal id in the backend canister.
- *
  * @returns {Promise<string>} the backend canister id of created proposal
  */
 export async function createProposal(
@@ -28,15 +25,15 @@ export async function createProposal(
 ): Promise<string> {
   const neuronId = await governance.createNeuron(nnsProposerIdentity);
 
-  // randomize the proposal title to make it unique
-  const proposalTitle = title + Math.random().toString();
-
-  await governance.createRvmProposal(nnsProposerIdentity, {
-    neuronId: neuronId,
-    title: proposalTitle,
-    summary: 'Test Proposal Summary',
-    replicaVersion: 'ca82a6dff817ec66f44342007202690a93763949',
-  });
+  const rvmProposalId = await governance.createRvmProposal(
+    nnsProposerIdentity,
+    {
+      neuronId,
+      title,
+      summary: 'Test Proposal Summary',
+      replicaVersion: 'ca82a6dff817ec66f44342007202690a93763949',
+    },
+  );
 
   actor.setIdentity(controllerIdentity);
 
@@ -46,13 +43,24 @@ export async function createProposal(
   });
   const { proposals } = extractOkResponse(res);
 
-  const proposal = proposals.find(p => p.proposal.title === proposalTitle);
+  const proposal = proposals.find(
+    p =>
+      p.proposal.nervous_system.network.proposal_info.id[0]!.id ===
+      rvmProposalId,
+  );
   if (!proposal) {
-    throw new Error(`Could not find proposal with title ${title}`);
+    throw new Error(
+      `Could not find proposal with id ${rvmProposalId.toString()}`,
+    );
   }
 
   return proposal.id;
 }
+
+/**
+ * The review period is **48 hours** in milliseconds.
+ */
+export const REVIEW_PERIOD_MS = 48 * 60 * 60 * 1000;
 
 /**
  * Advances PIC's time in order to make the proposal complete.
@@ -63,7 +71,7 @@ export async function completeProposal(
   proposalId: string,
 ) {
   // advance time to make the proposal expire
-  await pic.advanceTime(48 * 60 * 60 * 1000); // 48 hours
+  await pic.advanceTime(REVIEW_PERIOD_MS);
   // ensure timers run
   await pic.tick(2);
 

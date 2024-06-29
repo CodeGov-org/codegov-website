@@ -51,6 +51,10 @@ impl DateTime {
     pub fn timestamp_micros(&self) -> u64 {
         self.0.timestamp_micros().try_into().unwrap()
     }
+
+    pub fn timestamp_seconds(&self) -> u64 {
+        self.0.timestamp().try_into().unwrap()
+    }
 }
 
 impl ToString for DateTime {

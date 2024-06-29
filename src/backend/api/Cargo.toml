@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 candid.workspace = true
 serde.workspace = true
+ic-nns-governance.workspace = true

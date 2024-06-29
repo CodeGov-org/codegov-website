@@ -112,7 +112,7 @@ export class Governance {
   public async createRvmProposal(
     identity: Identity,
     payload: CreateRvmProposalRequest,
-  ): Promise<void> {
+  ): Promise<bigint> {
     const rvmPayload = encodeUpdateElectedReplicaVersionsPayload({
       release_package_urls: [
         `https://download.dfinity.systems/ic/${payload.replicaVersion}/guest-os/update-img/update-img.tar.gz`,
@@ -156,6 +156,17 @@ export class Governance {
         throw new Error(
           `${result.Error.error_type}: ${result.Error.error_message}`,
         );
+      }
+
+      if ('MakeProposal' in result) {
+        const proposalId = result.MakeProposal.proposal_id[0];
+        if (proposalId) {
+          return proposalId.id;
+        } else {
+          throw new Error('No proposal id returned');
+        }
+      } else {
+        throw new Error('Result is not of type MakeProposal');
       }
     } finally {
       this.actor.setIdentity(this.defaultIdentity);

@@ -1,29 +1,28 @@
 use crate::{
     fixtures::date_time_a,
-    repositories::{
-        NervousSystem, NeuronId, NnsProposalTopic, Proposal, ProposalId, ReviewPeriodState,
-    },
+    repositories::{DateTime, NervousSystem, Proposal, ProposalId, ReviewPeriodState},
 };
+use ic_nns_governance::pb::v1::ProposalInfo;
 use rstest::*;
 
 use super::uuid;
 
 #[fixture]
-pub fn nns_proposer() -> NeuronId {
-    40
-}
-
-#[fixture]
-pub fn nns_replica_version_management_proposal() -> Proposal {
+pub fn nns_replica_version_management_proposal(
+    #[default(None)] proposed_at: Option<DateTime>,
+    #[default(None)] proposal_id: Option<u64>,
+) -> Proposal {
     Proposal {
-        title: "Elect new IC/Replica revision".to_string(),
         nervous_system: NervousSystem::Network {
-            id: 127094,
-            topic: NnsProposalTopic::ReplicaVersionManagement,
+            proposal_id: proposal_id.unwrap_or(127094),
+            proposal_info: ProposalInfo {
+                proposal_timestamp_seconds: proposed_at
+                    .unwrap_or(date_time_a())
+                    .timestamp_seconds(),
+                ..ProposalInfo::default()
+            },
         },
         state: ReviewPeriodState::InProgress,
-        proposed_at: date_time_a(),
-        proposed_by: nns_proposer(),
         // in a real world scenario, synced_at should be after the proposed_at date
         synced_at: date_time_a(),
         review_completed_at: None,
@@ -31,16 +30,21 @@ pub fn nns_replica_version_management_proposal() -> Proposal {
 }
 
 #[fixture]
-pub fn nns_replica_version_management_proposal_completed() -> Proposal {
+pub fn nns_replica_version_management_proposal_completed(
+    #[default(None)] proposed_at: Option<DateTime>,
+    #[default(None)] proposal_id: Option<u64>,
+) -> Proposal {
     Proposal {
-        title: "Elect new IC/Replica revision".to_string(),
         nervous_system: NervousSystem::Network {
-            id: 127094,
-            topic: NnsProposalTopic::ReplicaVersionManagement,
+            proposal_id: proposal_id.unwrap_or(127093),
+            proposal_info: ProposalInfo {
+                proposal_timestamp_seconds: proposed_at
+                    .unwrap_or(date_time_a())
+                    .timestamp_seconds(),
+                ..ProposalInfo::default()
+            },
         },
         state: ReviewPeriodState::Completed,
-        proposed_at: date_time_a(),
-        proposed_by: nns_proposer(),
         // these dates don't reflect a real world scenario
         synced_at: date_time_a(),
         review_completed_at: Some(date_time_a()),
@@ -50,8 +54,8 @@ pub fn nns_replica_version_management_proposal_completed() -> Proposal {
 #[fixture]
 pub fn nns_proposals() -> Vec<Proposal> {
     vec![
-        nns_replica_version_management_proposal(),
-        nns_replica_version_management_proposal_completed(),
+        nns_replica_version_management_proposal(None, None),
+        nns_replica_version_management_proposal_completed(None, None),
     ]
 }
 

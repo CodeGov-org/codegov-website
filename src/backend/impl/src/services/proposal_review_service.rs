@@ -518,7 +518,9 @@ mod tests {
             .expect_get_proposal_by_id()
             .once()
             .with(eq(proposal_id))
-            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+            .return_const(Some(fixtures::nns_replica_version_management_proposal(
+                None, None,
+            )));
         let mut pr_repository_mock = MockProposalReviewRepository::new();
         pr_repository_mock
             .expect_get_proposal_review_by_proposal_id_and_user_id()
@@ -697,7 +699,7 @@ mod tests {
             .once()
             .with(eq(proposal_id))
             .return_const(Some(
-                fixtures::nns_replica_version_management_proposal_completed(),
+                fixtures::nns_replica_version_management_proposal_completed(None, None),
             ));
         let mut pr_repository_mock = MockProposalReviewRepository::new();
         pr_repository_mock
@@ -746,7 +748,9 @@ mod tests {
             .expect_get_proposal_by_id()
             .once()
             .with(eq(proposal_id))
-            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+            .return_const(Some(fixtures::nns_replica_version_management_proposal(
+                None, None,
+            )));
         let mut pr_repository_mock = MockProposalReviewRepository::new();
         pr_repository_mock
             .expect_get_proposal_review_by_proposal_id_and_user_id()
@@ -929,7 +933,9 @@ mod tests {
             .expect_get_proposal_by_id()
             .once()
             .with(eq(original_proposal_review.proposal_id))
-            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+            .return_const(Some(fixtures::nns_replica_version_management_proposal(
+                None, None,
+            )));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
@@ -1052,7 +1058,7 @@ mod tests {
             .once()
             .with(eq(original_proposal_review.proposal_id))
             .return_const(Some(
-                fixtures::nns_replica_version_management_proposal_completed(),
+                fixtures::nns_replica_version_management_proposal_completed(None, None),
             ));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
 
@@ -1159,7 +1165,9 @@ mod tests {
             .expect_get_proposal_by_id()
             .once()
             .with(eq(original_proposal_review.proposal_id))
-            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+            .return_const(Some(fixtures::nns_replica_version_management_proposal(
+                None, None,
+            )));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
 
         let service = ProposalReviewServiceImpl::new(
@@ -1245,7 +1253,9 @@ mod tests {
             .expect_get_proposal_by_id()
             .once()
             .with(eq(original_proposal_review.proposal_id))
-            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+            .return_const(Some(fixtures::nns_replica_version_management_proposal(
+                None, None,
+            )));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
 
         let service = ProposalReviewServiceImpl::new(

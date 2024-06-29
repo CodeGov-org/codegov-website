@@ -3,7 +3,7 @@ use crate::system_api::get_date_time;
 use backend_api::ApiError;
 use candid::{CandidType, Decode, Deserialize, Encode};
 use chrono::Duration;
-use ic_nns_governance::pb::v1::{ProposalInfo, ProposalStatus, Topic};
+use ic_nns_governance::pb::v1::{ProposalInfo, ProposalStatus};
 use ic_stable_structures::{
     storable::{Blob, Bound},
     Storable,
@@ -13,41 +13,52 @@ use std::{borrow::Cow, ops::RangeBounds};
 pub type ProposalId = Uuid;
 pub type NervousSystemProposalId = u64;
 pub type NeuronId = u64;
+/// The internal Nervous System identifier.
+///
+/// Practically, to get the identifier of the nervous system that you need, you can use the [NervousSystem] enum:
+///
+/// ```rust
+/// let nervous_system_id = NervousSystem::NNS_ID;
+/// assert_eq!(nervous_system_id, 0);
+/// ```
+pub type NervousSystemId = u64;
 
-#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq)]
 pub enum NervousSystem {
     Network {
-        id: NervousSystemProposalId,
-        topic: NnsProposalTopic,
+        proposal_id: NervousSystemProposalId,
+        proposal_info: ProposalInfo,
     },
 }
 
 impl NervousSystem {
-    pub fn new_network(id: NervousSystemProposalId, topic: NnsProposalTopic) -> Self {
-        Self::Network { id, topic }
-    }
+    pub const NNS_ID: NervousSystemId = 0;
+    // add new nervous system ids here, for example:
+    // const OPEN_CHAT_ID: NervousSystemId = 1;
+}
 
-    pub fn id(&self) -> NervousSystemProposalId {
-        match self {
-            Self::Network { id, .. } => *id,
+impl NervousSystem {
+    pub fn new_network(proposal_id: NervousSystemProposalId, proposal_info: ProposalInfo) -> Self {
+        Self::Network {
+            proposal_id,
+            proposal_info,
         }
     }
-}
 
-#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
-pub enum NnsProposalTopic {
-    ReplicaVersionManagement,
-    SystemCanisterManagement,
-}
+    pub fn proposal_id(&self) -> NervousSystemProposalId {
+        match self {
+            Self::Network { proposal_id, .. } => *proposal_id,
+        }
+    }
 
-impl TryFrom<Topic> for NnsProposalTopic {
-    type Error = ApiError;
-
-    fn try_from(topic: Topic) -> Result<Self, Self::Error> {
-        match topic {
-            Topic::ReplicaVersionManagement => Ok(NnsProposalTopic::ReplicaVersionManagement),
-            Topic::NetworkCanisterManagement => Ok(NnsProposalTopic::SystemCanisterManagement),
-            _ => Err(ApiError::internal(&format!("Invalid topic: {:?}", topic))),
+    /// Returns the id of the nervous system that the proposal belongs to.
+    ///
+    /// This id is not related with the Nervous Systems at all.
+    /// It's just decided by us and mainly used for grouping the the proposals
+    /// in the [ProposalNervousSystemIdKey] index key.
+    pub fn nervous_system_id(&self) -> NervousSystemId {
+        match self {
+            Self::Network { .. } => Self::NNS_ID,
         }
     }
 }
@@ -77,19 +88,12 @@ impl From<ProposalStatus> for ReviewPeriodState {
     }
 }
 
-#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq)]
 pub struct Proposal {
-    /// The title of the proposal in the Nervous System.
-    pub title: String,
     /// The Nervous System that the proposal belongs to.
     pub nervous_system: NervousSystem,
     /// The internal state of the proposal's review period.
     pub state: ReviewPeriodState,
-    /// The timestamp of when the proposal was proposed
-    /// in the Nervous System.
-    pub proposed_at: DateTime,
-    /// The neuron id of the proposer in the Nervous System.
-    pub proposed_by: NeuronId,
     /// The timestamp of when the proposal was fetched from the Nervous System.
     pub synced_at: DateTime,
     /// The timestamp of when the proposal's review period is completed.
@@ -114,43 +118,28 @@ impl TryFrom<ProposalInfo> for Proposal {
     fn try_from(nns_proposal: ProposalInfo) -> Result<Self, Self::Error> {
         let proposal_id = nns_proposal
             .id
-            .ok_or(ApiError::internal("Proposal id is None"))?
+            .ok_or(ApiError::internal(
+                "Failed to map NNS proposal: Proposal id is None",
+            ))?
             .id;
 
-        let inner_proposal = nns_proposal
-            .clone()
-            .proposal
-            .ok_or(ApiError::internal("Inner proposal is None"))?;
-
-        let title = inner_proposal
-            .title
-            .unwrap_or_else(|| String::from("Title not available"));
-
-        let topic = nns_proposal.topic().try_into()?;
-        let nervous_system = NervousSystem::new_network(proposal_id, topic);
+        let nervous_system = NervousSystem::new_network(proposal_id, nns_proposal.clone());
 
         let state = nns_proposal.status().into();
 
-        let proposed_at =
-            DateTime::from_timestamp_micros(nns_proposal.proposal_timestamp_seconds * 1_000_000)?;
-
-        let proposed_by = nns_proposal
-            .proposer
-            .ok_or(ApiError::internal("Proposer is None"))?
-            .id;
-
         // the NNS proposal is casted to our proposal when it is fetched
         // from the NNS, so here it's fine to set the synced_at time to now
-        let date_time = get_date_time()?;
+        let date_time = get_date_time().and_then(DateTime::new)?;
 
         Ok(Proposal {
-            title,
             nervous_system,
             state,
-            proposed_at,
-            proposed_by,
-            synced_at: DateTime::new(date_time)?,
-            review_completed_at: None,
+            synced_at: date_time,
+            review_completed_at: if let ReviewPeriodState::Completed = state {
+                Some(date_time)
+            } else {
+                None
+            },
         })
     }
 }
@@ -160,12 +149,22 @@ impl Proposal {
     /// and was proposed more than **48 hours** ago.
     pub fn is_pending(&self, current_time: &DateTime) -> bool {
         self.state == ReviewPeriodState::InProgress
-            && self.proposed_at <= current_time.sub(Duration::hours(48))
+            && self.proposed_at().unwrap() <= current_time.sub(Duration::hours(48))
     }
 
     /// Checks if the proposal is in [ReviewPeriodState::Completed] state.
     pub fn is_completed(&self) -> bool {
         self.state == ReviewPeriodState::Completed
+    }
+
+    pub fn proposed_at(&self) -> Result<DateTime, ApiError> {
+        let proposal_timestamp_seconds = match &self.nervous_system {
+            NervousSystem::Network { proposal_info, .. } => {
+                proposal_info.proposal_timestamp_seconds
+            }
+        };
+
+        DateTime::from_timestamp_micros(proposal_timestamp_seconds * 1_000_000)
     }
 }
 
@@ -210,18 +209,10 @@ pub struct ProposalStatusTimestampRange {
 }
 
 impl ProposalStatusTimestampRange {
-    pub fn new(state: Option<ReviewPeriodState>) -> Result<Self, ApiError> {
+    pub fn new(state: ReviewPeriodState) -> Result<Self, ApiError> {
         Ok(Self {
-            start_bound: ProposalStatusTimestampKey::new(
-                state.map(Into::into).unwrap_or(u8::MIN),
-                DateTime::min(),
-                Uuid::MIN,
-            )?,
-            end_bound: ProposalStatusTimestampKey::new(
-                state.map(Into::into).unwrap_or(u8::MAX),
-                DateTime::max()?,
-                Uuid::MAX,
-            )?,
+            start_bound: ProposalStatusTimestampKey::new(state.into(), DateTime::min(), Uuid::MIN)?,
+            end_bound: ProposalStatusTimestampKey::new(state.into(), DateTime::max()?, Uuid::MAX)?,
         })
     }
 }
@@ -236,6 +227,141 @@ impl RangeBounds<ProposalStatusTimestampKey> for ProposalStatusTimestampRange {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ProposalNervousSystemIdKey(Blob<{ Self::MAX_SIZE as usize }>);
+
+impl ProposalNervousSystemIdKey {
+    const MAX_SIZE: u32 =
+        <((NervousSystemId, NervousSystemProposalId), ProposalId)>::BOUND.max_size();
+
+    pub fn new(
+        nervous_system_id: NervousSystemId,
+        nervous_system_proposal_id: NervousSystemProposalId,
+        proposal_id: ProposalId,
+    ) -> Result<Self, ApiError> {
+        Ok(Self(
+            Blob::try_from(
+                ((nervous_system_id, nervous_system_proposal_id), proposal_id)
+                    .to_bytes()
+                    .as_ref(),
+            )
+            .map_err(|_| {
+                ApiError::internal(&format!(
+                    "Failed to convert nervous system id {:?}, nervous system proposal id {:?} and proposal id {:?} to bytes.",
+                    nervous_system_id, nervous_system_proposal_id, proposal_id
+                ))
+            })?,
+        ))
+    }
+}
+
+impl Storable for ProposalNervousSystemIdKey {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        self.0.to_bytes()
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Self(Blob::from_bytes(bytes))
+    }
+
+    const BOUND: Bound = Bound::Bounded {
+        max_size: Self::MAX_SIZE,
+        is_fixed_size: true,
+    };
+}
+
+pub struct ProposalNervousSystemIdRange {
+    start_bound: ProposalNervousSystemIdKey,
+    end_bound: ProposalNervousSystemIdKey,
+}
+
+impl ProposalNervousSystemIdRange {
+    pub fn new(
+        nervous_system_id: NervousSystemId,
+        nervous_system_proposal_id: NervousSystemProposalId,
+    ) -> Result<Self, ApiError> {
+        Ok(Self {
+            start_bound: ProposalNervousSystemIdKey::new(
+                nervous_system_id,
+                nervous_system_proposal_id,
+                Uuid::MIN,
+            )?,
+            end_bound: ProposalNervousSystemIdKey::new(
+                nervous_system_id,
+                nervous_system_proposal_id,
+                Uuid::MAX,
+            )?,
+        })
+    }
+}
+
+impl RangeBounds<ProposalNervousSystemIdKey> for ProposalNervousSystemIdRange {
+    fn start_bound(&self) -> std::ops::Bound<&ProposalNervousSystemIdKey> {
+        std::ops::Bound::Included(&self.start_bound)
+    }
+
+    fn end_bound(&self) -> std::ops::Bound<&ProposalNervousSystemIdKey> {
+        std::ops::Bound::Included(&self.end_bound)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ProposalTimestampKey(Blob<{ Self::MAX_SIZE as usize }>);
+
+impl ProposalTimestampKey {
+    const MAX_SIZE: u32 = <(DateTime, ProposalId)>::BOUND.max_size();
+
+    pub fn new(date_time: DateTime, proposal_id: ProposalId) -> Result<Self, ApiError> {
+        Ok(Self(
+            Blob::try_from((date_time, proposal_id).to_bytes().as_ref()).map_err(|_| {
+                ApiError::internal(&format!(
+                    "Failed to convert date time {:?} and proposal id {:?} to bytes.",
+                    date_time, proposal_id
+                ))
+            })?,
+        ))
+    }
+}
+
+impl Storable for ProposalTimestampKey {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        self.0.to_bytes()
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Self(Blob::from_bytes(bytes))
+    }
+
+    const BOUND: Bound = Bound::Bounded {
+        max_size: Self::MAX_SIZE,
+        is_fixed_size: true,
+    };
+}
+
+pub struct ProposalTimestampRange {
+    start_bound: ProposalTimestampKey,
+    end_bound: ProposalTimestampKey,
+}
+
+impl ProposalTimestampRange {
+    pub fn new() -> Result<Self, ApiError> {
+        Ok(Self {
+            start_bound: ProposalTimestampKey::new(DateTime::min(), Uuid::MIN)?,
+            end_bound: ProposalTimestampKey::new(DateTime::max()?, Uuid::MAX)?,
+        })
+    }
+}
+
+impl RangeBounds<ProposalTimestampKey> for ProposalTimestampRange {
+    fn start_bound(&self) -> std::ops::Bound<&ProposalTimestampKey> {
+        std::ops::Bound::Included(&self.start_bound)
+    }
+
+    fn end_bound(&self) -> std::ops::Bound<&ProposalTimestampKey> {
+        std::ops::Bound::Included(&self.end_bound)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -243,7 +369,7 @@ mod tests {
     use rstest::*;
 
     #[rstest]
-    #[case::nns_proposal(fixtures::nns_replica_version_management_proposal())]
+    #[case::nns_proposal(fixtures::nns_replica_version_management_proposal(None, None))]
     fn proposal_storable_impl(#[case] proposal: Proposal) {
         let serialized_proposal = proposal.to_bytes();
         let deserialized_proposal = Proposal::from_bytes(serialized_proposal);
@@ -270,6 +396,37 @@ mod tests {
     }
 
     #[rstest]
+    fn proposal_nervous_system_id_key_storable_impl() {
+        let nervous_system =
+            fixtures::nns_replica_version_management_proposal(None, None).nervous_system;
+        let proposal_id = fixtures::proposal_id();
+
+        let key = ProposalNervousSystemIdKey::new(
+            nervous_system.nervous_system_id(),
+            nervous_system.proposal_id(),
+            proposal_id,
+        )
+        .unwrap();
+        let serialized_key = key.to_bytes();
+        let deserialized_key = ProposalNervousSystemIdKey::from_bytes(serialized_key);
+
+        assert_eq!(key, deserialized_key);
+    }
+
+    #[rstest]
+    fn proposal_timestamp_key_storable_impl() {
+        let date_time = get_date_time().unwrap();
+        let proposal_id = fixtures::proposal_id();
+
+        let key =
+            ProposalTimestampKey::new(DateTime::new(date_time).unwrap(), proposal_id).unwrap();
+        let serialized_key = key.to_bytes();
+        let deserialized_key = ProposalTimestampKey::from_bytes(serialized_key);
+
+        assert_eq!(key, deserialized_key);
+    }
+
+    #[rstest]
     fn proposal_is_pending_and_is_completed() {
         let current_time = DateTime::new(get_date_time().unwrap()).unwrap();
         let in_progress_proposals = in_progress_proposals();
@@ -285,7 +442,8 @@ mod tests {
             assert!(!proposal.is_completed());
         }
 
-        let completed_proposal = fixtures::nns_replica_version_management_proposal_completed();
+        let completed_proposal =
+            fixtures::nns_replica_version_management_proposal_completed(None, None);
 
         assert!(!completed_proposal.is_pending(&current_time));
         assert!(completed_proposal.is_completed());
@@ -297,24 +455,32 @@ mod tests {
 
         vec![
             Proposal {
-                proposed_at: DateTime::new(current_time).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(DateTime::new(current_time).unwrap()),
+                    None,
+                )
             },
             Proposal {
-                proposed_at: DateTime::new(current_time - Duration::hours(12)).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(DateTime::new(current_time - Duration::hours(12)).unwrap()),
+                    None,
+                )
             },
             Proposal {
-                proposed_at: DateTime::new(current_time - Duration::hours(24)).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(DateTime::new(current_time - Duration::hours(24)).unwrap()),
+                    None,
+                )
             },
             Proposal {
-                proposed_at: DateTime::new(current_time - Duration::hours(36)).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(DateTime::new(current_time - Duration::hours(36)).unwrap()),
+                    None,
+                )
             },
         ]
     }
@@ -325,17 +491,21 @@ mod tests {
 
         vec![
             Proposal {
-                proposed_at: DateTime::new(
-                    current_time - Duration::hours(48) - Duration::minutes(1),
-                )
-                .unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(
+                        DateTime::new(current_time - Duration::hours(48) - Duration::minutes(1))
+                            .unwrap(),
+                    ),
+                    None,
+                )
             },
             Proposal {
-                proposed_at: DateTime::new(current_time - Duration::hours(60)).unwrap(),
                 state: ReviewPeriodState::InProgress,
-                ..fixtures::nns_replica_version_management_proposal()
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(DateTime::new(current_time - Duration::hours(60)).unwrap()),
+                    None,
+                )
             },
         ]
     }

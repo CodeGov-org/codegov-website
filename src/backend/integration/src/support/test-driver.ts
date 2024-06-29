@@ -11,19 +11,19 @@ import { controllerIdentity } from './identity';
 import { UsersOM } from './users';
 
 const NNS_SUBNET_ID =
-  '2o3zy-oo4hc-r3mtq-ylrpf-g6qge-qmuzn-2bsuv-d3yhd-e4qjc-6ff2b-6ae';
+  'rtjtm-svxtv-4remx-pabjc-u5viw-am5ew-v4ppc-ozs5u-xmzbc-4ndhz-3ae';
 
 const NNS_STATE_PATH = resolve(
   __dirname,
   '..',
   '..',
   'state',
-  'proposal_reviews_nns_state',
+  'nns_state',
   'node-100',
   'state',
 );
 
-const NNS_CREATION_DATE = new Date(2024, 3, 25, 0, 0, 0, 0);
+const NNS_CREATION_DATE = new Date(2024, 6, 29, 13, 55, 0, 0);
 
 export const BACKEND_WASM_PATH = resolve(
   __dirname,
@@ -40,6 +40,14 @@ export const BACKEND_WASM_PATH = resolve(
 );
 
 export class TestDriver {
+  /**
+   * Keeps track of the PIC's total time advanced when using {@link advanceTime}.
+   */
+  public get advancedTimeMs(): number {
+    return this.#advancedTimeMs;
+  }
+  #advancedTimeMs = 0;
+
   public get actor(): Actor<BackendService> {
     return this.fixture.actor;
   }
@@ -115,6 +123,14 @@ export class TestDriver {
 
   public async tearDown(): Promise<void> {
     await this.pic.tearDown();
+  }
+
+  public async advanceTime(millis: number): Promise<void> {
+    await this.pic.advanceTime(millis);
+    // make sure eventual timers run
+    await this.pic.tick(2);
+
+    this.#advancedTimeMs += millis;
   }
 
   private createActor(): Actor<BackendService> {
