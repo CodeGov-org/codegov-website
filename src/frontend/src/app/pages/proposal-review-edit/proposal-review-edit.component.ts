@@ -14,8 +14,8 @@ import { CardComponent } from '@cg/angular-ui';
 import { GetProposalReviewCommitResponse } from '~core/api';
 import { ProposalService, ProposalState, ReviewService } from '~core/state';
 import { filterNotNil, routeParam, toSyncSignal } from '~core/utils';
-import { ReviewCommitsFormComponent } from './review-commits-form';
-import { ReviewDetailsFormComponent } from './review-details-form';
+// import { ReviewCommitsFormComponent } from './review-commits-form';
+// import { ReviewDetailsFormComponent } from './review-details-form';
 
 @Component({
   selector: 'app-proposal-review-edit',
@@ -24,8 +24,8 @@ import { ReviewDetailsFormComponent } from './review-details-form';
     CommonModule,
     ReactiveFormsModule,
     CardComponent,
-    ReviewCommitsFormComponent,
-    ReviewDetailsFormComponent,
+    // ReviewCommitsFormComponent,
+    // ReviewDetailsFormComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -56,13 +56,13 @@ import { ReviewDetailsFormComponent } from './review-details-form';
       </cg-card>
 
       <h2 class="h3">Commits</h2>
-      <app-review-commits-form />
+      <!-- <app-review-commits-form /> -->
 
       <cg-card class="review-card">
         <h2 class="h3" slot="cardTitle">Review details</h2>
 
         <div slot="cardContent">
-          <app-review-details-form />
+          <!-- <app-review-details-form /> -->
         </div>
       </cg-card>
     }
@@ -72,6 +72,7 @@ export class ProposalReviewEditComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly proposalService = inject(ProposalService);
   private readonly reviewService = inject(ReviewService);
+  // private readonly reviewSubmissionService = inject(ReviewSubmissionService);
 
   public readonly currentProposal = toSyncSignal(
     this.proposalService.currentProposal$,
@@ -84,6 +85,7 @@ export class ProposalReviewEditComponent implements OnInit {
   constructor() {
     routeParam('id').subscribe(proposalId => {
       this.proposalService.setCurrentProposalId(proposalId);
+      // this.reviewSubmissionService.loadOrCreateReview(proposalId);
     });
 
     this.proposalService.currentProposal$
@@ -91,6 +93,8 @@ export class ProposalReviewEditComponent implements OnInit {
       .subscribe(proposal => {
         if (proposal.state === ProposalState.Completed) {
           this.router.navigate(['review', 'view', { id: proposal.id }]);
+        } else {
+          // this.reviewSubmissionService.loadOrCreateReview();
         }
       });
   }
