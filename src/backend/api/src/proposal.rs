@@ -42,3 +42,9 @@ pub struct ListProposalsRequest {
 pub struct ListProposalsResponse {
     pub proposals: Vec<GetProposalResponse>,
 }
+
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq)]
+pub struct SyncProposalsResponse {
+    pub synced_proposals_count: usize,
+    pub completed_proposals_count: usize,
+}

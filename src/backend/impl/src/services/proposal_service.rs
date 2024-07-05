@@ -8,7 +8,10 @@ use crate::{
     },
     system_api::get_date_time,
 };
-use backend_api::{ApiError, GetProposalResponse, ListProposalsRequest, ListProposalsResponse};
+use backend_api::{
+    ApiError, GetProposalResponse, ListProposalsRequest, ListProposalsResponse,
+    SyncProposalsResponse,
+};
 use candid::Principal;
 use external_canisters::nns::GovernanceCanisterService;
 use ic_nns_common::pb::v1::ProposalId as NnsProposalId;
@@ -77,7 +80,7 @@ pub trait ProposalService {
         request: ListProposalsRequest,
     ) -> Result<ListProposalsResponse, ApiError>;
 
-    async fn fetch_and_save_nns_proposals(&self) -> Result<(usize, usize), ApiError>;
+    async fn fetch_and_save_nns_proposals(&self) -> Result<SyncProposalsResponse, ApiError>;
 
     fn complete_pending_proposals(&self) -> Result<usize, ApiError>;
 }
@@ -121,7 +124,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
         Ok(ListProposalsResponse { proposals })
     }
 
-    async fn fetch_and_save_nns_proposals(&self) -> Result<(usize, usize), ApiError> {
+    async fn fetch_and_save_nns_proposals(&self) -> Result<SyncProposalsResponse, ApiError> {
         // recursively fetch all proposals until the canister returns less proposals than the limit
         let mut proposals = vec![];
         let mut before_proposal = None;
@@ -162,7 +165,10 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
             .fetch_and_complete_missing_proposals(&proposals)
             .await?;
 
-        Ok((proposals.len(), completed_proposals_count))
+        Ok(SyncProposalsResponse {
+            synced_proposals_count: proposals.len(),
+            completed_proposals_count,
+        })
     }
 
     fn complete_pending_proposals(&self) -> Result<usize, ApiError> {

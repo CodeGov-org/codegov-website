@@ -145,14 +145,14 @@ describe('Proposal', () => {
 
       driver.actor.setIdentity(adminIdentity);
       const resSync = await driver.actor.sync_proposals();
-      const [syncedProposalsCount, completedProposalsCount] =
+      const { synced_proposals_count, completed_proposals_count } =
         extractOkResponse(resSync);
 
       const res = await driver.actor.list_proposals({
         state: [],
       });
-      expectListProposalsResult(res, Number(syncedProposalsCount));
-      expect(Number(completedProposalsCount)).toEqual(0);
+      expectListProposalsResult(res, Number(synced_proposals_count));
+      expect(Number(completed_proposals_count)).toEqual(0);
     });
 
     it('should sync proposals recursively', async () => {
