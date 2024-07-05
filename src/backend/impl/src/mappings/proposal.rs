@@ -1,5 +1,5 @@
 use crate::repositories::{NervousSystem, Proposal, ProposalId, ReviewPeriodState};
-use backend_api::GetProposalResponse;
+use backend_api::{ApiError, GetProposalResponse};
 
 impl From<NervousSystem> for backend_api::NervousSystem {
     fn from(value: NervousSystem) -> Self {
@@ -33,24 +33,25 @@ impl From<backend_api::ReviewPeriodState> for ReviewPeriodState {
     }
 }
 
-impl From<Proposal> for backend_api::Proposal {
-    fn from(value: Proposal) -> Self {
-        backend_api::Proposal {
+impl TryFrom<Proposal> for backend_api::Proposal {
+    type Error = ApiError;
+    fn try_from(value: Proposal) -> Result<Self, ApiError> {
+        Ok(backend_api::Proposal {
             nervous_system: value.nervous_system.clone().into(),
             state: value.state.into(),
-            proposed_at: value.proposed_at().unwrap().to_string(),
+            proposed_at: value.proposed_at()?.to_string(),
             synced_at: value.synced_at.to_string(),
             review_completed_at: value.review_completed_at.map(|dt| dt.to_string()),
-        }
+        })
     }
 }
 
 pub fn map_get_proposal_response(
     proposal_id: ProposalId,
     proposal: Proposal,
-) -> GetProposalResponse {
-    GetProposalResponse {
+) -> Result<GetProposalResponse, ApiError> {
+    Ok(GetProposalResponse {
         id: proposal_id.to_string(),
-        proposal: proposal.into(),
-    }
+        proposal: proposal.try_into()?,
+    })
 }

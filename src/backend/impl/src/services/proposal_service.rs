@@ -101,7 +101,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
                 ApiError::not_found(&format!("Proposal with id {} not found", &id.to_string()))
             })?;
 
-        Ok(map_get_proposal_response(id, proposal))
+        map_get_proposal_response(id, proposal)
     }
 
     fn list_proposals(
@@ -116,7 +116,7 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
             .into_iter()
             .rev()
             .map(|(id, proposal)| map_get_proposal_response(id, proposal))
-            .collect();
+            .collect::<Result<Vec<_>, _>>()?;
 
         Ok(ListProposalsResponse { proposals })
     }
@@ -266,7 +266,7 @@ mod tests {
             result,
             GetProposalResponse {
                 id: proposal_id.to_string(),
-                proposal: proposal.into(),
+                proposal: proposal.try_into().unwrap(),
             },
         )
     }
@@ -305,11 +305,12 @@ mod tests {
 
         let service = ProposalServiceImpl::new(repository_mock);
 
-        let expected: Vec<_> = fixtures::nns_proposals_with_ids()
+        let expected = fixtures::nns_proposals_with_ids()
             .into_iter()
             .rev()
             .map(|(id, proposal)| map_get_proposal_response(id, proposal))
-            .collect();
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
 
         let result = service
             .list_proposals(ListProposalsRequest { state: None })

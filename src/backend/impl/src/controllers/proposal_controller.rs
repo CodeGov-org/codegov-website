@@ -196,10 +196,11 @@ mod tests {
 
     #[rstest]
     fn list_proposals() {
-        let proposals: Vec<_> = fixtures::nns_proposals_with_ids()
+        let proposals = fixtures::nns_proposals_with_ids()
             .into_iter()
             .map(|(id, proposal)| map_get_proposal_response(id, proposal))
-            .collect();
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
 
         let access_control_service_mock = MockAccessControlService::new();
         let log_service_mock = MockLogService::new();
