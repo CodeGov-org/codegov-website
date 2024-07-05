@@ -188,16 +188,16 @@ impl<T: ProposalRepository> ProposalServiceImpl<T> {
             .proposal_repository
             .get_proposals(Some(ReviewPeriodState::InProgress))?;
         let missing_proposals: Vec<(ProposalId, Proposal)> = in_progress_proposals
-            .iter()
+            .into_iter()
             .filter_map(|(internal_id, proposal)| {
                 let proposal_id = proposal.nervous_system.proposal_id();
-                let is_missing = nns_proposals
+                let already_exists = nns_proposals
                     .iter()
-                    .all(|p| p.id.map_or(true, |nns_id| nns_id.id != proposal_id));
-                if is_missing {
-                    Some((*internal_id, proposal.clone()))
-                } else {
+                    .any(|p| p.id.map_or(false, |nns_id| nns_id.id == proposal_id));
+                if already_exists {
                     None
+                } else {
+                    Some((internal_id, proposal))
                 }
             })
             .collect();

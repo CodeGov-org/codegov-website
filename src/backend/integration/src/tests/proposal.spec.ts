@@ -22,10 +22,12 @@ describe('Proposal', () => {
   const rvmProposalsCount = 10;
   let rvmProposalIds: bigint[] = [];
 
-  const advanceTimeToSyncProposals = async () => {
-    await driver.advanceTime(PROPOSAL_SYNC_INTERVAL_MS + 1);
+  const advanceTimeToSyncProposals = async (): Promise<number> => {
+    const advanceMillis = PROPOSAL_SYNC_INTERVAL_MS + 1;
+    await driver.advanceTime(advanceMillis);
     // extra ticks to make sure all timer are completed
     await driver.pic.tick(2);
+    return advanceMillis;
   };
 
   const advanceTimeToCompleteProposals = async () => {
@@ -170,7 +172,7 @@ describe('Proposal', () => {
 
   describe('complete proposals', () => {
     it('should not complete proposals before review deadline', async () => {
-      await advanceTimeToSyncProposals();
+      const advancedTimeMs = await advanceTimeToSyncProposals();
 
       const resInProgress = await driver.actor.list_proposals({
         state: [{ in_progress: null }],
@@ -178,7 +180,7 @@ describe('Proposal', () => {
       expectListProposalsResult(resInProgress);
 
       // advance time, but do not reach the review deadline
-      await driver.advanceTime(REVIEW_PERIOD_MS - driver.advancedTimeMs - 1);
+      await driver.advanceTime(REVIEW_PERIOD_MS - advancedTimeMs - 1);
 
       const resCompleted = await driver.actor.list_proposals({
         state: [{ completed: null }],

@@ -40,14 +40,6 @@ export const BACKEND_WASM_PATH = resolve(
 );
 
 export class TestDriver {
-  /**
-   * Keeps track of the PIC's total time advanced when using {@link advanceTime}.
-   */
-  public get advancedTimeMs(): number {
-    return this.#advancedTimeMs;
-  }
-  #advancedTimeMs = 0;
-
   public get actor(): Actor<BackendService> {
     return this.fixture.actor;
   }
@@ -129,8 +121,6 @@ export class TestDriver {
     await this.pic.advanceTime(millis);
     // make sure eventual timers run
     await this.pic.tick(2);
-
-    this.#advancedTimeMs += millis;
   }
 
   private createActor(): Actor<BackendService> {
