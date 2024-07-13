@@ -1,12 +1,3 @@
-use backend_api::{
-    ApiError, ApiResult, CreateProposalReviewImageRequest, CreateProposalReviewImageResponse,
-    CreateProposalReviewRequest, CreateProposalReviewResponse, DeleteProposalReviewImageRequest,
-    GetProposalReviewRequest, GetProposalReviewResponse, ListProposalReviewsRequest,
-    ListProposalReviewsResponse, UpdateProposalReviewRequest,
-};
-use candid::Principal;
-use ic_cdk::*;
-
 use crate::{
     repositories::{
         CertificationRepositoryImpl, ImageRepositoryImpl, ProposalRepositoryImpl,
@@ -18,6 +9,15 @@ use crate::{
         ProposalReviewServiceImpl,
     },
 };
+use backend_api::{
+    ApiError, ApiResult, CreateProposalReviewImageRequest, CreateProposalReviewImageResponse,
+    CreateProposalReviewRequest, CreateProposalReviewResponse, DeleteProposalReviewImageRequest,
+    GetMyProposalReviewRequest, GetMyProposalReviewResponse, GetProposalReviewRequest,
+    GetProposalReviewResponse, ListProposalReviewsRequest, ListProposalReviewsResponse,
+    UpdateProposalReviewRequest,
+};
+use candid::Principal;
+use ic_cdk::*;
 
 #[update]
 async fn create_proposal_review(
@@ -78,6 +78,17 @@ fn delete_proposal_review_image(request: DeleteProposalReviewImageRequest) -> Ap
 
     ProposalReviewController::default()
         .delete_proposal_review_image(calling_principal, request)
+        .into()
+}
+
+#[query]
+fn get_my_proposal_review(
+    request: GetMyProposalReviewRequest,
+) -> ApiResult<GetMyProposalReviewResponse> {
+    let calling_principal = caller();
+
+    ProposalReviewController::default()
+        .get_my_proposal_review(calling_principal, request)
         .into()
 }
 
@@ -172,6 +183,20 @@ impl<A: AccessControlService, P: ProposalReviewService> ProposalReviewController
         self.proposal_review_service
             .create_proposal_review_image(calling_principal, request)
             .await
+    }
+
+    fn get_my_proposal_review(
+        &self,
+        calling_principal: Principal,
+        request: GetMyProposalReviewRequest,
+    ) -> Result<GetMyProposalReviewResponse, ApiError> {
+        self.access_control_service
+            .assert_principal_not_anonymous(&calling_principal)?;
+        self.access_control_service
+            .assert_principal_is_reviewer(&calling_principal)?;
+
+        self.proposal_review_service
+            .get_my_proposal_review(calling_principal, request)
     }
 
     fn delete_proposal_review_image(

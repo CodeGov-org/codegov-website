@@ -4,4 +4,4 @@ export * from './governance';
 export * from './identity';
 export * from './http';
 export * from './response';
-export * from './wasm';
+export * from './test-driver';

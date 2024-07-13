@@ -1,5 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import {
+  ActivatedRoute,
+  RouterModule,
+  convertToParamMap,
+} from '@angular/router';
 import { of } from 'rxjs';
 
 import {
@@ -35,7 +39,7 @@ describe('ProposalDetailsComponent', () => {
   let fixture: ComponentFixture<ProposalDetailsComponent>;
   let proposalServiceMock: ProposalServiceMock;
   let profileServiceMock: ProfileServiceMock;
-  let activatedRoute: ActivatedRouteMock;
+  let activatedRouteMock: ActivatedRouteMock;
   let reviewServiceMock: ReviewServiceMock;
 
   beforeEach(async () => {
@@ -52,6 +56,7 @@ describe('ProposalDetailsComponent', () => {
         state: ProposalState.InProgress,
         reviewPeriodEnd: new Date(2024, 1, 17, 1, 1, 25),
         votingPeriodEnd: new Date(2024, 1, 19, 1, 1, 25),
+        reviewCompletedAt: null,
         proposedAt: new Date(2024, 1, 15, 1, 1, 25),
         proposedBy: 432432432423n,
         summary: 'Elect new replica binary revision',
@@ -65,11 +70,16 @@ describe('ProposalDetailsComponent', () => {
     );
 
     profileServiceMock = profileServiceMockFactory();
+    defineProp(profileServiceMock, 'isAdmin$', of(false));
     defineProp(profileServiceMock, 'isReviewer$', of(true));
     defineProp(profileServiceMock, 'userProfile$', of(null));
 
-    activatedRoute = activatedRouteMockFactory();
-    activatedRoute.params = of([{ id: 1 }]);
+    activatedRouteMock = activatedRouteMockFactory();
+    defineProp(
+      activatedRouteMock,
+      'paramMap',
+      of(convertToParamMap([{ id: 1 }])),
+    );
 
     reviewServiceMock = reviewServiceMockFactory();
     defineProp(reviewServiceMock, 'proposalReviewList$', of([]));
@@ -83,7 +93,7 @@ describe('ProposalDetailsComponent', () => {
         { provide: ReviewService, useValue: reviewServiceMock },
         {
           provide: ActivatedRoute,
-          useValue: activatedRoute,
+          useValue: activatedRouteMock,
         },
       ],
     }).compileComponents();

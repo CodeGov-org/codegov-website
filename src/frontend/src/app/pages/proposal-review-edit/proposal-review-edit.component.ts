@@ -3,16 +3,17 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
-  effect,
+  computed,
+  inject,
 } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { filter, map } from 'rxjs';
+import { Router } from '@angular/router';
+import { first } from 'rxjs';
 
 import { CardComponent } from '@cg/angular-ui';
-import { ProposalService, ProposalState } from '~core/state';
-import { isNil } from '~core/utils';
+import { GetProposalReviewCommitResponse } from '~core/api';
+import { ProposalService, ProposalState, ReviewService } from '~core/state';
+import { filterNotNil, routeParam, toSyncSignal } from '~core/utils';
 import { ReviewCommitsFormComponent } from './review-commits-form';
 import { ReviewDetailsFormComponent } from './review-details-form';
 
@@ -68,42 +69,30 @@ import { ReviewDetailsFormComponent } from './review-details-form';
   `,
 })
 export class ProposalReviewEditComponent implements OnInit {
-  public readonly currentProposal = toSignal(
+  private readonly router = inject(Router);
+  private readonly proposalService = inject(ProposalService);
+  private readonly reviewService = inject(ReviewService);
+
+  public readonly currentProposal = toSyncSignal(
     this.proposalService.currentProposal$,
   );
-
-  private readonly proposalIdFromRoute$ = this.route.params.pipe(
-    map(params => {
-      try {
-        return params['id'];
-      } catch (error) {
-        return null;
-      }
-    }),
-    filter(Boolean),
+  public readonly review = toSyncSignal(this.reviewService.currentReview$);
+  public readonly reviewCommits = computed<GetProposalReviewCommitResponse[]>(
+    () => this.review()?.commits ?? [],
   );
 
-  constructor(
-    private readonly proposalService: ProposalService,
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
-  ) {
-    this.proposalIdFromRoute$
-      .pipe(takeUntilDestroyed())
-      .subscribe(proposalId => {
-        this.proposalService.setCurrentProposalId(proposalId);
-      });
-
-    effect(() => {
-      const proposal = this.currentProposal();
-      if (isNil(proposal)) {
-        return;
-      }
-
-      if (proposal.state === ProposalState.Completed) {
-        this.router.navigate(['review', 'view', { id: proposal.id }]);
-      }
+  constructor() {
+    routeParam('id').subscribe(proposalId => {
+      this.proposalService.setCurrentProposalId(proposalId);
     });
+
+    this.proposalService.currentProposal$
+      .pipe(filterNotNil(), first())
+      .subscribe(proposal => {
+        if (proposal.state === ProposalState.Completed) {
+          this.router.navigate(['review', 'view', { id: proposal.id }]);
+        }
+      });
   }
 
   public ngOnInit(): void {

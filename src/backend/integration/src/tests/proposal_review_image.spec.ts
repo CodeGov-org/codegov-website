@@ -6,87 +6,46 @@ import {
   it,
   expect,
 } from 'bun:test';
-import { resolve } from 'path';
-import { type _SERVICE } from '@cg/backend';
-import {
-  PocketIc,
-  type Actor,
-  generateRandomIdentity,
-  SubnetStateType,
-} from '@hadronous/pic';
-import { Principal } from '@dfinity/principal';
+import { generateRandomIdentity } from '@hadronous/pic';
 import {
   Governance,
+  TestDriver,
   VALID_IMAGE_BYTES,
   anonymousIdentity,
   completeProposal,
   controllerIdentity,
   createProposalReview,
   createProposalReviewWithImage,
-  createReviewer,
   extractErrResponse,
   extractOkResponse,
   publishProposalReview,
-  resetBackendCanister,
-  setupBackendCanister,
 } from '../support';
 import { CODEGOV_LOGO_PNG } from '../fixtures';
 
-const NNS_SUBNET_ID =
-  '2o3zy-oo4hc-r3mtq-ylrpf-g6qge-qmuzn-2bsuv-d3yhd-e4qjc-6ff2b-6ae';
-
-const NNS_STATE_PATH = resolve(
-  __dirname,
-  '..',
-  '..',
-  'state',
-  'proposal_reviews_nns_state',
-  'node-100',
-  'state',
-);
-
 describe('Proposal Review Image', () => {
-  let actor: Actor<_SERVICE>;
-  let pic: PocketIc;
-  let canisterId: Principal;
-
-  // set to any date after the NNS state has been generated
-  const initialDate = new Date(2024, 3, 25, 0, 0, 0, 0);
+  let driver: TestDriver;
 
   let governance: Governance;
 
   beforeAll(async () => {
-    pic = await PocketIc.create(process.env.PIC_URL, {
-      processingTimeoutMs: 10_000,
-      nns: {
-        state: {
-          type: SubnetStateType.FromPath,
-          path: NNS_STATE_PATH,
-          subnetId: Principal.fromText(NNS_SUBNET_ID),
-        },
-      },
-    });
-    await pic.setTime(initialDate.getTime());
+    driver = await TestDriver.createWithNnsState();
 
-    const fixture = await setupBackendCanister(pic);
-    actor = fixture.actor;
-    canisterId = fixture.canisterId;
-    governance = new Governance(pic);
+    governance = new Governance(driver.pic);
   });
 
   beforeEach(async () => {
-    await resetBackendCanister(pic, canisterId);
+    await driver.resetBackendCanister();
   });
 
   afterAll(async () => {
-    await pic.tearDown();
+    await driver.tearDown();
   });
 
   describe('create proposal review image', () => {
     it('should not allow anonymous principals', async () => {
-      actor.setIdentity(anonymousIdentity);
+      driver.actor.setIdentity(anonymousIdentity);
 
-      const res = await actor.create_proposal_review_image({
+      const res = await driver.actor.create_proposal_review_image({
         proposal_id: 'proposal-id',
         content_type: 'image/png',
         content_bytes: VALID_IMAGE_BYTES,
@@ -104,11 +63,11 @@ describe('Proposal Review Image', () => {
     it('should not allow non-reviewer principals', async () => {
       // as anonymous user
       const alice = generateRandomIdentity();
-      actor.setIdentity(alice);
+      driver.actor.setIdentity(alice);
 
-      await actor.create_my_user_profile();
+      await driver.actor.create_my_user_profile();
 
-      const resAnonymous = await actor.create_proposal_review_image({
+      const resAnonymous = await driver.actor.create_proposal_review_image({
         proposal_id: 'proposal-id',
         content_type: 'image/png',
         content_bytes: VALID_IMAGE_BYTES,
@@ -123,9 +82,9 @@ describe('Proposal Review Image', () => {
       });
 
       // as admin
-      actor.setIdentity(controllerIdentity);
+      driver.actor.setIdentity(controllerIdentity);
 
-      const resAdmin = await actor.create_proposal_review_image({
+      const resAdmin = await driver.actor.create_proposal_review_image({
         proposal_id: 'proposal-id',
         content_type: 'image/png',
         content_bytes: VALID_IMAGE_BYTES,
@@ -141,14 +100,13 @@ describe('Proposal Review Image', () => {
     });
 
     it('should not allow to create image for a proposal review that does not exist', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const nonExistentProposalId = 'c61d2984-16c6-4918-9e8b-ed8ee1b05680';
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const res = await actor.create_proposal_review_image({
+      const res = await driver.actor.create_proposal_review_image({
         proposal_id: nonExistentProposalId,
         content_type: 'image/png',
         content_bytes: VALID_IMAGE_BYTES,
@@ -162,20 +120,18 @@ describe('Proposal Review Image', () => {
     });
 
     it('should not allow a reviewer to create image of a proposal review that belongs to another reviewer', async () => {
-      const alice = generateRandomIdentity();
-      const bob = generateRandomIdentity();
-      await createReviewer(actor, alice);
-      await createReviewer(actor, bob);
+      const [alice] = await driver.users.createReviewer();
+      const [bob] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
-        actor,
+        driver.actor,
         governance,
         alice,
       );
 
-      actor.setIdentity(bob);
+      driver.actor.setIdentity(bob);
 
-      const res = await actor.create_proposal_review_image({
+      const res = await driver.actor.create_proposal_review_image({
         proposal_id: proposalId,
         content_type: 'image/png',
         content_bytes: VALID_IMAGE_BYTES,
@@ -189,18 +145,17 @@ describe('Proposal Review Image', () => {
     });
 
     it('should not allow a reviewer to create image for a proposal review of a completed proposal', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
-        actor,
+        driver.actor,
         governance,
         reviewer,
       );
-      await completeProposal(pic, actor, proposalId);
+      await completeProposal(driver.pic, driver.actor, proposalId);
 
-      actor.setIdentity(reviewer);
-      const res = await actor.create_proposal_review_image({
+      driver.actor.setIdentity(reviewer);
+      const res = await driver.actor.create_proposal_review_image({
         proposal_id: proposalId,
         content_type: 'image/png',
         content_bytes: VALID_IMAGE_BYTES,
@@ -215,17 +170,16 @@ describe('Proposal Review Image', () => {
     });
 
     it('should not allow a reviewer to create image for a proposal review that is already published', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
-        actor,
+        driver.actor,
         governance,
         reviewer,
       );
-      await publishProposalReview(actor, reviewer, proposalId);
+      await publishProposalReview(driver.actor, reviewer, proposalId);
 
-      const res = await actor.create_proposal_review_image({
+      const res = await driver.actor.create_proposal_review_image({
         proposal_id: proposalId,
         content_type: 'image/png',
         content_bytes: VALID_IMAGE_BYTES,
@@ -239,18 +193,17 @@ describe('Proposal Review Image', () => {
     });
 
     it('should allow a reviewer to upload image for a proposal review', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId, proposalReviewId } = await createProposalReview(
-        actor,
+        driver.actor,
         governance,
         reviewer,
       );
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const resCreate = await actor.create_proposal_review_image({
+      const resCreate = await driver.actor.create_proposal_review_image({
         proposal_id: proposalId,
         content_type: 'image/png',
         content_bytes: CODEGOV_LOGO_PNG,
@@ -260,7 +213,7 @@ describe('Proposal Review Image', () => {
       const imagePath = resCreateOk.path;
       expect(imagePath.startsWith('/images/reviews/')).toBe(true);
 
-      const resGet = await actor.get_proposal_review({
+      const resGet = await driver.actor.get_proposal_review({
         proposal_review_id: proposalReviewId,
       });
       const resGetOk = extractOkResponse(resGet);
@@ -269,22 +222,22 @@ describe('Proposal Review Image', () => {
     });
 
     it('should not allow to create image for a review with invalid fields', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId } = await createProposalReview(
-        actor,
+        driver.actor,
         governance,
         reviewer,
       );
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const resEmptyContentType = await actor.create_proposal_review_image({
-        proposal_id: proposalId,
-        content_type: '',
-        content_bytes: VALID_IMAGE_BYTES,
-      });
+      const resEmptyContentType =
+        await driver.actor.create_proposal_review_image({
+          proposal_id: proposalId,
+          content_type: '',
+          content_bytes: VALID_IMAGE_BYTES,
+        });
       const resEmptyContentTypeErr = extractErrResponse(resEmptyContentType);
 
       expect(resEmptyContentTypeErr).toEqual({
@@ -292,11 +245,12 @@ describe('Proposal Review Image', () => {
         message: 'Content type cannot be empty',
       });
 
-      const resWrongContentType = await actor.create_proposal_review_image({
-        proposal_id: proposalId,
-        content_type: 'wrong-content-type',
-        content_bytes: VALID_IMAGE_BYTES,
-      });
+      const resWrongContentType =
+        await driver.actor.create_proposal_review_image({
+          proposal_id: proposalId,
+          content_type: 'wrong-content-type',
+          content_bytes: VALID_IMAGE_BYTES,
+        });
       const resWrongContentTypeErr = extractErrResponse(resWrongContentType);
 
       expect(resWrongContentTypeErr).toEqual({
@@ -304,7 +258,7 @@ describe('Proposal Review Image', () => {
         message: 'Content type wrong-content-type not allowed',
       });
 
-      const resEmptyContent = await actor.create_proposal_review_image({
+      const resEmptyContent = await driver.actor.create_proposal_review_image({
         proposal_id: proposalId,
         content_type: 'image/png',
         content_bytes: new Uint8Array(),
@@ -320,20 +274,19 @@ describe('Proposal Review Image', () => {
 
   describe('delete proposal review image', () => {
     it('should allow a reviewer to delete image for a proposal review', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const { proposalId, proposalReviewId, imagePath } =
         await createProposalReviewWithImage(
-          actor,
+          driver.actor,
           governance,
           reviewer,
           VALID_IMAGE_BYTES,
         );
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const resDelete = await actor.delete_proposal_review_image({
+      const resDelete = await driver.actor.delete_proposal_review_image({
         proposal_id: proposalId,
         image_path: imagePath,
       });
@@ -341,7 +294,7 @@ describe('Proposal Review Image', () => {
 
       expect(resDeleteOk).toEqual(null);
 
-      const resGet = await actor.get_proposal_review({
+      const resGet = await driver.actor.get_proposal_review({
         proposal_review_id: proposalReviewId,
       });
       const resGetOk = extractOkResponse(resGet);
@@ -350,23 +303,22 @@ describe('Proposal Review Image', () => {
     });
 
     it('should not allow a reviewer to delete non-existent image for a proposal review', async () => {
-      const reviewer = generateRandomIdentity();
-      await createReviewer(actor, reviewer);
+      const [reviewer] = await driver.users.createReviewer();
 
       const nonExistentImagePath =
         '/images/reviews/5d98f6d8-a337-47d5-b8fc-e0f230444950';
 
       const { proposalId, proposalReviewId, imagePath } =
         await createProposalReviewWithImage(
-          actor,
+          driver.actor,
           governance,
           reviewer,
           VALID_IMAGE_BYTES,
         );
 
-      actor.setIdentity(reviewer);
+      driver.actor.setIdentity(reviewer);
 
-      const resDelete = await actor.delete_proposal_review_image({
+      const resDelete = await driver.actor.delete_proposal_review_image({
         proposal_id: proposalId,
         image_path: nonExistentImagePath,
       });
@@ -377,7 +329,7 @@ describe('Proposal Review Image', () => {
         message: `Image with path ${nonExistentImagePath} not found in proposal review for proposal with Id ${proposalId}`,
       });
 
-      const resGet = await actor.get_proposal_review({
+      const resGet = await driver.actor.get_proposal_review({
         proposal_review_id: proposalReviewId,
       });
       const resGetOk = extractOkResponse(resGet);

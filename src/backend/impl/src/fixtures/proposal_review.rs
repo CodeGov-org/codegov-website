@@ -12,9 +12,9 @@ pub fn proposal_review_draft() -> ProposalReview {
         created_at: date_time_a(),
         last_updated_at: None,
         status: ProposalReviewStatus::Draft,
-        summary: "Proposal review summary".to_string(),
-        review_duration_mins: 60,
-        build_reproduced: true,
+        summary: Some("Proposal review summary".to_string()),
+        review_duration_mins: Some(60),
+        build_reproduced: Some(true),
         images_ids: vec![],
     }
 }
@@ -27,9 +27,9 @@ pub fn proposal_review_published() -> ProposalReview {
         created_at: date_time_a(),
         last_updated_at: None,
         status: ProposalReviewStatus::Published,
-        summary: "Proposal review summary".to_string(),
-        review_duration_mins: 60,
-        build_reproduced: true,
+        summary: Some("Proposal review summary".to_string()),
+        review_duration_mins: Some(60),
+        build_reproduced: Some(true),
         images_ids: vec![uuid()],
     }
 }

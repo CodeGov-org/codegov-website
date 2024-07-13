@@ -14,36 +14,6 @@ import { Identity } from '@dfinity/agent';
 type BackendActorService = Actor<_SERVICE>;
 
 /**
- * Creates a user profile and sets the role to reviewer using the {@link controllerIdentity} identity.
- */
-export async function createReviewer(
-  actor: BackendActorService,
-  reviewer: Identity,
-): Promise<string> {
-  actor.setIdentity(reviewer);
-  const reviewerCreateRes = await actor.create_my_user_profile();
-  const reviewerCreate = extractOkResponse(reviewerCreateRes);
-
-  actor.setIdentity(controllerIdentity);
-  await actor.update_user_profile({
-    user_id: reviewerCreate.id,
-    username: ['reviewer'],
-    config: [
-      {
-        reviewer: {
-          bio: [],
-          wallet_address: [],
-          neuron_id: [],
-          social_links: [],
-        },
-      },
-    ],
-  });
-
-  return reviewerCreate.id;
-}
-
-/**
  * Creates an RVM proposal and syncs the proposals on the backend canister.
  *
  * Make sure the `title` param is unique, as it is used to find
@@ -289,9 +259,9 @@ export function validateProposalReview(
       status: expected.reviewStatus,
       created_at: expect.any(String),
       last_updated_at: expected.lastUpdatedAt ? [expected.lastUpdatedAt] : [],
-      summary: expect.any(String),
-      review_duration_mins: expect.any(Number),
-      build_reproduced: expect.any(Boolean),
+      summary: expect.any(Array),
+      review_duration_mins: expect.any(Array),
+      build_reproduced: expect.any(Array),
       images_paths: expect.any(Array),
       proposal_review_commits: expected.commits.commitSha.map(
         commitSha =>

@@ -1,83 +1,50 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-import {
-  GetProposalReviewResponse,
-  ListProposalReviewsResponse,
-} from '@cg/backend';
-import { BackendActorService } from '~core/services';
-import { extractOkResponse, isErr } from '~core/utils';
-import { mapReviewListResponse, mapReviewResponse } from './review.mapper';
-import { ProposalReview } from './review.model';
+import { GetProposalReviewResponse, ReviewApiService } from '~core/api';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ReviewService {
-  private proposalReviewListSubject = new BehaviorSubject<ProposalReview[]>([]);
+  private readonly reviewApiService = inject(ReviewApiService);
+
+  private readonly proposalReviewListSubject = new BehaviorSubject<
+    GetProposalReviewResponse[]
+  >([]);
   public readonly proposalReviewList$ =
     this.proposalReviewListSubject.asObservable();
 
-  private currentReviewSubject = new BehaviorSubject<ProposalReview | null>(
-    null,
-  );
+  private readonly currentReviewSubject =
+    new BehaviorSubject<GetProposalReviewResponse | null>(null);
   public readonly currentReview$ = this.currentReviewSubject.asObservable();
 
-  private userReviewListSubject = new BehaviorSubject<ProposalReview[]>([]);
+  private readonly userReviewListSubject = new BehaviorSubject<
+    GetProposalReviewResponse[]
+  >([]);
   public readonly userReviewList$ = this.userReviewListSubject.asObservable();
 
-  constructor(private readonly actorService: BackendActorService) {}
-
   public async loadReviewListByProposalId(proposalId: string): Promise<void> {
-    const getResponse = await this.actorService.list_proposal_reviews({
-      user_id: [],
-      proposal_id: [proposalId],
+    const getResponse = await this.reviewApiService.listProposalReviews({
+      proposalId,
     });
 
-    this.proposalReviewListSubject.next(this.getReviewList(getResponse));
+    this.proposalReviewListSubject.next(getResponse);
   }
 
-  public async loadReviewListByReviewerlId(reviewerId: string): Promise<void> {
-    const getResponse = await this.actorService.list_proposal_reviews({
-      user_id: [reviewerId],
-      proposal_id: [],
+  public async loadReviewListByReviewerId(userId: string): Promise<void> {
+    const getResponse = await this.reviewApiService.listProposalReviews({
+      userId,
     });
 
-    this.userReviewListSubject.next(this.getReviewList(getResponse));
+    this.userReviewListSubject.next(getResponse);
   }
 
-  public async loadReview(reviewId: string): Promise<void> {
-    const getResponse = await this.actorService.get_proposal_review({
-      proposal_review_id: reviewId,
+  public async loadReview(proposalReviewId: string): Promise<void> {
+    const getResponse = await this.reviewApiService.getProposalReview({
+      proposalReviewId,
     });
 
-    this.currentReviewSubject.next(this.getReview(getResponse));
-  }
-
-  public async createReview(proposalId: string): Promise<void> {
-    const createResponse = await this.actorService.create_proposal_review({
-      review_duration_mins: [],
-      summary: [],
-      proposal_id: proposalId,
-      build_reproduced: [],
-    });
-
-    if (isErr(createResponse)) {
-      throw new Error(
-        `${createResponse.err.code}: ${createResponse.err.message}`,
-      );
-    }
-  }
-
-  private getReviewList(
-    getResponse: ListProposalReviewsResponse,
-  ): ProposalReview[] {
-    return mapReviewListResponse(
-      extractOkResponse(getResponse).proposal_reviews,
-    );
-  }
-
-  private getReview(getResponse: GetProposalReviewResponse): ProposalReview {
-    return mapReviewResponse(extractOkResponse(getResponse));
+    this.currentReviewSubject.next(getResponse);
   }
 }
