@@ -76,7 +76,7 @@ impl CertificationRepositoryImpl {
         Self {}
     }
 
-    fn response_tree_path<'a>(request_path: &'a str) -> HttpCertificationPath<'a> {
+    fn response_tree_path(request_path: &str) -> HttpCertificationPath {
         if request_path == NOT_FOUND_PATH {
             return HttpCertificationPath::wildcard(NOT_FOUND_PATH);
         }
