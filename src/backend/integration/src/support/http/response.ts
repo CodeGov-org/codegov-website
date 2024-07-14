@@ -4,7 +4,7 @@ import { HttpResponse } from '@cg/backend';
 export const mapFromCanisterResponse = (response: HttpResponse): Response => {
   return {
     statusCode: response.status_code,
-    headers: response.headers,
+    headers: response.headers.map(([key, value]) => [key.toLowerCase(), value]),
     body: Uint8Array.from(response.body),
   };
 };

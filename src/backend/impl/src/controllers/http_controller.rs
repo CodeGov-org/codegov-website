@@ -39,15 +39,11 @@ impl<I: ImageService, H: HttpService> HttpController<I, H> {
         let req_path = req.get_path().expect("Missing path in request");
 
         if req_path.starts_with(IMAGES_BASE_PATH) {
-            if req.method != "GET" {
-                return self.image_service.http_response_405();
-            }
-
             self.image_service
                 .get_image_http_response(&req)
-                .unwrap_or_else(|| self.http_service.http_response_404())
+                .unwrap_or_else(|| self.http_service.http_response_404(&req_path))
         } else {
-            self.http_service.http_response_404()
+            self.http_service.http_response_404(&req_path)
         }
     }
 }

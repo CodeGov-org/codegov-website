@@ -18,7 +18,9 @@ ic-cdk-macros.workspace = true
 ic-cdk-timers.workspace = true
 ic-stable-structures.workspace = true
 ic-nns-governance.workspace = true
-ic-http-certification = { version = "2.5", features = ["serde"] }
+ic-http-certification = { git = "https://github.com/dfinity/response-verification", features = [
+  "serde",
+] }
 
 candid.workspace = true
 candid_parser.workspace = true

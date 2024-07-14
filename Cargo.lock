@@ -1988,8 +1988,7 @@ dependencies = [
 [[package]]
 name = "ic-certification"
 version = "2.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20052ce9255fbe2de7041a4f6996fddd095ba1f31ae83b6c0ccdee5be6e7bbcf"
+source = "git+https://github.com/dfinity/response-verification#600b3d5339381bbfe3454ce870a04afa79005c3d"
 dependencies = [
  "hex",
  "serde",
@@ -2331,8 +2330,7 @@ dependencies = [
 [[package]]
 name = "ic-http-certification"
 version = "2.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ddb96501529c2380e087fa9f4552fd0d416f5784bb1e48142d746e9b3d6ae13"
+source = "git+https://github.com/dfinity/response-verification#600b3d5339381bbfe3454ce870a04afa79005c3d"
 dependencies = [
  "candid",
  "http",
@@ -2850,8 +2848,7 @@ dependencies = [
 [[package]]
 name = "ic-representation-independent-hash"
 version = "2.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4d9c969c80e9b445255341da79772680f503ef856b95b3ddf162b41d096df1f"
+source = "git+https://github.com/dfinity/response-verification#600b3d5339381bbfe3454ce870a04afa79005c3d"
 dependencies = [
  "leb128",
  "sha2 0.10.8",

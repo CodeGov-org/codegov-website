@@ -76,11 +76,11 @@ describe('http proposal review image', () => {
     expect(verificationResult.response?.body).toEqual(response.body);
   }
 
-  const verifyImageHttpResponse = (
+  async function verifyImageHttpResponse(
     request: Request,
     canisterResponse: HttpResponse,
     imageBytes: Uint8Array,
-  ) => {
+  ): Promise<void> {
     const response = mapFromCanisterResponse(canisterResponse);
     expect(response.statusCode).toBe(200);
     expect(
@@ -91,8 +91,8 @@ describe('http proposal review image', () => {
     ).toEqual(imageBytes.byteLength.toString());
     expect(response.body).toEqual(imageBytes);
 
-    verifyHttpResponse(request, canisterResponse);
-  };
+    await verifyHttpResponse(request, canisterResponse);
+  }
 
   it('should return the proposal review image with certificate', async () => {
     const [reviewer] = await driver.users.createReviewer();
@@ -113,7 +113,7 @@ describe('http proposal review image', () => {
     const canisterRequest = mapToCanisterRequest(request);
 
     const canisterResponse = await driver.actor.http_request(canisterRequest);
-    verifyImageHttpResponse(request, canisterResponse, CODEGOV_LOGO_PNG);
+    await verifyImageHttpResponse(request, canisterResponse, CODEGOV_LOGO_PNG);
   });
 
   it('should return the proposal review image with certificate after update', async () => {
@@ -151,7 +151,7 @@ describe('http proposal review image', () => {
     const canisterRequest = mapToCanisterRequest(request);
 
     const canisterResponse = await driver.actor.http_request(canisterRequest);
-    verifyImageHttpResponse(request, canisterResponse, VALID_IMAGE_BYTES);
+    await verifyImageHttpResponse(request, canisterResponse, VALID_IMAGE_BYTES);
   });
 
   it('should return 404 when proposal review image is deleted', async () => {
@@ -182,7 +182,7 @@ describe('http proposal review image', () => {
     const canisterResponse = await driver.actor.http_request(canisterRequest);
     expect(canisterResponse.status_code).toBe(404);
 
-    verifyHttpResponse(request, canisterResponse);
+    await verifyHttpResponse(request, canisterResponse);
   });
 
   it('should return 404 when image does not exist', async () => {
@@ -199,30 +199,6 @@ describe('http proposal review image', () => {
     const canisterResponse = await driver.actor.http_request(canisterRequest);
     expect(canisterResponse.status_code).toBe(404);
 
-    verifyHttpResponse(request, canisterResponse);
-  });
-
-  it('should return 405 when requesting image with invalid method', async () => {
-    const [reviewer] = await driver.users.createReviewer();
-
-    const { imagePath } = await createProposalReviewWithImage(
-      driver.actor,
-      governance,
-      reviewer,
-      CODEGOV_LOGO_PNG,
-    );
-
-    const request: Request = {
-      url: imagePath,
-      method: 'POST',
-      headers: [],
-      body: new Uint8Array(),
-    };
-    const canisterRequest = mapToCanisterRequest(request);
-
-    const canisterResponse = await driver.actor.http_request(canisterRequest);
-    expect(canisterResponse.status_code).toBe(405);
-
-    verifyHttpResponse(request, canisterResponse);
+    await verifyHttpResponse(request, canisterResponse);
   });
 });

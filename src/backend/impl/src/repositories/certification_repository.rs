@@ -10,11 +10,16 @@ use crate::helpers::{cbor_encode, IC_CERTIFICATE_HEADER, NOT_FOUND_PATH, RESPONS
 
 #[cfg_attr(test, mockall::automock)]
 pub trait CertificationRepository {
-    fn certify_http_response(&self, request_path: String, res: &HttpResponse);
+    fn certify_http_response(&self, request_path: &str, res: &HttpResponse);
 
-    fn remove_http_response_certificate(&self, request_path: String, res: &HttpResponse);
+    fn remove_http_response_certificate(&self, request_path: &str, res: &HttpResponse);
 
-    fn get_certified_http_response(&self, request_path: String, res: HttpResponse) -> HttpResponse;
+    fn get_certified_http_response(
+        &self,
+        request_path: &str,
+        responding_tree_path: &str,
+        res: HttpResponse,
+    ) -> HttpResponse;
 }
 
 pub struct CertificationRepositoryImpl {}
@@ -26,8 +31,8 @@ impl Default for CertificationRepositoryImpl {
 }
 
 impl CertificationRepository for CertificationRepositoryImpl {
-    fn certify_http_response(&self, request_path: String, res: &HttpResponse) {
-        let res_tree_path = Self::response_tree_path(request_path.clone());
+    fn certify_http_response(&self, request_path: &str, res: &HttpResponse) {
+        let res_tree_path = Self::response_tree_path(request_path);
         let entry = Self::response_entry(&res_tree_path, res);
 
         STATE.with_borrow_mut(|s| {
@@ -36,8 +41,8 @@ impl CertificationRepository for CertificationRepositoryImpl {
         Self::set_certified_http_tree();
     }
 
-    fn remove_http_response_certificate(&self, request_path: String, res: &HttpResponse) {
-        let res_tree_path = Self::response_tree_path(request_path.clone());
+    fn remove_http_response_certificate(&self, request_path: &str, res: &HttpResponse) {
+        let res_tree_path = Self::response_tree_path(request_path);
         let entry = Self::response_entry(&res_tree_path, res);
 
         STATE.with_borrow_mut(|s| {
@@ -48,16 +53,17 @@ impl CertificationRepository for CertificationRepositoryImpl {
 
     fn get_certified_http_response(
         &self,
-        request_path: String,
+        request_path: &str,
+        responding_tree_path: &str,
         mut res: HttpResponse,
     ) -> HttpResponse {
-        let res_tree_path = Self::response_tree_path(request_path.clone());
+        let res_tree_path = Self::response_tree_path(responding_tree_path);
         let entry = Self::response_entry(&res_tree_path, &res);
 
         Self::add_certificate_header(
             &mut res,
             &entry,
-            &request_path,
+            request_path,
             &res_tree_path.to_expr_path(),
         );
 
@@ -70,7 +76,7 @@ impl CertificationRepositoryImpl {
         Self {}
     }
 
-    fn response_tree_path<'a>(request_path: String) -> HttpCertificationPath<'a> {
+    fn response_tree_path<'a>(request_path: &'a str) -> HttpCertificationPath<'a> {
         if request_path == NOT_FOUND_PATH {
             return HttpCertificationPath::wildcard(NOT_FOUND_PATH);
         }

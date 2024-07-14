@@ -1,19 +1,16 @@
 use ic_http_certification::{HttpRequest, HttpResponse};
 
 use crate::{
-    helpers::{create_image_http_response, response_405},
+    helpers::create_image_http_response,
     repositories::{
         CertificationRepository, CertificationRepositoryImpl, ImageId, ImageRepository,
-        ImageRepositoryImpl, IMAGES_BASE_PATH,
+        ImageRepositoryImpl,
     },
 };
 
 #[cfg_attr(test, mockall::automock)]
 pub trait ImageService {
     fn get_image_http_response(&self, req: &HttpRequest) -> Option<HttpResponse>;
-
-    /// The 405 response for the `/images` URL.
-    fn http_response_405(&self) -> HttpResponse;
 
     /// Certifies all images responses.
     ///
@@ -47,27 +44,21 @@ impl<I: ImageRepository, C: CertificationRepository> ImageService for ImageServi
         let image = self.image_repository.get_image_by_id(&image_id)?;
         let image_http_response = create_image_http_response(&image);
 
-        let certified_response = self
-            .certification_repository
-            .get_certified_http_response(req_path, image_http_response.clone());
+        let certified_response = self.certification_repository.get_certified_http_response(
+            &req_path,
+            &req_path,
+            image_http_response.clone(),
+        );
 
         Some(certified_response)
-    }
-
-    fn http_response_405(&self) -> HttpResponse {
-        self.certification_repository
-            .get_certified_http_response(IMAGES_BASE_PATH.to_string(), response_405())
     }
 
     fn certify_all_http_responses(&self) {
         for (image_id, image) in self.image_repository.get_all_images() {
             let image_http_response = create_image_http_response(&image);
             self.certification_repository
-                .certify_http_response(image.path(&image_id), &image_http_response);
+                .certify_http_response(&image.path(&image_id), &image_http_response);
         }
-
-        self.certification_repository
-            .certify_http_response(IMAGES_BASE_PATH.to_string(), &response_405());
     }
 }
 

@@ -377,7 +377,7 @@ impl<
         let image_http_request_path = image.path(&image_id);
         let image_http_response = create_image_http_response(&image);
         self.certification_repository
-            .certify_http_response(image_http_request_path, &image_http_response);
+            .certify_http_response(&image_http_request_path, &image_http_response);
 
         current_proposal_review.images_ids = vec![image_id];
 
@@ -426,7 +426,7 @@ impl<
             let image_http_request_path = deleted_image.path(&existing_image_id);
             let image_http_response = create_image_http_response(&deleted_image);
             self.certification_repository
-                .remove_http_response_certificate(image_http_request_path, &image_http_response);
+                .remove_http_response_certificate(&image_http_request_path, &image_http_response);
         } else {
             return Err(ApiError::not_found(&format!(
                 "Image with path {} not found in proposal review for proposal with Id {}",
