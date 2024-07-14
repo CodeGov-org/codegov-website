@@ -34,7 +34,6 @@ export function mapCreateProposalReviewRequest(
     review_duration_mins: toCandidOpt(req.reviewDurationMins),
     summary: toCandidOpt(req.summary),
     build_reproduced: toCandidOpt(req.buildReproduced),
-    reproduced_build_image_id: toCandidOpt(req.reproducedBuildImageId),
   };
 }
 
@@ -48,8 +47,6 @@ export function mapUpdateProposalReviewRequest(
     review_duration_mins: toCandidOpt(req.reviewDurationMins),
     summary: toCandidOpt(req.summary),
     build_reproduced: toCandidOpt(req.buildReproduced),
-    // [TODO] - connect with form once it's implemented
-    reproduced_build_image_id: [],
   };
 }
 
