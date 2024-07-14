@@ -1,3 +1,4 @@
+mod image;
 mod log;
 mod proposal;
 mod proposal_review;

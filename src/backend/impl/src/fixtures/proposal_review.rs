@@ -15,7 +15,7 @@ pub fn proposal_review_draft() -> ProposalReview {
         summary: Some("Proposal review summary".to_string()),
         review_duration_mins: Some(60),
         build_reproduced: Some(true),
-        reproduced_build_image_id: None,
+        images_ids: vec![],
     }
 }
 
@@ -30,7 +30,7 @@ pub fn proposal_review_published() -> ProposalReview {
         summary: Some("Proposal review summary".to_string()),
         review_duration_mins: Some(60),
         build_reproduced: Some(true),
-        reproduced_build_image_id: Some(uuid()),
+        images_ids: vec![uuid()],
     }
 }
 

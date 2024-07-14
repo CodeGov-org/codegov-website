@@ -64,7 +64,6 @@ describe('ReviewApiService', () => {
       summary: [],
       review_duration_mins: [],
       build_reproduced: [],
-      reproduced_build_image_id: [],
     };
     const commonApiResponse: CreateProposalReviewApiResponse = {
       ok: {
@@ -80,7 +79,7 @@ describe('ReviewApiService', () => {
           summary: [],
           review_duration_mins: [],
           build_reproduced: [],
-          reproduced_build_image_id: [],
+          images_paths: [],
           proposal_review_commits: [],
         },
       },
@@ -143,7 +142,6 @@ describe('ReviewApiService', () => {
       summary: [],
       review_duration_mins: [],
       build_reproduced: [],
-      reproduced_build_image_id: [],
     };
     const commonApiResponse: UpdateProposalReviewApiResponse = {
       ok: null,
@@ -202,7 +200,7 @@ describe('ReviewApiService', () => {
               summary: [],
               review_duration_mins: [],
               build_reproduced: [],
-              reproduced_build_image_id: [],
+              images_paths: [],
               proposal_review_commits: [],
             },
           },
@@ -219,7 +217,7 @@ describe('ReviewApiService', () => {
               summary: [],
               review_duration_mins: [],
               build_reproduced: [],
-              reproduced_build_image_id: [],
+              images_paths: [],
               proposal_review_commits: [],
             },
           },
@@ -306,7 +304,7 @@ describe('ReviewApiService', () => {
           summary: [],
           review_duration_mins: [],
           build_reproduced: [],
-          reproduced_build_image_id: [],
+          images_paths: [],
           proposal_review_commits: [],
         },
       },
@@ -376,7 +374,7 @@ describe('ReviewApiService', () => {
           summary: [],
           review_duration_mins: [],
           build_reproduced: [],
-          reproduced_build_image_id: [],
+          images_paths: [],
           proposal_review_commits: [],
         },
       },
@@ -435,7 +433,6 @@ describe('ReviewApiService', () => {
       summary: [],
       review_duration_mins: [],
       build_reproduced: [],
-      reproduced_build_image_id: [],
     };
     const commonGetApiRequest: GetMyProposalReviewApiRequest = {
       proposal_id: 'proposalId',
@@ -454,7 +451,7 @@ describe('ReviewApiService', () => {
           summary: [],
           review_duration_mins: [],
           build_reproduced: [],
-          reproduced_build_image_id: [],
+          images_paths: [],
           proposal_review_commits: [],
         },
       },
