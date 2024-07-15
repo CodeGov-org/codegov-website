@@ -119,11 +119,55 @@ export async function createProposalReview(
     summary: ['summary'],
     review_duration_mins: [60],
     build_reproduced: [true],
-    reproduced_build_image_id: [],
   });
   const { id: proposalReviewId } = extractOkResponse(res);
 
   return { proposalId, proposalReviewId };
+}
+
+/**
+ * This is not a real image, but passes the checks on the canister.
+ */
+export const VALID_IMAGE_BYTES = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+/**
+ * Same as {@link createProposalReview} function,
+ * but uploads the provided image too.
+ *
+ * Skips creating the RVM proposal if a proposal id is specified as last parameter.
+ *
+ * @returns the backend canister id of created proposal, the backend canister id of created review
+ * and the image path.
+ */
+export async function createProposalReviewWithImage(
+  actor: BackendActorService,
+  governance: Governance,
+  reviewer: Identity,
+  imageBytes: Uint8Array,
+  existingProposalId?: string,
+): Promise<{
+  proposalId: string;
+  proposalReviewId: string;
+  imagePath: string;
+}> {
+  const { proposalId, proposalReviewId } = await createProposalReview(
+    actor,
+    governance,
+    reviewer,
+    existingProposalId,
+  );
+
+  actor.setIdentity(reviewer);
+  const res = await actor.create_proposal_review_image({
+    proposal_id: proposalId,
+    content_type: 'image/png',
+    content_bytes: imageBytes,
+  });
+  const resOk = extractOkResponse(res);
+
+  const imagePath = resOk.path;
+
+  return { proposalId, proposalReviewId, imagePath };
 }
 
 /**
@@ -141,7 +185,6 @@ export async function publishProposalReview(
     summary: [],
     review_duration_mins: [],
     build_reproduced: [],
-    reproduced_build_image_id: [],
   });
   extractOkResponse(res);
 }
@@ -227,7 +270,7 @@ export function validateProposalReview(
       summary: expect.any(Array),
       review_duration_mins: expect.any(Array),
       build_reproduced: expect.any(Array),
-      reproduced_build_image_id: expect.any(Array),
+      images_paths: expect.any(Array),
       proposal_review_commits: expected.commits.commitSha.map(
         commitSha =>
           ({

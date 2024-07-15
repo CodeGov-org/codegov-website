@@ -1,4 +1,5 @@
 mod history;
+mod image;
 mod log;
 mod proposal;
 mod proposal_review;
@@ -7,6 +8,7 @@ mod result;
 mod user_profile;
 
 pub use history::*;
+pub use image::*;
 pub use log::*;
 pub use proposal::*;
 pub use proposal_review::*;

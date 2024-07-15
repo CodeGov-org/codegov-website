@@ -7,7 +7,7 @@ use ic_stable_structures::{
     Storable,
 };
 
-use super::{DateTime, ProposalId, UserId, Uuid};
+use super::{DateTime, ImageId, ProposalId, UserId, Uuid};
 
 pub type ProposalReviewId = Uuid;
 
@@ -27,7 +27,7 @@ pub struct ProposalReview {
     pub summary: Option<String>,
     pub review_duration_mins: Option<u16>,
     pub build_reproduced: Option<bool>,
-    pub reproduced_build_image_id: Option<Uuid>,
+    pub images_ids: Vec<ImageId>,
 }
 
 impl ProposalReview {
@@ -101,13 +101,13 @@ impl ProposalReviewProposalUserRange {
         Ok(Self {
             start_bound: ProposalReviewProposalUserKey::new(
                 proposal_id,
-                user_id.unwrap_or(Uuid::min()),
-                Uuid::min(),
+                user_id.unwrap_or(UserId::min()),
+                ProposalReviewId::min(),
             )?,
             end_bound: ProposalReviewProposalUserKey::new(
                 proposal_id,
-                user_id.unwrap_or(Uuid::max()),
-                Uuid::max(),
+                user_id.unwrap_or(UserId::max()),
+                ProposalReviewId::max(),
             )?,
         })
     }
@@ -164,8 +164,8 @@ pub struct ProposalReviewUserRange {
 impl ProposalReviewUserRange {
     pub fn new(user_id: UserId) -> Result<Self, ApiError> {
         Ok(Self {
-            start_bound: ProposalReviewUserKey::new(user_id, Uuid::min())?,
-            end_bound: ProposalReviewUserKey::new(user_id, Uuid::max())?,
+            start_bound: ProposalReviewUserKey::new(user_id, ProposalReviewId::min())?,
+            end_bound: ProposalReviewUserKey::new(user_id, ProposalReviewId::max())?,
         })
     }
 }

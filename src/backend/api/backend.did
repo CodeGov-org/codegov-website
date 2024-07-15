@@ -217,7 +217,7 @@ type ProposalReview = record {
   summary : opt text;
   review_duration_mins : opt nat16;
   build_reproduced : opt bool;
-  reproduced_build_image_id : opt text;
+  images_paths : vec text;
   proposal_review_commits : vec ProposalReviewCommitWithId;
 };
 
@@ -231,7 +231,6 @@ type CreateProposalReviewRequest = record {
   summary : opt text;
   review_duration_mins : opt nat16;
   build_reproduced : opt bool;
-  reproduced_build_image_id : opt text;
 };
 
 type CreateProposalReviewResponse = variant {
@@ -245,10 +244,32 @@ type UpdateProposalReviewRequest = record {
   summary : opt text;
   review_duration_mins : opt nat16;
   build_reproduced : opt bool;
-  reproduced_build_image_id : opt text;
 };
 
 type UpdateProposalReviewResponse = variant {
+  ok;
+  err : Err;
+};
+
+type CreateProposalReviewImageRequest = record {
+  proposal_id : text;
+  content_type : text;
+  content_bytes : blob;
+};
+
+type CreateProposalReviewImageResponse = variant {
+  ok : record {
+    path : text;
+  };
+  err : Err;
+};
+
+type DeleteProposalReviewImageRequest = record {
+  proposal_id : text;
+  image_path : text;
+};
+
+type DeleteProposalReviewImageResponse = variant {
   ok;
   err : Err;
 };
@@ -336,6 +357,24 @@ type DeleteProposalReviewCommitResponse = variant {
   err : Err;
 };
 
+// HTTP
+type HeaderField = record { text; text };
+
+type HttpRequest = record {
+  method : text;
+  url : text;
+  headers : vec HeaderField;
+  body : blob;
+  certificate_version : opt nat16;
+};
+
+type HttpResponse = record {
+  status_code : nat16;
+  headers : vec HeaderField;
+  body : blob;
+};
+// End HTTP
+
 service : {
   get_my_user_profile : () -> (GetMyUserProfileResponse) query;
   get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;
@@ -353,9 +392,14 @@ service : {
   update_proposal_review : (UpdateProposalReviewRequest) -> (UpdateProposalReviewResponse);
   list_proposal_reviews : (ListProposalReviewsRequest) -> (ListProposalReviewsResponse) query;
   get_proposal_review : (GetProposalReviewRequest) -> (GetProposalReviewResponse) query;
+  create_proposal_review_image : (CreateProposalReviewImageRequest) -> (CreateProposalReviewImageResponse);
+  delete_proposal_review_image : (DeleteProposalReviewImageRequest) -> (DeleteProposalReviewImageResponse);
   get_my_proposal_review : (GetMyProposalReviewRequest) -> (GetMyProposalReviewResponse) query;
-
   create_proposal_review_commit : (CreateProposalReviewCommitRequest) -> (CreateProposalReviewCommitResponse);
   update_proposal_review_commit : (UpdateProposalReviewCommitRequest) -> (UpdateProposalReviewCommitResponse);
   delete_proposal_review_commit : (DeleteProposalReviewCommitRequest) -> (DeleteProposalReviewCommitResponse);
+
+  // HTTP
+  http_request : (request : HttpRequest) -> (HttpResponse) query;
+  // End HTTP
 };

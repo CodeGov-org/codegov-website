@@ -113,6 +113,15 @@ export class TestDriver {
     return new Date(currentTime);
   }
 
+  public async getRootKey(): Promise<ArrayBufferLike> {
+    const nnsSubnet = this.pic.getNnsSubnet();
+    if (!nnsSubnet) {
+      throw new Error('NNS subnet not found');
+    }
+
+    return await this.pic.getPubKey(nnsSubnet.id);
+  }
+
   public async tearDown(): Promise<void> {
     await this.pic.tearDown();
   }

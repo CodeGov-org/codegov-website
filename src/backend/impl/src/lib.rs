@@ -3,8 +3,10 @@
 use backend_api::*;
 use candid::export_service;
 use ic_cdk::*;
+use ic_http_certification::{HttpRequest, HttpResponse};
 
 mod controllers;
+mod helpers;
 mod mappings;
 mod repositories;
 mod services;
