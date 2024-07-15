@@ -3,8 +3,8 @@ use std::str::FromStr;
 use crate::{
     mappings::map_get_proposal_response,
     repositories::{
-        DateTime, Proposal, ProposalId, ProposalRepository, ProposalRepositoryImpl,
-        ReviewPeriodState,
+        DateTime, LogRepositoryImpl, NervousSystem, Proposal, ProposalId, ProposalRepository,
+        ProposalRepositoryImpl, ReviewPeriodState, ReviewPeriodStateKey,
     },
     system_api::get_date_time,
 };
@@ -16,6 +16,8 @@ use candid::Principal;
 use external_canisters::nns::GovernanceCanisterService;
 use ic_nns_common::pb::v1::ProposalId as NnsProposalId;
 use ic_nns_governance::pb::v1::{ListProposalInfo, ProposalInfo, ProposalStatus, Topic};
+
+use super::{LogService, LogServiceImpl};
 
 const NNS_GOVERNANCE_CANISTER_ID: &str = "rrkah-fqaaa-aaaaa-aaaaq-cai";
 
@@ -85,17 +87,18 @@ pub trait ProposalService {
     fn complete_pending_proposals(&self) -> Result<usize, ApiError>;
 }
 
-pub struct ProposalServiceImpl<T: ProposalRepository> {
+pub struct ProposalServiceImpl<T: ProposalRepository, L: LogService> {
     proposal_repository: T,
+    log_service: L,
 }
 
-impl Default for ProposalServiceImpl<ProposalRepositoryImpl> {
+impl Default for ProposalServiceImpl<ProposalRepositoryImpl, LogServiceImpl<LogRepositoryImpl>> {
     fn default() -> Self {
-        Self::new(ProposalRepositoryImpl::default())
+        Self::new(ProposalRepositoryImpl::default(), LogServiceImpl::default())
     }
 }
 
-impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
+impl<T: ProposalRepository, L: LogService> ProposalService for ProposalServiceImpl<T, L> {
     fn get_proposal(&self, id: ProposalId) -> Result<GetProposalResponse, ApiError> {
         let proposal = self
             .proposal_repository
@@ -137,33 +140,66 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
             before_proposal = fetched_proposals.last().and_then(|p| p.id);
         }
 
+        let current_time = get_date_time().and_then(DateTime::new)?;
+
         for nns_proposal in proposals.iter() {
-            let proposal = Proposal::try_from(nns_proposal.clone())?;
+            let nervous_system = match NervousSystem::try_from(nns_proposal.clone()) {
+                Ok(ns) => ns,
+                Err(err) => {
+                    let _ = self.log_service.log_error(
+                        err.to_string(),
+                        Some("fetch_and_save_nns_proposals".to_string()),
+                    );
+                    continue;
+                }
+            };
 
             match self.proposal_repository.get_proposal_by_nervous_system_id(
-                proposal.nervous_system.nervous_system_id(),
-                proposal.nervous_system.proposal_id(),
+                nervous_system.nervous_system_id(),
+                nervous_system.proposal_id(),
             ) {
                 Some((id, existing_proposal)) => {
                     self.proposal_repository.update_proposal(
                         id,
                         Proposal {
                             // only patch the proposal info and the synced_at field
-                            nervous_system: proposal.nervous_system.clone(),
-                            synced_at: proposal.synced_at,
+                            nervous_system,
+                            synced_at: current_time,
                             ..existing_proposal
                         },
                     )?;
                 }
                 None => {
-                    self.proposal_repository.create_proposal(proposal).await?;
+                    if let Err(err) = self
+                        .proposal_repository
+                        .create_proposal(Proposal {
+                            nervous_system,
+                            synced_at: current_time,
+                            state: ReviewPeriodState::InProgress,
+                        })
+                        .await
+                    {
+                        let _ = self.log_service.log_error(
+                            format!("Failed to create proposal: {err}"),
+                            Some("fetch_and_save_nns_proposals".to_string()),
+                        );
+                        // TODO: count failed proposals
+                    };
                 }
             }
         }
 
-        let completed_proposals_count = self
-            .fetch_and_complete_missing_proposals(&proposals)
-            .await?;
+        let completed_proposals_count =
+            match self.fetch_and_complete_missing_proposals(&proposals).await {
+                Ok(count) => count,
+                Err(err) => {
+                    let _ = self.log_service.log_error(
+                        format!("Failed to complete missing proposals: {err}"),
+                        Some("fetch_and_save_nns_proposals".to_string()),
+                    );
+                    0
+                }
+            };
 
         Ok(SyncProposalsResponse {
             synced_proposals_count: proposals.len(),
@@ -179,10 +215,11 @@ impl<T: ProposalRepository> ProposalService for ProposalServiceImpl<T> {
     }
 }
 
-impl<T: ProposalRepository> ProposalServiceImpl<T> {
-    fn new(proposal_repository: T) -> Self {
+impl<T: ProposalRepository, L: LogService> ProposalServiceImpl<T, L> {
+    fn new(proposal_repository: T, log_service: L) -> Self {
         Self {
             proposal_repository,
+            log_service,
         }
     }
 
@@ -192,7 +229,7 @@ impl<T: ProposalRepository> ProposalServiceImpl<T> {
     ) -> Result<usize, ApiError> {
         let in_progress_proposals = self
             .proposal_repository
-            .get_proposals(Some(ReviewPeriodState::InProgress))?;
+            .get_proposals(Some(ReviewPeriodStateKey::InProgress))?;
         let missing_proposals: Vec<(ProposalId, Proposal)> = in_progress_proposals
             .into_iter()
             .filter_map(|(internal_id, proposal)| {
@@ -208,37 +245,33 @@ impl<T: ProposalRepository> ProposalServiceImpl<T> {
             })
             .collect();
 
-        for (id, existing_proposal) in missing_proposals.iter() {
-            let proposal_info =
-                fetch_proposal_info(existing_proposal.nervous_system.proposal_id()).await?;
-            let proposal = Proposal::try_from(proposal_info)?;
+        let missing_proposals_len = missing_proposals.len();
 
-            self.proposal_repository.update_proposal(
-                *id,
-                Proposal {
-                    nervous_system: proposal.nervous_system.clone(),
-                    synced_at: proposal.synced_at,
-                    // overwrite the state if the fetched proposal
-                    // is not open anymore (expected)
-                    state: if proposal.is_completed() {
-                        proposal.state
-                    } else {
-                        existing_proposal.state
-                    },
-                    // overwrite the review_completed_at if the fetched proposal
-                    // is not open anymore (expected) and the existing proposal does not have it
-                    review_completed_at: if proposal.is_completed()
-                        && existing_proposal.review_completed_at.is_none()
-                    {
-                        proposal.review_completed_at
-                    } else {
-                        existing_proposal.review_completed_at
-                    },
-                },
-            )?;
+        for (id, existing_proposal) in missing_proposals.into_iter() {
+            if let Err(err) = fetch_proposal_info(existing_proposal.nervous_system.proposal_id())
+                .await
+                .and_then(NervousSystem::try_from)
+                .and_then(|nervous_system| {
+                    let current_time = get_date_time().and_then(DateTime::new)?;
+                    self.proposal_repository.update_proposal(
+                        id,
+                        Proposal {
+                            nervous_system: nervous_system.clone(),
+                            synced_at: current_time,
+                            ..existing_proposal
+                        },
+                    )
+                })
+            {
+                let _ = self.log_service.log_error(
+                    format!("Failed to complete missing proposal: {err}"),
+                    Some("fetch_and_complete_missing_proposals".to_string()),
+                );
+                // TODO: count failed cases and return them to the caller
+            }
         }
 
-        Ok(missing_proposals.len())
+        Ok(missing_proposals_len)
     }
 }
 
@@ -248,6 +281,7 @@ mod tests {
     use crate::{
         fixtures,
         repositories::{DateTime, MockProposalRepository},
+        services::MockLogService,
     };
     use mockall::predicate::*;
     use rstest::*;
@@ -263,8 +297,9 @@ mod tests {
             .once()
             .with(eq(proposal_id))
             .return_const(Some(proposal.clone()));
+        let log_service_mock = MockLogService::new();
 
-        let service = ProposalServiceImpl::new(repository_mock);
+        let service = ProposalServiceImpl::new(repository_mock, log_service_mock);
 
         let result = service.get_proposal(proposal_id).unwrap();
 
@@ -287,8 +322,9 @@ mod tests {
             .once()
             .with(eq(proposal_id))
             .return_const(None);
+        let log_service_mock = MockLogService::new();
 
-        let service = ProposalServiceImpl::new(repository_mock);
+        let service = ProposalServiceImpl::new(repository_mock, log_service_mock);
 
         let result = service.get_proposal(proposal_id).unwrap_err();
 
@@ -308,8 +344,9 @@ mod tests {
             .expect_get_proposals()
             .once()
             .return_const(Ok(fixtures::nns_proposals_with_ids()));
+        let log_service_mock = MockLogService::new();
 
-        let service = ProposalServiceImpl::new(repository_mock);
+        let service = ProposalServiceImpl::new(repository_mock, log_service_mock);
 
         let expected = fixtures::nns_proposals_with_ids()
             .into_iter()
@@ -341,8 +378,9 @@ mod tests {
             .once()
             .with(eq(current_time))
             .return_const(Ok(completed_proposals_count));
+        let log_service_mock = MockLogService::new();
 
-        let service = ProposalServiceImpl::new(repository_mock);
+        let service = ProposalServiceImpl::new(repository_mock, log_service_mock);
 
         let result = service.complete_pending_proposals().unwrap();
         assert_eq!(result, completed_proposals_count);

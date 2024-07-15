@@ -35,7 +35,9 @@ export function mapProposalListResponse(
       proposalResponse.proposal.nervous_system.network.proposal_info.proposer[0]
         ?.id ?? BigInt(0),
     reviewCompletedAt: fromCandidOptDate(
-      proposalResponse.proposal.review_completed_at,
+      'completed' in proposalResponse.proposal.state
+        ? [proposalResponse.proposal.state.completed.completed_at]
+        : [],
     ),
     decidedAt: addDays(
       fromCandidDate(proposalResponse.proposal.proposed_at),

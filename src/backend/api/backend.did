@@ -131,6 +131,11 @@ type NervousSystem = variant {
 
 type ReviewPeriodState = variant {
   in_progress;
+  completed : record { completed_at : text };
+};
+
+type ReviewPeriodStateKey = variant {
+  in_progress;
   completed;
 };
 
@@ -139,7 +144,6 @@ type BackendProposal = record {
   state : ReviewPeriodState;
   proposed_at : text;
   synced_at : text;
-  review_completed_at : opt text;
 };
 
 type ProposalResponse = record {
@@ -153,7 +157,7 @@ type GetProposalResponse = variant {
 };
 
 type ListProposalsRequest = record {
-  state : opt ReviewPeriodState;
+  state : opt ReviewPeriodStateKey;
 };
 
 type ListProposalsResponse = variant {

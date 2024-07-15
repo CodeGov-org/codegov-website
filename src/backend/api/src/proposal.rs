@@ -15,6 +15,14 @@ pub enum ReviewPeriodState {
     #[serde(rename = "in_progress")]
     InProgress,
     #[serde(rename = "completed")]
+    Completed { completed_at: String },
+}
+
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+pub enum ReviewPeriodStateKey {
+    #[serde(rename = "in_progress")]
+    InProgress,
+    #[serde(rename = "completed")]
     Completed,
 }
 
@@ -24,7 +32,6 @@ pub struct Proposal {
     pub state: ReviewPeriodState,
     pub proposed_at: String,
     pub synced_at: String,
-    pub review_completed_at: Option<String>,
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq)]
@@ -35,7 +42,7 @@ pub struct GetProposalResponse {
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub struct ListProposalsRequest {
-    pub state: Option<ReviewPeriodState>,
+    pub state: Option<ReviewPeriodStateKey>,
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq)]

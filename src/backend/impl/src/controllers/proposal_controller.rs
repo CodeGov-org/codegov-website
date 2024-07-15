@@ -36,7 +36,7 @@ impl Default
     for ProposalController<
         AccessControlServiceImpl<UserProfileRepositoryImpl>,
         LogServiceImpl<LogRepositoryImpl>,
-        ProposalServiceImpl<ProposalRepositoryImpl>,
+        ProposalServiceImpl<ProposalRepositoryImpl, LogServiceImpl<LogRepositoryImpl>>,
     >
 {
     fn default() -> Self {

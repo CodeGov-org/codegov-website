@@ -25,7 +25,6 @@ pub fn nns_replica_version_management_proposal(
         state: ReviewPeriodState::InProgress,
         // in a real world scenario, synced_at should be after the proposed_at date
         synced_at: date_time_a(),
-        review_completed_at: None,
     }
 }
 
@@ -44,10 +43,11 @@ pub fn nns_replica_version_management_proposal_completed(
                 ..ProposalInfo::default()
             },
         },
-        state: ReviewPeriodState::Completed,
+        state: ReviewPeriodState::Completed {
+            completed_at: date_time_a(),
+        },
         // these dates don't reflect a real world scenario
         synced_at: date_time_a(),
-        review_completed_at: Some(date_time_a()),
     }
 }
 

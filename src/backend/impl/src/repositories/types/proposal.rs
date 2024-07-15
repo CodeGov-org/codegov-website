@@ -1,9 +1,8 @@
 use super::{DateTime, Uuid};
-use crate::system_api::get_date_time;
 use backend_api::ApiError;
 use candid::{CandidType, Decode, Deserialize, Encode};
 use chrono::Duration;
-use ic_nns_governance::pb::v1::{ProposalInfo, ProposalStatus};
+use ic_nns_governance::pb::v1::ProposalInfo;
 use ic_stable_structures::{
     storable::{Blob, Bound},
     Storable,
@@ -63,27 +62,51 @@ impl NervousSystem {
     }
 }
 
+impl TryFrom<ProposalInfo> for NervousSystem {
+    type Error = ApiError;
+
+    fn try_from(nns_proposal: ProposalInfo) -> Result<Self, Self::Error> {
+        let proposal_id = nns_proposal
+            .id
+            .ok_or(ApiError::internal(
+                "Failed to map NNS proposal: Proposal id is None",
+            ))?
+            .id;
+
+        Ok(NervousSystem::new_network(
+            proposal_id,
+            nns_proposal.clone(),
+        ))
+    }
+}
+
 #[derive(Debug, Clone, Copy, CandidType, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 // We're explicit about the enum values here because they are serialized
 // to u8 when the state is used as a key and we want to make sure that the
 // values are stable.
 #[repr(u8)]
-pub enum ReviewPeriodState {
+pub enum ReviewPeriodStateKey {
     InProgress = 1,
     Completed = 2,
 }
 
-impl From<ReviewPeriodState> for u8 {
-    fn from(state: ReviewPeriodState) -> u8 {
+impl From<ReviewPeriodStateKey> for u8 {
+    fn from(state: ReviewPeriodStateKey) -> u8 {
         state as u8
     }
 }
 
-impl From<ProposalStatus> for ReviewPeriodState {
-    fn from(status: ProposalStatus) -> Self {
-        match status {
-            ProposalStatus::Open => ReviewPeriodState::InProgress,
-            _ => ReviewPeriodState::Completed,
+#[derive(Debug, Clone, Copy, CandidType, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ReviewPeriodState {
+    InProgress,
+    Completed { completed_at: DateTime },
+}
+
+impl From<ReviewPeriodState> for ReviewPeriodStateKey {
+    fn from(state: ReviewPeriodState) -> Self {
+        match state {
+            ReviewPeriodState::InProgress => Self::InProgress,
+            ReviewPeriodState::Completed { .. } => Self::Completed,
         }
     }
 }
@@ -96,8 +119,6 @@ pub struct Proposal {
     pub state: ReviewPeriodState,
     /// The timestamp of when the proposal was fetched from the Nervous System.
     pub synced_at: DateTime,
-    /// The timestamp of when the proposal's review period is completed.
-    pub review_completed_at: Option<DateTime>,
 }
 
 impl Storable for Proposal {
@@ -112,38 +133,6 @@ impl Storable for Proposal {
     const BOUND: Bound = Bound::Unbounded;
 }
 
-impl TryFrom<ProposalInfo> for Proposal {
-    type Error = ApiError;
-
-    fn try_from(nns_proposal: ProposalInfo) -> Result<Self, Self::Error> {
-        let proposal_id = nns_proposal
-            .id
-            .ok_or(ApiError::internal(
-                "Failed to map NNS proposal: Proposal id is None",
-            ))?
-            .id;
-
-        let nervous_system = NervousSystem::new_network(proposal_id, nns_proposal.clone());
-
-        let state = nns_proposal.status().into();
-
-        // the NNS proposal is casted to our proposal when it is fetched
-        // from the NNS, so here it's fine to set the synced_at time to now
-        let date_time = get_date_time().and_then(DateTime::new)?;
-
-        Ok(Proposal {
-            nervous_system,
-            state,
-            synced_at: date_time,
-            review_completed_at: if let ReviewPeriodState::Completed = state {
-                Some(date_time)
-            } else {
-                None
-            },
-        })
-    }
-}
-
 impl Proposal {
     /// Checks if the proposal is in [ReviewPeriodState::InProgress] state
     /// and was proposed more than **48 hours** ago.
@@ -154,7 +143,7 @@ impl Proposal {
 
     /// Checks if the proposal is in [ReviewPeriodState::Completed] state.
     pub fn is_completed(&self) -> bool {
-        self.state == ReviewPeriodState::Completed
+        matches!(&self.state, ReviewPeriodState::Completed { .. })
     }
 
     pub fn proposed_at(&self) -> Result<DateTime, ApiError> {
@@ -174,16 +163,23 @@ pub struct ProposalStatusTimestampKey(Blob<{ Self::MAX_SIZE as usize }>);
 impl ProposalStatusTimestampKey {
     const MAX_SIZE: u32 = <((u8, DateTime), ProposalId)>::BOUND.max_size();
 
-    pub fn new(state: u8, date_time: DateTime, proposal_id: ProposalId) -> Result<Self, ApiError> {
+    pub fn new(
+        state: ReviewPeriodStateKey,
+        date_time: DateTime,
+        proposal_id: ProposalId,
+    ) -> Result<Self, ApiError> {
         Ok(Self(
-            Blob::try_from(((state, date_time), proposal_id).to_bytes().as_ref()).map_err(
-                |_| {
-                    ApiError::internal(&format!(
+            Blob::try_from(
+                ((u8::from(state), date_time), proposal_id)
+                    .to_bytes()
+                    .as_ref(),
+            )
+            .map_err(|_| {
+                ApiError::internal(&format!(
                     "Failed to convert state {:?}, date time {:?} and proposal id {:?} to bytes.",
                     state, date_time, proposal_id
                 ))
-                },
-            )?,
+            })?,
         ))
     }
 }
@@ -209,10 +205,10 @@ pub struct ProposalStatusTimestampRange {
 }
 
 impl ProposalStatusTimestampRange {
-    pub fn new(state: ReviewPeriodState) -> Result<Self, ApiError> {
+    pub fn new(state: ReviewPeriodStateKey) -> Result<Self, ApiError> {
         Ok(Self {
-            start_bound: ProposalStatusTimestampKey::new(state.into(), DateTime::min(), Uuid::MIN)?,
-            end_bound: ProposalStatusTimestampKey::new(state.into(), DateTime::max()?, Uuid::MAX)?,
+            start_bound: ProposalStatusTimestampKey::new(state, DateTime::min(), Uuid::MIN)?,
+            end_bound: ProposalStatusTimestampKey::new(state, DateTime::max()?, Uuid::MAX)?,
         })
     }
 }
@@ -365,7 +361,7 @@ impl RangeBounds<ProposalTimestampKey> for ProposalTimestampRange {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::fixtures;
+    use crate::{fixtures, system_api::get_date_time};
     use rstest::*;
 
     #[rstest]
@@ -379,16 +375,13 @@ mod tests {
 
     #[rstest]
     fn proposal_status_timestamp_key_storable_impl() {
-        let state = ReviewPeriodState::InProgress;
+        let state = ReviewPeriodStateKey::InProgress;
         let date_time = get_date_time().unwrap();
         let proposal_id = fixtures::proposal_id();
 
-        let key = ProposalStatusTimestampKey::new(
-            state.into(),
-            DateTime::new(date_time).unwrap(),
-            proposal_id,
-        )
-        .unwrap();
+        let key =
+            ProposalStatusTimestampKey::new(state, DateTime::new(date_time).unwrap(), proposal_id)
+                .unwrap();
         let serialized_key = key.to_bytes();
         let deserialized_key = ProposalStatusTimestampKey::from_bytes(serialized_key);
 
