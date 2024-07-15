@@ -1836,7 +1836,9 @@ mod tests {
             .expect_get_proposal_by_id()
             .once()
             .with(eq(original_proposal_review.proposal_id))
-            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+            .return_const(Some(fixtures::nns_replica_version_management_proposal(
+                None, None,
+            )));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let mut image_repository_mock = MockImageRepository::new();
         image_repository_mock
@@ -1901,7 +1903,9 @@ mod tests {
             .expect_get_proposal_by_id()
             .once()
             .with(eq(proposal_review_with_image.proposal_id))
-            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+            .return_const(Some(fixtures::nns_replica_version_management_proposal(
+                None, None,
+            )));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let mut image_repository_mock = MockImageRepository::new();
         image_repository_mock.expect_create_image().never();
@@ -1972,7 +1976,9 @@ mod tests {
             .expect_get_proposal_by_id()
             .once()
             .with(eq(original_proposal_review.proposal_id))
-            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+            .return_const(Some(fixtures::nns_replica_version_management_proposal(
+                None, None,
+            )));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let mut image_repository_mock = MockImageRepository::new();
         image_repository_mock
@@ -2033,7 +2039,9 @@ mod tests {
             .expect_get_proposal_by_id()
             .once()
             .with(eq(original_proposal_review.proposal_id))
-            .return_const(Some(fixtures::nns_replica_version_management_proposal()));
+            .return_const(Some(fixtures::nns_replica_version_management_proposal(
+                None, None,
+            )));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let mut image_repository_mock = MockImageRepository::new();
         image_repository_mock.expect_delete_image().never();
