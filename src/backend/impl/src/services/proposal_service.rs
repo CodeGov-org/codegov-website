@@ -256,7 +256,7 @@ impl<T: ProposalRepository, L: LogService> ProposalServiceImpl<T, L> {
                     self.proposal_repository.update_proposal(
                         id,
                         Proposal {
-                            nervous_system: nervous_system.clone(),
+                            nervous_system,
                             synced_at: current_time,
                             ..existing_proposal
                         },
