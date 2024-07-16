@@ -1,17 +1,13 @@
 use candid::{CandidType, Deserialize};
+use ic_nns_governance::pb::v1::ProposalInfo;
 
-#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq)]
 pub enum NervousSystem {
     #[serde(rename = "network")]
-    Network { id: u64, topic: NnsProposalTopic },
-}
-
-#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
-pub enum NnsProposalTopic {
-    #[serde(rename = "replica_version_management")]
-    ReplicaVersionManagement,
-    #[serde(rename = "system_canister_management")]
-    SystemCanisterManagement,
+    Network {
+        id: u64,
+        proposal_info: ProposalInfo,
+    },
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
@@ -19,21 +15,26 @@ pub enum ReviewPeriodState {
     #[serde(rename = "in_progress")]
     InProgress,
     #[serde(rename = "completed")]
+    Completed { completed_at: String },
+}
+
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+pub enum ReviewPeriodStateKey {
+    #[serde(rename = "in_progress")]
+    InProgress,
+    #[serde(rename = "completed")]
     Completed,
 }
 
-#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq)]
 pub struct Proposal {
-    pub title: String,
     pub nervous_system: NervousSystem,
     pub state: ReviewPeriodState,
     pub proposed_at: String,
-    pub proposed_by: u64,
     pub synced_at: String,
-    pub review_completed_at: Option<String>,
 }
 
-#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq)]
 pub struct GetProposalResponse {
     pub id: String,
     pub proposal: Proposal,
@@ -41,10 +42,16 @@ pub struct GetProposalResponse {
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub struct ListProposalsRequest {
-    pub state: Option<ReviewPeriodState>,
+    pub state: Option<ReviewPeriodStateKey>,
 }
 
-#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq)]
 pub struct ListProposalsResponse {
     pub proposals: Vec<GetProposalResponse>,
+}
+
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq)]
+pub struct SyncProposalsResponse {
+    pub synced_proposals_count: usize,
+    pub completed_proposals_count: usize,
 }

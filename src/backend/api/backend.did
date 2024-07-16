@@ -1,3 +1,5 @@
+import "../../../scripts/canisters/governance.did";
+
 type Err = record {
   code : nat16;
   message : text;
@@ -120,36 +122,33 @@ type UpdateUserProfileResponse = variant {
   err : Err;
 };
 
-type NnsProposalTopic = variant {
-  replica_version_management;
-  system_canister_management;
-};
-
 type NervousSystem = variant {
   network : record {
     id : nat64;
-    topic : NnsProposalTopic;
+    proposal_info : ProposalInfo;
   };
 };
 
 type ReviewPeriodState = variant {
   in_progress;
+  completed : record { completed_at : text };
+};
+
+type ReviewPeriodStateKey = variant {
+  in_progress;
   completed;
 };
 
-type Proposal = record {
-  title : text;
+type BackendProposal = record {
   nervous_system : NervousSystem;
   state : ReviewPeriodState;
   proposed_at : text;
-  proposed_by : nat64;
   synced_at : text;
-  review_completed_at : opt text;
 };
 
 type ProposalResponse = record {
   id : text;
-  proposal : Proposal;
+  proposal : BackendProposal;
 };
 
 type GetProposalResponse = variant {
@@ -158,7 +157,7 @@ type GetProposalResponse = variant {
 };
 
 type ListProposalsRequest = record {
-  state : opt ReviewPeriodState;
+  state : opt ReviewPeriodStateKey;
 };
 
 type ListProposalsResponse = variant {
@@ -197,7 +196,10 @@ type ListLogsResponse = variant {
 };
 
 type SyncProposalsResponse = variant {
-  ok;
+  ok : record {
+    synced_proposals_count : nat64;
+    completed_proposals_count : nat64;
+  };
   err : Err;
 };
 

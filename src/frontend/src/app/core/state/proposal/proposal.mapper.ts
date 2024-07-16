@@ -1,9 +1,5 @@
 import { fromCandidDate, fromCandidOptDate } from '../../utils';
-import {
-  NnsProposalTopic,
-  ProposalResponse,
-  ReviewPeriodState,
-} from '@cg/backend';
+import { ProposalResponse, ReviewPeriodState } from '@cg/backend';
 import {
   Proposal,
   ProposalLinkBaseUrl,
@@ -18,9 +14,11 @@ export function mapProposalListResponse(
   return apiResponseList.map(proposalResponse => ({
     id: proposalResponse.id,
     ns_proposal_id: proposalResponse.proposal.nervous_system.network.id,
-    title: proposalResponse.proposal.title,
+    title:
+      proposalResponse.proposal.nervous_system.network.proposal_info.proposal[0]
+        ?.title[0] ?? '',
     topic: getProposalTopic(
-      proposalResponse.proposal.nervous_system.network.topic,
+      proposalResponse.proposal.nervous_system.network.proposal_info.topic,
     ),
     type: 'unknown',
     state: getProposalState(proposalResponse.proposal.state),
@@ -33,9 +31,13 @@ export function mapProposalListResponse(
       3,
     ),
     proposedAt: fromCandidDate(proposalResponse.proposal.proposed_at),
-    proposedBy: proposalResponse.proposal.proposed_by,
+    proposedBy:
+      proposalResponse.proposal.nervous_system.network.proposal_info.proposer[0]
+        ?.id ?? BigInt(0),
     reviewCompletedAt: fromCandidOptDate(
-      proposalResponse.proposal.review_completed_at,
+      'completed' in proposalResponse.proposal.state
+        ? [proposalResponse.proposal.state.completed.completed_at]
+        : [],
     ),
     decidedAt: addDays(
       fromCandidDate(proposalResponse.proposal.proposed_at),
@@ -61,10 +63,10 @@ export function mapProposalListResponse(
   }));
 }
 
-function getProposalTopic(nnsProposalTopic: NnsProposalTopic): ProposalTopic {
-  if ('replica_version_management' in nnsProposalTopic) {
+function getProposalTopic(nnsProposalTopic: number): ProposalTopic {
+  if (nnsProposalTopic === 13) {
     return ProposalTopic.RVM;
-  } else if ('system_canister_management' in nnsProposalTopic) {
+  } else if (nnsProposalTopic === 8) {
     return ProposalTopic.SCM;
   } else throw new Error('Unknown proposal topic');
 }

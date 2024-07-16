@@ -1,27 +1,17 @@
 use crate::repositories::{
-    NervousSystem, NnsProposalTopic, Proposal, ProposalId, ReviewPeriodState,
+    NervousSystem, Proposal, ProposalId, ReviewPeriodState, ReviewPeriodStateKey,
 };
-use backend_api::GetProposalResponse;
-
-impl From<NnsProposalTopic> for backend_api::NnsProposalTopic {
-    fn from(value: NnsProposalTopic) -> Self {
-        match value {
-            NnsProposalTopic::ReplicaVersionManagement => {
-                backend_api::NnsProposalTopic::ReplicaVersionManagement
-            }
-            NnsProposalTopic::SystemCanisterManagement => {
-                backend_api::NnsProposalTopic::SystemCanisterManagement
-            }
-        }
-    }
-}
+use backend_api::{ApiError, GetProposalResponse};
 
 impl From<NervousSystem> for backend_api::NervousSystem {
     fn from(value: NervousSystem) -> Self {
         match value {
-            NervousSystem::Network { id, topic } => backend_api::NervousSystem::Network {
-                id,
-                topic: topic.into(),
+            NervousSystem::Network {
+                proposal_id,
+                proposal_info,
+            } => backend_api::NervousSystem::Network {
+                id: proposal_id,
+                proposal_info,
             },
         }
     }
@@ -31,40 +21,42 @@ impl From<ReviewPeriodState> for backend_api::ReviewPeriodState {
     fn from(value: ReviewPeriodState) -> Self {
         match value {
             ReviewPeriodState::InProgress => backend_api::ReviewPeriodState::InProgress,
-            ReviewPeriodState::Completed => backend_api::ReviewPeriodState::Completed,
+            ReviewPeriodState::Completed { completed_at } => {
+                backend_api::ReviewPeriodState::Completed {
+                    completed_at: completed_at.to_string(),
+                }
+            }
         }
     }
 }
 
-impl From<backend_api::ReviewPeriodState> for ReviewPeriodState {
-    fn from(value: backend_api::ReviewPeriodState) -> Self {
+impl From<backend_api::ReviewPeriodStateKey> for ReviewPeriodStateKey {
+    fn from(value: backend_api::ReviewPeriodStateKey) -> Self {
         match value {
-            backend_api::ReviewPeriodState::InProgress => ReviewPeriodState::InProgress,
-            backend_api::ReviewPeriodState::Completed => ReviewPeriodState::Completed,
+            backend_api::ReviewPeriodStateKey::InProgress => ReviewPeriodStateKey::InProgress,
+            backend_api::ReviewPeriodStateKey::Completed => ReviewPeriodStateKey::Completed,
         }
     }
 }
 
-impl From<Proposal> for backend_api::Proposal {
-    fn from(value: Proposal) -> Self {
-        backend_api::Proposal {
-            title: value.title,
-            nervous_system: value.nervous_system.into(),
+impl TryFrom<Proposal> for backend_api::Proposal {
+    type Error = ApiError;
+    fn try_from(value: Proposal) -> Result<Self, ApiError> {
+        Ok(backend_api::Proposal {
+            nervous_system: value.nervous_system.clone().into(),
             state: value.state.into(),
-            proposed_at: value.proposed_at.to_string(),
-            proposed_by: value.proposed_by,
+            proposed_at: value.proposed_at()?.to_string(),
             synced_at: value.synced_at.to_string(),
-            review_completed_at: value.review_completed_at.map(|dt| dt.to_string()),
-        }
+        })
     }
 }
 
 pub fn map_get_proposal_response(
     proposal_id: ProposalId,
     proposal: Proposal,
-) -> GetProposalResponse {
-    GetProposalResponse {
+) -> Result<GetProposalResponse, ApiError> {
+    Ok(GetProposalResponse {
         id: proposal_id.to_string(),
-        proposal: proposal.into(),
-    }
+        proposal: proposal.try_into()?,
+    })
 }
