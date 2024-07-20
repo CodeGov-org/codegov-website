@@ -139,159 +139,153 @@ interface FilterForm {
       </div>
     </form>
 
-    @if (proposalListWithReviewIds(); as proposalList) {
-      @for (proposal of proposalList; track proposal.id; let i = $index) {
-        <cg-card class="proposal">
-          <h2 class="h4 proposal__title" slot="cardTitle">
-            {{ proposal.title }}
-          </h2>
+    @for (
+      proposal of proposalListWithReviewIds();
+      track proposal.id;
+      let i = $index
+    ) {
+      <cg-card class="proposal">
+        <h2 class="h4 proposal__title" slot="cardTitle">
+          {{ proposal.title }}
+        </h2>
 
-          <div slot="cardContent">
-            <app-key-value-grid [columnNumber]="2">
-              <app-key-col [id]="'proposal-id-' + i">ID</app-key-col>
-              <app-value-col [attr.aria-labelledby]="'proposal-id-' + i">
-                <a
-                  [href]="linkBaseUrl().Proposal + proposal.ns_proposal_id"
-                  target="_blank"
-                  rel="nofollow noreferrer"
-                >
-                  {{ proposal.ns_proposal_id }}
-                </a>
-              </app-value-col>
-
-              <app-key-col [id]="'proposal-links-' + i">
-                Voting links
-              </app-key-col>
-              <app-value-col [attr.aria-labelledby]="'proposal-links-' + i">
-                @for (
-                  proposalLink of proposal.proposalLinks;
-                  track proposalLink.type
-                ) {
-                  <a
-                    class="proposal__link"
-                    [href]="proposalLink.link"
-                    target="_blank"
-                    rel="nofollow noreferrer"
-                  >
-                    {{ proposalLink.type }}
-                  </a>
-                }
-              </app-value-col>
-
-              <app-key-col [id]="'proposal-topic-' + i">Topic</app-key-col>
-              <app-value-col [attr.aria-labelledby]="'proposal-topic-' + i">
-                {{ proposal.topic }}
-              </app-value-col>
-
-              <app-key-col [id]="'proposal-type-' + i">Type</app-key-col>
-              <app-value-col [attr.aria-labelledby]="'proposal-type-' + i">
-                {{ proposal.type }}
-              </app-value-col>
-
-              <app-key-col [id]="'proposal-created-' + i">Created</app-key-col>
-              <app-value-col [attr.aria-labelledby]="'proposal-created-' + i">
-                {{ proposal.proposedAt | formatDate }}
-              </app-value-col>
-
-              <app-key-col [id]="'proposal-proposer-' + i">
-                Proposer
-              </app-key-col>
-              <app-value-col
-                [attr.aria-labelledby]="'proposal-proposer-' + i"
-                class="proposal__proposer"
+        <div slot="cardContent">
+          <app-key-value-grid [columnNumber]="2">
+            <app-key-col [id]="'proposal-id-' + i">ID</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'proposal-id-' + i">
+              <a
+                [href]="linkBaseUrl().Proposal + proposal.ns_proposal_id"
+                target="_blank"
+                rel="nofollow noreferrer"
               >
-                <a
-                  [href]="linkBaseUrl().Neuron + proposal.proposedBy"
-                  target="_blank"
-                  rel="nofollow noreferrer"
-                >
-                  {{ proposal.proposedBy }}
-                </a>
-              </app-value-col>
-
-              <app-key-col [id]="'proposal-review-end-' + i">
-                Review period end
-              </app-key-col>
-              <app-value-col
-                [attr.aria-labelledby]="'proposal-review-end-' + i"
-              >
-                {{ proposal.reviewPeriodEnd | formatDate }}
-              </app-value-col>
-
-              <app-key-col [id]="'proposal-voting-end-' + i">
-                Voting period end
-              </app-key-col>
-              <app-value-col
-                [attr.aria-labelledby]="'proposal-voting-end-' + i"
-              >
-                {{ proposal.votingPeriodEnd | formatDate }}
-              </app-value-col>
-
-              <app-key-col [id]="'proposal-date-decided-' + i">
-                Date decided
-              </app-key-col>
-              <app-value-col
-                [attr.aria-labelledby]="'proposal-date-decided-' + i"
-              >
-                {{
-                  proposal.decidedAt
-                    ? (proposal.decidedAt | formatDate)
-                    : 'Not yet decided'
-                }}
-              </app-value-col>
-
-              <app-key-col [id]="'proposal-codegov-vote-' + i">
-                CodeGov vote
-              </app-key-col>
-              <app-value-col
-                [attr.aria-labelledby]="'proposal-codegov-vote-' + i"
-                class="proposal__vote"
-                [ngClass]="{
-                  'proposal__vote--adopt': proposal.codeGovVote === 'ADOPT',
-                  'proposal__vote--reject': proposal.codeGovVote === 'REJECT',
-                }"
-              >
-                {{ proposal.codeGovVote }}
-              </app-value-col>
-            </app-key-value-grid>
-            <div class="btn-group">
-              @if (
-                proposal.state === proposalState().InProgress && isReviewer()
-              ) {
-                @if (proposal.reviewState === undefined) {
-                  <a
-                    class="btn btn--outline"
-                    [routerLink]="['/review', proposal.id, 'edit']"
-                  >
-                    Create review
-                  </a>
-                } @else if (
-                  proposal.reviewState === ProposalReviewStatus().Draft
-                ) {
-                  <a
-                    class="btn btn--outline"
-                    [routerLink]="['/review', proposal.id, 'edit']"
-                  >
-                    Edit review
-                  </a>
-                } @else if (
-                  proposal.reviewState === ProposalReviewStatus().Published
-                ) {
-                  <a
-                    class="btn btn--outline"
-                    [routerLink]="['/review', proposal.reviewId, 'view']"
-                  >
-                    My review
-                  </a>
-                }
-              }
-              <a class="btn btn--outline" [routerLink]="[proposal.id]">
-                View details
+                {{ proposal.ns_proposal_id }}
               </a>
-            </div>
+            </app-value-col>
+
+            <app-key-col [id]="'proposal-links-' + i">Voting links</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'proposal-links-' + i">
+              @for (
+                proposalLink of proposal.proposalLinks;
+                track proposalLink.type
+              ) {
+                <a
+                  class="proposal__link"
+                  [href]="proposalLink.link"
+                  target="_blank"
+                  rel="nofollow noreferrer"
+                >
+                  {{ proposalLink.type }}
+                </a>
+              }
+            </app-value-col>
+
+            <app-key-col [id]="'proposal-topic-' + i">Topic</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'proposal-topic-' + i">
+              {{ proposal.topic }}
+            </app-value-col>
+
+            <app-key-col [id]="'proposal-type-' + i">Type</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'proposal-type-' + i">
+              {{ proposal.type }}
+            </app-value-col>
+
+            <app-key-col [id]="'proposal-created-' + i">Created</app-key-col>
+            <app-value-col [attr.aria-labelledby]="'proposal-created-' + i">
+              {{ proposal.proposedAt | formatDate }}
+            </app-value-col>
+
+            <app-key-col [id]="'proposal-proposer-' + i">Proposer</app-key-col>
+            <app-value-col
+              [attr.aria-labelledby]="'proposal-proposer-' + i"
+              class="proposal__proposer"
+            >
+              <a
+                [href]="linkBaseUrl().Neuron + proposal.proposedBy"
+                target="_blank"
+                rel="nofollow noreferrer"
+              >
+                {{ proposal.proposedBy }}
+              </a>
+            </app-value-col>
+
+            <app-key-col [id]="'proposal-review-end-' + i">
+              Review period end
+            </app-key-col>
+            <app-value-col [attr.aria-labelledby]="'proposal-review-end-' + i">
+              {{ proposal.reviewPeriodEnd | formatDate }}
+            </app-value-col>
+
+            <app-key-col [id]="'proposal-voting-end-' + i">
+              Voting period end
+            </app-key-col>
+            <app-value-col [attr.aria-labelledby]="'proposal-voting-end-' + i">
+              {{ proposal.votingPeriodEnd | formatDate }}
+            </app-value-col>
+
+            <app-key-col [id]="'proposal-date-decided-' + i">
+              Date decided
+            </app-key-col>
+            <app-value-col
+              [attr.aria-labelledby]="'proposal-date-decided-' + i"
+            >
+              {{
+                proposal.decidedAt
+                  ? (proposal.decidedAt | formatDate)
+                  : 'Not yet decided'
+              }}
+            </app-value-col>
+
+            <app-key-col [id]="'proposal-codegov-vote-' + i">
+              CodeGov vote
+            </app-key-col>
+            <app-value-col
+              [attr.aria-labelledby]="'proposal-codegov-vote-' + i"
+              class="proposal__vote"
+              [ngClass]="{
+                'proposal__vote--adopt': proposal.codeGovVote === 'ADOPT',
+                'proposal__vote--reject': proposal.codeGovVote === 'REJECT',
+              }"
+            >
+              {{ proposal.codeGovVote }}
+            </app-value-col>
+          </app-key-value-grid>
+          <div class="btn-group">
+            @if (
+              proposal.state === proposalState().InProgress && isReviewer()
+            ) {
+              @if (proposal.reviewState === undefined) {
+                <a
+                  class="btn btn--outline"
+                  [routerLink]="['/review', proposal.id, 'edit']"
+                >
+                  Create review
+                </a>
+              } @else if (
+                proposal.reviewState === ProposalReviewStatus().Draft
+              ) {
+                <a
+                  class="btn btn--outline"
+                  [routerLink]="['/review', proposal.id, 'edit']"
+                >
+                  Edit review
+                </a>
+              } @else if (
+                proposal.reviewState === ProposalReviewStatus().Published
+              ) {
+                <a
+                  class="btn btn--outline"
+                  [routerLink]="['/review', proposal.reviewId, 'view']"
+                >
+                  My review
+                </a>
+              }
+            }
+            <a class="btn btn--outline" [routerLink]="[proposal.id]">
+              View details
+            </a>
           </div>
-        </cg-card>
-      }
+        </div>
+      </cg-card>
     }
   `,
 })

@@ -57,6 +57,7 @@ describe('ProposalDetailsComponent', () => {
         reviewPeriodEnd: new Date(2024, 1, 17, 1, 1, 25),
         votingPeriodEnd: new Date(2024, 1, 19, 1, 1, 25),
         reviewCompletedAt: null,
+        decidedAt: null,
         proposedAt: new Date(2024, 1, 15, 1, 1, 25),
         proposedBy: 432432432423n,
         summary: 'Elect new replica binary revision',
