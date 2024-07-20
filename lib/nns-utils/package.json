@@ -1,9 +1,5 @@
 {
   "name": "@cg/nns-utils",
   "private": true,
-  "dependencies": {
-    "@dfinity/ledger-icp": "^2.2.1",
-    "@dfinity/utils": "^2.1.2"
-  },
   "main": "src/index.ts"
 }

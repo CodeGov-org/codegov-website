@@ -88,7 +88,7 @@ import { isNotNil, routeParam } from '~core/utils';
                   'review__vote--adopt':
                     review.vote === ProposalReviewVote().Adopt,
                   'review__vote--reject':
-                    review.vote === ProposalReviewVote().Reject
+                    review.vote === ProposalReviewVote().Reject,
                 }"
               >
                 {{ review.vote }}

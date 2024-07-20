@@ -110,7 +110,7 @@ import {
               <span
                 [ngClass]="{
                   'summary__vote--adopt': proposal().codeGovVote === 'ADOPT',
-                  'summary__vote--reject': proposal().codeGovVote === 'REJECT'
+                  'summary__vote--reject': proposal().codeGovVote === 'REJECT',
                 }"
               >
                 {{ proposal().codeGovVote }}
@@ -179,7 +179,7 @@ import {
                   'summary__vote--adopt':
                     review.vote === ProposalReviewVote().Adopt,
                   'summary__vote--reject':
-                    review.vote === ProposalReviewVote().Reject
+                    review.vote === ProposalReviewVote().Reject,
                 }"
               >
                 {{ review.vote }}
