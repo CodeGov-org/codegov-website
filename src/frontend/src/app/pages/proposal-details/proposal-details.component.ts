@@ -169,7 +169,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               class="proposal__vote"
               [ngClass]="{
                 'proposal__vote--adopt': proposal.codeGovVote === 'ADOPT',
-                'proposal__vote--reject': proposal.codeGovVote === 'REJECT'
+                'proposal__vote--reject': proposal.codeGovVote === 'REJECT',
               }"
             >
               {{ proposal.codeGovVote }}
