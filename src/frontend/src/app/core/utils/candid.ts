@@ -1,6 +1,6 @@
 import { isNil } from './nil';
 
-export function toCandidOpt<T>(value: T | undefined | null): [] | [T] {
+export function toCandidOpt<T>(value?: T | undefined | null): [] | [T] {
   return value ? [value] : [];
 }
 

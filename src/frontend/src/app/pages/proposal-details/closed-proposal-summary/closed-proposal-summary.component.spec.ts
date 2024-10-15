@@ -1,14 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import {
+  ProposalLinkBaseUrl,
   ProposalTopic,
   ProposalState,
   ProposalVotingLinkType,
-  ProposalLinkBaseUrl,
-} from '~core/state';
+} from '~core/api';
 import { ProposalService } from '~core/state';
 import {
   ProposalServiceMock,
@@ -40,7 +39,7 @@ describe('ClosedProposalSummaryComponent', () => {
       'currentProposal$',
       of({
         id: '1',
-        ns_proposal_id: 1n,
+        nsProposalId: 1n,
         title: 'title',
         topic: ProposalTopic.RVM,
         type: 'unknown',
@@ -52,6 +51,7 @@ describe('ClosedProposalSummaryComponent', () => {
         proposedAt: new Date(2024, 1, 15, 1, 1, 25),
         proposedBy: 432432432423n,
         summary: 'Elect new replica binary revision',
+        codeGovVote: null,
         proposalLinks: [
           {
             type: ProposalVotingLinkType.NNSDApp,
@@ -68,7 +68,7 @@ describe('ClosedProposalSummaryComponent', () => {
     activatedRoute.params = of([{ id: 1 }]);
 
     await TestBed.configureTestingModule({
-      imports: [ClosedProposalSummaryComponent, RouterTestingModule],
+      imports: [ClosedProposalSummaryComponent],
       providers: [
         { provide: ProposalService, useValue: proposalServiceMock },
         { provide: ReviewService, useValue: reviewServiceMock },
@@ -76,6 +76,7 @@ describe('ClosedProposalSummaryComponent', () => {
           provide: ActivatedRoute,
           useValue: activatedRoute,
         },
+        provideRouter([]),
       ],
     }).compileComponents();
 

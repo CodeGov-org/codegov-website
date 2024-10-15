@@ -4,12 +4,11 @@ import { of } from 'rxjs';
 
 import {
   ProposalLinkBaseUrl,
-  ProposalService,
-  ProposalState,
-  ProposalTopic,
   ProposalVotingLinkType,
-  ReviewService,
-} from '~core/state';
+  ProposalTopic,
+  ProposalState,
+} from '~core/api';
+import { ProposalService, ReviewService } from '~core/state';
 import {
   ProposalServiceMock,
   proposalServiceMockFactory,
@@ -40,7 +39,7 @@ describe('ProposalReviewEditComponent', () => {
       'currentProposal$',
       of({
         id: '1',
-        ns_proposal_id: 1n,
+        nsProposalId: 1n,
         title: 'title',
         topic: ProposalTopic.RVM,
         type: 'unknown',
@@ -52,6 +51,7 @@ describe('ProposalReviewEditComponent', () => {
         decidedAt: null,
         summary: 'Elect new replica binary revision',
         reviewCompletedAt: null,
+        codeGovVote: null,
         proposalLinks: [
           {
             type: ProposalVotingLinkType.NNSDApp,

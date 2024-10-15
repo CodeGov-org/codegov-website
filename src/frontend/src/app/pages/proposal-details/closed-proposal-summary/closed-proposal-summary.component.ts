@@ -15,8 +15,12 @@ import {
   DashCircleIconComponent,
   CheckCircleIconComponent,
 } from '@cg/angular-ui';
-import { ProposalCommitReviewSummary, ProposalReviewVote } from '~core/api';
-import { Proposal, ReviewService } from '~core/state';
+import {
+  GetProposalResponse,
+  ProposalCommitReviewSummary,
+  ProposalReviewVote,
+} from '~core/api';
+import { ReviewService } from '~core/state';
 import {
   KeyColComponent,
   KeyValueGridComponent,
@@ -279,7 +283,7 @@ import {
 })
 export class ClosedProposalSummaryComponent implements OnInit {
   public readonly ProposalReviewVote = signal(ProposalReviewVote);
-  public readonly proposal = input.required<Proposal>();
+  public readonly proposal = input.required<GetProposalResponse>();
 
   public readonly reviewList = toSignal(this.reviewService.proposalReviewList$);
 

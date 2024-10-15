@@ -1,12 +1,26 @@
-import { backendActorServiceMockFactory } from '~core/services/backend-actor-service-mock';
+import { TestBed } from '@angular/core/testing';
+
+import { ProposalApiService } from '~core/api';
+import {
+  ProposalApiServiceMock,
+  proposalApiServiceMockFactory,
+} from '~core/api/proposal/proposal-api.service.mock';
 import { ProposalService } from './proposal.service';
 
 describe('ProposalService', () => {
   let service: ProposalService;
-  const backendActorServiceMock = backendActorServiceMockFactory();
+  let proposalApiServiceMock: ProposalApiServiceMock;
 
   beforeEach(() => {
-    service = new ProposalService(backendActorServiceMock);
+    proposalApiServiceMock = proposalApiServiceMockFactory();
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: ProposalApiService, useValue: proposalApiServiceMock },
+      ],
+    });
+
+    service = TestBed.inject(ProposalService);
   });
 
   it('should be created', () => {

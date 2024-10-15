@@ -11,8 +11,8 @@ import { Router } from '@angular/router';
 import { first } from 'rxjs';
 
 import { CardComponent } from '@cg/angular-ui';
-import { GetProposalReviewCommitResponse } from '~core/api';
-import { ProposalService, ProposalState, ReviewService } from '~core/state';
+import { GetProposalReviewCommitResponse, ProposalState } from '~core/api';
+import { ProposalService, ReviewService } from '~core/state';
 import { filterNotNil, routeParam, toSyncSignal } from '~core/utils';
 import { ReviewCommitsFormComponent } from './review-commits-form';
 import { ReviewDetailsFormComponent } from './review-details-form';
@@ -47,9 +47,7 @@ import { ReviewDetailsFormComponent } from './review-details-form';
   ],
   template: `
     @if (currentProposal(); as proposal) {
-      <h1 class="h1">
-        Submit review for proposal {{ proposal.ns_proposal_id }}
-      </h1>
+      <h1 class="h1">Submit review for proposal {{ proposal.nsProposalId }}</h1>
 
       <cg-card class="proposal-overview-card">
         <h2 class="h3" slot="cardTitle">{{ proposal.title }}</h2>

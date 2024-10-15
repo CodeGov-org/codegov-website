@@ -10,15 +10,10 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
-import { ProposalReviewStatus } from '~core/api';
+import { ProposalLinkBaseUrl, ProposalReviewStatus } from '~core/api';
+import { ProposalState } from '~core/api';
 import { FormatDatePipe } from '~core/pipes';
-import {
-  ProfileService,
-  ProposalLinkBaseUrl,
-  ProposalService,
-  ProposalState,
-  ReviewService,
-} from '~core/state';
+import { ProfileService, ProposalService, ReviewService } from '~core/state';
 import {
   KeyValueGridComponent,
   KeyColComponent,
@@ -154,11 +149,11 @@ interface FilterForm {
             <app-key-col [id]="'proposal-id-' + i">ID</app-key-col>
             <app-value-col [attr.aria-labelledby]="'proposal-id-' + i">
               <a
-                [href]="linkBaseUrl().Proposal + proposal.ns_proposal_id"
+                [href]="linkBaseUrl().Proposal + proposal.nsProposalId"
                 target="_blank"
                 rel="nofollow noreferrer"
               >
-                {{ proposal.ns_proposal_id }}
+                {{ proposal.nsProposalId }}
               </a>
             </app-value-col>
 
@@ -345,7 +340,7 @@ export class ProposalListComponent {
   private async onFilterFormUpdated(
     formValue: ReviewPeriodStateFilter | undefined,
   ): Promise<void> {
-    let inputParam: ProposalState | undefined;
+    let inputParam: ProposalState = ProposalState.Any;
 
     switch (formValue) {
       case ReviewPeriodStateFilter.InReview:
