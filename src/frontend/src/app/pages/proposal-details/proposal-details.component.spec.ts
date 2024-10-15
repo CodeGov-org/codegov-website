@@ -11,10 +11,8 @@ import {
   ProposalState,
   ProposalVotingLinkType,
   ProposalLinkBaseUrl,
-  ProfileService,
-  ReviewService,
-} from '~core/state';
-import { ProposalService } from '~core/state';
+} from '~core/api';
+import { ProfileService, ReviewService, ProposalService } from '~core/state';
 import {
   ProfileServiceMock,
   profileServiceMockFactory,
@@ -49,7 +47,7 @@ describe('ProposalDetailsComponent', () => {
       'currentProposal$',
       of({
         id: '1',
-        ns_proposal_id: 1n,
+        nsProposalId: 1n,
         title: 'title',
         topic: ProposalTopic.RVM,
         type: 'unknown',
@@ -61,6 +59,7 @@ describe('ProposalDetailsComponent', () => {
         proposedAt: new Date(2024, 1, 15, 1, 1, 25),
         proposedBy: 432432432423n,
         summary: 'Elect new replica binary revision',
+        codeGovVote: null,
         proposalLinks: [
           {
             type: ProposalVotingLinkType.NNSDApp,

@@ -11,14 +11,14 @@ import { RouterLink } from '@angular/router';
 import { marked } from 'marked';
 
 import { CardComponent } from '@cg/angular-ui';
-import { GetProposalReviewResponse, ProposalReviewStatus } from '~core/api';
-import { FormatDatePipe } from '~core/pipes';
 import {
-  ProfileService,
+  GetProposalReviewResponse,
   ProposalLinkBaseUrl,
+  ProposalReviewStatus,
   ProposalState,
-  ReviewService,
-} from '~core/state';
+} from '~core/api';
+import { FormatDatePipe } from '~core/pipes';
+import { ProfileService, ReviewService } from '~core/state';
 import { ProposalService } from '~core/state';
 import {
   KeyColComponent,
@@ -86,11 +86,11 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
             <app-key-col id="proposal-id">ID</app-key-col>
             <app-value-col aria-labelledby="proposal-id">
               <a
-                [href]="LinkBaseUrl().Proposal + proposal.ns_proposal_id"
+                [href]="LinkBaseUrl().Proposal + proposal.nsProposalId"
                 target="_blank"
                 rel="nofollow noreferrer"
               >
-                {{ proposal.ns_proposal_id }}
+                {{ proposal.nsProposalId }}
               </a>
             </app-value-col>
 
@@ -282,7 +282,7 @@ export class ProposalDetailsComponent {
       this.proposalService.setCurrentProposalId(proposalId);
     });
 
-    this.proposalService.loadProposalList();
+    this.proposalService.loadProposalList(ProposalState.Any);
   }
 
   public onToggleSummary(): void {

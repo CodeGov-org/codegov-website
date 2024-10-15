@@ -1,6 +1,16 @@
-export interface Proposal {
+export enum ProposalState {
+  InProgress = 'InProgress',
+  Completed = 'Completed',
+  Any = 'Any',
+}
+
+export interface ListProposalsRequest {
+  state: ProposalState;
+}
+
+export interface GetProposalResponse {
   id: string;
-  ns_proposal_id: bigint;
+  nsProposalId: bigint;
   title: string | null;
   topic: ProposalTopic;
   type: string;
@@ -13,17 +23,12 @@ export interface Proposal {
   decidedAt: Date | null;
   summary: string;
   proposalLinks: ProposalVotingLink[];
-  codeGovVote?: ProposalCodeGovVote;
-}
-
-export enum ProposalState {
-  InProgress = 'In Progress',
-  Completed = 'Completed',
+  codeGovVote: ProposalCodeGovVote | null;
 }
 
 export enum ProposalTopic {
-  SCM = 'System Canister Management',
-  RVM = 'Replica Version Management',
+  SCM = 'SystemCanisterManagement',
+  RVM = 'ReplicaVersionManagement',
 }
 
 export interface ProposalVotingLink {

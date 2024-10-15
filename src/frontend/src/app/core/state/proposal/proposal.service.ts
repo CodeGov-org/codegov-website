@@ -1,11 +1,9 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, map, switchMap } from 'rxjs';
 
-import { ListProposalsResponse } from '@cg/backend';
-import { BackendActorService } from '~core/services';
-import { extractOkResponse, isNil, toCandidOpt } from '~core/utils';
-import { mapProposalListResponse } from './proposal.mapper';
-import { Proposal, ProposalState } from './proposal.model';
+import { GetProposalResponse, ProposalApiService } from '~core/api';
+import { ProposalState } from '~core/api';
+import { isNil } from '~core/utils';
 
 const CACHE_TTL = 5_000;
 
@@ -13,7 +11,11 @@ const CACHE_TTL = 5_000;
   providedIn: 'root',
 })
 export class ProposalService {
-  private currentProposalListSubject = new BehaviorSubject<Proposal[]>([]);
+  private readonly proposalApiService = inject(ProposalApiService);
+
+  private readonly currentProposalListSubject = new BehaviorSubject<
+    GetProposalResponse[]
+  >([]);
   public readonly currentProposalList$ =
     this.currentProposalListSubject.asObservable();
 
@@ -21,13 +23,13 @@ export class ProposalService {
   public readonly currentProposalId$ =
     this.currentProposalIdSubject.asObservable();
 
-  private openProposalList: Proposal[] = [];
+  private openProposalList: GetProposalResponse[] = [];
   private openProposalListLastLoaded: number | null = null;
 
-  private closedProposalList: Proposal[] = [];
+  private closedProposalList: GetProposalResponse[] = [];
   private closedProposalListLastLoaded: number | null = null;
 
-  private fullProposalList: Proposal[] = [];
+  private fullProposalList: GetProposalResponse[] = [];
   private fullProposalListLastLoaded: number | null = null;
 
   public readonly currentProposal$ = this.currentProposalId$.pipe(
@@ -41,9 +43,7 @@ export class ProposalService {
     ),
   );
 
-  constructor(private readonly actorService: BackendActorService) {}
-
-  public async loadProposalList(state?: ProposalState): Promise<void> {
+  public async loadProposalList(state: ProposalState): Promise<void> {
     switch (state) {
       case ProposalState.InProgress:
         return await this.loadOpenProposals();
@@ -64,10 +64,9 @@ export class ProposalService {
       return;
     }
 
-    const getResponse = await this.actorService.list_proposals({
-      state: toCandidOpt({ in_progress: null }),
-    });
-    this.currentProposalListSubject.next(this.getProposalList(getResponse));
+    const getResponse = await this.proposalApiService.listOpenProposals();
+
+    this.currentProposalListSubject.next(getResponse);
     this.openProposalList = this.currentProposalListSubject.getValue();
     this.openProposalListLastLoaded = Date.now();
   }
@@ -77,10 +76,10 @@ export class ProposalService {
       this.currentProposalListSubject.next(this.closedProposalList);
       return;
     }
-    const getResponse = await this.actorService.list_proposals({
-      state: toCandidOpt({ completed: null }),
-    });
-    this.currentProposalListSubject.next(this.getProposalList(getResponse));
+
+    const getResponse = await this.proposalApiService.listClosedProposals();
+
+    this.currentProposalListSubject.next(getResponse);
     this.closedProposalList = this.currentProposalListSubject.getValue();
     this.closedProposalListLastLoaded = Date.now();
   }
@@ -91,10 +90,9 @@ export class ProposalService {
       return;
     }
 
-    const getResponse = await this.actorService.list_proposals({
-      state: [],
-    });
-    this.currentProposalListSubject.next(this.getProposalList(getResponse));
+    const getResponse = await this.proposalApiService.listAllProposals();
+
+    this.currentProposalListSubject.next(getResponse);
     this.fullProposalList = this.currentProposalListSubject.getValue();
     this.fullProposalListLastLoaded = Date.now();
   }
@@ -108,9 +106,5 @@ export class ProposalService {
     const currentTime = Date.now();
 
     return currentTime > cacheExpiryTime;
-  }
-
-  private getProposalList(getResponse: ListProposalsResponse): Proposal[] {
-    return mapProposalListResponse(extractOkResponse(getResponse).proposals);
   }
 }

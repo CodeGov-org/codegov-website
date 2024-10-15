@@ -9,13 +9,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
 import { CardComponent } from '@cg/angular-ui';
-import { ProposalReviewStatus, ProposalReviewVote } from '~core/api';
 import {
-  ProfileService,
-  ProposalService,
+  ProposalReviewStatus,
+  ProposalReviewVote,
   ProposalState,
-  ReviewService,
-} from '~core/state';
+} from '~core/api';
+import { ProfileService, ProposalService, ReviewService } from '~core/state';
 import {
   KeyColComponent,
   KeyValueGridComponent,
@@ -76,7 +75,7 @@ import { isNotNil, routeParam } from '~core/utils';
             <app-key-value-grid [columnNumber]="1">
               <app-key-col id="proposal-title">Proposal title</app-key-col>
               <app-value-col aria-labelledby="proposal-title">
-                <a [routerLink]="['/', proposal.ns_proposal_id]">
+                <a [routerLink]="['/', proposal.nsProposalId]">
                   {{ proposal.title }}
                 </a>
               </app-value-col>
@@ -230,6 +229,6 @@ export class ProposalReviewComponent {
       const proposalId = this.currentProposalId()!;
       this.proposalService.setCurrentProposalId(proposalId);
     }
-    this.proposalService.loadProposalList();
+    this.proposalService.loadProposalList(ProposalState.Any);
   }
 }
