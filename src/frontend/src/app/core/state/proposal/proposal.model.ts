@@ -1,16 +1,16 @@
 export interface Proposal {
   id: string;
   ns_proposal_id: bigint;
-  title: string;
+  title: string | null;
   topic: ProposalTopic;
   type: string;
   state: ProposalState;
   reviewPeriodEnd: Date;
   votingPeriodEnd: Date;
   proposedAt: Date;
-  proposedBy: bigint;
+  proposedBy: bigint | null;
   reviewCompletedAt: Date | null;
-  decidedAt?: Date;
+  decidedAt: Date | null;
   summary: string;
   proposalLinks: ProposalVotingLink[];
   codeGovVote?: ProposalCodeGovVote;

@@ -49,6 +49,7 @@ describe('ProposalReviewEditComponent', () => {
         votingPeriodEnd: new Date(2024, 1, 19, 1, 1, 25),
         proposedAt: new Date(2024, 1, 15, 1, 1, 25),
         proposedBy: 432432432423n,
+        decidedAt: null,
         summary: 'Elect new replica binary revision',
         reviewCompletedAt: null,
         proposalLinks: [
