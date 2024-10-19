@@ -8,6 +8,8 @@ name = "backend_logs"
 path = "src/main.rs"
 
 [dependencies]
+backend_api = { path = "../api" }
+
 ic-cdk.workspace = true
 ic-agent = "0.39"
 
@@ -18,12 +20,13 @@ serde_bytes.workspace = true
 clap = { version = "4.5", features = ["derive"] }
 opentelemetry = "0.26"
 opentelemetry-otlp = { version = "0.26", features = [
-    "logs",
-    "http-json",
-    "reqwest-client",
+  "logs",
+  "http-json",
+  "reqwest-client",
 ], default-features = false }
 opentelemetry_sdk = { version = "0.26", features = ["logs", "rt-tokio"] }
+opentelemetry-semantic-conventions = "0.26"
 tokio = { version = "1.40", features = ["full"] }
 anyhow = "1.0"
-base64 = "0.22"
+base64.workspace = true
 chrono.workspace = true
