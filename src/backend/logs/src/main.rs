@@ -7,7 +7,7 @@ use opentelemetry_sdk::logs::{Logger, LoggerProvider};
 use std::collections::HashMap;
 use std::{
     fs::{File, OpenOptions},
-    io::{Read, Write},
+    io::{Read, Seek, Write},
     path::PathBuf,
     time::{SystemTime, UNIX_EPOCH},
 };
@@ -67,7 +67,7 @@ struct LogFetcher {
 
 impl LogFetcher {
     fn new(identity_pem: PathBuf, backend_canister_id: String) -> anyhow::Result<Self> {
-        let path = "last_fetch_timestamp.txt";
+        let path = "data/last-fetch-timestamp.txt";
         let mut file = OpenOptions::new()
             .create(true)
             .read(true)
@@ -98,10 +98,10 @@ impl LogFetcher {
     fn update_last_fetch_timestamp(&mut self, timestamp: u64) {
         self.last_fetch_timestamp = Some(timestamp);
         self.file.set_len(0).unwrap();
+        self.file.rewind().unwrap();
         self.file
             .write_all(timestamp.to_string().as_bytes())
             .unwrap();
-        self.file.flush().unwrap();
     }
 }
 
