@@ -4,6 +4,7 @@ members = [
   "src/backend/api",
   "src/backend/impl",
   "src/backend/external_canisters",
+  "src/backend/logs",
 ]
 
 [profile.release]
@@ -24,6 +25,8 @@ candid = "0.10"
 candid_parser = "0.1"
 serde = "1.0"
 uuid = "1.6"
+serde_bytes = "0.11"
+chrono = { version = "0.4", default-features = false, features = ["std"] }
 
 mockall = "0.12"
 rstest = "0.18"
