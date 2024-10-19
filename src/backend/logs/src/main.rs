@@ -1,3 +1,5 @@
+use std::{collections::HashMap, path::PathBuf};
+
 use backend_api::{LogEntry, LogLevel};
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
 use clap::Parser;
@@ -10,7 +12,6 @@ use opentelemetry_sdk::{
     logs::{LogRecord, Logger, LoggerProvider},
     Resource,
 };
-use std::{collections::HashMap, path::PathBuf};
 
 mod fetcher;
 mod utils;

@@ -4,10 +4,9 @@ use std::{
     path::PathBuf,
 };
 
+use backend_api::{ApiResult, ListLogsResponse, LogEntry, LogsFilterRequest};
 use candid::{Decode, Encode, Principal};
 use ic_agent::{identity::Secp256k1Identity, Agent};
-
-use backend_api::{ApiResult, ListLogsResponse, LogEntry, LogsFilterRequest};
 
 use crate::utils::now_timestamp_ms;
 
@@ -17,7 +16,7 @@ struct BackendActor {
 }
 
 impl BackendActor {
-    pub fn new(identity_pem: PathBuf, canister_id: Principal) -> anyhow::Result<Self> {
+    fn new(identity_pem: PathBuf, canister_id: Principal) -> anyhow::Result<Self> {
         let identity = Secp256k1Identity::from_pem_file(identity_pem)?;
         let agent = Agent::builder()
             .with_identity(identity)
@@ -26,7 +25,7 @@ impl BackendActor {
         Ok(Self { agent, canister_id })
     }
 
-    pub async fn list_logs(
+    async fn list_logs(
         &self,
         after_timestamp_ms: Option<u64>,
     ) -> Result<ListLogsResponse, anyhow::Error> {
