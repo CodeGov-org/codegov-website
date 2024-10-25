@@ -20,6 +20,10 @@ mod utils;
 use fetcher::LogFetcher;
 use utils::now;
 
+/// `2048` is the default batch size for the OTLP logs batch processor.
+/// We use `2048 * 4` to accommodate cases where we fetch a lot of logs at once.
+const LOGS_PROCESSOR_MAX_QUEUE_SIZE_DEFAULT: usize = 2_048 * 4;
+
 fn init_telemetry(args: &Args) -> anyhow::Result<LoggerProvider> {
     let headers = {
         let mut headers = HashMap::new();
@@ -41,7 +45,7 @@ fn init_telemetry(args: &Args) -> anyhow::Result<LoggerProvider> {
     let processor = BatchLogProcessor::builder(exporter, Tokio)
         .with_batch_config(
             BatchConfigBuilder::default()
-                .with_max_queue_size(2_048 * 4)
+                .with_max_queue_size(LOGS_PROCESSOR_MAX_QUEUE_SIZE_DEFAULT)
                 .build(),
         )
         .build();
