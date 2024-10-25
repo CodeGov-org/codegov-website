@@ -9,7 +9,8 @@ use opentelemetry::{
 };
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::{
-    logs::{LogRecord, Logger, LoggerProvider},
+    logs::{BatchConfigBuilder, BatchLogProcessor, LogRecord, Logger, LoggerProvider},
+    runtime::Tokio,
     Resource,
 };
 
@@ -37,8 +38,16 @@ fn init_telemetry(args: &Args) -> anyhow::Result<LoggerProvider> {
         .with_headers(headers)
         .build_log_exporter()?;
 
+    let processor = BatchLogProcessor::builder(exporter, Tokio)
+        .with_batch_config(
+            BatchConfigBuilder::default()
+                .with_max_queue_size(2_048 * 4)
+                .build(),
+        )
+        .build();
+
     let logger_provider = LoggerProvider::builder()
-        .with_simple_exporter(exporter)
+        .with_log_processor(processor)
         .with_resource(Resource::new(vec![
             KeyValue::new(
                 opentelemetry_semantic_conventions::resource::SERVICE_NAME,
