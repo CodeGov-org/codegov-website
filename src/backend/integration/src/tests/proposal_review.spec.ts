@@ -404,7 +404,7 @@ describe('Proposal Review', () => {
 
       expect(resErr).toEqual({
         code: 404,
-        message: `Proposal review for proposal with Id ${nonExistentProposalId} not found`,
+        message: `Proposal review for proposal ${nonExistentProposalId} for principal ${reviewer.getPrincipal().toText()} not found`,
       });
     });
 
@@ -431,7 +431,7 @@ describe('Proposal Review', () => {
 
       expect(resErr).toEqual({
         code: 404,
-        message: `Proposal review for proposal with Id ${proposalId} not found`,
+        message: `Proposal review for proposal ${proposalId} for principal ${bob.getPrincipal().toText()} not found`,
       });
     });
 

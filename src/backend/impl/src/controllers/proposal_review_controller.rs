@@ -12,9 +12,9 @@ use crate::{
 use backend_api::{
     ApiError, ApiResult, CreateProposalReviewImageRequest, CreateProposalReviewImageResponse,
     CreateProposalReviewRequest, CreateProposalReviewResponse, DeleteProposalReviewImageRequest,
-    GetMyProposalReviewRequest, GetMyProposalReviewResponse, GetProposalReviewRequest,
-    GetProposalReviewResponse, ListProposalReviewsRequest, ListProposalReviewsResponse,
-    UpdateProposalReviewRequest,
+    GetMyProposalReviewRequest, GetMyProposalReviewResponse, GetMyProposalReviewSummaryRequest,
+    GetMyProposalReviewSummaryResponse, GetProposalReviewRequest, GetProposalReviewResponse,
+    ListProposalReviewsRequest, ListProposalReviewsResponse, UpdateProposalReviewRequest,
 };
 use candid::Principal;
 use ic_cdk::*;
@@ -89,6 +89,17 @@ fn get_my_proposal_review(
 
     ProposalReviewController::default()
         .get_my_proposal_review(calling_principal, request)
+        .into()
+}
+
+#[query]
+fn get_my_proposal_review_summary(
+    request: GetMyProposalReviewSummaryRequest,
+) -> ApiResult<GetMyProposalReviewSummaryResponse> {
+    let calling_principal = caller();
+
+    ProposalReviewController::default()
+        .get_my_proposal_review_summary(calling_principal, request)
         .into()
 }
 
@@ -197,6 +208,20 @@ impl<A: AccessControlService, P: ProposalReviewService> ProposalReviewController
 
         self.proposal_review_service
             .get_my_proposal_review(calling_principal, request)
+    }
+
+    fn get_my_proposal_review_summary(
+        &self,
+        calling_principal: Principal,
+        request: GetMyProposalReviewSummaryRequest,
+    ) -> Result<GetMyProposalReviewSummaryResponse, ApiError> {
+        self.access_control_service
+            .assert_principal_not_anonymous(&calling_principal)?;
+        self.access_control_service
+            .assert_principal_is_reviewer(&calling_principal)?;
+
+        self.proposal_review_service
+            .get_my_proposal_review_summary(calling_principal, request)
     }
 
     fn delete_proposal_review_image(

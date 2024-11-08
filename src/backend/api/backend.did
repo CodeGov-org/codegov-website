@@ -308,8 +308,19 @@ type GetMyProposalReviewRequest = record {
   proposal_id : text;
 };
 
+type GetMyProposalReviewSummaryRequest = record {
+  proposal_id : text;
+};
+
 type GetMyProposalReviewResponse = variant {
   ok : ProposalReviewWithId;
+  err : Err;
+};
+
+type GetMyProposalReviewSummaryResponse = variant {
+  ok : record {
+    summary_markdown : text;
+  };
   err : Err;
 };
 
@@ -395,6 +406,7 @@ service : {
   create_proposal_review_image : (CreateProposalReviewImageRequest) -> (CreateProposalReviewImageResponse);
   delete_proposal_review_image : (DeleteProposalReviewImageRequest) -> (DeleteProposalReviewImageResponse);
   get_my_proposal_review : (GetMyProposalReviewRequest) -> (GetMyProposalReviewResponse) query;
+  get_my_proposal_review_summary : (GetMyProposalReviewSummaryRequest) -> (GetMyProposalReviewSummaryResponse) query;
   create_proposal_review_commit : (CreateProposalReviewCommitRequest) -> (CreateProposalReviewCommitResponse);
   update_proposal_review_commit : (UpdateProposalReviewCommitRequest) -> (UpdateProposalReviewCommitResponse);
   delete_proposal_review_commit : (DeleteProposalReviewCommitRequest) -> (DeleteProposalReviewCommitResponse);

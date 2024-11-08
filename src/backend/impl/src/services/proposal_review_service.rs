@@ -3,22 +3,23 @@ use crate::{
     mappings::map_proposal_review,
     repositories::{
         CertificationRepository, CertificationRepositoryImpl, CreateImageRequest, DateTime, Image,
-        ImageRepository, ImageRepositoryImpl, ProposalId, ProposalRepository,
-        ProposalRepositoryImpl, ProposalReview, ProposalReviewCommitRepository,
-        ProposalReviewCommitRepositoryImpl, ProposalReviewId, ProposalReviewRepository,
-        ProposalReviewRepositoryImpl, ProposalReviewStatus, UserId, UserProfileRepository,
-        UserProfileRepositoryImpl,
+        ImageRepository, ImageRepositoryImpl, Proposal, ProposalId, ProposalRepository,
+        ProposalRepositoryImpl, ProposalReview, ProposalReviewCommit, ProposalReviewCommitId,
+        ProposalReviewCommitRepository, ProposalReviewCommitRepositoryImpl, ProposalReviewId,
+        ProposalReviewRepository, ProposalReviewRepositoryImpl, ProposalReviewStatus, UserId,
+        UserProfileRepository, UserProfileRepositoryImpl,
     },
     system_api::get_date_time,
 };
 use backend_api::{
     ApiError, CreateProposalReviewImageRequest, CreateProposalReviewImageResponse,
     CreateProposalReviewRequest, CreateProposalReviewResponse, DeleteProposalReviewImageRequest,
-    GetMyProposalReviewRequest, GetMyProposalReviewResponse, GetProposalReviewRequest,
-    GetProposalReviewResponse, ListProposalReviewsRequest, ListProposalReviewsResponse,
-    UpdateProposalReviewRequest,
+    GetMyProposalReviewRequest, GetMyProposalReviewResponse, GetMyProposalReviewSummaryRequest,
+    GetMyProposalReviewSummaryResponse, GetProposalReviewRequest, GetProposalReviewResponse,
+    ListProposalReviewsRequest, ListProposalReviewsResponse, UpdateProposalReviewRequest,
 };
 use candid::Principal;
+use markdown_builder::{Bold, Image as MarkdownImage, List as MarkdownList, Markdown};
 use std::{path::PathBuf, str::FromStr};
 
 const MAX_PROPOSAL_REVIEW_SUMMARY_CHARS: usize = 1500;
@@ -69,6 +70,12 @@ pub trait ProposalReviewService {
         calling_principal: Principal,
         request: GetMyProposalReviewRequest,
     ) -> Result<GetMyProposalReviewResponse, ApiError>;
+
+    fn get_my_proposal_review_summary(
+        &self,
+        calling_principal: Principal,
+        request: GetMyProposalReviewSummaryRequest,
+    ) -> Result<GetMyProposalReviewSummaryResponse, ApiError>;
 }
 
 pub struct ProposalReviewServiceImpl<
@@ -195,19 +202,9 @@ impl<
     ) -> Result<(), ApiError> {
         self.validate_fields(request.summary.as_ref(), request.review_duration_mins)?;
 
-        let user_id = self
-            .user_profile_repository
-            .get_user_id_by_principal(&calling_principal)
-            .ok_or_else(|| {
-                ApiError::not_found(&format!(
-                    "User id for principal {} not found",
-                    calling_principal.to_text()
-                ))
-            })?;
-
-        let (id, mut current_proposal_review) = self.get_current_proposal_review(
+        let (id, mut current_proposal_review, _) = self.get_current_proposal_review_with_user_id(
             request.proposal_id,
-            user_id,
+            &calling_principal,
             request.status.as_ref(),
         )?;
 
@@ -338,18 +335,12 @@ impl<
     ) -> Result<CreateProposalReviewImageResponse, ApiError> {
         request.validate_fields()?;
 
-        let user_id = self
-            .user_profile_repository
-            .get_user_id_by_principal(&calling_principal)
-            .ok_or_else(|| {
-                ApiError::not_found(&format!(
-                    "User id for principal {} not found",
-                    calling_principal.to_text()
-                ))
-            })?;
-
-        let (id, mut current_proposal_review) =
-            self.get_current_proposal_review(request.proposal_id.clone(), user_id, None)?;
+        let (id, mut current_proposal_review, user_id) = self
+            .get_current_proposal_review_with_user_id(
+                request.proposal_id.clone(),
+                &calling_principal,
+                None,
+            )?;
 
         // for now, we only allow one image
         if !current_proposal_review.images_ids.is_empty() {
@@ -393,18 +384,11 @@ impl<
         calling_principal: Principal,
         request: DeleteProposalReviewImageRequest,
     ) -> Result<(), ApiError> {
-        let user_id = self
-            .user_profile_repository
-            .get_user_id_by_principal(&calling_principal)
-            .ok_or_else(|| {
-                ApiError::not_found(&format!(
-                    "User id for principal {} not found",
-                    calling_principal.to_text()
-                ))
-            })?;
-
-        let (id, mut current_proposal_review) =
-            self.get_current_proposal_review(request.proposal_id.clone(), user_id, None)?;
+        let (id, mut current_proposal_review, _) = self.get_current_proposal_review_with_user_id(
+            request.proposal_id.clone(),
+            &calling_principal,
+            None,
+        )?;
 
         let image_id_to_delete = PathBuf::from(request.image_path.clone())
             .iter()
@@ -444,34 +428,50 @@ impl<
         calling_principal: Principal,
         request: GetMyProposalReviewRequest,
     ) -> Result<GetMyProposalReviewResponse, ApiError> {
-        let proposal_id = ProposalId::try_from(request.proposal_id.as_str())?;
-
-        let user_id = self
-            .user_profile_repository
-            .get_user_id_by_principal(&calling_principal)
-            .ok_or_else(|| {
-                ApiError::not_found(&format!(
-                    "User id for principal {} not found",
-                    calling_principal.to_text()
-                ))
-            })?;
-
-        let (proposal_review_id, proposal_review) = self
-            .proposal_review_repository
-            .get_proposal_review_by_proposal_id_and_user_id(proposal_id, user_id)
-            .ok_or_else(|| {
-                ApiError::not_found(&format!(
-                    "Proposal review for proposal {} for principal {} not found",
-                    request.proposal_id,
-                    calling_principal.to_text()
-                ))
-            })?;
+        let (proposal_review_id, proposal_review, _, _) = self
+            .get_proposal_review_with_proposal_id_and_user_id(
+                request.proposal_id,
+                &calling_principal,
+            )?;
 
         let response = self.map_proposal_review(proposal_review_id, proposal_review)?;
 
         Ok(response)
     }
+
+    fn get_my_proposal_review_summary(
+        &self,
+        calling_principal: Principal,
+        request: GetMyProposalReviewSummaryRequest,
+    ) -> Result<GetMyProposalReviewSummaryResponse, ApiError> {
+        let (proposal_review_id, proposal_review, proposal, _) = self
+            .get_proposal_review_with_proposal_and_user_id(
+                request.proposal_id,
+                &calling_principal,
+            )?;
+        let (proposal_review_commits, images_paths) = self
+            .get_proposal_review_commits_and_images_paths(proposal_review_id, &proposal_review)?;
+
+        let summary_markdown = proposal_review_summary_markdown(
+            &proposal,
+            &proposal_review,
+            &proposal_review_commits,
+            &images_paths,
+        );
+
+        Ok(GetMyProposalReviewSummaryResponse {
+            summary_markdown: summary_markdown.render(),
+        })
+    }
 }
+
+type GetProposalReviewCommitsAndImagesPathsResult = Result<
+    (
+        Vec<(ProposalReviewCommitId, ProposalReviewCommit)>,
+        Vec<String>,
+    ),
+    ApiError,
+>;
 
 impl<
         PR: ProposalReviewRepository,
@@ -534,22 +534,17 @@ impl<
         Ok(())
     }
 
-    fn get_current_proposal_review(
+    fn get_current_proposal_review_with_user_id(
         &self,
         raw_proposal_id: String,
-        user_id: UserId,
+        user_principal: &Principal,
         request_status: Option<&backend_api::ProposalReviewStatus>,
-    ) -> Result<(ProposalReviewId, ProposalReview), ApiError> {
-        let proposal_id = ProposalId::try_from(raw_proposal_id.as_str())?;
-        let (id, current_proposal_review) = self
-            .proposal_review_repository
-            .get_proposal_review_by_proposal_id_and_user_id(proposal_id, user_id)
-            .ok_or_else(|| {
-                ApiError::not_found(&format!(
-                    "Proposal review for proposal with Id {} not found",
-                    raw_proposal_id
-                ))
-            })?;
+    ) -> Result<(ProposalReviewId, ProposalReview, UserId), ApiError> {
+        let (id, current_proposal_review, proposal, user_id) = self
+            .get_proposal_review_with_proposal_and_user_id(
+                raw_proposal_id.clone(),
+                user_principal,
+            )?;
 
         if current_proposal_review.is_published()
             && !request_status.is_some_and(|s| s == &backend_api::ProposalReviewStatus::Draft)
@@ -560,31 +555,20 @@ impl<
             )));
         }
 
-        match self.proposal_repository.get_proposal_by_id(&proposal_id) {
-            Some(proposal) => {
-                if proposal.is_completed() {
-                    return Err(ApiError::conflict(
-                        "The proposal associated with this review is already completed",
-                    ));
-                }
-            }
-            None => {
-                // this should never happen
-                return Err(ApiError::not_found(&format!(
-                    "Proposal with Id {} not found",
-                    proposal_id.to_string()
-                )));
-            }
+        if proposal.is_completed() {
+            return Err(ApiError::conflict(
+                "The proposal associated with this review is already completed",
+            ));
         }
 
-        Ok((id, current_proposal_review))
+        Ok((id, current_proposal_review, user_id))
     }
 
-    fn map_proposal_review(
+    fn get_proposal_review_commits_and_images_paths(
         &self,
         id: ProposalReviewId,
-        proposal_review: ProposalReview,
-    ) -> Result<backend_api::ProposalReviewWithId, ApiError> {
+        proposal_review: &ProposalReview,
+    ) -> GetProposalReviewCommitsAndImagesPathsResult {
         let proposal_review_commits = self
             .proposal_review_commit_repository
             .get_proposal_review_commits_by_proposal_review_id(id)?;
@@ -599,6 +583,17 @@ impl<
                     .map(|image| image.path(image_id))
             })
             .collect();
+
+        Ok((proposal_review_commits, images_paths))
+    }
+
+    fn map_proposal_review(
+        &self,
+        id: ProposalReviewId,
+        proposal_review: ProposalReview,
+    ) -> Result<backend_api::ProposalReviewWithId, ApiError> {
+        let (proposal_review_commits, images_paths) =
+            self.get_proposal_review_commits_and_images_paths(id, &proposal_review)?;
 
         Ok(map_proposal_review(
             id,
@@ -646,6 +641,140 @@ impl<
 
         Ok(())
     }
+
+    fn get_proposal_review_with_proposal_id_and_user_id(
+        &self,
+        raw_proposal_id: String,
+        user_principal: &Principal,
+    ) -> Result<(ProposalReviewId, ProposalReview, ProposalId, UserId), ApiError> {
+        let proposal_id = ProposalId::try_from(raw_proposal_id.as_str())?;
+        let user_id = self
+            .user_profile_repository
+            .get_user_id_by_principal(user_principal)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "User id for principal {} not found",
+                    user_principal.to_text()
+                ))
+            })?;
+        let (id, current_proposal_review) = self
+            .proposal_review_repository
+            .get_proposal_review_by_proposal_id_and_user_id(proposal_id, user_id)
+            .ok_or_else(|| {
+                ApiError::not_found(&format!(
+                    "Proposal review for proposal {} for principal {} not found",
+                    raw_proposal_id,
+                    user_principal.to_text()
+                ))
+            })?;
+
+        Ok((id, current_proposal_review, proposal_id, user_id))
+    }
+
+    fn get_proposal_review_with_proposal_and_user_id(
+        &self,
+        raw_proposal_id: String,
+        user_principal: &Principal,
+    ) -> Result<(ProposalReviewId, ProposalReview, Proposal, UserId), ApiError> {
+        let (id, current_proposal_review, proposal_id, user_id) =
+            self.get_proposal_review_with_proposal_id_and_user_id(raw_proposal_id, user_principal)?;
+        let proposal = self
+            .proposal_repository
+            .get_proposal_by_id(&proposal_id)
+            .ok_or_else(|| {
+                // this should never happen, as the proposal review is associated with a proposal that must exist
+                ApiError::not_found(&format!(
+                    "Proposal with Id {} not found",
+                    proposal_id.to_string()
+                ))
+            })?;
+
+        Ok((id, current_proposal_review, proposal, user_id))
+    }
+}
+
+/// Returns the markdown representation for the proposal review.
+///
+/// Template:
+/// ```markdown
+/// # Proposal [nervous system proposal id]
+/// Hashes match: [true or false]
+/// All reviewed commits match their descriptions: [true or false]
+/// [proposal review summary if any]
+/// [proposal review images if any]
+/// Review:
+/// - **[commit sha truncated to 9 characters]**:
+///   Matches description: [true or false]
+///   Comment: [commit comment]
+///   Highlights: [comma-separated list of commit highlights]
+/// - **[commit sha truncated to 9 characters]**:
+///   ...
+/// ...
+/// ```
+fn proposal_review_summary_markdown(
+    proposal: &Proposal,
+    proposal_review: &ProposalReview,
+    proposal_review_commits: &[(ProposalReviewCommitId, ProposalReviewCommit)],
+    images_paths: &[String],
+) -> Markdown {
+    let mut md_builder = Markdown::new();
+    let reviewed_commits: Vec<&(ProposalReviewCommitId, ProposalReviewCommit)> =
+        proposal_review_commits
+            .iter()
+            .filter(|(_, commit)| commit.is_reviewed())
+            .collect();
+
+    // header
+    {
+        md_builder.header1(format!(
+            "Proposal {}",
+            proposal.nervous_system.proposal_id()
+        ));
+    }
+    // info
+    {
+        md_builder.paragraph(format!(
+            "Hashes match: {}",
+            proposal_review.build_reproduced.unwrap_or(false)
+        ));
+        md_builder.paragraph(format!(
+            "All reviewed commits match their descriptions: {}",
+            reviewed_commits.iter().all(|(_, commit)| commit
+                .reviewed_state()
+                .and_then(|state| state.matches_description)
+                .unwrap_or(false))
+        ));
+    }
+    // summary
+    {
+        if let Some(summary) = proposal_review.summary.as_ref() {
+            md_builder.paragraph(summary);
+        }
+    }
+    // images
+    {
+        for image_path in images_paths {
+            md_builder.image(MarkdownImage::builder().url(image_path).build());
+        }
+    }
+    // commits
+    {
+        if !reviewed_commits.is_empty() {
+            md_builder.paragraph("Review:");
+            let mut commits_list = MarkdownList::builder();
+            for (_, commit) in reviewed_commits {
+                let mut commit_sha = commit.commit_sha.to_string();
+                commit_sha.truncate(9);
+                if let Some(state) = commit.reviewed_state() {
+                    commits_list =
+                        commits_list.append(format!("{}:\n{}", commit_sha.to_bold(), state));
+                }
+            }
+            md_builder.list(commits_list.unordered());
+        }
+    }
+
+    md_builder
 }
 
 #[cfg(test)]
@@ -1228,8 +1357,9 @@ mod tests {
         assert_eq!(
             result,
             ApiError::not_found(&format!(
-                "Proposal review for proposal with Id {} not found",
-                request.proposal_id
+                "Proposal review for proposal {} for principal {} not found",
+                request.proposal_id,
+                calling_principal.to_text()
             ))
         )
     }
@@ -1315,10 +1445,16 @@ mod tests {
             .expect_get_proposal_review_by_proposal_id_and_user_id()
             .once()
             .with(eq(original_proposal_review.proposal_id), eq(user_id))
-            .return_const(Some((id, original_proposal_review)));
+            .return_const(Some((id, original_proposal_review.clone())));
         pr_repository_mock.expect_update_proposal_review().never();
         let mut p_repository_mock = MockProposalRepository::new();
-        p_repository_mock.expect_get_proposal_by_id().never();
+        p_repository_mock
+            .expect_get_proposal_by_id()
+            .once()
+            .with(eq(original_proposal_review.proposal_id))
+            .return_const(Some(fixtures::nns_replica_version_management_proposal(
+                None, None,
+            )));
         let prc_repository_mock = MockProposalReviewCommitRepository::new();
         let image_repository_mock = MockImageRepository::new();
         let certification_repository_mock = MockCertificationRepository::new();

@@ -233,7 +233,7 @@ mod tests {
     use super::*;
     use crate::{
         fixtures::{self, commit_sha_a, commit_sha_b, uuid_a, uuid_b},
-        repositories::ReviewCommitState,
+        repositories::{ReviewCommitState, ReviewedCommitState},
     };
     use rstest::*;
 
@@ -507,11 +507,11 @@ mod tests {
     #[fixture]
     fn updated_proposal_review_commit() -> ProposalReviewCommit {
         ProposalReviewCommit {
-            state: ReviewCommitState::Reviewed {
+            state: ReviewCommitState::Reviewed(ReviewedCommitState {
                 matches_description: Some(false),
                 comment: Some("Updated comment".to_string()),
                 highlights: vec![],
-            },
+            }),
             ..fixtures::proposal_review_commit_not_reviewed()
         }
     }

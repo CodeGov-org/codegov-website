@@ -1,4 +1,4 @@
-use std::{borrow::Cow, ops::RangeBounds};
+use std::{borrow::Cow, fmt::Display, ops::RangeBounds};
 
 use backend_api::ApiError;
 use candid::{CandidType, Decode, Deserialize, Encode};
@@ -12,12 +12,37 @@ use super::{CommitSha, DateTime, ProposalReviewId, UserId, Uuid};
 pub type ProposalReviewCommitId = Uuid;
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+pub struct ReviewedCommitState {
+    pub matches_description: Option<bool>,
+    pub comment: Option<String>,
+    pub highlights: Vec<String>,
+}
+
+impl Display for ReviewedCommitState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut commit_details = format!(
+            "Matches description: {}",
+            self.matches_description.unwrap_or(false),
+        );
+        if let Some(comment) = self.comment.as_ref() {
+            if !comment.is_empty() {
+                commit_details = format!("{}\nComment: {}", commit_details, comment);
+            }
+        }
+        if !self.highlights.is_empty() {
+            commit_details = format!(
+                "{}\nHighlights: {}",
+                commit_details,
+                self.highlights.join(", ")
+            );
+        }
+        write!(f, "{}", commit_details)
+    }
+}
+
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub enum ReviewCommitState {
-    Reviewed {
-        matches_description: Option<bool>,
-        comment: Option<String>,
-        highlights: Vec<String>,
-    },
+    Reviewed(ReviewedCommitState),
     NotReviewed,
 }
 
@@ -38,6 +63,14 @@ impl ProposalReviewCommit {
 
     pub fn is_not_reviewed(&self) -> bool {
         matches!(&self.state, ReviewCommitState::NotReviewed)
+    }
+
+    pub fn reviewed_state(&self) -> Option<&ReviewedCommitState> {
+        if let ReviewCommitState::Reviewed(state) = &self.state {
+            Some(state)
+        } else {
+            None
+        }
     }
 }
 
@@ -173,5 +206,37 @@ mod tests {
             ProposalReviewCommitProposalReviewUserKey::from_bytes(serialized_key);
 
         assert_eq!(key, deserialized_key);
+    }
+
+    #[rstest]
+    fn display_impl() {
+        let mut state = ReviewedCommitState {
+            matches_description: Some(true),
+            comment: None,
+            highlights: vec![],
+        };
+
+        assert_eq!(state.to_string(), "Matches description: true");
+
+        state.comment = Some("".to_string());
+        assert_eq!(state.to_string(), "Matches description: true");
+
+        state.comment = Some("test".to_string());
+        assert_eq!(
+            state.to_string(),
+            "Matches description: true\nComment: test"
+        );
+
+        state.highlights = vec!["test".to_string()];
+        assert_eq!(
+            state.to_string(),
+            "Matches description: true\nComment: test\nHighlights: test"
+        );
+
+        state.highlights = vec!["test1".to_string(), "test2".to_string()];
+        assert_eq!(
+            state.to_string(),
+            "Matches description: true\nComment: test\nHighlights: test1, test2"
+        );
     }
 }
