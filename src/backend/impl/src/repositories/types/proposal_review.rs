@@ -17,6 +17,15 @@ pub enum ProposalReviewStatus {
     Published,
 }
 
+/// Same as `ic_nns_governance::pb::v1::Vote`.
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+#[repr(i32)]
+pub enum ProposalVote {
+    Unspecified = 0,
+    Yes = 1,
+    No = 2,
+}
+
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub struct ProposalReview {
     pub proposal_id: ProposalId,
@@ -28,6 +37,7 @@ pub struct ProposalReview {
     pub review_duration_mins: Option<u16>,
     pub build_reproduced: Option<bool>,
     pub images_ids: Vec<ImageId>,
+    pub vote: ProposalVote,
 }
 
 impl ProposalReview {

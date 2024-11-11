@@ -219,6 +219,7 @@ mod tests {
         fixtures,
         services::{MockAccessControlService, MockProposalReviewService},
     };
+    use backend_api::ProposalVote;
     use mockall::predicate::*;
     use rstest::*;
 
@@ -230,6 +231,7 @@ mod tests {
             summary: Some("summary".to_string()),
             review_duration_mins: Some(10),
             build_reproduced: Some(true),
+            vote: Some(ProposalVote::Yes),
         };
         let response = CreateProposalReviewResponse {
             id: "id".to_string(),
@@ -272,6 +274,7 @@ mod tests {
             summary: Some("summary".to_string()),
             review_duration_mins: Some(10),
             build_reproduced: Some(true),
+            vote: Some(ProposalVote::No),
         };
         let error = ApiError::permission_denied(&format!(
             "Principal {} must be a reviewer to call this endpoint",
@@ -312,6 +315,7 @@ mod tests {
             summary: Some("summary".to_string()),
             review_duration_mins: Some(10),
             build_reproduced: Some(true),
+            vote: Some(ProposalVote::Yes),
         };
 
         let mut access_control_service_mock = MockAccessControlService::new();
@@ -347,6 +351,7 @@ mod tests {
             summary: Some("summary".to_string()),
             review_duration_mins: Some(10),
             build_reproduced: Some(true),
+            vote: None,
         };
         let error = ApiError::permission_denied(&format!(
             "Principal {} must be a reviewer to call this endpoint",

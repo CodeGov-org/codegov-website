@@ -46,6 +46,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ unspecified: null }],
       });
       const resErr = extractErrResponse(res);
 
@@ -67,6 +68,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ unspecified: null }],
       });
       const resAnonymousErr = extractErrResponse(resAnonymous);
 
@@ -85,6 +87,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ unspecified: null }],
       });
       const resAdminErr = extractErrResponse(resAdmin);
 
@@ -114,6 +117,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ yes: null }],
       });
       const resFullOk = extractOkResponse(resFull);
 
@@ -130,6 +134,7 @@ describe('Proposal Review', () => {
           build_reproduced: [true],
           images_paths: [],
           proposal_review_commits: [],
+          vote: { yes: null },
         } satisfies ProposalReview,
       });
     });
@@ -152,6 +157,7 @@ describe('Proposal Review', () => {
         summary: [],
         review_duration_mins: [],
         build_reproduced: [],
+        vote: [],
       });
       const resEmptyOk = extractOkResponse(resEmpty);
 
@@ -168,6 +174,7 @@ describe('Proposal Review', () => {
           build_reproduced: [],
           images_paths: [],
           proposal_review_commits: [],
+          vote: { unspecified: null },
         } satisfies ProposalReview,
       });
     });
@@ -183,6 +190,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ unspecified: null }],
       });
       const resErr = extractErrResponse(res);
 
@@ -208,6 +216,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ yes: null }],
       });
       const resErr = extractErrResponse(res);
 
@@ -233,6 +242,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ yes: null }],
       });
       extractOkResponse(resAliceCreated);
 
@@ -241,6 +251,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ yes: null }],
       });
       const resErr = extractErrResponse(res);
       expect(resErr).toEqual({
@@ -255,6 +266,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ yes: null }],
       });
       extractOkResponse(resBobCreated);
     });
@@ -275,6 +287,7 @@ describe('Proposal Review', () => {
         summary: [''],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ unspecified: null }],
       });
       const resEmptySummaryErr = extractErrResponse(resEmptySummary);
 
@@ -288,6 +301,7 @@ describe('Proposal Review', () => {
         summary: ['a'.repeat(1501)],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ unspecified: null }],
       });
       const resLongSummaryErr = extractErrResponse(resLongSummary);
 
@@ -301,6 +315,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [0],
         build_reproduced: [true],
+        vote: [{ unspecified: null }],
       });
       const resZeroDurationErr = extractErrResponse(resZeroDuration);
 
@@ -314,6 +329,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [3 * 60 + 1],
         build_reproduced: [true],
+        vote: [{ unspecified: null }],
       });
       const resLongDurationErr = extractErrResponse(resLongDuration);
 
@@ -334,6 +350,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ unspecified: null }],
       });
       const resErr = extractErrResponse(res);
 
@@ -356,6 +373,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ yes: null }],
       });
       const resAnonymousErr = extractErrResponse(resAnonymous);
 
@@ -375,6 +393,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ no: null }],
       });
       const resAdminErr = extractErrResponse(resAdmin);
 
@@ -399,6 +418,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ yes: null }],
       });
       const resErr = extractErrResponse(res);
 
@@ -426,6 +446,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ yes: null }],
       });
       const resErr = extractErrResponse(res);
 
@@ -452,6 +473,7 @@ describe('Proposal Review', () => {
         summary: ['updated summary'],
         review_duration_mins: [120],
         build_reproduced: [false],
+        vote: [{ no: null }],
       });
       const resOk = extractOkResponse(res);
 
@@ -475,6 +497,7 @@ describe('Proposal Review', () => {
         summary: [],
         review_duration_mins: [],
         build_reproduced: [],
+        vote: [],
       });
       const resOk = extractOkResponse(res);
 
@@ -496,6 +519,7 @@ describe('Proposal Review', () => {
         summary: [],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ yes: null }],
       });
       extractOkResponse(resProposalReview);
 
@@ -507,6 +531,7 @@ describe('Proposal Review', () => {
         summary: ['updated summary'],
         review_duration_mins: [1],
         build_reproduced: [false],
+        vote: [{ yes: null }],
       });
       const resErr = extractErrResponse(res);
 
@@ -534,6 +559,7 @@ describe('Proposal Review', () => {
         summary: [],
         review_duration_mins: [],
         build_reproduced: [],
+        vote: [],
       });
       extractOkResponse(resPublished);
 
@@ -543,6 +569,7 @@ describe('Proposal Review', () => {
         summary: ['updated summary'],
         review_duration_mins: [1],
         build_reproduced: [false],
+        vote: [{ yes: null }],
       });
       const resNoStatusErr = extractErrResponse(resNoStatus);
 
@@ -557,6 +584,7 @@ describe('Proposal Review', () => {
         summary: ['updated summary'],
         review_duration_mins: [1],
         build_reproduced: [false],
+        vote: [{ no: null }],
       });
       const resPublishErr = extractErrResponse(resPublish);
 
@@ -583,6 +611,7 @@ describe('Proposal Review', () => {
         summary: [],
         review_duration_mins: [],
         build_reproduced: [],
+        vote: [],
       });
       extractOkResponse(resPublished);
 
@@ -592,6 +621,7 @@ describe('Proposal Review', () => {
         summary: ['updated summary'],
         review_duration_mins: [1],
         build_reproduced: [false],
+        vote: [{ yes: null }],
       });
       const resOk = extractOkResponse(res);
 
@@ -615,6 +645,7 @@ describe('Proposal Review', () => {
         summary: [''],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ yes: null }],
       });
       const resEmptySummaryErr = extractErrResponse(resEmptySummary);
 
@@ -629,6 +660,7 @@ describe('Proposal Review', () => {
         summary: ['a'.repeat(1501)],
         review_duration_mins: [60],
         build_reproduced: [true],
+        vote: [{ yes: null }],
       });
       const resLongSummaryErr = extractErrResponse(resLongSummary);
 
@@ -643,6 +675,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [0],
         build_reproduced: [true],
+        vote: [{ yes: null }],
       });
       const resZeroDurationErr = extractErrResponse(resZeroDuration);
 
@@ -657,6 +690,7 @@ describe('Proposal Review', () => {
         summary: ['summary'],
         review_duration_mins: [3 * 60 + 1],
         build_reproduced: [true],
+        vote: [{ yes: null }],
       });
       const resLongDurationErr = extractErrResponse(resLongDuration);
 
@@ -709,6 +743,7 @@ describe('Proposal Review', () => {
           summary: [],
           review_duration_mins: [],
           build_reproduced: [],
+          vote: [],
         });
         extractOkResponse(resProposalReview);
 
@@ -716,6 +751,7 @@ describe('Proposal Review', () => {
           ...updateReq,
           proposal_id: proposalId,
           status: [{ published: null }],
+          vote: [],
         } as UpdateProposalReviewRequest);
         const resErr = extractErrResponse(res);
 

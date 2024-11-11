@@ -3,6 +3,7 @@ import {
   ProposalReviewCommitWithId,
   ProposalReviewStatus,
   ProposalReviewWithId,
+  ProposalVote,
   type _SERVICE,
 } from '@cg/backend';
 import { Actor, PocketIc } from '@hadronous/pic';
@@ -119,6 +120,7 @@ export async function createProposalReview(
     summary: ['summary'],
     review_duration_mins: [60],
     build_reproduced: [true],
+    vote: [{ yes: null }],
   });
   const { id: proposalReviewId } = extractOkResponse(res);
 
@@ -185,6 +187,7 @@ export async function publishProposalReview(
     summary: [],
     review_duration_mins: [],
     build_reproduced: [],
+    vote: [],
   });
   extractOkResponse(res);
 }
@@ -253,6 +256,7 @@ export type ExpectedProposalReviewFields = {
   commits: {
     commitSha: string[];
   };
+  vote: ProposalVote;
 };
 
 export function validateProposalReview(
@@ -271,6 +275,7 @@ export function validateProposalReview(
       review_duration_mins: expect.any(Array),
       build_reproduced: expect.any(Array),
       images_paths: expect.any(Array),
+      vote: expected.vote,
       proposal_review_commits: expected.commits.commitSha.map(
         commitSha =>
           ({
