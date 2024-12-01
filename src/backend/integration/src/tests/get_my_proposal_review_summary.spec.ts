@@ -140,16 +140,17 @@ describe('get my proposal review summary', () => {
     expectedMarkdown += `\nSummary:\n${proposalReview.summary[0]}\n`;
     expectedMarkdown += '\nCommits review:\n';
 
+    const INDENT = '  ';
     for (const {
       proposal_review_commit: commit,
     } of proposalReview.proposal_review_commits) {
       if ('reviewed' in commit.state) {
-        let commitReview = `\tMatches description: ${commit.state.reviewed.matches_description}`;
+        let commitReview = `${INDENT}Matches description: ${commit.state.reviewed.matches_description}`;
         if (commit.state.reviewed.comment) {
-          commitReview += `\n\tComment: ${commit.state.reviewed.comment}`;
+          commitReview += `\n${INDENT}Comment: ${commit.state.reviewed.comment}`;
         }
         if (commit.state.reviewed.highlights.length > 0) {
-          commitReview += `\n\tHighlights: ${commit.state.reviewed.highlights.join(', ')}`;
+          commitReview += `\n${INDENT}Highlights: ${commit.state.reviewed.highlights.join(', ')}`;
         }
         expectedMarkdown += `- **${commit.commit_sha.slice(0, 9)}**:\n${commitReview}\n`;
       }

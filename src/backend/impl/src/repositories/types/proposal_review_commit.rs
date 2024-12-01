@@ -209,13 +209,19 @@ mod tests {
     }
 
     #[rstest]
-    fn display_impl() {
+    fn reviewed_commit_state_display_impl() {
         let mut state = ReviewedCommitState {
-            matches_description: Some(true),
+            matches_description: None,
             comment: None,
             highlights: vec![],
         };
 
+        assert_eq!(state.to_string(), "Matches description: false");
+
+        state.matches_description = Some(false);
+        assert_eq!(state.to_string(), "Matches description: false");
+
+        state.matches_description = Some(true);
         assert_eq!(state.to_string(), "Matches description: true");
 
         state.comment = Some("".to_string());

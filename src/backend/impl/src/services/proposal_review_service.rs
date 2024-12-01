@@ -770,19 +770,22 @@ fn proposal_review_summary_markdown(
     {
         if !reviewed_commits.is_empty() {
             md_content.push_str("\nCommits review:\n");
+
+            const INDENT: &str = "  ";
+
             let mut commits_list = String::new();
             for (_, commit) in reviewed_commits {
                 if let Some(state) = commit.reviewed_state() {
                     let mut commit_sha = commit.commit_sha.to_string();
                     commit_sha.truncate(9);
                     commits_list.push_str(&format!(
-                        "- **{}**:\n\t{}\n",
+                        "- **{}**:\n{INDENT}{}\n",
                         commit_sha,
                         state
                             .to_string()
                             .lines()
                             .collect::<Vec<&str>>()
-                            .join("\n\t")
+                            .join(&format!("\n{INDENT}"))
                     ));
                 }
             }
@@ -801,7 +804,8 @@ mod tests {
         repositories::{
             ImageId, MockCertificationRepository, MockImageRepository, MockProposalRepository,
             MockProposalReviewCommitRepository, MockProposalReviewRepository,
-            MockUserProfileRepository, ProposalReviewId, IMAGES_BASE_PATH,
+            MockUserProfileRepository, NervousSystem, ProposalReviewId, ReviewCommitState,
+            ReviewedCommitState, IMAGES_BASE_PATH,
         },
     };
     use backend_api::{
@@ -2462,5 +2466,116 @@ mod tests {
                 "Proposal review cannot be published due to invalid field: Build reproduced cannot be empty",
             ),
         )
+    }
+
+    #[fixture]
+    fn basic_proposal() -> Proposal {
+        let proposal = fixtures::nns_replica_version_management_proposal(None, None);
+        Proposal {
+            nervous_system: match proposal.nervous_system {
+                NervousSystem::Network { proposal_info, .. } => NervousSystem::Network {
+                    proposal_id: 123,
+                    proposal_info,
+                },
+            },
+            ..proposal
+        }
+    }
+
+    #[fixture]
+    fn basic_review() -> ProposalReview {
+        ProposalReview {
+            vote: ProposalVote::Yes,
+            summary: Some("Test summary".to_string()),
+            build_reproduced: Some(true),
+            ..fixtures::proposal_review_published()
+        }
+    }
+
+    #[fixture]
+    fn reviewed_commits() -> Vec<(ProposalReviewCommitId, ProposalReviewCommit)> {
+        vec![
+            (
+                fixtures::uuid(),
+                ProposalReviewCommit {
+                    commit_sha: fixtures::commit_sha_a(),
+                    state: ReviewCommitState::Reviewed(ReviewedCommitState {
+                        matches_description: Some(true),
+                        comment: Some("Good commit".to_string()),
+                        highlights: vec!["Feature A".to_string(), "Bug fix B".to_string()],
+                    }),
+                    ..fixtures::proposal_review_commit_reviewed()
+                },
+            ),
+            (
+                fixtures::uuid(),
+                ProposalReviewCommit {
+                    commit_sha: fixtures::commit_sha_b(),
+                    state: ReviewCommitState::Reviewed(ReviewedCommitState {
+                        matches_description: Some(false),
+                        comment: Some("Issues found".to_string()),
+                        highlights: vec!["Missing tests".to_string()],
+                    }),
+                    ..fixtures::proposal_review_commit_reviewed()
+                },
+            ),
+            (
+                fixtures::uuid(),
+                ProposalReviewCommit {
+                    commit_sha: fixtures::commit_sha_c(),
+                    state: ReviewCommitState::NotReviewed,
+                    ..fixtures::proposal_review_commit_reviewed()
+                },
+            ),
+        ]
+    }
+
+    #[fixture]
+    fn images_paths() -> Vec<String> {
+        vec![
+            "/images/13449503-1b2f-4b92-8346-8e843253e842.png".to_string(),
+            "/images/68362227-6f0f-4fb4-b80a-0bfa53a9e99b.png".to_string(),
+        ]
+    }
+
+    #[rstest]
+    fn test_proposal_review_summary_markdown() {
+        let basic_proposal = basic_proposal();
+        let basic_review = basic_review();
+        let reviewed_commits = reviewed_commits();
+        let images_paths = images_paths();
+        let markdown = proposal_review_summary_markdown(
+            &basic_proposal,
+            &basic_review,
+            &reviewed_commits,
+            &images_paths,
+        );
+
+        assert_eq!(
+            markdown,
+            r#"# Proposal 123
+
+Vote: ADOPTED
+Hashes match: true
+All reviewed commits match their descriptions: false
+
+![](/images/13449503-1b2f-4b92-8346-8e843253e842.png)
+
+![](/images/68362227-6f0f-4fb4-b80a-0bfa53a9e99b.png)
+
+Summary:
+Test summary
+
+Commits review:
+- **28111ed23**:
+  Matches description: true
+  Comment: Good commit
+  Highlights: Feature A, Bug fix B
+- **47d98477c**:
+  Matches description: false
+  Comment: Issues found
+  Highlights: Missing tests
+"#
+        );
     }
 }
