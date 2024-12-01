@@ -19,7 +19,6 @@ use backend_api::{
     ListProposalReviewsRequest, ListProposalReviewsResponse, UpdateProposalReviewRequest,
 };
 use candid::Principal;
-use markdown_builder::{Bold, Image as MarkdownImage, List as MarkdownList, Markdown};
 use std::{path::PathBuf, str::FromStr};
 
 const MAX_PROPOSAL_REVIEW_SUMMARY_CHARS: usize = 1500;
@@ -465,9 +464,7 @@ impl<
             &images_paths,
         );
 
-        Ok(GetMyProposalReviewSummaryResponse {
-            summary_markdown: summary_markdown.render(),
-        })
+        Ok(GetMyProposalReviewSummaryResponse { summary_markdown })
     }
 }
 
@@ -722,8 +719,8 @@ fn proposal_review_summary_markdown(
     proposal_review: &ProposalReview,
     proposal_review_commits: &[(ProposalReviewCommitId, ProposalReviewCommit)],
     images_paths: &[String],
-) -> Markdown {
-    let mut md_builder = Markdown::new();
+) -> String {
+    let mut md_content = String::new();
     let reviewed_commits: Vec<&(ProposalReviewCommitId, ProposalReviewCommit)> =
         proposal_review_commits
             .iter()
@@ -732,20 +729,20 @@ fn proposal_review_summary_markdown(
 
     // header
     {
-        md_builder.header1(format!(
-            "Proposal {}",
+        md_content.push_str(&format!(
+            "# Proposal {}\n",
             proposal.nervous_system.proposal_id()
         ));
     }
     // info
     {
         // TODO: add vote info once PR#110 is merged
-        md_builder.paragraph(format!(
-            "Hashes match: {}",
+        md_content.push_str(&format!(
+            "Hashes match: {}\n",
             proposal_review.build_reproduced.unwrap_or(false)
         ));
-        md_builder.paragraph(format!(
-            "All reviewed commits match their descriptions: {}",
+        md_content.push_str(&format!(
+            "All reviewed commits match their descriptions: {}\n",
             reviewed_commits.iter().all(|(_, commit)| commit
                 .reviewed_state()
                 .and_then(|state| state.matches_description)
@@ -755,33 +752,32 @@ fn proposal_review_summary_markdown(
     // summary
     {
         if let Some(summary) = proposal_review.summary.as_ref() {
-            md_builder.paragraph(summary);
+            md_content.push_str(&format!("{}\n", summary));
         }
     }
     // images
     {
         for image_path in images_paths {
-            md_builder.image(MarkdownImage::builder().url(image_path).build());
+            md_content.push_str(&format!("![]({})\n", image_path));
         }
     }
     // commits
     {
         if !reviewed_commits.is_empty() {
-            md_builder.paragraph("Review:");
-            let mut commits_list = MarkdownList::builder();
+            md_content.push_str("Review:\n");
+            let mut commits_list = String::new();
             for (_, commit) in reviewed_commits {
-                let mut commit_sha = commit.commit_sha.to_string();
-                commit_sha.truncate(9);
                 if let Some(state) = commit.reviewed_state() {
-                    commits_list =
-                        commits_list.append(format!("{}:\n{}", commit_sha.to_bold(), state));
+                    let mut commit_sha = commit.commit_sha.to_string();
+                    commit_sha.truncate(9);
+                    commits_list.push_str(&format!("- **{}**:\n\t{}", commit_sha, state));
                 }
             }
-            md_builder.list(commits_list.unordered());
+            md_content.push_str(&commits_list);
         }
     }
 
-    md_builder
+    md_content
 }
 
 #[cfg(test)]
