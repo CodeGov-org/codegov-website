@@ -247,7 +247,7 @@ export async function createProposalReviewCommit(
       reviewed: {
         matches_description: [true],
         comment: ['comment'],
-        highlights: [],
+        highlights: ['first highlight', 'second highlight'],
       },
     },
   });
