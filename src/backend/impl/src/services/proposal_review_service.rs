@@ -701,11 +701,16 @@ impl<
 /// Template:
 /// ```markdown
 /// # Proposal [nervous system proposal id]
+///
 /// Hashes match: [true or false]
 /// All reviewed commits match their descriptions: [true or false]
-/// [proposal review summary if any]
+///
 /// [proposal review images if any]
-/// Review:
+///
+/// Summary:
+/// [proposal review summary if any]
+///
+/// Commits review:
 /// - **[commit sha truncated to 9 characters]**:
 ///   Matches description: [true or false]
 ///   Comment: [commit comment]
@@ -730,7 +735,7 @@ fn proposal_review_summary_markdown(
     // header
     {
         md_content.push_str(&format!(
-            "# Proposal {}\n",
+            "# Proposal {}\n\n",
             proposal.nervous_system.proposal_id()
         ));
     }
@@ -749,28 +754,36 @@ fn proposal_review_summary_markdown(
                 .unwrap_or(false))
         ));
     }
-    // summary
-    {
-        if let Some(summary) = proposal_review.summary.as_ref() {
-            md_content.push_str(&format!("{}\n", summary));
-        }
-    }
     // images
     {
         for image_path in images_paths {
-            md_content.push_str(&format!("![]({})\n", image_path));
+            md_content.push_str(&format!("\n![]({})\n", image_path));
+        }
+    }
+    // summary
+    {
+        if let Some(summary) = proposal_review.summary.as_ref() {
+            md_content.push_str(&format!("\nSummary:\n{}\n", summary));
         }
     }
     // commits
     {
         if !reviewed_commits.is_empty() {
-            md_content.push_str("Review:\n");
+            md_content.push_str("\nCommits review:\n");
             let mut commits_list = String::new();
             for (_, commit) in reviewed_commits {
                 if let Some(state) = commit.reviewed_state() {
                     let mut commit_sha = commit.commit_sha.to_string();
                     commit_sha.truncate(9);
-                    commits_list.push_str(&format!("- **{}**:\n\t{}", commit_sha, state));
+                    commits_list.push_str(&format!(
+                        "- **{}**:\n\t{}\n",
+                        commit_sha,
+                        state
+                            .to_string()
+                            .lines()
+                            .collect::<Vec<&str>>()
+                            .join("\n\t")
+                    ));
                 }
             }
             md_content.push_str(&commits_list);

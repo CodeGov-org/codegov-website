@@ -23,7 +23,10 @@ export async function createProposal(
   actor: BackendActorService,
   governance: Governance,
   title: string,
-): Promise<string> {
+): Promise<{
+  nnsProposalId: bigint;
+  proposalId: string;
+}> {
   const neuronId = await governance.createNeuron(nnsProposerIdentity);
 
   const rvmProposalId = await governance.createRvmProposal(
@@ -55,7 +58,10 @@ export async function createProposal(
     );
   }
 
-  return proposal.id;
+  return {
+    nnsProposalId: rvmProposalId,
+    proposalId: proposal.id,
+  };
 }
 
 /**
@@ -101,17 +107,22 @@ export async function createProposalReview(
   reviewer: Identity,
   existingProposalId?: string,
 ): Promise<{
+  nnsProposalId?: bigint;
   proposalId: string;
   proposalReviewId: string;
 }> {
   let proposalId = existingProposalId;
+  let nnsProposalId: bigint | undefined;
   if (!proposalId) {
     // randomize the proposal title to make it unique
-    proposalId = await createProposal(
+    const res = await createProposal(
       actor,
       governance,
       'Test proposal ' + Math.random(),
     );
+
+    proposalId = res.proposalId;
+    nnsProposalId = res.nnsProposalId;
   }
 
   actor.setIdentity(reviewer);
@@ -124,7 +135,7 @@ export async function createProposalReview(
   });
   const { id: proposalReviewId } = extractOkResponse(res);
 
-  return { proposalId, proposalReviewId };
+  return { nnsProposalId, proposalId, proposalReviewId };
 }
 
 /**
@@ -208,6 +219,7 @@ export async function createProposalReviewCommit(
   reviewer: Identity,
   commitSha: string,
   existingProposalReviewData?: {
+    nnsProposalId?: bigint;
     proposalId: string;
     proposalReviewId: string;
   },

@@ -23,6 +23,7 @@ describe('get my proposal review summary', () => {
   let governance: Governance;
 
   let proposalReviewData: {
+    nnsProposalId?: bigint;
     proposalId: string;
     proposalReviewId: string;
   };
@@ -123,21 +124,37 @@ describe('get my proposal review summary', () => {
     const resReviewSummaryOk = extractOkResponse(resReviewSummary);
     const summaryMarkdown = resReviewSummaryOk.summary_markdown;
 
-    // just test that the most important sections are present
-    expect(summaryMarkdown).toContain('# Proposal');
-    for (const imagePath of proposalReview.images_paths) {
-      expect(summaryMarkdown).toContain(imagePath);
+    let expectedMarkdown = `# Proposal ${proposalReviewData.nnsProposalId?.toString()}\n\n`;
+    expectedMarkdown += `Hashes match: ${proposalReview.build_reproduced[0] ? 'true' : 'false'}\n`;
+    const allCommitsMatchDescription =
+      proposalReview.proposal_review_commits.every(
+        ({ proposal_review_commit: commit }) =>
+          'reviewed' in commit.state &&
+          commit.state.reviewed.matches_description[0],
+      );
+    expectedMarkdown += `All reviewed commits match their descriptions: ${allCommitsMatchDescription ? 'true' : 'false'}\n`;
+    expectedMarkdown += `${proposalReview.images_paths
+      .map(imagePath => `\n![](${imagePath})`)
+      .join('\n')}\n`;
+    expectedMarkdown += `\nSummary:\n${proposalReview.summary[0]}\n`;
+    expectedMarkdown += '\nCommits review:\n';
+
+    for (const {
+      proposal_review_commit: commit,
+    } of proposalReview.proposal_review_commits) {
+      if ('reviewed' in commit.state) {
+        let commitReview = `\tMatches description: ${commit.state.reviewed.matches_description}`;
+        if (commit.state.reviewed.comment) {
+          commitReview += `\n\tComment: ${commit.state.reviewed.comment}`;
+        }
+        if (commit.state.reviewed.highlights.length > 0) {
+          commitReview += `\n\tHighlights: ${commit.state.reviewed.highlights.join(', ')}`;
+        }
+        expectedMarkdown += `- **${commit.commit_sha.slice(0, 9)}**:\n${commitReview}\n`;
+      }
     }
-    expect(summaryMarkdown).toContain('Hashes match: true');
-    expect(summaryMarkdown).toContain(
-      'All reviewed commits match their descriptions: true',
-    );
-    expect(summaryMarkdown).toContain('Review:');
-    expect(summaryMarkdown).toContain(proposalReview.summary[0]);
-    for (const commitSha of proposalReview.proposal_review_commits) {
-      const shortSha = commitSha.proposal_review_commit.commit_sha.slice(0, 9);
-      expect(summaryMarkdown).toContain(`- **${shortSha}**:`);
-    }
+
+    expect(summaryMarkdown).toEqual(expectedMarkdown);
   });
 
   it('should return a 404 if the review does not exist', async () => {
