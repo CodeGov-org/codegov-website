@@ -125,6 +125,7 @@ describe('get my proposal review summary', () => {
     const summaryMarkdown = resReviewSummaryOk.summary_markdown;
 
     let expectedMarkdown = `# Proposal ${proposalReviewData.nnsProposalId?.toString()}\n\n`;
+    expectedMarkdown += `Vote: ${'yes' in proposalReview.vote ? 'ADOPTED' : 'no' in proposalReview.vote ? 'REJECTED' : '-'}\n`;
     expectedMarkdown += `Hashes match: ${proposalReview.build_reproduced[0] ? 'true' : 'false'}\n`;
     const allCommitsMatchDescription =
       proposalReview.proposal_review_commits.every(

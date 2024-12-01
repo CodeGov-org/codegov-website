@@ -741,7 +741,7 @@ fn proposal_review_summary_markdown(
     }
     // info
     {
-        // TODO: add vote info once PR#110 is merged
+        md_content.push_str(&format!("Vote: {}\n", proposal_review.vote));
         md_content.push_str(&format!(
             "Hashes match: {}\n",
             proposal_review.build_reproduced.unwrap_or(false)

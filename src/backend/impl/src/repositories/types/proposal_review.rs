@@ -1,4 +1,4 @@
-use std::{borrow::Cow, ops::RangeBounds};
+use std::{borrow::Cow, fmt::Display, ops::RangeBounds};
 
 use backend_api::ApiError;
 use candid::{CandidType, Decode, Deserialize, Encode};
@@ -24,6 +24,17 @@ pub enum ProposalVote {
     Unspecified = 0,
     Yes = 1,
     No = 2,
+}
+
+impl Display for ProposalVote {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let val = match self {
+            ProposalVote::Unspecified => "-",
+            ProposalVote::Yes => "ADOPTED",
+            ProposalVote::No => "REJECTED",
+        };
+        write!(f, "{}", val)
+    }
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
