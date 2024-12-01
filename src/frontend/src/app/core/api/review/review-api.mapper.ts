@@ -34,6 +34,7 @@ export function mapCreateProposalReviewRequest(
     review_duration_mins: toCandidOpt(req.reviewDurationMins),
     summary: toCandidOpt(req.summary),
     build_reproduced: toCandidOpt(req.buildReproduced),
+    vote: [],
   };
 }
 
@@ -47,6 +48,7 @@ export function mapUpdateProposalReviewRequest(
     review_duration_mins: toCandidOpt(req.reviewDurationMins),
     summary: toCandidOpt(req.summary),
     build_reproduced: toCandidOpt(req.buildReproduced),
+    vote: [],
   };
 }
 

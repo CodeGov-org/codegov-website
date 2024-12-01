@@ -64,6 +64,7 @@ describe('ReviewApiService', () => {
       summary: [],
       review_duration_mins: [],
       build_reproduced: [],
+      vote: [],
     };
     const commonApiResponse: CreateProposalReviewApiResponse = {
       ok: {
@@ -81,6 +82,7 @@ describe('ReviewApiService', () => {
           build_reproduced: [],
           images_paths: [],
           proposal_review_commits: [],
+          vote: { unspecified: null },
         },
       },
     };
@@ -142,6 +144,7 @@ describe('ReviewApiService', () => {
       summary: [],
       review_duration_mins: [],
       build_reproduced: [],
+      vote: [],
     };
     const commonApiResponse: UpdateProposalReviewApiResponse = {
       ok: null,
@@ -202,6 +205,7 @@ describe('ReviewApiService', () => {
               build_reproduced: [],
               images_paths: [],
               proposal_review_commits: [],
+              vote: { unspecified: null },
             },
           },
           {
@@ -219,6 +223,7 @@ describe('ReviewApiService', () => {
               build_reproduced: [],
               images_paths: [],
               proposal_review_commits: [],
+              vote: { unspecified: null },
             },
           },
         ],
@@ -306,6 +311,7 @@ describe('ReviewApiService', () => {
           build_reproduced: [],
           images_paths: [],
           proposal_review_commits: [],
+          vote: { unspecified: null },
         },
       },
     };
@@ -376,6 +382,7 @@ describe('ReviewApiService', () => {
           build_reproduced: [],
           images_paths: [],
           proposal_review_commits: [],
+          vote: { unspecified: null },
         },
       },
     };
@@ -433,6 +440,7 @@ describe('ReviewApiService', () => {
       summary: [],
       review_duration_mins: [],
       build_reproduced: [],
+      vote: [],
     };
     const commonGetApiRequest: GetMyProposalReviewApiRequest = {
       proposal_id: 'proposalId',
@@ -453,6 +461,7 @@ describe('ReviewApiService', () => {
           build_reproduced: [],
           images_paths: [],
           proposal_review_commits: [],
+          vote: { unspecified: null },
         },
       },
     };

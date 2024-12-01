@@ -1,6 +1,6 @@
 use rstest::*;
 
-use crate::repositories::{ProposalReview, ProposalReviewStatus};
+use crate::repositories::{ProposalReview, ProposalReviewStatus, ProposalVote};
 
 use super::{date_time_a, proposal_id, user_id, uuid};
 
@@ -16,6 +16,7 @@ pub fn proposal_review_draft() -> ProposalReview {
         review_duration_mins: Some(60),
         build_reproduced: Some(true),
         images_ids: vec![],
+        vote: ProposalVote::Unspecified,
     }
 }
 
@@ -31,6 +32,7 @@ pub fn proposal_review_published() -> ProposalReview {
         review_duration_mins: Some(60),
         build_reproduced: Some(true),
         images_ids: vec![uuid()],
+        vote: ProposalVote::Yes,
     }
 }
 

@@ -114,6 +114,7 @@ describe('get my proposal review', () => {
       userId: aliceId,
       reviewStatus: { draft: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
+      vote: { yes: null },
     });
   });
 

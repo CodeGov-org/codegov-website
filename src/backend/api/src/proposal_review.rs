@@ -11,6 +11,16 @@ pub enum ProposalReviewStatus {
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
+pub enum ProposalVote {
+    #[serde(rename = "unspecified")]
+    Unspecified,
+    #[serde(rename = "yes")]
+    Yes,
+    #[serde(rename = "no")]
+    No,
+}
+
+#[derive(Debug, CandidType, Deserialize, Clone, PartialEq, Eq)]
 pub struct ProposalReview {
     pub proposal_id: String,
     pub user_id: String,
@@ -22,6 +32,7 @@ pub struct ProposalReview {
     pub build_reproduced: Option<bool>,
     pub images_paths: Vec<String>,
     pub proposal_review_commits: Vec<ProposalReviewCommitWithId>,
+    pub vote: ProposalVote,
 }
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]
@@ -36,6 +47,7 @@ pub struct CreateProposalReviewRequest {
     pub summary: Option<String>,
     pub review_duration_mins: Option<u16>,
     pub build_reproduced: Option<bool>,
+    pub vote: Option<ProposalVote>,
 }
 
 pub type CreateProposalReviewResponse = ProposalReviewWithId;
@@ -47,6 +59,7 @@ pub struct UpdateProposalReviewRequest {
     pub summary: Option<String>,
     pub review_duration_mins: Option<u16>,
     pub build_reproduced: Option<bool>,
+    pub vote: Option<ProposalVote>,
 }
 
 #[derive(Debug, Clone, CandidType, Deserialize, PartialEq, Eq)]

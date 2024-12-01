@@ -68,6 +68,7 @@ describe('get proposal review', () => {
       userId: aliceId,
       reviewStatus: { draft: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
+      vote: { yes: null },
     });
 
     driver.actor.setIdentity(controllerIdentity);
@@ -80,6 +81,7 @@ describe('get proposal review', () => {
       userId: aliceId,
       reviewStatus: { draft: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
+      vote: { yes: null },
     });
   });
 
@@ -139,6 +141,7 @@ describe('get proposal review', () => {
       reviewStatus: { published: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
       lastUpdatedAt: expect.any(String),
+      vote: { yes: null },
     });
   });
 });

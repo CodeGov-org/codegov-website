@@ -6,8 +6,8 @@ use crate::{
         ImageRepository, ImageRepositoryImpl, ProposalId, ProposalRepository,
         ProposalRepositoryImpl, ProposalReview, ProposalReviewCommitRepository,
         ProposalReviewCommitRepositoryImpl, ProposalReviewId, ProposalReviewRepository,
-        ProposalReviewRepositoryImpl, ProposalReviewStatus, UserId, UserProfileRepository,
-        UserProfileRepositoryImpl,
+        ProposalReviewRepositoryImpl, ProposalReviewStatus, ProposalVote, UserId,
+        UserProfileRepository, UserProfileRepositoryImpl,
     },
     system_api::get_date_time,
 };
@@ -178,6 +178,9 @@ impl<
             review_duration_mins: request.review_duration_mins,
             build_reproduced: request.build_reproduced,
             images_ids: vec![],
+            vote: request
+                .vote
+                .map_or(ProposalVote::Unspecified, |vote| vote.into()),
         };
 
         let id = self
@@ -219,6 +222,9 @@ impl<
         }
         if request.build_reproduced.is_some() {
             current_proposal_review.build_reproduced = request.build_reproduced;
+        }
+        if request.vote.is_some() {
+            current_proposal_review.vote = request.vote.unwrap().into();
         }
 
         if let Some(status) = request.status {
@@ -992,6 +998,7 @@ mod tests {
                 summary: proposal_review.summary.clone(),
                 review_duration_mins: proposal_review.review_duration_mins,
                 build_reproduced: proposal_review.build_reproduced,
+                vote: Some(proposal_review.vote.into()),
             },
         )
     }
@@ -1014,6 +1021,7 @@ mod tests {
                 summary: proposal_review.summary,
                 review_duration_mins: proposal_review.review_duration_mins,
                 build_reproduced: proposal_review.build_reproduced,
+                vote: Some(proposal_review.vote.into()),
             },
         )
     }
@@ -1028,6 +1036,7 @@ mod tests {
                 summary: Some("".to_string()),
                 review_duration_mins: proposal_review.review_duration_mins,
                 build_reproduced: proposal_review.build_reproduced,
+                vote: Some(proposal_review.vote.into()),
             },
             ApiError::invalid_argument("Summary cannot be empty"),
         )
@@ -1043,6 +1052,7 @@ mod tests {
                 summary: Some("a".repeat(MAX_PROPOSAL_REVIEW_SUMMARY_CHARS + 1)),
                 review_duration_mins: proposal_review.review_duration_mins,
                 build_reproduced: proposal_review.build_reproduced,
+                vote: Some(proposal_review.vote.into()),
             },
             ApiError::invalid_argument(&format!(
                 "Summary must be less than {} characters",
@@ -1061,6 +1071,7 @@ mod tests {
                 summary: proposal_review.summary,
                 review_duration_mins: Some(0),
                 build_reproduced: proposal_review.build_reproduced,
+                vote: Some(proposal_review.vote.into()),
             },
             ApiError::invalid_argument("Review duration cannot be 0"),
         )
@@ -1077,6 +1088,7 @@ mod tests {
                 summary: proposal_review.summary,
                 review_duration_mins: Some(MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS + 1),
                 build_reproduced: proposal_review.build_reproduced,
+                vote: Some(proposal_review.vote.into()),
             },
             ApiError::invalid_argument(&format!(
                 "Review duration must be less than {} minutes",
@@ -1519,12 +1531,14 @@ mod tests {
                 summary: Some(summary.clone()),
                 review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
+                vote: Some(backend_api::ProposalVote::Yes),
             },
             ProposalReview {
                 summary: Some(summary),
                 review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
                 last_updated_at: Some(DateTime::new(date_time).unwrap()),
+                vote: ProposalVote::Yes,
                 ..original_proposal_review
             },
         )
@@ -1547,6 +1561,7 @@ mod tests {
         let summary = "Updated summary".to_string();
         let review_duration_mins = 120;
         let build_reproduced = false;
+        let vote = ProposalVote::No;
 
         (
             id,
@@ -1557,6 +1572,7 @@ mod tests {
                 summary: Some(summary.clone()),
                 review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
+                vote: Some(vote.clone().into()),
             },
             ProposalReview {
                 status,
@@ -1564,6 +1580,7 @@ mod tests {
                 review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
                 last_updated_at: Some(DateTime::new(date_time).unwrap()),
+                vote,
                 ..original_proposal_review
             },
         )
@@ -1596,6 +1613,7 @@ mod tests {
                 summary: Some(summary.clone()),
                 review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
+                vote: None,
             },
             ProposalReview {
                 status,
@@ -1617,6 +1635,7 @@ mod tests {
                 summary: Some("".to_string()),
                 review_duration_mins: None,
                 build_reproduced: None,
+                vote: None,
             },
             ApiError::invalid_argument("Summary cannot be empty"),
         )
@@ -1631,6 +1650,7 @@ mod tests {
                 summary: Some("a".repeat(MAX_PROPOSAL_REVIEW_SUMMARY_CHARS + 1)),
                 review_duration_mins: None,
                 build_reproduced: None,
+                vote: None,
             },
             ApiError::invalid_argument(&format!(
                 "Summary must be less than {} characters",
@@ -1648,6 +1668,7 @@ mod tests {
                 summary: None,
                 review_duration_mins: Some(0),
                 build_reproduced: None,
+                vote: None,
             },
             ApiError::invalid_argument("Review duration cannot be 0"),
         )
@@ -1662,6 +1683,7 @@ mod tests {
                 summary: None,
                 review_duration_mins: Some(MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS + 1),
                 build_reproduced: None,
+                vote: None,
             },
             ApiError::invalid_argument(&format!(
                 "Review duration must be less than {} minutes",
@@ -1693,6 +1715,7 @@ mod tests {
                 summary: None,
                 review_duration_mins: None,
                 build_reproduced: None,
+                vote: None,
             },
             ApiError::conflict(
                 "Proposal review cannot be published due to invalid field: Summary cannot be empty",
@@ -1727,6 +1750,7 @@ mod tests {
                 summary: None,
                 review_duration_mins: None,
                 build_reproduced: None,
+                vote: None,
             },
             ApiError::conflict(&format!(
                 "Proposal review cannot be published due to invalid field: {}",
@@ -1758,6 +1782,7 @@ mod tests {
                 summary: None,
                 review_duration_mins: None,
                 build_reproduced: None,
+                vote: None,
             },
             ApiError::conflict(
                 "Proposal review cannot be published due to invalid field: Review duration cannot be 0",
@@ -1792,6 +1817,7 @@ mod tests {
                 summary: None,
                 review_duration_mins: None,
                 build_reproduced: None,
+                vote: None,
             },
             ApiError::conflict(&format!(
                 "Proposal review cannot be published due to invalid field: {}",
@@ -2222,6 +2248,7 @@ mod tests {
                 summary: None,
                 review_duration_mins: None,
                 build_reproduced: None,
+                vote: None,
             },
             ApiError::conflict(
                 "Proposal review cannot be published due to invalid field: Summary cannot be empty",
@@ -2252,6 +2279,7 @@ mod tests {
                 summary: None,
                 review_duration_mins: None,
                 build_reproduced: None,
+                vote: None,
             },
             ApiError::conflict(
                 "Proposal review cannot be published due to invalid field: Review duration cannot be empty",
@@ -2282,6 +2310,7 @@ mod tests {
                 summary: None,
                 review_duration_mins: None,
                 build_reproduced: None,
+                vote: None,
             },
             ApiError::conflict(
                 "Proposal review cannot be published due to invalid field: Build reproduced cannot be empty",
