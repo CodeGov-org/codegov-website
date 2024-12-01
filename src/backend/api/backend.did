@@ -208,6 +208,12 @@ type ProposalReviewStatus = variant {
   published;
 };
 
+type ProposalVote = variant {
+  unspecified;
+  yes;
+  no;
+};
+
 type ProposalReview = record {
   proposal_id : text;
   user_id : text;
@@ -219,6 +225,7 @@ type ProposalReview = record {
   build_reproduced : opt bool;
   images_paths : vec text;
   proposal_review_commits : vec ProposalReviewCommitWithId;
+  vote : ProposalVote;
 };
 
 type ProposalReviewWithId = record {
@@ -231,6 +238,7 @@ type CreateProposalReviewRequest = record {
   summary : opt text;
   review_duration_mins : opt nat16;
   build_reproduced : opt bool;
+  vote : opt ProposalVote;
 };
 
 type CreateProposalReviewResponse = variant {
@@ -244,6 +252,7 @@ type UpdateProposalReviewRequest = record {
   summary : opt text;
   review_duration_mins : opt nat16;
   build_reproduced : opt bool;
+  vote : opt ProposalVote;
 };
 
 type UpdateProposalReviewResponse = variant {

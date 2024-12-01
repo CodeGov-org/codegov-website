@@ -1,6 +1,6 @@
 use crate::repositories::{
     ProposalReview, ProposalReviewCommit, ProposalReviewCommitId, ProposalReviewId,
-    ProposalReviewStatus,
+    ProposalReviewStatus, ProposalVote,
 };
 
 use super::map_proposal_review_commits;
@@ -23,6 +23,26 @@ impl From<backend_api::ProposalReviewStatus> for ProposalReviewStatus {
     }
 }
 
+impl From<backend_api::ProposalVote> for ProposalVote {
+    fn from(vote: backend_api::ProposalVote) -> Self {
+        match vote {
+            backend_api::ProposalVote::Unspecified => ProposalVote::Unspecified,
+            backend_api::ProposalVote::Yes => ProposalVote::Yes,
+            backend_api::ProposalVote::No => ProposalVote::No,
+        }
+    }
+}
+
+impl From<ProposalVote> for backend_api::ProposalVote {
+    fn from(vote: ProposalVote) -> Self {
+        match vote {
+            ProposalVote::Unspecified => backend_api::ProposalVote::Unspecified,
+            ProposalVote::Yes => backend_api::ProposalVote::Yes,
+            ProposalVote::No => backend_api::ProposalVote::No,
+        }
+    }
+}
+
 impl From<ProposalReview> for backend_api::ProposalReview {
     fn from(proposal_review: ProposalReview) -> Self {
         backend_api::ProposalReview {
@@ -36,6 +56,7 @@ impl From<ProposalReview> for backend_api::ProposalReview {
             build_reproduced: proposal_review.build_reproduced,
             images_paths: vec![],
             proposal_review_commits: vec![],
+            vote: proposal_review.vote.into(),
         }
     }
 }

@@ -160,6 +160,7 @@ describe('list proposal reviews', () => {
       reviewStatus: { published: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
       lastUpdatedAt: expect.any(String),
+      vote: { yes: null },
     });
 
     const resProposal2 = await driver.actor.list_proposal_reviews({
@@ -174,6 +175,7 @@ describe('list proposal reviews', () => {
       reviewStatus: { published: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
       lastUpdatedAt: expect.any(String),
+      vote: { yes: null },
     });
 
     const resAlice = await driver.actor.list_proposal_reviews({
@@ -188,6 +190,7 @@ describe('list proposal reviews', () => {
       reviewStatus: { published: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
       lastUpdatedAt: expect.any(String),
+      vote: { yes: null },
     });
 
     const resBob = await driver.actor.list_proposal_reviews({
@@ -202,6 +205,7 @@ describe('list proposal reviews', () => {
       reviewStatus: { published: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
       lastUpdatedAt: expect.any(String),
+      vote: { yes: null },
     });
   });
 
@@ -244,12 +248,14 @@ describe('list proposal reviews', () => {
       reviewStatus: { published: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
       lastUpdatedAt: expect.any(String),
+      vote: { yes: null },
     });
     validateProposalReview(resAliceOk.proposal_reviews[1], {
       proposalId: proposal2Id,
       userId: aliceId,
       reviewStatus: { draft: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A] },
+      vote: { yes: null },
     });
 
     const resBob = await driver.actor.list_proposal_reviews({
@@ -264,6 +270,7 @@ describe('list proposal reviews', () => {
       reviewStatus: { published: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
       lastUpdatedAt: expect.any(String),
+      vote: { yes: null },
     });
   });
 
@@ -282,12 +289,14 @@ describe('list proposal reviews', () => {
       reviewStatus: { published: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
       lastUpdatedAt: expect.any(String),
+      vote: { yes: null },
     });
     validateProposalReview(resProposal1Ok.proposal_reviews[1], {
       proposalId: proposal1Id,
       userId: bobId,
       reviewStatus: { draft: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A] },
+      vote: { yes: null },
     });
 
     const resProposal2 = await driver.actor.list_proposal_reviews({
@@ -301,6 +310,7 @@ describe('list proposal reviews', () => {
       userId: aliceId,
       reviewStatus: { draft: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A] },
+      vote: { yes: null },
     });
     validateProposalReview(resProposal2Ok.proposal_reviews[1], {
       proposalId: proposal2Id,
@@ -308,6 +318,7 @@ describe('list proposal reviews', () => {
       reviewStatus: { published: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
       lastUpdatedAt: expect.any(String),
+      vote: { yes: null },
     });
   });
 
