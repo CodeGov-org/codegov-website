@@ -5,7 +5,7 @@ import {
   output,
 } from '@angular/core';
 
-import { ReviewerProfile } from '~core/state';
+import { ReviewerGetMyUserProfileResponse } from '~core/api';
 import {
   KeyColComponent,
   KeyValueGridComponent,
@@ -62,7 +62,8 @@ import {
   `,
 })
 export class ReviewerPersonalInfoComponent {
-  public readonly userProfile = input.required<ReviewerProfile>();
+  public readonly userProfile =
+    input.required<ReviewerGetMyUserProfileResponse>();
 
   public readonly edit = output();
 

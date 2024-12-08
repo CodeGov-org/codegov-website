@@ -4,9 +4,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
-import { InfoIconComponent } from '~core/icons';
-import { ProfileService, UserRole } from '~core/state';
-import { FormFieldComponent, InputDirective } from '~core/ui';
+import { UserRole } from '~core/api';
+import { ProfileService } from '~core/state';
 import { AdminProfileComponent } from './admin-profile';
 import { AnonymousProfileComponent } from './anonymous-profile';
 import { ReviewerProfileComponent } from './reviewer-profile';
@@ -18,9 +17,6 @@ import { ReviewerProfileComponent } from './reviewer-profile';
     ReactiveFormsModule,
     CommonModule,
     RouterModule,
-    InfoIconComponent,
-    FormFieldComponent,
-    InputDirective,
     AnonymousProfileComponent,
     ReviewerProfileComponent,
     AdminProfileComponent,

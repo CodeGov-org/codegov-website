@@ -15,11 +15,11 @@ import {
 } from '@angular/forms';
 
 import {
-  AdminProfile,
-  AdminProfileUpdate,
-  ProfileService,
+  AdminGetMyUserProfileResponse,
+  AdminUpdateMyUserProfileRequest,
   UserRole,
-} from '~core/state';
+} from '~core/api';
+import { ProfileService } from '~core/state';
 import {
   FormFieldComponent,
   FormValidationInfoComponent,
@@ -121,7 +121,7 @@ interface AdminProfileForm {
   `,
 })
 export class AdminPersonalInfoFormComponent {
-  public readonly userProfile = input.required<AdminProfile>();
+  public readonly userProfile = input.required<AdminGetMyUserProfileResponse>();
 
   public readonly formClose = output();
 
@@ -156,7 +156,7 @@ export class AdminPersonalInfoFormComponent {
 
     const formValues = this.profileForm().value;
 
-    const profileUpdate: AdminProfileUpdate = {
+    const profileUpdate: AdminUpdateMyUserProfileRequest = {
       role: UserRole.Admin,
       username: formValues.username,
       bio: formValues.bio,

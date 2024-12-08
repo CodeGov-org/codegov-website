@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProfileService, SocialMediaType, UserRole } from '~core/state';
+import { UserRole, SocialMediaLinkType } from '~core/api';
+import { ProfileService } from '~core/state';
 import { ProfileServiceMock } from '~core/state/profile/profile.service.mock';
 import { ReviewerSocialMediaFormComponent } from './reviewer-social-media-form.component';
 
@@ -24,7 +25,7 @@ describe('ReviewerSocialMediaFormComponent', () => {
       neuronId: 10685924793606457081n,
       walletAddress: '123213123sdfsdfs',
       bio: 'bio',
-      socialMedia: [{ type: SocialMediaType.DSCVR, username: 'testLink' }],
+      socialMedia: [{ type: SocialMediaLinkType.DSCVR, username: 'testLink' }],
     });
     fixture.detectChanges();
   });

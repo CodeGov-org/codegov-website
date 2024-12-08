@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterModule } from '@angular/router';
 
-import { ProfileService, UserRole } from '~core/state';
+import { UserRole } from '~core/api';
+import { ProfileService } from '~core/state';
 import {
   ProfileServiceMock,
   profileServiceMockFactory,

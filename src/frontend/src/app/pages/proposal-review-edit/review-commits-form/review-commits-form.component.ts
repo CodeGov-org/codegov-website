@@ -14,6 +14,7 @@ import {
 } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
+import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
 import {
   FormFieldComponent,
   InputDirective,
@@ -22,8 +23,7 @@ import {
   KeyColComponent,
   KeyValueGridComponent,
   ValueColComponent,
-} from '../../../core/ui';
-import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
+} from '~core/ui';
 
 @Component({
   selector: 'app-review-commits-form',

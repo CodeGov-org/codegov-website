@@ -9,8 +9,8 @@ import {
 import { AdminPersonalInfoComponent } from '../admin-personal-info';
 import { AdminPersonalInfoFormComponent } from '../admin-personal-info-form';
 import { CardComponent } from '@cg/angular-ui';
+import { AdminGetMyUserProfileResponse } from '~core/api';
 import { InfoIconComponent } from '~core/icons';
-import { AdminProfile } from '~core/state';
 import {
   KeyColComponent,
   KeyValueGridComponent,
@@ -94,7 +94,7 @@ import {
   `,
 })
 export class AdminProfileComponent {
-  public readonly userProfile = input.required<AdminProfile>();
+  public readonly userProfile = input.required<AdminGetMyUserProfileResponse>();
 
   public readonly adminInfo = signal(
     'Use DFX command to change this property.',

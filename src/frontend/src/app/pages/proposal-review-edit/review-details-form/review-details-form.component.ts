@@ -3,17 +3,17 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 import {
+  ImageSet,
+  ImageUploaderBtnComponent,
+  RadioInputComponent,
+} from '@cg/angular-ui';
+import {
   FormFieldComponent,
   InputDirective,
   KeyColComponent,
   KeyValueGridComponent,
   ValueColComponent,
-} from '../../../core/ui';
-import {
-  ImageSet,
-  ImageUploaderBtnComponent,
-  RadioInputComponent,
-} from '@cg/angular-ui';
+} from '~core/ui';
 
 @Component({
   selector: 'app-review-details-form',
