@@ -22,7 +22,9 @@ impl Display for ReviewedCommitState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut commit_details = format!(
             "Matches description: {}",
-            self.matches_description.unwrap_or(false),
+            self.matches_description
+                .map(|b| b.to_string())
+                .unwrap_or_else(|| "Unanswered".to_string()),
         );
         if let Some(comment) = self.comment.as_ref() {
             if !comment.is_empty() {
@@ -216,7 +218,7 @@ mod tests {
             highlights: vec![],
         };
 
-        assert_eq!(state.to_string(), "Matches description: false");
+        assert_eq!(state.to_string(), "Matches description: Unanswered");
 
         state.matches_description = Some(false);
         assert_eq!(state.to_string(), "Matches description: false");

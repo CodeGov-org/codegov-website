@@ -744,14 +744,35 @@ fn proposal_review_summary_markdown(
         md_content.push_str(&format!("Vote: {}\n", proposal_review.vote));
         md_content.push_str(&format!(
             "Hashes match: {}\n",
-            proposal_review.build_reproduced.unwrap_or(false)
+            proposal_review
+                .build_reproduced
+                .map(|b| b.to_string())
+                .unwrap_or("Unanswered".to_string())
         ));
         md_content.push_str(&format!(
             "All reviewed commits match their descriptions: {}\n",
-            reviewed_commits.iter().all(|(_, commit)| commit
-                .reviewed_state()
-                .and_then(|state| state.matches_description)
-                .unwrap_or(false))
+            {
+                let mut no_answer_commits_count = 0;
+                let mut all_reviewed_commits_match = true;
+
+                for (_, commit) in &reviewed_commits {
+                    let state = commit.reviewed_state().expect("should be reviewed");
+                    match state.matches_description {
+                        None => no_answer_commits_count += 1,
+                        Some(b) => {
+                            all_reviewed_commits_match = b;
+                        }
+                    }
+                }
+
+                if no_answer_commits_count == reviewed_commits.len() {
+                    "Unanswered".to_string()
+                } else if no_answer_commits_count > 0 {
+                    "Only partially answered (see individual reports below)".to_string()
+                } else {
+                    all_reviewed_commits_match.to_string()
+                }
+            },
         ));
     }
     // images
@@ -2493,7 +2514,7 @@ mod tests {
     }
 
     #[fixture]
-    fn reviewed_commits() -> Vec<(ProposalReviewCommitId, ProposalReviewCommit)> {
+    fn all_reviewed_commits_match() -> Vec<(ProposalReviewCommitId, ProposalReviewCommit)> {
         vec![
             (
                 fixtures::uuid(),
@@ -2531,6 +2552,82 @@ mod tests {
     }
 
     #[fixture]
+    fn all_reviewed_commits_not_answered() -> Vec<(ProposalReviewCommitId, ProposalReviewCommit)> {
+        vec![
+            (
+                fixtures::uuid(),
+                ProposalReviewCommit {
+                    commit_sha: fixtures::commit_sha_a(),
+                    state: ReviewCommitState::Reviewed(ReviewedCommitState {
+                        matches_description: None,
+                        comment: Some("Good commit".to_string()),
+                        highlights: vec!["Feature A".to_string(), "Bug fix B".to_string()],
+                    }),
+                    ..fixtures::proposal_review_commit_reviewed()
+                },
+            ),
+            (
+                fixtures::uuid(),
+                ProposalReviewCommit {
+                    commit_sha: fixtures::commit_sha_b(),
+                    state: ReviewCommitState::Reviewed(ReviewedCommitState {
+                        matches_description: None,
+                        comment: Some("Issues found".to_string()),
+                        highlights: vec!["Missing tests".to_string()],
+                    }),
+                    ..fixtures::proposal_review_commit_reviewed()
+                },
+            ),
+            (
+                fixtures::uuid(),
+                ProposalReviewCommit {
+                    commit_sha: fixtures::commit_sha_c(),
+                    state: ReviewCommitState::NotReviewed,
+                    ..fixtures::proposal_review_commit_reviewed()
+                },
+            ),
+        ]
+    }
+
+    #[fixture]
+    fn some_reviewed_commits_not_answered() -> Vec<(ProposalReviewCommitId, ProposalReviewCommit)> {
+        vec![
+            (
+                fixtures::uuid(),
+                ProposalReviewCommit {
+                    commit_sha: fixtures::commit_sha_a(),
+                    state: ReviewCommitState::Reviewed(ReviewedCommitState {
+                        matches_description: Some(true),
+                        comment: Some("Good commit".to_string()),
+                        highlights: vec!["Feature A".to_string(), "Bug fix B".to_string()],
+                    }),
+                    ..fixtures::proposal_review_commit_reviewed()
+                },
+            ),
+            (
+                fixtures::uuid(),
+                ProposalReviewCommit {
+                    commit_sha: fixtures::commit_sha_b(),
+                    state: ReviewCommitState::Reviewed(ReviewedCommitState {
+                        matches_description: None,
+                        comment: Some("Issues found".to_string()),
+                        highlights: vec!["Missing tests".to_string()],
+                    }),
+                    ..fixtures::proposal_review_commit_reviewed()
+                },
+            ),
+            (
+                fixtures::uuid(),
+                ProposalReviewCommit {
+                    commit_sha: fixtures::commit_sha_c(),
+                    state: ReviewCommitState::NotReviewed,
+                    ..fixtures::proposal_review_commit_reviewed()
+                },
+            ),
+        ]
+    }
+
+    #[fixture]
     fn images_paths() -> Vec<String> {
         vec![
             "/images/13449503-1b2f-4b92-8346-8e843253e842.png".to_string(),
@@ -2541,23 +2638,27 @@ mod tests {
     #[rstest]
     fn test_proposal_review_summary_markdown() {
         let basic_proposal = basic_proposal();
-        let basic_review = basic_review();
-        let reviewed_commits = reviewed_commits();
+        let mut basic_review = basic_review();
+        let mut review_commits = all_reviewed_commits_match();
         let images_paths = images_paths();
         let markdown = proposal_review_summary_markdown(
             &basic_proposal,
             &basic_review,
-            &reviewed_commits,
+            &review_commits,
             &images_paths,
         );
 
-        assert_eq!(
-            markdown,
-            r#"# Proposal 123
+        fn expected_markdown(
+            hashes_match: &str,
+            all_reviewed_commits_match: &str,
+            commits_matches: (&str, &str),
+        ) -> String {
+            format!(
+                r#"# Proposal 123
 
 Vote: ADOPTED
-Hashes match: true
-All reviewed commits match their descriptions: false
+Hashes match: {hashes_match}
+All reviewed commits match their descriptions: {all_reviewed_commits_match}
 
 ![](/images/13449503-1b2f-4b92-8346-8e843253e842.png)
 
@@ -2568,14 +2669,73 @@ Test summary
 
 Commits review:
 - **28111ed23**:
-  Matches description: true
+  Matches description: {}
   Comment: Good commit
   Highlights: Feature A, Bug fix B
 - **47d98477c**:
-  Matches description: false
+  Matches description: {}
   Comment: Issues found
   Highlights: Missing tests
-"#
+"#,
+                commits_matches.0, commits_matches.1
+            )
+        }
+
+        assert_eq!(
+            markdown,
+            expected_markdown("true", "false", ("true", "false"))
+        );
+
+        basic_review.build_reproduced = Some(false);
+        let markdown = proposal_review_summary_markdown(
+            &basic_proposal,
+            &basic_review,
+            &review_commits,
+            &images_paths,
+        );
+        assert_eq!(
+            markdown,
+            expected_markdown("false", "false", ("true", "false"))
+        );
+
+        basic_review.build_reproduced = None;
+        let markdown = proposal_review_summary_markdown(
+            &basic_proposal,
+            &basic_review,
+            &review_commits,
+            &images_paths,
+        );
+        assert_eq!(
+            markdown,
+            expected_markdown("Unanswered", "false", ("true", "false"))
+        );
+
+        review_commits = some_reviewed_commits_not_answered();
+        let markdown = proposal_review_summary_markdown(
+            &basic_proposal,
+            &basic_review,
+            &review_commits,
+            &images_paths,
+        );
+        assert_eq!(
+            markdown,
+            expected_markdown(
+                "Unanswered",
+                "Only partially answered (see individual reports below)",
+                ("true", "Unanswered")
+            )
+        );
+
+        review_commits = all_reviewed_commits_not_answered();
+        let markdown = proposal_review_summary_markdown(
+            &basic_proposal,
+            &basic_review,
+            &review_commits,
+            &images_paths,
+        );
+        assert_eq!(
+            markdown,
+            expected_markdown("Unanswered", "Unanswered", ("Unanswered", "Unanswered"))
         );
     }
 }
