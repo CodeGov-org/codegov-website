@@ -1,13 +1,15 @@
-use crate::repositories::{ProposalReviewCommit, ProposalReviewCommitId, ReviewCommitState};
+use crate::repositories::{
+    ProposalReviewCommit, ProposalReviewCommitId, ReviewCommitState, ReviewedCommitState,
+};
 
 impl From<ReviewCommitState> for backend_api::ReviewCommitState {
     fn from(proposal_review_commit_state: ReviewCommitState) -> Self {
         match proposal_review_commit_state {
-            ReviewCommitState::Reviewed {
+            ReviewCommitState::Reviewed(ReviewedCommitState {
                 matches_description,
                 comment,
                 highlights,
-            } => backend_api::ReviewCommitState::Reviewed {
+            }) => backend_api::ReviewCommitState::Reviewed {
                 matches_description,
                 comment,
                 highlights,
@@ -24,11 +26,11 @@ impl From<backend_api::ReviewCommitState> for ReviewCommitState {
                 matches_description,
                 comment,
                 highlights,
-            } => ReviewCommitState::Reviewed {
+            } => ReviewCommitState::Reviewed(ReviewedCommitState {
                 matches_description,
                 comment,
                 highlights,
-            },
+            }),
             backend_api::ReviewCommitState::NotReviewed => ReviewCommitState::NotReviewed,
         }
     }

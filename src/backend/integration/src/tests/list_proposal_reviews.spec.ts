@@ -65,16 +65,12 @@ describe('list proposal reviews', () => {
     [alice, { id: aliceId }] = await driver.users.createReviewer();
     [bob, { id: bobId }] = await driver.users.createReviewer();
 
-    proposal1Id = await createProposal(
-      driver.actor,
-      governance,
-      'Test proposal 1',
-    );
-    proposal2Id = await createProposal(
-      driver.actor,
-      governance,
-      'Test proposal 2',
-    );
+    proposal1Id = (
+      await createProposal(driver.actor, governance, 'Test proposal 1')
+    ).proposalId;
+    proposal2Id = (
+      await createProposal(driver.actor, governance, 'Test proposal 2')
+    ).proposalId;
 
     const proposal1ReviewAliceData = await createProposalReview(
       driver.actor,
@@ -335,7 +331,7 @@ describe('list proposal reviews', () => {
   });
 
   it('should return an empty list when there are no reviews', async () => {
-    const proposalId = await createProposal(
+    const { proposalId } = await createProposal(
       driver.actor,
       governance,
       'Test Proposal with no reviews',

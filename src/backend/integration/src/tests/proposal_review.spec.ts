@@ -103,7 +103,7 @@ describe('Proposal Review', () => {
       const [reviewer, { id: reviewerId }] =
         await driver.users.createReviewer();
 
-      const proposalId = await createProposal(
+      const { proposalId } = await createProposal(
         driver.actor,
         governance,
         'Test proposal',
@@ -143,7 +143,7 @@ describe('Proposal Review', () => {
       const [reviewer, { id: reviewerId }] =
         await driver.users.createReviewer();
 
-      const proposalId = await createProposal(
+      const { proposalId } = await createProposal(
         driver.actor,
         governance,
         'Test proposal',
@@ -203,7 +203,7 @@ describe('Proposal Review', () => {
     it('should not allow to create a review for a proposal that is completed', async () => {
       const [reviewer] = await driver.users.createReviewer();
 
-      const proposalId = await createProposal(
+      const { proposalId } = await createProposal(
         driver.actor,
         governance,
         'Test proposal',
@@ -229,7 +229,7 @@ describe('Proposal Review', () => {
     it('should not allow to create multiple reviews for the same reviewer and proposal', async () => {
       const [alice, { id: aliceId }] = await driver.users.createReviewer();
 
-      const proposalId = await createProposal(
+      const { proposalId } = await createProposal(
         driver.actor,
         governance,
         'Test proposal',
@@ -274,7 +274,7 @@ describe('Proposal Review', () => {
     it('should not allow to create an invalid review', async () => {
       const [reviewer] = await driver.users.createReviewer();
 
-      const proposalId = await createProposal(
+      const { proposalId } = await createProposal(
         driver.actor,
         governance,
         'Test proposal',
@@ -424,7 +424,7 @@ describe('Proposal Review', () => {
 
       expect(resErr).toEqual({
         code: 404,
-        message: `Proposal review for proposal with Id ${nonExistentProposalId} not found`,
+        message: `Proposal review for proposal ${nonExistentProposalId} for principal ${reviewer.getPrincipal().toText()} not found`,
       });
     });
 
@@ -452,7 +452,7 @@ describe('Proposal Review', () => {
 
       expect(resErr).toEqual({
         code: 404,
-        message: `Proposal review for proposal with Id ${proposalId} not found`,
+        message: `Proposal review for proposal ${proposalId} for principal ${bob.getPrincipal().toText()} not found`,
       });
     });
 
@@ -507,7 +507,7 @@ describe('Proposal Review', () => {
     it('should not allow a reviewer to update a proposal review for a completed proposal', async () => {
       const [reviewer] = await driver.users.createReviewer();
 
-      const proposalId = await createProposal(
+      const { proposalId } = await createProposal(
         driver.actor,
         governance,
         'Test proposal',
@@ -730,7 +730,7 @@ describe('Proposal Review', () => {
       async (updateReq, errMsg) => {
         const [reviewer] = await driver.users.createReviewer();
 
-        const proposalId = await createProposal(
+        const { proposalId } = await createProposal(
           driver.actor,
           governance,
           'Test proposal',
