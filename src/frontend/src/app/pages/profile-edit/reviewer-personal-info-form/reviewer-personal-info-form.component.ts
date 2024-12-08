@@ -16,11 +16,11 @@ import {
 } from '@angular/forms';
 
 import {
-  ProfileService,
-  ReviewerProfile,
-  ReviewerProfileUpdate,
+  ReviewerGetMyUserProfileResponse,
+  UpdateMyUserProfileRequest,
   UserRole,
-} from '~core/state';
+} from '~core/api';
+import { ProfileService } from '~core/state';
 import {
   FormFieldComponent,
   FormValidationInfoComponent,
@@ -169,7 +169,8 @@ export interface ReviewerProfileForm {
   `,
 })
 export class ReviewerPersonalInfoFormComponent {
-  public readonly userProfile = input.required<ReviewerProfile>();
+  public readonly userProfile =
+    input.required<ReviewerGetMyUserProfileResponse>();
 
   public readonly formClose = output();
 
@@ -219,7 +220,7 @@ export class ReviewerPersonalInfoFormComponent {
 
     const profileFormValues = this.profileForm().value;
 
-    const profileUpdate: ReviewerProfileUpdate = {
+    const profileUpdate: UpdateMyUserProfileRequest = {
       role: UserRole.Reviewer,
       username: profileFormValues.username,
       bio: profileFormValues.bio,

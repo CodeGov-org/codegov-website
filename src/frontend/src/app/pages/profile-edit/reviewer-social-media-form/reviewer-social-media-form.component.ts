@@ -17,13 +17,13 @@ import {
 
 import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from '../profile.model';
 import {
-  ProfileService,
-  ReviewerProfile,
-  ReviewerProfileUpdate,
-  SocialLink,
-  SocialMediaType,
+  ReviewerGetMyUserProfileResponse,
+  SocialMediaLink,
+  UpdateMyUserProfileRequest,
   UserRole,
-} from '~core/state';
+  SocialMediaLinkType,
+} from '~core/api';
+import { ProfileService } from '~core/state';
 import {
   FormFieldComponent,
   FormValidationInfoComponent,
@@ -38,7 +38,7 @@ import {
 import { keysOf } from '~core/utils';
 
 export type SocialMediaForm = {
-  [K in SocialMediaType]: FormControl<string>;
+  [K in SocialMediaLinkType]: FormControl<string>;
 };
 
 @Component({
@@ -112,7 +112,8 @@ export type SocialMediaForm = {
   `,
 })
 export class ReviewerSocialMediaFormComponent {
-  public readonly userProfile = input.required<ReviewerProfile>();
+  public readonly userProfile =
+    input.required<ReviewerGetMyUserProfileResponse>();
 
   public readonly formClose = output();
   public readonly formSaving = output();
@@ -155,12 +156,12 @@ export class ReviewerSocialMediaFormComponent {
 
     const socialMedia = Object.entries(
       socialMediaFormValues ?? {},
-    ).map<SocialLink>(([key, value]) => ({
-      type: key as SocialMediaType,
+    ).map<SocialMediaLink>(([key, value]) => ({
+      type: key as SocialMediaLinkType,
       username: value,
     }));
 
-    const profileUpdate: ReviewerProfileUpdate = {
+    const profileUpdate: UpdateMyUserProfileRequest = {
       role: UserRole.Reviewer,
       socialMedia: socialMedia,
     };

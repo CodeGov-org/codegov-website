@@ -5,12 +5,12 @@ import {
   output,
 } from '@angular/core';
 
+import { AdminGetMyUserProfileResponse } from '~core/api';
 import {
   KeyColComponent,
   KeyValueGridComponent,
   ValueColComponent,
-} from '../../../core/ui';
-import { AdminProfile } from '~core/state';
+} from '~core/ui';
 
 @Component({
   selector: 'app-admin-personal-info',
@@ -36,7 +36,7 @@ import { AdminProfile } from '~core/state';
   `,
 })
 export class AdminPersonalInfoComponent {
-  public readonly userProfile = input.required<AdminProfile>();
+  public readonly userProfile = input.required<AdminGetMyUserProfileResponse>();
 
   public readonly edit = output();
 

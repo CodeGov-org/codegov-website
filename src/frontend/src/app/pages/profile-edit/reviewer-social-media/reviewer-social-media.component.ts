@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 
 import { SOCIAL_MEDIA_INPUTS } from '../profile.model';
-import { ReviewerProfile } from '~core/state';
+import { ReviewerGetMyUserProfileResponse } from '~core/api';
 import {
   KeyColComponent,
   KeyValueGridComponent,
@@ -47,7 +47,8 @@ import { keysOf } from '~core/utils';
   `,
 })
 export class ReviewerSocialMediaComponent {
-  public readonly userProfile = input.required<ReviewerProfile>();
+  public readonly userProfile =
+    input.required<ReviewerGetMyUserProfileResponse>();
 
   public readonly edit = output();
 

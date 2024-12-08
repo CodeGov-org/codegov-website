@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { UserRole } from '~core/state';
+import { UserRole } from '~core/api';
 import { ReviewerProfileComponent } from './reviewer-profile.component';
 
 describe('ReviewerProfileComponent', () => {

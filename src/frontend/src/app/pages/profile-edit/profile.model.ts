@@ -1,7 +1,7 @@
-import { SocialMediaType } from '~core/state';
+import { SocialMediaLinkType } from '~core/api';
 
 export type SocialMediaInputs = {
-  [K in SocialMediaType]: SocialMediaInputProps;
+  [K in SocialMediaLinkType]: SocialMediaInputProps;
 };
 
 export const SOCIAL_MEDIA_INPUTS: SocialMediaInputs = {

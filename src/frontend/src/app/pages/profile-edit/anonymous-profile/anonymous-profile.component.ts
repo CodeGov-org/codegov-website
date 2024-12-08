@@ -7,7 +7,7 @@ import {
 
 import { GLOBAL_CONFIG } from '../../../../global-config';
 import { CardComponent, CopyToClipboardComponent } from '@cg/angular-ui';
-import { AnonymousProfile } from '~core/state';
+import { AnonymousGetMyUserProfileResponse } from '~core/api';
 
 @Component({
   selector: 'app-anonymous-profile',
@@ -38,7 +38,8 @@ import { AnonymousProfile } from '~core/state';
   `,
 })
 export class AnonymousProfileComponent {
-  public readonly userProfile = input.required<AnonymousProfile>();
+  public readonly userProfile =
+    input.required<AnonymousGetMyUserProfileResponse>();
 
   public readonly applyLink = signal(GLOBAL_CONFIG.applyLink);
 }

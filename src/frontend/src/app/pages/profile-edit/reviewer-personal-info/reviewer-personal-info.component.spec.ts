@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SocialMediaType, UserRole } from '~core/state';
+import { UserRole, SocialMediaLinkType } from '~core/api';
 import { ReviewerPersonalInfoComponent } from './reviewer-personal-info.component';
 
 describe('ReviewerPersonalInfoComponent', () => {
@@ -21,7 +21,7 @@ describe('ReviewerPersonalInfoComponent', () => {
       neuronId: 10685924793606457081n,
       walletAddress: '123213123sdfsdfs',
       bio: 'bio',
-      socialMedia: [{ type: SocialMediaType.DSCVR, username: 'testLink' }],
+      socialMedia: [{ type: SocialMediaLinkType.DSCVR, username: 'testLink' }],
     });
     fixture.detectChanges();
   });

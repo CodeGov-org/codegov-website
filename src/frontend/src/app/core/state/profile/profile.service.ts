@@ -1,27 +1,31 @@
 import { Dialog } from '@angular/cdk/dialog';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, map } from 'rxjs';
 
-import { BackendActorService } from '~core/services';
+import {
+  GetMyUserProfileResponse,
+  ProfileApiService,
+  UpdateMyUserProfileRequest,
+  UserRole,
+} from '~core/api';
 import {
   LoadingDialogComponent,
   LoadingDialogInput,
   getLoadingDialogConfig,
 } from '~core/ui';
-import { isErr, isNil, isNotNil, isOk } from '~core/utils';
-import {
-  mapProfileResponse,
-  mapUpdateProfileRequest,
-  mergeProfileUpdate,
-} from './profile.mapper';
-import { Profile, ProfileUpdate, UserRole } from './profile.model';
+import { ApiError, isNil, isNotNil } from '~core/utils';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProfileService {
-  private userProfileSubject = new BehaviorSubject<Profile | null>(null);
+  private readonly profileApiService = inject(ProfileApiService);
+  private readonly router = inject(Router);
+  private readonly dialog = inject(Dialog);
+
+  private readonly userProfileSubject =
+    new BehaviorSubject<GetMyUserProfileResponse | null>(null);
   public readonly userProfile$ = this.userProfileSubject.asObservable();
 
   public readonly userRole$ = this.userProfile$.pipe(
@@ -40,58 +44,45 @@ export class ProfileService {
     message: 'Creating new profile...',
   };
 
-  constructor(
-    private readonly actorService: BackendActorService,
-    private readonly router: Router,
-    private readonly dialog: Dialog,
-  ) {}
-
   public async loadProfile(): Promise<void> {
     const currentProfile = this.userProfileSubject.getValue();
     if (isNotNil(currentProfile)) {
       return;
     }
 
-    const getResponse = await this.actorService.get_my_user_profile();
-
-    if (isOk(getResponse)) {
-      this.userProfileSubject.next(mapProfileResponse(getResponse.ok));
-      return;
-    }
-
-    if (getResponse.err.code !== 404) {
-      throw new Error(`${getResponse.err.code}: ${getResponse.err.message}`);
-    }
-
-    const loadingDialog = this.dialog.open(
-      LoadingDialogComponent,
-      getLoadingDialogConfig(this.createProfileMessage),
-    );
-
     try {
-      await this.createProfile();
-    } finally {
-      loadingDialog.close();
-    }
+      const res = await this.profileApiService.getMyUserProfile();
+      this.userProfileSubject.next(res);
+    } catch (error) {
+      if (error instanceof ApiError && error.code === 404) {
+        const loadingDialog = this.dialog.open(
+          LoadingDialogComponent,
+          getLoadingDialogConfig(this.createProfileMessage),
+        );
 
-    this.router.navigate(['profile/edit']);
+        try {
+          await this.createProfile();
+          this.router.navigate(['profile/edit']);
+        } finally {
+          loadingDialog.close();
+        }
+
+        return;
+      }
+
+      throw error;
+    }
   }
 
-  public async saveProfile(profileUpdate: ProfileUpdate): Promise<void> {
+  public async saveProfile(
+    profileUpdate: UpdateMyUserProfileRequest,
+  ): Promise<void> {
     const currentProfile = this.userProfileSubject.getValue();
     if (isNil(currentProfile)) {
       throw new Error('User profile not loaded yet');
     }
 
-    const updateResponse = await this.actorService.update_my_user_profile(
-      mapUpdateProfileRequest(profileUpdate),
-    );
-
-    if (isErr(updateResponse)) {
-      throw new Error(
-        `${updateResponse.err.code}: ${updateResponse.err.message}`,
-      );
-    }
+    await this.profileApiService.updateMyUserProfile(profileUpdate);
 
     this.userProfileSubject.next(
       mergeProfileUpdate(currentProfile, profileUpdate),
@@ -99,13 +90,55 @@ export class ProfileService {
   }
 
   private async createProfile(): Promise<void> {
-    const createResponse = await this.actorService.create_my_user_profile();
-    if (isErr(createResponse)) {
-      throw new Error(
-        `${createResponse.err.code}: ${createResponse.err.message}`,
-      );
-    }
+    const res = await this.profileApiService.createMyUserProfile();
 
-    this.userProfileSubject.next(mapProfileResponse(createResponse.ok));
+    this.userProfileSubject.next(res);
   }
+}
+
+function mergeProfileUpdate(
+  profile: GetMyUserProfileResponse,
+  profileUpdate: UpdateMyUserProfileRequest,
+): GetMyUserProfileResponse {
+  // create a new object reference so Angular will detect the changes
+  profile = { ...profile };
+
+  if (
+    profile.role === UserRole.Anonymous &&
+    profileUpdate.role === UserRole.Anonymous
+  ) {
+    if (profileUpdate.username) {
+      profile.username = profileUpdate.username;
+    }
+  } else if (
+    profile.role === UserRole.Reviewer &&
+    profileUpdate.role === UserRole.Reviewer
+  ) {
+    if (profileUpdate.username) {
+      profile.username = profileUpdate.username;
+    }
+    if (profileUpdate.bio) {
+      profile.bio = profileUpdate.bio;
+    }
+    if (profileUpdate.walletAddress) {
+      profile.walletAddress = profileUpdate.walletAddress;
+    }
+    if (profileUpdate.socialMedia) {
+      profile.socialMedia = profileUpdate.socialMedia;
+    }
+  } else if (
+    profile.role === UserRole.Admin &&
+    profileUpdate.role === UserRole.Admin
+  ) {
+    if (profileUpdate.username) {
+      profile.username = profileUpdate.username;
+    }
+    if (profileUpdate.bio) {
+      profile.bio = profileUpdate.bio;
+    }
+  } else {
+    throw new Error('Users cannot change their own role');
+  }
+
+  return profile;
 }
