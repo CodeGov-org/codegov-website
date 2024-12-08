@@ -44,6 +44,7 @@ Else, refer to the following sections.
 | ------------------------------ | ------------------------------ |
 | `dfx deploy frontend`          | Deploy to a local DFX replica  |
 | `pnpm turbo start -F frontend` | Run a local development server |
+| `pnpm turbo build -F frontend` | Create a prod build            |
 | `pnpm turbo test -F frontend`  | Run unit tests                 |
 
 ### Docs

@@ -29,8 +29,14 @@ export function extractOkResponse<T>(res: ApiResponse<T>): T {
 }
 
 export class ApiError extends Error {
-  constructor(public readonly err: Err) {
+  public readonly code: number;
+  public readonly message: string;
+
+  constructor(err: Err) {
     super(`${err.code}: ${err.message}`);
+
+    this.code = err.code;
+    this.message = err.message;
   }
 }
 

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { UserRole } from '~core/state';
+import { UserRole } from '~core/api';
 import { AdminPersonalInfoComponent } from './admin-personal-info.component';
 
 describe('AdminPersonalInfoComponent', () => {

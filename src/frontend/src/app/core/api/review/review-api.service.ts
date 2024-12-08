@@ -86,7 +86,7 @@ export class ReviewApiService {
     try {
       return await this.getMyProposalReview(req);
     } catch (error) {
-      if (error instanceof ApiError && error.err.code === 404) {
+      if (error instanceof ApiError && error.code === 404) {
         return await this.createProposalReview(req);
       }
 

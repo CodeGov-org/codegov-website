@@ -11,8 +11,8 @@ import { ReviewerPersonalInfoFormComponent } from '../reviewer-personal-info-for
 import { ReviewerSocialMediaComponent } from '../reviewer-social-media';
 import { ReviewerSocialMediaFormComponent } from '../reviewer-social-media-form';
 import { CardComponent } from '@cg/angular-ui';
+import { ReviewerGetMyUserProfileResponse } from '~core/api';
 import { InfoIconComponent } from '~core/icons';
-import { ReviewerProfile } from '~core/state';
 import {
   KeyColComponent,
   KeyValueGridComponent,
@@ -142,7 +142,8 @@ import {
   `,
 })
 export class ReviewerProfileComponent {
-  public readonly userProfile = input.required<ReviewerProfile>();
+  public readonly userProfile =
+    input.required<ReviewerGetMyUserProfileResponse>();
   public readonly isPersonalInfoEditable = signal(false);
   public readonly isSocialMediaEditable = signal(false);
 

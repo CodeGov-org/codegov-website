@@ -1,7 +1,7 @@
-import { isNil } from './nil';
+import { isNil, isNotNil } from './nil';
 
 export function toCandidOpt<T>(value?: T | undefined | null): [] | [T] {
-  return value ? [value] : [];
+  return isNotNil(value) ? [value] : [];
 }
 
 export function fromCandidOpt<T>(value: [] | [T] | undefined | null): T | null {
