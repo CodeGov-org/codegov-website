@@ -28,3 +28,4 @@ pub(super) const PROPOSAL_REVIEW_COMMIT_PROPOSAL_REVIEW_ID_USER_ID_MEMORY_ID: Me
 pub(super) const IMAGES_MEMORY_ID: MemoryId = MemoryId::new(13);
 pub(super) const PROPOSAL_NERVOUS_SYSTEM_ID_INDEX_MEMORY_ID: MemoryId = MemoryId::new(14);
 pub(super) const PROPOSAL_TIMESTAMP_INDEX_MEMORY_ID: MemoryId = MemoryId::new(15);
+pub(super) const LOGS_TIMESTAMP_LEVEL_INDEX_MEMORY_ID: MemoryId = MemoryId::new(16);

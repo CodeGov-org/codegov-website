@@ -8,7 +8,7 @@ use backend_api::{ApiResult, ListLogsResponse, LogEntry, LogsFilterRequest};
 use candid::{Decode, Encode, Principal};
 use ic_agent::{identity::Secp256k1Identity, Agent};
 
-use crate::utils::now_timestamp_ms;
+use crate::utils::{now_timestamp_ms, FIVE_MINUTES_MS};
 
 struct BackendActor {
     agent: Agent,
@@ -25,12 +25,9 @@ impl BackendActor {
         Ok(Self { agent, canister_id })
     }
 
-    async fn list_logs(
-        &self,
-        after_timestamp_ms: Option<u64>,
-    ) -> Result<ListLogsResponse, anyhow::Error> {
+    async fn list_logs(&self, after_timestamp_ms: u64) -> Result<ListLogsResponse, anyhow::Error> {
         let request = LogsFilterRequest {
-            after_timestamp_ms,
+            after_timestamp_ms: Some(after_timestamp_ms),
             before_timestamp_ms: None,
             context_contains_any: None,
             level: None,
@@ -50,12 +47,15 @@ impl BackendActor {
 }
 
 pub struct LogFetcher {
-    last_fetch_timestamp: Option<u64>,
+    last_fetch_timestamp: u64,
     file: File,
     actor: BackendActor,
 }
 
 impl LogFetcher {
+    /// Creates a new log fetcher by loading the last fetch timestamp from the file `data/last-fetch-timestamp.txt`.
+    ///
+    /// If the file does not exist, the last fetch timestamp is set to the current timestamp minus 5 minutes.
     pub fn new(identity_pem: PathBuf, backend_canister_id: String) -> anyhow::Result<Self> {
         let path = "data/last-fetch-timestamp.txt";
         let mut file = OpenOptions::new()
@@ -70,7 +70,10 @@ impl LogFetcher {
 
         Ok(Self {
             file,
-            last_fetch_timestamp: last_fetch_timestamp.trim().parse().ok(),
+            last_fetch_timestamp: last_fetch_timestamp
+                .trim()
+                .parse()
+                .unwrap_or_else(|_| now_timestamp_ms() - FIVE_MINUTES_MS),
             actor,
         })
     }
@@ -83,7 +86,7 @@ impl LogFetcher {
     }
 
     fn update_last_fetch_timestamp(&mut self, timestamp: u64) {
-        self.last_fetch_timestamp = Some(timestamp);
+        self.last_fetch_timestamp = timestamp;
         self.file.set_len(0).unwrap();
         self.file.rewind().unwrap();
         self.file

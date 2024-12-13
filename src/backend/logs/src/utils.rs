@@ -1,5 +1,7 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
+pub const FIVE_MINUTES_MS: u64 = 5 * 60 * 1_000;
+
 pub fn now() -> SystemTime {
     SystemTime::now()
 }

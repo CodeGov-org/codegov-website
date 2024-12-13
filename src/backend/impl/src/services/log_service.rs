@@ -7,7 +7,7 @@ use backend_api::{ApiError, ListLogsResponse, LogsFilterRequest};
 
 #[cfg_attr(test, mockall::automock)]
 pub trait LogService {
-    fn list_logs(&self, filter: LogsFilterRequest) -> ListLogsResponse;
+    fn list_logs(&self, filter: LogsFilterRequest) -> Result<ListLogsResponse, ApiError>;
 
     fn append_log(
         &self,
@@ -34,18 +34,18 @@ impl Default for LogServiceImpl<LogRepositoryImpl> {
 }
 
 impl<T: LogRepository> LogService for LogServiceImpl<T> {
-    fn list_logs(&self, request: LogsFilterRequest) -> ListLogsResponse {
+    fn list_logs(&self, request: LogsFilterRequest) -> Result<ListLogsResponse, ApiError> {
         let filter = map_logs_filter_request(request);
 
         let logs = self
             .log_repository
-            .get_logs()
+            .get_logs(filter.after, filter.before)?
             .iter()
             .filter(|l| filter.matches(l))
             .cloned()
             .collect::<Vec<_>>();
 
-        map_list_logs_response(logs)
+        Ok(map_list_logs_response(logs))
     }
 
     fn append_log(
@@ -103,11 +103,11 @@ mod tests {
         repository_mock
             .expect_get_logs()
             .once()
-            .return_const(vec![log_entry.clone(), log_entry.clone()]);
+            .return_const(Ok(vec![log_entry.clone(), log_entry.clone()]));
 
         let service = LogServiceImpl::new(repository_mock);
 
-        let result = service.list_logs(filter.into());
+        let result = service.list_logs(filter.into()).unwrap();
 
         assert_eq!(
             result,
@@ -133,15 +133,13 @@ mod tests {
     fn list_logs(#[case] fixture: (LogEntry, LogsFilter, bool)) {
         let (log_entry, filter, expected) = fixture;
 
-        let mut repository_mock = MockLogRepository::new();
-        repository_mock
-            .expect_get_logs()
-            .once()
-            .return_const(vec![log_entry.clone()]);
+        // We want to use the real repository in order to test all the filters properly
+        let repository = LogRepositoryImpl::default();
+        repository.append_log(log_entry.clone()).unwrap();
 
-        let service = LogServiceImpl::new(repository_mock);
+        let service = LogServiceImpl::new(repository);
 
-        let result = service.list_logs(filter.into());
+        let result = service.list_logs(filter.into()).unwrap();
 
         assert_eq!(
             result,

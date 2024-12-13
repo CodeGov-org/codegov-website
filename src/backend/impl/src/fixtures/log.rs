@@ -34,30 +34,6 @@ pub fn log_entry_error() -> LogEntry {
     }
 }
 
-#[fixture]
-pub fn log_entries() -> Vec<LogEntry> {
-    vec![
-        LogEntry {
-            date_time: date_time_a(),
-            level: LogLevel::Info,
-            context: Some("function_a".to_string()),
-            message: "foo".to_string(),
-        },
-        LogEntry {
-            date_time: date_time_b(),
-            level: LogLevel::Warn,
-            context: Some("function_b".to_string()),
-            message: "bar".to_string(),
-        },
-        LogEntry {
-            date_time: date_time_b(),
-            level: LogLevel::Error,
-            context: Some("function_c".to_string()),
-            message: "baz".to_string(),
-        },
-    ]
-}
-
 pub mod filters {
     use crate::repositories::LogsFilter;
 
