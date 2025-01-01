@@ -21,5 +21,5 @@ export function fromCandidOptDate(value: [] | [string]): Date | null {
 }
 
 export function fromCandidDate(value: string): Date {
-  return new Date(Number(value));
+  return new Date(value);
 }
