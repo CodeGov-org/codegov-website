@@ -7,9 +7,7 @@ import { TooltipDirective } from './tooltip.directive';
 @Component({
   standalone: true,
   imports: [TooltipDirective],
-  template: `
-    <div appTooltip="test">Test</div>
-  `,
+  template: `<div appTooltip="test">Test</div>`,
 })
 class TestComponent {}
 

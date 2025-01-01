@@ -22,8 +22,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       }
     `,
   ],
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class ValueColComponent {}

@@ -8,8 +8,6 @@ import { DefineCustomElement } from '../../../define-custom-element';
   selector: 'cg-dropdown-btn-menu-item',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class DropdownBtnMenuItemComponent {}

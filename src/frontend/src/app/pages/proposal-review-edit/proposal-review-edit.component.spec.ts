@@ -3,12 +3,10 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 
 import {
-  ProposalLinkBaseUrl,
-  ProposalVotingLinkType,
-  ProposalTopic,
-  ProposalState,
-} from '~core/api';
-import { ProposalService, ReviewService } from '~core/state';
+  ProposalService,
+  ReviewService,
+  ReviewSubmissionService,
+} from '~core/state';
 import {
   ProposalServiceMock,
   proposalServiceMockFactory,
@@ -17,6 +15,10 @@ import {
   ReviewServiceMock,
   reviewServiceMockFactory,
 } from '~core/state/review/review.service.mock';
+import {
+  ReviewSubmissionServiceMock,
+  reviewSubmissionServiceMockFactory,
+} from '~core/state/review-submission/review-submission.service.mock';
 import {
   ActivatedRouteMock,
   activatedRouteMockFactory,
@@ -30,36 +32,12 @@ describe('ProposalReviewEditComponent', () => {
 
   let proposalServiceMock: ProposalServiceMock;
   let reviewServiceMock: ReviewServiceMock;
+  let reviewSubmissionServiceMock: ReviewSubmissionServiceMock;
   let activatedRouteMock: ActivatedRouteMock;
 
   beforeEach(async () => {
     proposalServiceMock = proposalServiceMockFactory();
-    defineProp(
-      proposalServiceMock,
-      'currentProposal$',
-      of({
-        id: '1',
-        nsProposalId: 1n,
-        title: 'title',
-        topic: ProposalTopic.RVM,
-        type: 'unknown',
-        state: ProposalState.InProgress,
-        reviewPeriodEnd: new Date(2024, 1, 17, 1, 1, 25),
-        votingPeriodEnd: new Date(2024, 1, 19, 1, 1, 25),
-        proposedAt: new Date(2024, 1, 15, 1, 1, 25),
-        proposedBy: 432432432423n,
-        decidedAt: null,
-        summary: 'Elect new replica binary revision',
-        reviewCompletedAt: null,
-        codeGovVote: null,
-        proposalLinks: [
-          {
-            type: ProposalVotingLinkType.NNSDApp,
-            link: ProposalLinkBaseUrl.NNSDApp + 1,
-          },
-        ],
-      }),
-    );
+    defineProp(proposalServiceMock, 'currentProposal$', of(null));
 
     reviewServiceMock = reviewServiceMockFactory();
     defineProp(reviewServiceMock, 'currentReview$', of(null));
@@ -71,6 +49,8 @@ describe('ProposalReviewEditComponent', () => {
       of(convertToParamMap([{ id: 1 }])),
     );
 
+    reviewSubmissionServiceMock = reviewSubmissionServiceMockFactory();
+
     await TestBed.configureTestingModule({
       imports: [ProposalReviewEditComponent],
       providers: [
@@ -79,6 +59,10 @@ describe('ProposalReviewEditComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: activatedRouteMock,
+        },
+        {
+          provide: ReviewSubmissionService,
+          useValue: reviewSubmissionServiceMock,
         },
       ],
     }).compileComponents();

@@ -34,9 +34,7 @@ import {
       }
     `,
   ],
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class KeyValueGridComponent {
   public readonly columnNumber = input(1);

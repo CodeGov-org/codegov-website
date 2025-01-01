@@ -20,7 +20,6 @@ import {
   ValueColComponent,
   FormFieldComponent,
   InputDirective,
-  LabelDirective,
 } from '~core/ui';
 
 enum ReviewPeriodStateFilter {
@@ -50,7 +49,6 @@ interface FilterForm {
     ValueColComponent,
     FormFieldComponent,
     InputDirective,
-    LabelDirective,
     FormatDatePipe,
     RouterLink,
     CardComponent,

@@ -29,9 +29,7 @@ type TouchedFn = () => void;
       multi: true,
     },
   ],
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class RadioInputComponent implements ControlValueAccessor {
   private notifyChange: ChangeFn = () => {};

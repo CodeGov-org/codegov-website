@@ -66,7 +66,7 @@ describe('CommitReviewApiService', () => {
           proposal_review_id: 'proposalReviewId',
           user_id: 'userId',
           commit_sha: 'commitSha',
-          created_at: new Date(2024, 1, 1, 0, 0, 0, 0).getTime().toString(),
+          created_at: new Date(2024, 1, 1, 0, 0, 0, 0).toISOString(),
           last_updated_at: [],
           state: {
             reviewed: {
@@ -80,7 +80,6 @@ describe('CommitReviewApiService', () => {
     };
     const commonResponse: GetProposalReviewCommitResponse = {
       id: 'id',
-      listId: 'id',
       userId: 'userId',
       commitSha: 'commitSha',
       proposalReviewId: 'proposalReviewId',

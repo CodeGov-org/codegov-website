@@ -14,13 +14,12 @@ export interface DeleteProposalReviewCommitRequest {
 }
 
 export interface GetProposalReviewCommitResponse {
-  id: string | null;
-  listId: string;
+  id: string;
   proposalReviewId: string;
   userId: string;
   createdAt: Date;
   lastUpdatedAt: Date | null;
-  commitSha: string;
+  commitSha: string | null;
   details: ReviewCommitDetails;
 }
 
@@ -36,5 +35,5 @@ export interface ReviewedCommitDetails {
 }
 
 export interface NotReviewedCommitDetails {
-  reviewed: false;
+  reviewed: false | null;
 }
