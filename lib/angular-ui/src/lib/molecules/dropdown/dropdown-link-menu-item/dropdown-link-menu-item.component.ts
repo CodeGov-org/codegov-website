@@ -17,9 +17,7 @@ import { DefineCustomElement } from '../../../define-custom-element';
   selector: 'cg-dropdown-link-menu-item',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class DropdownLinkMenuItemComponent {
   public readonly routerLink =

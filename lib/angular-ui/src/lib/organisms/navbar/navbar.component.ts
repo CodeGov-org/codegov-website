@@ -14,9 +14,7 @@ import {
   selector: 'cg-navbar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class NavbarComponent {
   public readonly homeUrl = input.required<HTMLCgNavbarElement['homeUrl']>();

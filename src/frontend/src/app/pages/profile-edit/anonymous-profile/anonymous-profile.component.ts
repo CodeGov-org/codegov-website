@@ -21,8 +21,7 @@ import { AnonymousGetMyUserProfileResponse } from '~core/api';
       <div slot="cardContent">
         <p>
           If you would like to become a reviewer,
-          <a [href]="applyLink()">apply now</a>
-          .
+          <a [href]="applyLink()">apply now</a>.
         </p>
 
         <p>When requested, provide this ID to a CodeGov admin:</p>

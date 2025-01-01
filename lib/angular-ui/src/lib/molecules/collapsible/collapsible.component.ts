@@ -8,8 +8,6 @@ import { DefineCustomElement } from '../../define-custom-element';
   selector: 'cg-collapsible',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class CollapsibleComponent {}

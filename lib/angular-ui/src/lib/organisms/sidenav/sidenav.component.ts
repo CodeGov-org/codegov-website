@@ -17,9 +17,7 @@ export { NavLink, NavLinkCategory } from '@cg/ui/dist/types';
   selector: 'cg-sidenav',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class SidenavComponent {
   public readonly homeUrl = input.required<HTMLCgSidenavElement['homeUrl']>();

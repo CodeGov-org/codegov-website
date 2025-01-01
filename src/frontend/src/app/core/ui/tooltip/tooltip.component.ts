@@ -26,9 +26,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       }
     `,
   ],
-  template: `
-    {{ tooltipText() }}
-  `,
+  template: `{{ tooltipText() }}`,
 })
 export class TooltipComponent {
   public readonly tooltipText = input.required<string>();
