@@ -9,11 +9,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
 import { CardComponent } from '@cg/angular-ui';
-import {
-  ProposalReviewStatus,
-  ProposalReviewVote,
-  ProposalState,
-} from '~core/api';
+import { ProposalReviewStatus, ProposalState } from '~core/api';
 import { ProfileService, ProposalService, ReviewService } from '~core/state';
 import {
   KeyColComponent,
@@ -24,7 +20,6 @@ import { isNotNil, routeParam } from '~core/utils';
 
 @Component({
   selector: 'app-proposal-review',
-  standalone: true,
   imports: [
     CommonModule,
     CardComponent,
@@ -36,30 +31,30 @@ import { isNotNil, routeParam } from '~core/utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
-        @include page-content;
+        @include common.page-content;
       }
 
       .review__details,
       .review__commit {
-        margin-bottom: size(6);
+        margin-bottom: common.size(6);
       }
 
       .review__vote--adopt {
         font-weight: bold;
-        color: $success;
+        color: common.$success;
       }
 
       .review__vote--reject {
         font-weight: bold;
-        color: $error;
+        color: common.$error;
       }
 
       .review__image {
-        height: size(10);
-        padding-right: size(1);
+        height: common.size(10);
+        padding-right: common.size(1);
       }
     `,
   ],
@@ -84,10 +79,8 @@ import { isNotNil, routeParam } from '~core/utils';
               <app-value-col
                 aria-labelledby="review-vote"
                 [ngClass]="{
-                  'review__vote--adopt':
-                    review.vote === ProposalReviewVote().Adopt,
-                  'review__vote--reject':
-                    review.vote === ProposalReviewVote().Reject,
+                  'review__vote--adopt': review.vote === true,
+                  'review__vote--reject': review.vote === false,
                 }"
               >
                 {{ review.vote }}
@@ -200,7 +193,6 @@ import { isNotNil, routeParam } from '~core/utils';
 })
 export class ProposalReviewComponent {
   public readonly ProposalReviewStatus = signal(ProposalReviewStatus);
-  public readonly ProposalReviewVote = signal(ProposalReviewVote);
   public readonly ProposalState = signal(ProposalState);
 
   public readonly userProfile = toSignal(this.profileService.userProfile$);

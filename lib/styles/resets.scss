@@ -1,3 +1,7 @@
+@use 'common/colors';
+@use 'common/dark-mode';
+@use 'common/typography';
+
 @import 'sanitize.css/sanitize.css';
 @import 'sanitize.css/forms.css';
 @import 'sanitize.css/typography.css';
@@ -9,14 +13,14 @@ body {
   min-height: 100vh;
   margin: 0;
 
-  font-family: $font-family-base;
+  font-family: typography.$font-family-base;
 
-  background-color: $white;
-  color: $slate-900;
+  background-color: colors.$white;
+  color: colors.$slate-900;
 
-  @include dark {
-    background-color: $slate-950;
-    color: $slate-300;
+  @include dark-mode.dark {
+    background-color: colors.$slate-950;
+    color: colors.$slate-300;
   }
 }
 

@@ -21,12 +21,11 @@ import { InputHintComponent } from '../input-hint';
 
 @Component({
   selector: 'app-form-field',
-  standalone: true,
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
         display: flex;
@@ -35,10 +34,10 @@ import { InputHintComponent } from '../input-hint';
       }
 
       .form-field__feedback {
-        margin-left: size(1);
-        height: size(4);
-        padding-top: size(1);
-        @include text-xs;
+        margin-left: common.size(1);
+        height: common.size(4);
+        padding-top: common.size(1);
+        @include common.text-xs;
       }
     `,
   ],

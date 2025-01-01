@@ -1,5 +1,5 @@
-@import '~@cg/styles/common';
+@use '~@cg/styles/common';
 
 .dropdown-btn-menu-item {
-  @include dropdown-menu-item;
+  @include common.dropdown-menu-item;
 }

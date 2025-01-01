@@ -6,7 +6,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .loading-icon {
         width: 100%;
@@ -17,7 +17,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       }
 
       .loading-icon__svg {
-        stroke: $primary;
+        stroke: common.$primary;
         fill: none;
         stroke-width: 10px;
       }

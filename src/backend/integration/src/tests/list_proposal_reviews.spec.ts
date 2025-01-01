@@ -239,18 +239,18 @@ describe('list proposal reviews', () => {
     const resAliceOk = extractOkResponse(resAlice);
     expect(resAliceOk.proposal_reviews.length).toEqual(2);
     validateProposalReview(resAliceOk.proposal_reviews[0], {
+      proposalId: proposal2Id,
+      userId: aliceId,
+      reviewStatus: { draft: null },
+      commits: { commitSha: [VALID_COMMIT_SHA_A] },
+      vote: { yes: null },
+    });
+    validateProposalReview(resAliceOk.proposal_reviews[1], {
       proposalId: proposal1Id,
       userId: aliceId,
       reviewStatus: { published: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
       lastUpdatedAt: expect.any(String),
-      vote: { yes: null },
-    });
-    validateProposalReview(resAliceOk.proposal_reviews[1], {
-      proposalId: proposal2Id,
-      userId: aliceId,
-      reviewStatus: { draft: null },
-      commits: { commitSha: [VALID_COMMIT_SHA_A] },
       vote: { yes: null },
     });
 

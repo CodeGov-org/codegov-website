@@ -1,5 +1,11 @@
+@use 'colors';
+@use 'dark-mode';
+@use 'effects';
+@use 'sizing';
+@use 'utils';
+
 @mixin btn-common {
-  @include no-underline;
+  @include utils.no-underline;
 
   display: inline-block;
   width: inherit;
@@ -9,32 +15,32 @@
 }
 
 @mixin transparent-btn {
-  color: $slate-900;
-  @include dark {
-    color: $slate-300;
+  color: colors.$slate-900;
+  @include dark-mode.dark {
+    color: colors.$slate-300;
   }
 
-  @include quick-transition(background-color);
+  @include effects.quick-transition(background-color);
 
   &:hover {
-    background-color: $slate-200;
+    background-color: colors.$slate-200;
 
-    @include dark {
-      background-color: $slate-800;
+    @include dark-mode.dark {
+      background-color: colors.$slate-800;
     }
   }
 
   &:active {
-    background-color: $slate-300;
+    background-color: colors.$slate-300;
 
-    @include dark {
-      background-color: $slate-700;
+    @include dark-mode.dark {
+      background-color: colors.$slate-700;
     }
   }
 }
 
 @mixin rectangular-btn {
-  @include px(4);
-  @include py(1.5);
-  border-radius: $border-radius;
+  @include sizing.px(4);
+  @include sizing.py(1.5);
+  border-radius: sizing.$border-radius;
 }

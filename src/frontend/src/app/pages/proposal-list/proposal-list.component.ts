@@ -20,7 +20,6 @@ import {
   ValueColComponent,
   FormFieldComponent,
   InputDirective,
-  LabelDirective,
 } from '~core/ui';
 
 enum ReviewPeriodStateFilter {
@@ -41,7 +40,6 @@ interface FilterForm {
 
 @Component({
   selector: 'app-proposal-list',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -50,7 +48,6 @@ interface FilterForm {
     ValueColComponent,
     FormFieldComponent,
     InputDirective,
-    LabelDirective,
     FormatDatePipe,
     RouterLink,
     CardComponent,
@@ -60,14 +57,14 @@ interface FilterForm {
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
-        @include page-content;
+        @include common.page-content;
       }
 
       .proposal {
-        margin-bottom: size(6);
+        margin-bottom: common.size(6);
       }
 
       .proposal__title,
@@ -76,7 +73,7 @@ interface FilterForm {
       }
 
       .proposal__link {
-        margin-right: size(4);
+        margin-right: common.size(4);
       }
 
       .proposal__vote {
@@ -84,29 +81,29 @@ interface FilterForm {
       }
 
       .proposal__vote--adopt {
-        color: $success;
+        color: common.$success;
       }
 
       .proposal__vote--reject {
-        color: $error;
+        color: common.$error;
       }
 
       .filter {
         display: flex;
         flex-direction: column;
-        margin-bottom: size(4);
+        margin-bottom: common.size(4);
 
-        @include sm {
+        @include common.sm {
           flex-direction: row;
         }
       }
 
       .filter__label {
-        margin-bottom: size(2);
-        margin-right: size(2);
+        margin-bottom: common.size(2);
+        margin-right: common.size(2);
         width: 100%;
 
-        @include sm {
+        @include common.sm {
           width: 50%;
         }
       }

@@ -1,7 +1,7 @@
-@import '~@cg/styles/common';
+@use '~@cg/styles/common';
 
 .text-btn {
-  @include btn-common;
-  @include transparent-btn;
-  @include rectangular-btn;
+  @include common.btn-common;
+  @include common.transparent-btn;
+  @include common.rectangular-btn;
 }

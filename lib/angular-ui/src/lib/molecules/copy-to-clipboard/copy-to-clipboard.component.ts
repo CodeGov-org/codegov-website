@@ -15,9 +15,7 @@ import { DefineCustomElement } from '../../define-custom-element';
   selector: 'cg-copy-to-clipboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class CopyToClipboardComponent {
   public readonly value =

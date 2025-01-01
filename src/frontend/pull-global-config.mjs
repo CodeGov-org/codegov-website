@@ -5,7 +5,6 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 dotenv.config({
-  debug: true,
   path: '.env',
 });
 

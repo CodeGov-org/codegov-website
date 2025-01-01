@@ -20,7 +20,6 @@ import {
 
 @Component({
   selector: 'app-admin-profile',
-  standalone: true,
   imports: [
     CommonModule,
     InfoIconComponent,
@@ -35,13 +34,13 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .admin-profile-card {
-        margin-bottom: size(3);
+        margin-bottom: common.size(3);
 
-        @include sm {
-          margin-bottom: size(4);
+        @include common.sm {
+          margin-bottom: common.size(4);
         }
       }
     `,

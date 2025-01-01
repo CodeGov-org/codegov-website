@@ -5,7 +5,6 @@ import {
   OnInit,
   computed,
   input,
-  signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -15,11 +14,7 @@ import {
   DashCircleIconComponent,
   CheckCircleIconComponent,
 } from '@cg/angular-ui';
-import {
-  GetProposalResponse,
-  ProposalCommitReviewSummary,
-  ProposalReviewVote,
-} from '~core/api';
+import { GetProposalResponse, ProposalCommitReviewSummary } from '~core/api';
 import { ReviewService } from '~core/state';
 import {
   KeyColComponent,
@@ -29,7 +24,6 @@ import {
 
 @Component({
   selector: 'app-closed-proposal-summary',
-  standalone: true,
   imports: [
     CardComponent,
     CommonModule,
@@ -43,24 +37,24 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .summary,
       .review,
       .commit {
-        margin-bottom: size(6);
+        margin-bottom: common.size(6);
       }
 
       .summary__vote--adopt {
-        color: $success;
+        color: common.$success;
       }
 
       .summary__vote--reject {
-        color: $error;
+        color: common.$error;
       }
 
       .summary__vote {
-        margin-bottom: size(4);
+        margin-bottom: common.size(4);
       }
 
       .summary__vote-position {
@@ -74,14 +68,14 @@ import {
       }
 
       .commit__highlights-label {
-        color: $black;
-        @include dark {
-          color: $white;
+        color: common.$black;
+        @include common.dark {
+          color: common.$white;
         }
       }
 
       .commit__highlights-content {
-        @include my(2);
+        @include common.my(2);
       }
 
       .commit__highlights-quote {
@@ -89,15 +83,15 @@ import {
       }
 
       .reject-icon {
-        width: size(6);
-        height: size(6);
-        stroke: $error;
+        width: common.size(6);
+        height: common.size(6);
+        stroke: common.$error;
       }
 
       .adopt-icon {
-        width: size(6);
-        height: size(6);
-        stroke: $success;
+        width: common.size(6);
+        height: common.size(6);
+        stroke: common.$success;
       }
     `,
   ],
@@ -180,10 +174,8 @@ import {
               <app-value-col
                 [attr.labelledby]="'vote-id-' + i"
                 [ngClass]="{
-                  'summary__vote--adopt':
-                    review.vote === ProposalReviewVote().Adopt,
-                  'summary__vote--reject':
-                    review.vote === ProposalReviewVote().Reject,
+                  'summary__vote--adopt': review.vote === true,
+                  'summary__vote--reject': review.vote === false,
                 }"
               >
                 {{ review.vote }}
@@ -282,7 +274,6 @@ import {
   `,
 })
 export class ClosedProposalSummaryComponent implements OnInit {
-  public readonly ProposalReviewVote = signal(ProposalReviewVote);
   public readonly proposal = input.required<GetProposalResponse>();
 
   public readonly reviewList = toSignal(this.reviewService.proposalReviewList$);
@@ -291,14 +282,8 @@ export class ClosedProposalSummaryComponent implements OnInit {
     () =>
       this.reviewList()?.reduce(
         (accum, review) => ({
-          adopt:
-            review.vote === ProposalReviewVote.Adopt
-              ? accum.adopt + 1
-              : accum.adopt,
-          reject:
-            review.vote === ProposalReviewVote.Reject
-              ? accum.reject + 1
-              : accum.reject,
+          adopt: review.vote ? accum.adopt + 1 : accum.adopt,
+          reject: review.vote === false ? accum.reject + 1 : accum.reject,
           buildReproduced: review.buildReproduced
             ? accum.buildReproduced + 1
             : accum.buildReproduced,
@@ -313,10 +298,10 @@ export class ClosedProposalSummaryComponent implements OnInit {
     this.reviewList()?.forEach(review => {
       for (const commit of review.commits) {
         const existingCommit =
-          map.get(commit.id ?? commit.listId) ??
+          map.get(commit.id) ??
           ({
             proposalId: this.proposal().id,
-            commitId: commit.id ?? commit.listId,
+            commitId: commit.id,
             commitSha: commit.commitSha,
             totalReviewers: 0,
             reviewedCount: 0,
@@ -343,7 +328,7 @@ export class ClosedProposalSummaryComponent implements OnInit {
           }
         }
 
-        map.set(commit.id ?? commit.listId, existingCommit);
+        map.set(commit.id, existingCommit);
       }
     });
     return Array.from(map.values());

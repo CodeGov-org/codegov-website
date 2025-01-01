@@ -12,7 +12,6 @@ import { ReviewerProfileComponent } from './reviewer-profile';
 
 @Component({
   selector: 'app-profile-edit',
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     CommonModule,
@@ -24,14 +23,14 @@ import { ReviewerProfileComponent } from './reviewer-profile';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
-        @include page-content;
+        @include common.page-content;
       }
 
       .profile-edit__title {
-        @include py(2);
+        @include common.py(2);
       }
     `,
   ],

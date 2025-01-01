@@ -14,9 +14,7 @@ import { defineCustomElement } from '@cg/ui/dist/components/cg-footer';
   selector: 'cg-footer',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class FooterComponent {
   public readonly links = input.required<HTMLCgFooterElement['links']>();

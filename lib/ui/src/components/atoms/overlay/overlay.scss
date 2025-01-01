@@ -1,13 +1,13 @@
-@import '~@cg/styles/common';
+@use '~@cg/styles/common';
 
 :host-context(.overlay) {
-  @include layer-40;
+  @include common.layer-40;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba($slate-800, 0.8);
+  background-color: rgba(common.$slate-800, 0.8);
   display: none;
   opacity: 0;
 }

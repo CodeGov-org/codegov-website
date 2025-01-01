@@ -1,53 +1,58 @@
+@use '../common/colors';
+@use '../common/dark-mode';
+@use '../common/effects';
+@use '../common/sizing';
+
 .input {
   display: block;
   width: 100%;
 
-  border-radius: $border-radius;
-  border: $border-size solid $slate-400;
-  padding: size(2.5);
+  border-radius: sizing.$border-radius;
+  border: sizing.$border-size solid colors.$slate-400;
+  padding: sizing.size(2.5);
 
   font-size: 0.875rem;
   line-height: 1.25rem;
 
-  color: $slate-900;
-  background-color: $white;
+  color: colors.$slate-900;
+  background-color: colors.$white;
   outline: none;
 
   &:focus {
-    border-color: $primary;
-    @include ring($primary-400);
+    border-color: colors.$primary;
+    @include effects.ring(colors.$primary-400);
 
-    @include dark {
-      @include ring($primary-800);
+    @include dark-mode.dark {
+      @include effects.ring(colors.$primary-800);
     }
   }
 
-  @include dark {
-    color: $slate-200;
-    background-color: $slate-950;
-    border-color: $slate-500;
+  @include dark-mode.dark {
+    color: colors.$slate-200;
+    background-color: colors.$slate-950;
+    border-color: colors.$slate-500;
   }
 }
 
 .input--invalid {
-  border-color: $error;
+  border-color: colors.$error;
 
   &:focus {
-    border-color: $error;
+    border-color: colors.$error;
 
-    @include ring($error);
+    @include effects.ring(colors.$error);
   }
 }
 
 .input--textarea {
-  height: size(24);
+  height: sizing.size(24);
   resize: vertical;
 }
 
 .label {
-  color: $black;
+  color: colors.$black;
 
-  @include dark {
-    color: $white;
+  @include dark-mode.dark {
+    color: colors.$white;
   }
 }

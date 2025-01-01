@@ -39,7 +39,6 @@ interface AdminProfileForm {
 
 @Component({
   selector: 'app-admin-personal-info-form',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

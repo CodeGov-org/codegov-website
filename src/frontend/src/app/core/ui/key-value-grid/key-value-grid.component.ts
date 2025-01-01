@@ -12,16 +12,16 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        margin-bottom: size(8);
+        margin-bottom: common.size(8);
 
-        gap: size(1) size(8);
-        @include md {
-          gap: size(6) size(8);
+        gap: common.size(1) common.size(8);
+        @include common.md {
+          gap: common.size(6) common.size(8);
         }
       }
 
@@ -34,9 +34,7 @@ import {
       }
     `,
   ],
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class KeyValueGridComponent {
   public readonly columnNumber = input(1);

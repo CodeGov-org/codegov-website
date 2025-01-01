@@ -19,7 +19,6 @@ import { keysOf } from '~core/utils';
 @Component({
   selector: 'app-reviewer-social-media',
   imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-key-value-grid>

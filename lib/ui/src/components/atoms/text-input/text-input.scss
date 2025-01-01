@@ -1,37 +1,37 @@
-@import '~@cg/styles/common';
+@use '~@cg/styles/common';
 
 :host-context(.text-input) {
   position: relative;
-  border-radius: $border-radius;
+  border-radius: common.$border-radius;
 }
 
 .text-input__input {
   display: block;
   width: 100%;
 
-  border-radius: $border-radius;
-  border: $border-size solid $slate-400;
-  padding: size(2.5);
+  border-radius: common.$border-radius;
+  border: common.$border-size solid common.$slate-400;
+  padding: common.size(2.5);
 
   font-size: 0.875rem;
   line-height: 1.25rem;
 
-  color: $slate-900;
-  background-color: $white;
+  color: common.$slate-900;
+  background-color: common.$white;
   outline: none;
 
   &:focus {
-    border-color: $primary;
-    @include ring($primary-400);
+    border-color: common.$primary;
+    @include common.ring(common.$primary-400);
 
-    @include dark {
-      @include ring($primary-800);
+    @include common.dark {
+      @include common.ring(common.$primary-800);
     }
   }
 
-  @include dark {
-    color: $slate-200;
-    background-color: $slate-950;
-    border-color: $slate-500;
+  @include common.dark {
+    color: common.$slate-200;
+    background-color: common.$slate-950;
+    border-color: common.$slate-500;
   }
 }

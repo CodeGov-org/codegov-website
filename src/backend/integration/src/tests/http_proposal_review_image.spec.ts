@@ -18,7 +18,7 @@ import {
   VALID_IMAGE_BYTES,
   createProposalReviewWithImage,
   extractOkResponse,
-  filterCertificateHeaders,
+  upperCaseCertificateHeaders,
   mapFromCanisterResponse,
   mapToCanisterRequest,
 } from '../support';
@@ -71,7 +71,7 @@ describe('http proposal review image', () => {
 
     expect(verificationResult.verificationVersion).toEqual(CERTIFICATE_VERSION);
     expect(verificationResult.response).toEqual(
-      filterCertificateHeaders(response),
+      upperCaseCertificateHeaders(response),
     );
     expect(verificationResult.response?.body).toEqual(response.body);
   }

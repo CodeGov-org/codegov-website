@@ -42,7 +42,6 @@ export interface ReviewerProfileForm {
 
 @Component({
   selector: 'app-reviewer-personal-info-form',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -60,14 +59,14 @@ export interface ReviewerProfileForm {
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .wallet-address-link {
         display: block;
         overflow-x: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-        margin-right: size(4);
+        margin-right: common.size(4);
       }
     `,
   ],

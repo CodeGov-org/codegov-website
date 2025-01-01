@@ -43,7 +43,6 @@ export type SocialMediaForm = {
 
 @Component({
   selector: 'app-reviewer-social-media-form',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
