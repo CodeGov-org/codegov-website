@@ -14,6 +14,7 @@ import {
   GetProposalReviewRequest as GetProposalReviewApiRequest,
   GetMyProposalReviewRequest as GetMyProposalReviewApiRequest,
   ProposalReviewStatus as ProposalReviewStatusApi,
+  ProposalVote as ApiProposalVote,
 } from '@cg/backend';
 import {
   GetProposalReviewResponse,
@@ -23,7 +24,6 @@ import {
   ListProposalReviewsRequest,
   GetProposalReviewRequest,
   ProposalReviewStatus,
-  ProposalReviewVote,
 } from './review-api.model';
 
 export function mapCreateProposalReviewRequest(
@@ -34,7 +34,7 @@ export function mapCreateProposalReviewRequest(
     review_duration_mins: toCandidOpt(req.reviewDurationMins),
     summary: toCandidOpt(req.summary),
     build_reproduced: toCandidOpt(req.buildReproduced),
-    vote: [],
+    vote: mapProposalVoteRequest(req.vote),
   };
 }
 
@@ -48,7 +48,7 @@ export function mapUpdateProposalReviewRequest(
     review_duration_mins: toCandidOpt(req.reviewDurationMins),
     summary: toCandidOpt(req.summary),
     build_reproduced: toCandidOpt(req.buildReproduced),
-    vote: [],
+    vote: mapProposalVoteRequest(req.vote),
   };
 }
 
@@ -86,8 +86,7 @@ export function mapGetProposalReviewResponse(
     id: res.id,
     proposalId: review.proposal_id,
     userId: review.user_id,
-    // [TODO] - connect with API once it's implemented
-    vote: ProposalReviewVote.NoVote,
+    vote: mapProposalVoteResponse(review.vote),
     createdAt: fromCandidDate(review.created_at),
     lastUpdatedAt: fromCandidOptDate(review.last_updated_at),
     status: mapProposalReviewStatusResponse(review.status),
@@ -110,6 +109,32 @@ function mapProposalReviewStatusResponse(
   }
 
   return ProposalReviewStatus.Draft;
+}
+
+function mapProposalVoteRequest(vote?: boolean | null): [] | [ApiProposalVote] {
+  switch (vote) {
+    case true: {
+      return [{ yes: null }];
+    }
+    case false: {
+      return [{ no: null }];
+    }
+    default: {
+      return [];
+    }
+  }
+}
+
+function mapProposalVoteResponse(vote: ApiProposalVote): boolean | null {
+  if ('yes' in vote) {
+    return true;
+  }
+
+  if ('no' in vote) {
+    return false;
+  }
+
+  return null;
 }
 
 function getReviewImages(): ImageSet[] {

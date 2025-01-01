@@ -9,11 +9,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
 import { CardComponent } from '@cg/angular-ui';
-import {
-  ProposalReviewStatus,
-  ProposalReviewVote,
-  ProposalState,
-} from '~core/api';
+import { ProposalReviewStatus, ProposalState } from '~core/api';
 import { ProfileService, ProposalService, ReviewService } from '~core/state';
 import {
   KeyColComponent,
@@ -84,10 +80,8 @@ import { isNotNil, routeParam } from '~core/utils';
               <app-value-col
                 aria-labelledby="review-vote"
                 [ngClass]="{
-                  'review__vote--adopt':
-                    review.vote === ProposalReviewVote().Adopt,
-                  'review__vote--reject':
-                    review.vote === ProposalReviewVote().Reject,
+                  'review__vote--adopt': review.vote === true,
+                  'review__vote--reject': review.vote === false,
                 }"
               >
                 {{ review.vote }}
@@ -200,7 +194,6 @@ import { isNotNil, routeParam } from '~core/utils';
 })
 export class ProposalReviewComponent {
   public readonly ProposalReviewStatus = signal(ProposalReviewStatus);
-  public readonly ProposalReviewVote = signal(ProposalReviewVote);
   public readonly ProposalState = signal(ProposalState);
 
   public readonly userProfile = toSignal(this.profileService.userProfile$);

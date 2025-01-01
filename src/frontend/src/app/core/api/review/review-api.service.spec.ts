@@ -26,7 +26,6 @@ import {
   GetProposalReviewResponse,
   ListProposalReviewsRequest,
   ProposalReviewStatus,
-  ProposalReviewVote,
   UpdateProposalReviewRequest,
 } from './review-api.model';
 import { ReviewApiService } from './review-api.service';
@@ -57,7 +56,6 @@ describe('ReviewApiService', () => {
       summary: null,
       reviewDurationMins: null,
       buildReproduced: null,
-      reproducedBuildImageId: null,
     };
     const commonApiRequest: CreateProposalReviewApiRequest = {
       proposal_id: 'proposalId',
@@ -72,7 +70,7 @@ describe('ReviewApiService', () => {
         proposal_review: {
           proposal_id: 'proposalId',
           user_id: 'userId',
-          created_at: new Date(2024, 1, 1, 0, 0, 0, 0).getTime().toString(),
+          created_at: new Date(2024, 1, 1, 0, 0, 0, 0).toISOString(),
           last_updated_at: [],
           status: {
             draft: null,
@@ -90,7 +88,7 @@ describe('ReviewApiService', () => {
       id: 'id',
       proposalId: 'proposalId',
       userId: 'userId',
-      vote: ProposalReviewVote.NoVote,
+      vote: null,
       createdAt: new Date(2024, 1, 1, 0, 0, 0, 0),
       lastUpdatedAt: null,
       status: ProposalReviewStatus.Draft,
@@ -195,7 +193,7 @@ describe('ReviewApiService', () => {
             proposal_review: {
               proposal_id: 'proposalId',
               user_id: 'userId1',
-              created_at: new Date(2024, 1, 1, 0, 0, 0, 0).getTime().toString(),
+              created_at: new Date(2024, 1, 1, 0, 0, 0, 0).toISOString(),
               last_updated_at: [],
               status: {
                 draft: null,
@@ -213,7 +211,7 @@ describe('ReviewApiService', () => {
             proposal_review: {
               proposal_id: 'proposalId',
               user_id: 'userId2',
-              created_at: new Date(2024, 1, 2, 0, 0, 0, 0).getTime().toString(),
+              created_at: new Date(2024, 1, 2, 0, 0, 0, 0).toISOString(),
               last_updated_at: [],
               status: {
                 draft: null,
@@ -234,7 +232,7 @@ describe('ReviewApiService', () => {
         id: 'id1',
         proposalId: 'proposalId',
         userId: 'userId1',
-        vote: ProposalReviewVote.NoVote,
+        vote: null,
         createdAt: new Date(2024, 1, 1, 0, 0, 0, 0),
         lastUpdatedAt: null,
         status: ProposalReviewStatus.Draft,
@@ -249,7 +247,7 @@ describe('ReviewApiService', () => {
         id: 'id2',
         proposalId: 'proposalId',
         userId: 'userId2',
-        vote: ProposalReviewVote.NoVote,
+        vote: null,
         createdAt: new Date(2024, 1, 2, 0, 0, 0, 0),
         lastUpdatedAt: null,
         status: ProposalReviewStatus.Draft,
@@ -301,7 +299,7 @@ describe('ReviewApiService', () => {
         proposal_review: {
           proposal_id: 'proposalId',
           user_id: 'userId',
-          created_at: new Date(2024, 1, 1, 0, 0, 0, 0).getTime().toString(),
+          created_at: new Date(2024, 1, 1, 0, 0, 0, 0).toISOString(),
           last_updated_at: [],
           status: {
             draft: null,
@@ -319,7 +317,7 @@ describe('ReviewApiService', () => {
       id: 'id',
       proposalId: 'proposalId',
       userId: 'userId',
-      vote: ProposalReviewVote.NoVote,
+      vote: null,
       createdAt: new Date(2024, 1, 1, 0, 0, 0, 0),
       lastUpdatedAt: null,
       status: ProposalReviewStatus.Draft,
@@ -372,7 +370,7 @@ describe('ReviewApiService', () => {
         proposal_review: {
           proposal_id: 'proposalId',
           user_id: 'userId',
-          created_at: new Date(2024, 1, 1, 0, 0, 0, 0).getTime().toString(),
+          created_at: new Date(2024, 1, 1, 0, 0, 0, 0).toISOString(),
           last_updated_at: [],
           status: {
             draft: null,
@@ -390,7 +388,7 @@ describe('ReviewApiService', () => {
       id: 'id',
       proposalId: 'proposalId',
       userId: 'userId',
-      vote: ProposalReviewVote.NoVote,
+      vote: null,
       createdAt: new Date(2024, 1, 1, 0, 0, 0, 0),
       lastUpdatedAt: null,
       status: ProposalReviewStatus.Draft,
@@ -433,7 +431,6 @@ describe('ReviewApiService', () => {
       summary: null,
       reviewDurationMins: null,
       buildReproduced: null,
-      reproducedBuildImageId: null,
     };
     const commonApiCreateRequest: CreateProposalReviewApiRequest = {
       proposal_id: 'proposalId',
@@ -451,7 +448,7 @@ describe('ReviewApiService', () => {
         proposal_review: {
           proposal_id: 'proposalId',
           user_id: 'userId',
-          created_at: new Date(2024, 1, 1, 0, 0, 0, 0).getTime().toString(),
+          created_at: new Date(2024, 1, 1, 0, 0, 0, 0).toISOString(),
           last_updated_at: [],
           status: {
             draft: null,
@@ -469,7 +466,7 @@ describe('ReviewApiService', () => {
       id: 'id',
       proposalId: 'proposalId',
       userId: 'userId',
-      vote: ProposalReviewVote.NoVote,
+      vote: null,
       createdAt: new Date(2024, 1, 1, 0, 0, 0, 0),
       lastUpdatedAt: null,
       status: ProposalReviewStatus.Draft,

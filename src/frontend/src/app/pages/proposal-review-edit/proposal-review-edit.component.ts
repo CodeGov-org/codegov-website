@@ -12,7 +12,11 @@ import { first } from 'rxjs';
 
 import { CardComponent } from '@cg/angular-ui';
 import { GetProposalReviewCommitResponse, ProposalState } from '~core/api';
-import { ProposalService, ReviewService } from '~core/state';
+import {
+  ProposalService,
+  ReviewService,
+  ReviewSubmissionService,
+} from '~core/state';
 import { filterNotNil, routeParam, toSyncSignal } from '~core/utils';
 import { ReviewCommitsFormComponent } from './review-commits-form';
 import { ReviewDetailsFormComponent } from './review-details-form';
@@ -70,6 +74,7 @@ export class ProposalReviewEditComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly proposalService = inject(ProposalService);
   private readonly reviewService = inject(ReviewService);
+  private readonly reviewSubmissionService = inject(ReviewSubmissionService);
 
   public readonly currentProposal = toSyncSignal(
     this.proposalService.currentProposal$,
@@ -82,6 +87,7 @@ export class ProposalReviewEditComponent implements OnInit {
   constructor() {
     routeParam('id').subscribe(proposalId => {
       this.proposalService.setCurrentProposalId(proposalId);
+      this.reviewSubmissionService.loadOrCreateReview(proposalId);
     });
 
     this.proposalService.currentProposal$

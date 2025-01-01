@@ -3,18 +3,25 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  signal,
+  OnDestroy,
+  computed,
+  effect,
+  inject,
   viewChildren,
 } from '@angular/core';
 import {
+  AbstractControl,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
+  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
 import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
+import { ReviewCommitDetails } from '~core/api';
+import { ReviewSubmissionService } from '~core/state';
 import {
   FormFieldComponent,
   InputDirective,
@@ -24,6 +31,7 @@ import {
   KeyValueGridComponent,
   ValueColComponent,
 } from '~core/ui';
+import { boolToRadio, isNil, radioToBool, toSyncSignal } from '~core/utils';
 
 @Component({
   selector: 'app-review-commits-form',
@@ -41,6 +49,7 @@ import {
     InputHintComponent,
     RadioInputComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
       @import '@cg/styles/common';
@@ -51,20 +60,20 @@ import {
     `,
   ],
   template: `
-    @for (commitForm of commitForms(); track i; let i = $index) {
-      <ng-container [formGroup]="commitForm">
+    @for (commit of commits(); track commit.uiId; let i = $index) {
+      <ng-container [formGroup]="commitForms()[i]">
         <cg-card class="commit-review-card">
           <div slot="cardContent">
             <app-key-value-grid>
               <app-key-col>
-                <label appLabel [for]="'id-' + i">Commit hash</label>
+                <label appLabel [for]="'commitSha-' + i">Commit hash</label>
               </app-key-col>
               <app-value-col>
                 <app-form-field>
                   <input
                     appInput
-                    [id]="'id-' + i"
-                    formControlName="id"
+                    [id]="'commitSha-' + i"
+                    formControlName="commitSha"
                     autocomplete="off"
                     #commitShaInput
                   />
@@ -77,18 +86,22 @@ import {
                     Please enter a valid commit hash.
                   </app-input-error>
 
+                  <app-input-error key="uniqueSha">
+                    Another commit entry already has this hash.
+                  </app-input-error>
+
                   <app-input-hint>
-                    @if (commitForm.controls.id.value) {
+                    @if (commitForms()[i].controls.commitSha.value) {
                       <a
                         [href]="
                           'https://github.com/dfinity/ic/commit/' +
-                          commitForm.controls.id.value
+                          commitForms()[i].controls.commitSha.value
                         "
                         target="_blank"
                         rel="nofollow noreferrer"
                       >
                         https://github.com/dfinity/ic/commit/{{
-                          commitForm.controls.id.value
+                          commitForms()[i].controls.commitSha.value
                         }}
                       </a>
                     } @else {
@@ -131,7 +144,9 @@ import {
               </app-value-col>
 
               <ng-container>
-                <ng-container *ngIf="commitForm.controls.reviewed.value === 1">
+                <ng-container
+                  *ngIf="commitForms()[i].controls.reviewed.value === 1"
+                >
                   <app-key-col>
                     <div>Matches description</div>
                   </app-key-col>
@@ -164,34 +179,20 @@ import {
                   </app-value-col>
 
                   <app-key-col>
-                    <label appLabel [for]="'summary-' + i">Summary</label>
+                    <label appLabel [for]="'comment-' + i">Summary</label>
                   </app-key-col>
                   <app-value-col>
                     <app-form-field>
                       <textarea
                         appInput
-                        [id]="'summary-' + i"
-                        formControlName="summary"
+                        [id]="'comment-' + i"
+                        formControlName="comment"
                         autocomplete="off"
                       ></textarea>
 
                       <app-input-error key="required">
                         Summary cannot be empty.
                       </app-input-error>
-                    </app-form-field>
-                  </app-value-col>
-
-                  <app-key-col>
-                    <label appLabel [for]="'highlights-' + i">Highlights</label>
-                  </app-key-col>
-                  <app-value-col>
-                    <app-form-field>
-                      <textarea
-                        appInput
-                        [id]="'highlights-' + i"
-                        formControlName="highlights"
-                        autocomplete="off"
-                      ></textarea>
                     </app-form-field>
                   </app-value-col>
                 </ng-container>
@@ -218,15 +219,48 @@ import {
       </button>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReviewCommitsFormComponent {
-  public readonly commitForms = signal<Array<FormGroup<ReviewCommitForm>>>([]);
-  public readonly commitShaInputs =
+export class ReviewCommitsFormComponent implements OnDestroy {
+  private readonly reviewSubmissionService = inject(ReviewSubmissionService);
+
+  public readonly commits = toSyncSignal(this.reviewSubmissionService.commits$);
+  public readonly commitForms = computed(() => {
+    const commits = this.commits() ?? [];
+
+    return commits.map((commit, index) => {
+      const commitForm = this.createCommitForm(index);
+      commitForm.setValue(
+        commitToFormValue(commit.commit.commitSha, commit.commit.details),
+      );
+      return commitForm;
+    });
+  });
+
+  private readonly commitShaInputs =
     viewChildren<ElementRef<HTMLInputElement>>('commitShaInput');
 
-  private readonly commitFormReviewedSubscriptions: Subscription[] = [];
-  private readonly commitShaSubscriptions: Subscription[] = [];
+  private formSubscription = new Subscription();
+
+  constructor() {
+    effect(() => {
+      const commitForms = this.commitForms();
+
+      this.formSubscription.unsubscribe();
+      this.formSubscription = new Subscription();
+
+      commitForms.forEach((commitForm, index) => {
+        this.formSubscription.add(
+          commitForm.valueChanges.subscribe(value => {
+            this.onFormValueChange(value, index, commitForm);
+          }),
+        );
+      });
+    });
+  }
+
+  public ngOnDestroy(): void {
+    this.formSubscription.unsubscribe();
+  }
 
   // [TODO] - convert to signal
   public canAddCommitForm(): boolean {
@@ -234,64 +268,73 @@ export class ReviewCommitsFormComponent {
   }
 
   public onAddCommitForm(): void {
-    if (this.canAddCommitForm()) {
-      const commitForm = new FormGroup<ReviewCommitForm>({
-        id: new FormControl(null, {
-          validators: [Validators.required, Validators.pattern(commitShaRegex)],
-        }),
-        reviewed: new FormControl(null, {
-          validators: [Validators.required],
-        }),
-        matchesDescription: new FormControl(null),
-        summary: new FormControl(null),
-        highlights: new FormControl(null),
-      });
-
-      this.commitForms.set([...this.commitForms(), commitForm]);
-
-      const reviewedSubscription =
-        commitForm.controls.reviewed.valueChanges.subscribe(reviewed => {
-          this.onCommitReviewedChange(reviewed === 1, commitForm);
-        });
-      this.commitFormReviewedSubscriptions.push(reviewedSubscription);
-
-      const commitShaSubscription =
-        commitForm.controls.id.valueChanges.subscribe(commitSha => {
-          this.onCommitShaChange(commitSha, commitForm);
-        });
-      this.commitShaSubscriptions.push(commitShaSubscription);
-
-      this.focusCommitShaInput(this.commitForms().length - 1);
+    if (!this.canAddCommitForm()) {
+      return;
     }
+
+    this.reviewSubmissionService.addCommit();
+
+    const commits = this.commits();
+    if (isNil(commits)) {
+      return;
+    }
+
+    setTimeout(() => {
+      this.focusCommitForm(this.commitShaInputs().length - 1);
+    });
   }
 
   public onRemoveCommitForm(index: number): void {
-    this.commitForms.set([
-      ...this.commitForms().slice(0, index),
-      ...this.commitForms().slice(index + 1),
-    ]);
+    const commits = this.commits();
+    if (isNil(commits)) {
+      return;
+    }
 
-    const [reviewedSubscription] = this.commitFormReviewedSubscriptions.splice(
-      index,
-      1,
-    );
-    reviewedSubscription.unsubscribe();
+    const commitSha = commits[index]?.commit.commitSha;
 
-    const [commitShaSubscription] = this.commitShaSubscriptions.splice(
-      index,
-      1,
-    );
-    commitShaSubscription.unsubscribe();
+    this.reviewSubmissionService.removeCommit(commitSha);
 
-    this.focusCommitShaInput(Math.min(index, this.commitForms().length - 1));
+    setTimeout(() => {
+      this.focusCommitForm(Math.min(index, this.commitShaInputs().length - 1));
+    });
+  }
+
+  private onFormValueChange(
+    value: Partial<ReviewCommitFormValue>,
+    index: number,
+    commitForm: FormGroup<ReviewCommitForm>,
+  ): void {
+    const commits = this.commits();
+    if (isNil(commits)) {
+      return;
+    }
+
+    const commit = commits[index];
+
+    const reviewed = radioToBool(value.reviewed);
+    if (reviewed !== commit.commit.details.reviewed) {
+      this.onCommitReviewedChange(reviewed, commitForm);
+    }
+
+    if (value.commitSha !== commit.commit.commitSha) {
+      this.onCommitShaChange(value.commitSha, commitForm);
+    }
+
+    if (commitForm.valid) {
+      this.reviewSubmissionService.updateCommit(
+        commit.commit.commitSha ? commit.commit.commitSha : null,
+        value.commitSha ? value.commitSha : null,
+        commitFromFormValue(value),
+      );
+    }
   }
 
   private onCommitReviewedChange(
-    reviewed: boolean,
+    reviewed: boolean | null,
     commitForm: FormGroup<ReviewCommitForm>,
   ): void {
     const matchesDescription = commitForm.controls.matchesDescription;
-    const summary = commitForm.controls.summary;
+    const summary = commitForm.controls.comment;
 
     if (reviewed) {
       matchesDescription.addValidators(Validators.required);
@@ -300,48 +343,127 @@ export class ReviewCommitsFormComponent {
       matchesDescription.removeValidators(Validators.required);
       summary.removeValidators(Validators.required);
 
-      matchesDescription.reset();
-      summary.reset();
+      matchesDescription.reset(null, { emitEvent: false });
+      summary.reset(null, { emitEvent: false });
     }
 
-    matchesDescription.updateValueAndValidity();
-    summary.updateValueAndValidity();
+    matchesDescription.updateValueAndValidity({ emitEvent: false });
+    summary.updateValueAndValidity({ emitEvent: false });
   }
 
   private onCommitShaChange(
     commitSha: string | null | undefined,
     commitForm: FormGroup<ReviewCommitForm>,
   ): void {
-    if (!commitSha) {
+    if (isNil(commitSha)) {
       return;
     }
 
     const result = extractCommitSha(commitSha);
-
-    if (!result) {
+    if (isNil(result)) {
       return;
     }
 
-    commitForm.controls.id.setValue(result, { emitEvent: false });
+    commitForm.controls.commitSha.setValue(result, { emitEvent: false });
   }
 
-  private focusCommitShaInput(index: number): void {
-    setTimeout(() => {
-      this.commitShaInputs()[index]?.nativeElement.focus();
-    }, 0);
+  private focusCommitForm(index: number): void {
+    this.commitShaInputs()[index]?.nativeElement.focus();
+  }
+
+  private createCommitForm(index: number): FormGroup<ReviewCommitForm> {
+    return new FormGroup<ReviewCommitForm>({
+      commitSha: new FormControl(null, {
+        validators: [
+          Validators.required,
+          Validators.pattern(commitShaRegex),
+          this.uniqueCommitShaValidator(index),
+        ],
+      }),
+      reviewed: new FormControl(null, {
+        validators: [Validators.required],
+      }),
+      matchesDescription: new FormControl(null),
+      comment: new FormControl(null),
+    });
+  }
+
+  private uniqueCommitShaValidator(index: number): ValidatorFn {
+    return (control: AbstractControl<string>) => {
+      const commits = this.commits();
+      if (isNil(commits)) {
+        return null;
+      }
+
+      const commitSha = extractCommitSha(control.value);
+      if (isNil(commitSha)) {
+        return null;
+      }
+
+      const existingCommit = commits.find(
+        (commit, i) => i !== index && commit.commit.commitSha === commitSha,
+      );
+
+      return existingCommit ? { uniqueSha: true } : null;
+    };
   }
 }
 
+interface ReviewCommitFormValue {
+  commitSha: string | null;
+  reviewed: 0 | 1 | null;
+  matchesDescription: 0 | 1 | null;
+  comment: string | null;
+}
+
 interface ReviewCommitForm {
-  id: FormControl<string | null>;
+  commitSha: FormControl<string | null>;
   reviewed: FormControl<0 | 1 | null>;
   matchesDescription: FormControl<0 | 1 | null>;
-  summary: FormControl<string | null>;
-  highlights: FormControl<string | null>;
+  comment: FormControl<string | null>;
 }
 
 const commitShaRegex = /[0-9a-f]{7,40}/;
 
 function extractCommitSha(commitSha: string): string | null {
   return commitShaRegex.exec(commitSha)?.[0] ?? null;
+}
+
+function commitToFormValue(
+  commitSha: string | null,
+  commit: ReviewCommitDetails,
+): ReviewCommitFormValue {
+  const reviewed = boolToRadio(commit.reviewed);
+
+  let matchesDescription = null;
+  let comment = null;
+
+  if (commit.reviewed) {
+    matchesDescription = boolToRadio(commit.matchesDescription);
+    comment = commit.comment;
+  }
+
+  return {
+    commitSha: commitSha,
+    matchesDescription,
+    reviewed,
+    comment,
+  };
+}
+
+function commitFromFormValue(
+  formValue: Partial<ReviewCommitFormValue>,
+): ReviewCommitDetails {
+  const reviewed = radioToBool(formValue.reviewed);
+
+  if (reviewed) {
+    return {
+      matchesDescription: radioToBool(formValue.matchesDescription),
+      reviewed: true,
+      comment: formValue.comment ?? null,
+      highlights: [],
+    };
+  }
+
+  return { reviewed };
 }

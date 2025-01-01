@@ -3,17 +3,18 @@ import { ImageSet } from '@cg/angular-ui';
 
 export interface CreateProposalReviewRequest {
   proposalId: string;
-  summary: string | null;
-  reviewDurationMins: number | null;
-  buildReproduced: boolean | null;
-  reproducedBuildImageId: string | null;
+  summary?: string | null;
+  reviewDurationMins?: number | null;
+  buildReproduced?: boolean | null;
+  vote?: boolean | null;
 }
 
 export interface UpdateProposalReviewRequest {
   proposalId: string;
-  reviewDurationMins: number | null;
-  summary: string | null;
-  buildReproduced: boolean | null;
+  reviewDurationMins?: number | null;
+  summary?: string | null;
+  buildReproduced?: boolean | null;
+  vote?: boolean | null;
 }
 
 export interface ListProposalReviewsRequest {
@@ -33,7 +34,7 @@ export interface GetProposalReviewResponse {
   id: string;
   proposalId: string;
   userId: string;
-  vote: ProposalReviewVote;
+  vote: boolean | null;
   createdAt: Date;
   lastUpdatedAt: Date | null;
   status: ProposalReviewStatus;
@@ -63,7 +64,7 @@ export interface ProposalCommitReviewHighlight {
 export interface ProposalCommitReviewSummary {
   proposalId: string;
   commitId: string;
-  commitSha: string;
+  commitSha: string | null;
   highlights: ProposalCommitReviewHighlight[];
   totalReviewers: number;
   reviewedCount: number;
