@@ -6,7 +6,7 @@ import { Component, ComponentInterface, Host, Prop, h } from '@stencil/core';
   scoped: true,
 })
 export class FocusRingComponent implements ComponentInterface {
-  @Prop()
+  @Prop({ reflect: true })
   public isFocused = false;
 
   public render() {

@@ -14,9 +14,12 @@ $sizes: ();
 }
 
 $border-sm-size: 1px;
-$border-size: 2px;
+$border-md-size: 2px;
 $border-lg-size: size(1);
-$border-radius: size(1.5);
+
+$border-sm-radius: size(1.5);
+$border-md-radius: size(2);
+$border-lg-radius: size(4);
 
 @mixin py($multiplier) {
   padding-top: size($multiplier);

@@ -20,7 +20,6 @@ import { TooltipComponent } from './tooltip.component';
 
 @Directive({
   selector: '[appTooltip]',
-  standalone: true,
 })
 export class TooltipDirective implements OnInit, OnDestroy {
   public readonly tooltipText = input.required<string>({ alias: 'appTooltip' });

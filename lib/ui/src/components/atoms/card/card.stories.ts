@@ -1,7 +1,7 @@
 import { Meta, StoryObj } from '@storybook/html';
 
 const meta: Meta = {
-  title: 'Atoms/Card',
+  title: 'Atoms/Cards',
   args: {
     title: 'Hello, World!',
     content: 'How are you today?',

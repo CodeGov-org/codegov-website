@@ -8,7 +8,6 @@ import {
 
 @Component({
   selector: 'app-input-error',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `

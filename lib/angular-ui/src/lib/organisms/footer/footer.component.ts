@@ -12,7 +12,6 @@ import { defineCustomElement } from '@cg/ui/dist/components/cg-footer';
 @DefineCustomElement(defineCustomElement)
 @Component({
   selector: 'cg-footer',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<ng-content />`,
 })

@@ -8,7 +8,6 @@ import {
 
 @Component({
   selector: 'app-key-value-grid',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `

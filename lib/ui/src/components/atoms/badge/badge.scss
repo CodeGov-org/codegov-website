@@ -1,0 +1,26 @@
+@use '~@cg/styles/common';
+
+:host-context(.badge) {
+  @include common.btn-common;
+  @include common.px(4);
+  @include common.py(1.5);
+
+  font-weight: common.$font-weight-medium;
+  border: common.$border-md-size solid;
+  border-radius: common.$border-lg-radius;
+}
+
+:host-context(.badge--primary) {
+  color: common.$primary;
+  border-color: common.$primary;
+}
+
+:host-context(.badge--success) {
+  color: common.$success;
+  border-color: common.$success;
+}
+
+:host-context(.badge--error) {
+  color: common.$error;
+  border-color: common.$error;
+}

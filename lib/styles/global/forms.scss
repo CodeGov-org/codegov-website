@@ -7,8 +7,8 @@
   display: block;
   width: 100%;
 
-  border-radius: sizing.$border-radius;
-  border: sizing.$border-size solid colors.$slate-400;
+  border-radius: sizing.$border-sm-radius;
+  border: sizing.$border-md-size solid colors.$slate-400;
   padding: sizing.size(2.5);
 
   font-size: 0.875rem;

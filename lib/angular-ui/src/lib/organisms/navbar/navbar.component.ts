@@ -12,7 +12,6 @@ import {
 @DefineCustomElement(defineCustomElement)
 @Component({
   selector: 'cg-navbar',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<ng-content />`,
 })

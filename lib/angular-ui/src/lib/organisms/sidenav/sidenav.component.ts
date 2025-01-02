@@ -15,7 +15,6 @@ export { NavLink, NavLinkCategory } from '@cg/ui/dist/types';
 @DefineCustomElement(defineCustomElement)
 @Component({
   selector: 'cg-sidenav',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<ng-content />`,
 })
