@@ -13,7 +13,6 @@ import { DefineCustomElement } from '../../define-custom-element';
 @DefineCustomElement(defineCustomElement)
 @Component({
   selector: 'cg-copy-to-clipboard',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<ng-content />`,
 })

@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-login-icon',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `

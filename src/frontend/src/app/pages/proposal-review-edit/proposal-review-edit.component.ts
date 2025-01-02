@@ -3,15 +3,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
-  computed,
   inject,
+  signal,
 } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { first } from 'rxjs';
 
-import { CardComponent } from '@cg/angular-ui';
-import { GetProposalReviewCommitResponse, ProposalState } from '~core/api';
+import { CardComponent, BadgeComponent } from '@cg/angular-ui';
+import { ProposalReviewStatus, ProposalState } from '~core/api';
 import {
   ProposalService,
   ReviewService,
@@ -27,6 +27,7 @@ import { ReviewDetailsFormComponent } from './review-details-form';
     CommonModule,
     ReactiveFormsModule,
     CardComponent,
+    BadgeComponent,
     ReviewCommitsFormComponent,
     ReviewDetailsFormComponent,
   ],
@@ -39,29 +40,38 @@ import { ReviewDetailsFormComponent } from './review-details-form';
         @include common.page-content;
       }
 
-      .proposal-overview-card {
-        margin-bottom: common.size(4);
+      .page-heading {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
       }
 
-      .review-card {
-        margin-top: common.size(6);
+      .section-heading {
+        margin-top: common.size(8);
       }
     `,
   ],
   template: `
     @if (currentProposal(); as proposal) {
-      <h1 class="h1">Submit review for proposal {{ proposal.nsProposalId }}</h1>
+      <div class="page-heading">
+        <h1 class="h1">
+          Submit review for proposal {{ proposal.nsProposalId }}
+        </h1>
 
-      <cg-card class="proposal-overview-card">
-        <h2 class="h3" slot="cardTitle">{{ proposal.title }}</h2>
-      </cg-card>
+        @if (review()?.status === ProposalReviewStatus().Published) {
+          <cg-badge theme="success">Published</cg-badge>
+        } @else {
+          <cg-badge theme="error">Draft</cg-badge>
+        }
+      </div>
+      <h2 class="h4">{{ proposal.title }}</h2>
 
-      <h2 class="h3">Commits</h2>
+      <h2 class="h3 section-heading">Commits</h2>
       <app-review-commits-form />
 
+      <h2 class="h3 section-heading">Review details</h2>
       <cg-card class="review-card">
-        <h2 class="h3" slot="cardTitle">Review details</h2>
-
         <div slot="cardContent">
           <app-review-details-form />
         </div>
@@ -75,13 +85,11 @@ export class ProposalReviewEditComponent implements OnInit {
   private readonly reviewService = inject(ReviewService);
   private readonly reviewSubmissionService = inject(ReviewSubmissionService);
 
+  public readonly ProposalReviewStatus = signal(ProposalReviewStatus);
   public readonly currentProposal = toSyncSignal(
     this.proposalService.currentProposal$,
   );
   public readonly review = toSyncSignal(this.reviewService.currentReview$);
-  public readonly reviewCommits = computed<GetProposalReviewCommitResponse[]>(
-    () => this.review()?.commits ?? [],
-  );
 
   constructor() {
     routeParam('id').subscribe(proposalId => {

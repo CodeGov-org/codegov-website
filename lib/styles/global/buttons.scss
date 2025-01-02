@@ -14,8 +14,8 @@ $btn-disabled-color: rgba(colors.$primary, 0.45);
   @include sizing.py(1);
   @include utils.no-underline;
 
-  border: sizing.$border-size solid transparent;
-  border-radius: sizing.$border-radius;
+  border: sizing.$border-md-size solid transparent;
+  border-radius: sizing.$border-sm-radius;
   outline: none;
 
   color: colors.$white;

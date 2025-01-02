@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-value-col',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `

@@ -12,7 +12,6 @@ import { isNotNil } from '../../utils';
 
 @Component({
   selector: 'app-form-validation-info',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `

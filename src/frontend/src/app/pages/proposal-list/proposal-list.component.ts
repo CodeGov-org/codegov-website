@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -21,6 +22,7 @@ import {
   FormFieldComponent,
   InputDirective,
 } from '~core/ui';
+import { isNotNil } from '~core/utils';
 
 enum ReviewPeriodStateFilter {
   InReview = 'InReview',
@@ -323,9 +325,14 @@ export class ProposalListComponent {
     private readonly reviewService: ReviewService,
   ) {
     this.proposalService.loadProposalList(ProposalState.InProgress);
-    if (this.userProfile()) {
-      this.reviewService.loadReviewListByReviewerId(this.userProfile()!.id);
-    }
+
+    effect(() => {
+      const userProfile = this.userProfile();
+
+      if (isNotNil(userProfile)) {
+        this.reviewService.loadReviewListByReviewerId(userProfile.id);
+      }
+    });
 
     this.filterForm()
       .valueChanges.pipe(takeUntilDestroyed())

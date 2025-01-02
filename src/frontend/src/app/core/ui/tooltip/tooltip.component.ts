@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-tooltip',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
@@ -12,7 +11,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
         background-color: common.$primary-900;
         border-color: 0.5px solid common.$primary-600;
         width: auto;
-        border-radius: common.$border-radius;
+        border-radius: common.$border-md-radius;
         @include common.px(2);
         @include common.py(1);
 

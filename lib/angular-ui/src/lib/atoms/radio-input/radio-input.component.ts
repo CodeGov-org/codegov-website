@@ -20,7 +20,6 @@ type TouchedFn = () => void;
 @DefineCustomElement(defineCustomElement)
 @Component({
   selector: 'cg-radio-input',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

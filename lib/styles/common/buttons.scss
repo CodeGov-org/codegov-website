@@ -42,5 +42,5 @@
 @mixin rectangular-btn {
   @include sizing.px(4);
   @include sizing.py(1.5);
-  border-radius: sizing.$border-radius;
+  border-radius: sizing.$border-sm-radius;
 }

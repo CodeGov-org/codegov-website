@@ -16,7 +16,6 @@ import { formHasError } from '../form-utils';
 
 @Directive({
   selector: '[appInput]',
-  standalone: true,
 })
 export class InputDirective implements OnInit {
   @HostBinding('class')

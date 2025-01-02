@@ -2,12 +2,12 @@
 @use 'common/dark-mode';
 @use 'common/typography';
 
-@import 'sanitize.css/sanitize.css';
-@import 'sanitize.css/forms.css';
-@import 'sanitize.css/typography.css';
-@import 'sanitize.css/assets.css';
-@import 'sanitize.css/system-ui.css';
-@import 'sanitize.css/ui-monospace.css';
+@use 'sanitize.css/sanitize.css';
+@use 'sanitize.css/forms.css';
+@use 'sanitize.css/typography.css' as sanitizeTypography;
+@use 'sanitize.css/assets.css';
+@use 'sanitize.css/system-ui.css';
+@use 'sanitize.css/ui-monospace.css';
 
 body {
   min-height: 100vh;

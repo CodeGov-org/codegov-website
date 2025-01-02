@@ -2,15 +2,15 @@
 
 :host-context(.text-input) {
   position: relative;
-  border-radius: common.$border-radius;
+  border-radius: common.$border-sm-radius;
 }
 
 .text-input__input {
   display: block;
   width: 100%;
 
-  border-radius: common.$border-radius;
-  border: common.$border-size solid common.$slate-400;
+  border-radius: common.$border-sm-radius;
+  border: common.$border-md-size solid common.$slate-400;
   padding: common.size(2.5);
 
   font-size: 0.875rem;

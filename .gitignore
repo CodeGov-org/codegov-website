@@ -18,6 +18,7 @@ dist/
 .astro/
 .turbo/
 coverage/
+.angular/
 
 # environment variables
 .env

@@ -3,7 +3,7 @@
 :host-context(.card) {
   @include common.layer-10;
   display: block;
-  border-radius: common.$border-radius;
+  border-radius: common.$border-sm-radius;
   border: common.$border-sm-size solid common.$slate-300;
   background-color: common.$slate-100;
   padding: common.size(4);

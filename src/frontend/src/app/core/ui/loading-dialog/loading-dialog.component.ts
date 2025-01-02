@@ -21,7 +21,7 @@ import { LoadingIconComponent } from '~core/icons';
         @include common.px(4);
         @include common.py(4);
         width: auto;
-        border-radius: common.$border-radius;
+        border-radius: common.$border-md-radius;
 
         color: common.$white;
         background-color: common.$primary-800;

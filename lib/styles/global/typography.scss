@@ -133,7 +133,7 @@ code {
   width: 100%;
   overflow-x: auto;
   padding: sizing.size(4);
-  border-radius: sizing.$border-radius;
+  border-radius: sizing.$border-sm-radius;
 
   background-color: colors.$slate-200;
   @include dark-mode.dark {

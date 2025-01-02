@@ -74,10 +74,12 @@
           "builder": "@hadronous/ic-build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "frontend:build:production"
+              "buildTarget": "frontend:build:production",
+              "hmr": false
             },
             "development": {
-              "buildTarget": "frontend:build:development"
+              "buildTarget": "frontend:build:development",
+              "hmr": false
             }
           },
           "defaultConfiguration": "development"
