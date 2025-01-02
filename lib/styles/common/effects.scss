@@ -1,3 +1,6 @@
+@use 'sass:string';
+@use 'dark-mode';
+
 $ring-width: 2px;
 $ring-blur: 2px;
 $dark-ring-blur: 5px;
@@ -5,7 +8,7 @@ $dark-ring-blur: 5px;
 @mixin ring($color) {
   box-shadow: 0 0 $ring-blur $ring-width $color;
 
-  @include dark {
+  @include dark-mode.dark {
     box-shadow: 0 0 $dark-ring-blur $ring-width $color;
   }
 }
@@ -19,7 +22,8 @@ $transition-timing-function: cubic-bezier(0, 0, 1, 1);
     $transition-properties: $transition-properties + $property + ', ';
   }
   // Remove the last comma and space
-  $transition-properties: str-slice($transition-properties, 1, -3);
+  $transition-properties: string.slice($transition-properties, 1, -3);
 
-  transition: #{$transition-properties} $transition-duration $transition-timing-function;
+  transition: #{$transition-properties} $transition-duration
+    $transition-timing-function;
 }

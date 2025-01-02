@@ -27,7 +27,6 @@ import { boolToRadio, isNil, radioToBool, toSyncSignal } from '~core/utils';
 
 @Component({
   selector: 'app-review-details-form',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

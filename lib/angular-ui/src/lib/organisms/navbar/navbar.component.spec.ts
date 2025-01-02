@@ -13,6 +13,8 @@ describe('NavbarComponent', () => {
 
     fixture = TestBed.createComponent(NavbarComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('homeUrl', 'https://example.com');
+    fixture.componentRef.setInput('links', []);
     fixture.detectChanges();
   });
 

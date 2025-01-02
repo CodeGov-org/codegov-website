@@ -11,7 +11,6 @@ import { AnonymousGetMyUserProfileResponse } from '~core/api';
 
 @Component({
   selector: 'app-anonymous-profile',
-  standalone: true,
   imports: [CopyToClipboardComponent, CardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `

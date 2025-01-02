@@ -4,7 +4,6 @@ import { LoadingIconComponent } from '../../icons';
 
 @Component({
   selector: 'app-loading-button',
-  standalone: true,
   imports: [LoadingIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [

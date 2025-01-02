@@ -13,6 +13,7 @@ describe('CopyToClipboardComponent', () => {
 
     fixture = TestBed.createComponent(CopyToClipboardComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('value', 'https://example.com');
     fixture.detectChanges();
   });
 

@@ -1,17 +1,24 @@
-$btn-color: $primary;
-$bn-hover-color: $primary-600;
-$btn-disabled-color: rgba($primary, 0.45);
+@use '../common/colors';
+@use '../common/dark-mode';
+@use '../common/effects';
+@use '../common/icons';
+@use '../common/sizing';
+@use '../common/utils';
+
+$btn-color: colors.$primary;
+$bn-hover-color: colors.$primary-600;
+$btn-disabled-color: rgba(colors.$primary, 0.45);
 
 .btn {
-  @include px(4);
-  @include py(1);
-  @include no-underline;
+  @include sizing.px(4);
+  @include sizing.py(1);
+  @include utils.no-underline;
 
-  border: $border-size solid transparent;
-  border-radius: $border-radius;
+  border: sizing.$border-size solid transparent;
+  border-radius: sizing.$border-radius;
   outline: none;
 
-  color: $white;
+  color: colors.$white;
   background-color: $btn-color;
   position: relative;
 
@@ -21,10 +28,10 @@ $btn-disabled-color: rgba($primary, 0.45);
   }
 
   &:focus:not(:disabled) {
-    @include ring($primary-400);
+    @include effects.ring(colors.$primary-400);
 
-    @include dark {
-      @include ring($primary-800);
+    @include dark-mode.dark {
+      @include effects.ring(colors.$primary-800);
     }
   }
 
@@ -43,7 +50,7 @@ $btn-disabled-color: rgba($primary, 0.45);
   background-color: transparent;
 
   &:hover:not(:disabled) {
-    color: $white;
+    color: colors.$white;
   }
 
   &:disabled {
@@ -60,7 +67,7 @@ $btn-disabled-color: rgba($primary, 0.45);
   align-items: center;
 
   > :not(:last-child) {
-    margin-right: size(2);
+    margin-right: sizing.size(2);
   }
 }
 
@@ -68,6 +75,6 @@ $btn-disabled-color: rgba($primary, 0.45);
   position: absolute;
   left: 50%;
   top: 50%;
-  @include icon-xxl;
+  @include icons.icon-xxl;
   transform: translate(-50%, -50%);
 }

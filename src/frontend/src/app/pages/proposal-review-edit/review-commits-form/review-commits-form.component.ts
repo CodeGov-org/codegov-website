@@ -35,7 +35,6 @@ import { boolToRadio, isNil, radioToBool, toSyncSignal } from '~core/utils';
 
 @Component({
   selector: 'app-review-commits-form',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -52,10 +51,10 @@ import { boolToRadio, isNil, radioToBool, toSyncSignal } from '~core/utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .commit-review-card {
-        margin-bottom: size(4);
+        margin-bottom: common.size(4);
       }
     `,
   ],

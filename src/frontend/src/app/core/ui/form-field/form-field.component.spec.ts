@@ -15,7 +15,6 @@ import { FormFieldComponent } from './form-field.component';
 
 @Component({
   selector: 'app-test',
-  standalone: true,
   imports: [FormFieldComponent, InputDirective],
   template: `
     <app-form-field>

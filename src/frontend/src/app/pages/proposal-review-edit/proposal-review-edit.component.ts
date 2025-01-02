@@ -23,7 +23,6 @@ import { ReviewDetailsFormComponent } from './review-details-form';
 
 @Component({
   selector: 'app-proposal-review-edit',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -34,18 +33,18 @@ import { ReviewDetailsFormComponent } from './review-details-form';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
-        @include page-content;
+        @include common.page-content;
       }
 
       .proposal-overview-card {
-        margin-bottom: size(4);
+        margin-bottom: common.size(4);
       }
 
       .review-card {
-        margin-top: size(6);
+        margin-top: common.size(6);
       }
     `,
   ],

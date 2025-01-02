@@ -14,12 +14,11 @@ import {
 
 @Component({
   selector: 'app-reviewer-personal-info',
-  standalone: true,
   imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .reviewer-wallet-address {
         word-break: break-word;

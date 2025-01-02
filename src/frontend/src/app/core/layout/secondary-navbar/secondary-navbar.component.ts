@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { RouterLinkActive, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 
 import {
   IconBtnComponent,
@@ -21,7 +21,6 @@ import { UserAuthService } from '~core/services';
 
 @Component({
   selector: 'app-secondary-navbar',
-  standalone: true,
   imports: [
     CommonModule,
     RouterModule,
@@ -35,35 +34,34 @@ import { UserAuthService } from '~core/services';
     DropdownLinkMenuItemComponent,
     DropdownMenuComponent,
     DropdownTriggerComponent,
-    RouterLinkActive,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .secondary-navbar {
-        background-color: $primary-950;
-        @include layer-20;
-        color: $white;
+        background-color: common.$primary-950;
+        @include common.layer-20;
+        color: common.$white;
 
-        @include dark {
-          background-color: $slate-900;
-          color: $slate-200;
+        @include common.dark {
+          background-color: common.$slate-900;
+          color: common.$slate-200;
         }
       }
 
       .secondary-navbar__inner {
-        @include container;
         margin-left: auto;
         margin-right: auto;
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+        @include common.container;
       }
 
       .secondary-navbar__left {
-        padding-left: size(4);
+        padding-left: common.size(4);
         display: flex;
         flex: 1;
         flex-direction: row;
@@ -71,8 +69,8 @@ import { UserAuthService } from '~core/services';
       }
 
       .secondary-navbar__right {
-        @include py(3);
-        padding-right: size(4);
+        @include common.py(3);
+        padding-right: common.size(4);
         display: flex;
         flex-direction: row;
       }
@@ -84,34 +82,34 @@ import { UserAuthService } from '~core/services';
       }
 
       .profile-menu__item-icon {
-        margin-right: size(2);
+        margin-right: common.size(2);
       }
 
       .secondary-navbar__link {
-        color: $white;
+        color: common.$white;
 
-        @include no-underline;
-        @include py(2);
-        @include mx(4);
+        @include common.no-underline;
+        @include common.py(2);
+        @include common.mx(4);
         border-bottom: 3px solid transparent;
 
         &:hover {
-          border-color: $slate-400;
+          border-color: common.$slate-400;
 
-          @include dark {
-            border-color: $slate-700;
+          @include common.dark {
+            border-color: common.$slate-700;
           }
         }
       }
 
       .active-link,
       .active-link:hover {
-        color: $primary-400;
-        border-color: $primary-400;
+        color: common.$primary-400;
+        border-color: common.$primary-400;
 
-        @include dark {
-          color: $primary;
-          border-color: $primary;
+        @include common.dark {
+          color: common.$primary;
+          border-color: common.$primary;
         }
       }
     `,

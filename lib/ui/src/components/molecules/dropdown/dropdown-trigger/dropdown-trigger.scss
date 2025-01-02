@@ -1,4 +1,4 @@
-@import '~@cg/styles/common';
+@use '~@cg/styles/common';
 
 .dropdown-trigger__text-btn {
   display: flex;
@@ -7,11 +7,11 @@
 
 .dropdown-trigger__chevron {
   display: flex;
-  margin-left: size(2);
-  @include icon-xs;
+  margin-left: common.size(2);
+  @include common.icon-xs;
 
   transform: rotate(0deg);
-  @include quick-transition(transform);
+  @include common.quick-transition(transform);
 }
 
 .dropdown-trigger__chevron--open {

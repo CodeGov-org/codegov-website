@@ -6,7 +6,6 @@ import { By } from '@angular/platform-browser';
 import { InputDirective } from './input.directive';
 
 @Component({
-  standalone: true,
   imports: [InputDirective, ReactiveFormsModule],
   template: `
     <form [formGroup]="formGroup">

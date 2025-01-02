@@ -1,12 +1,12 @@
-@import 'common';
+@use 'common';
 
-@import 'resets';
+@use 'resets';
 
-@import 'global/buttons';
-@import 'global/forms';
-@import 'global/icons';
-@import 'global/overlays';
-@import 'global/typography';
+@use 'global/buttons';
+@use 'global/forms';
+@use 'global/icons';
+@use 'global/overlays';
+@use 'global/typography';
 
 .sr-only {
   position: absolute;

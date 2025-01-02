@@ -1,9 +1,12 @@
+@use '../common/colors';
+@use '../common/elevation';
+
 .backdrop {
-  @include layer-40;
+  @include elevation.layer-40;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba($slate-800, 0.8);
+  background-color: rgba(colors.$slate-800, 0.8);
 }

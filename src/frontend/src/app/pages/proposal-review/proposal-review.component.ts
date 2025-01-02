@@ -20,7 +20,6 @@ import { isNotNil, routeParam } from '~core/utils';
 
 @Component({
   selector: 'app-proposal-review',
-  standalone: true,
   imports: [
     CommonModule,
     CardComponent,
@@ -32,30 +31,30 @@ import { isNotNil, routeParam } from '~core/utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
-        @include page-content;
+        @include common.page-content;
       }
 
       .review__details,
       .review__commit {
-        margin-bottom: size(6);
+        margin-bottom: common.size(6);
       }
 
       .review__vote--adopt {
         font-weight: bold;
-        color: $success;
+        color: common.$success;
       }
 
       .review__vote--reject {
         font-weight: bold;
-        color: $error;
+        color: common.$error;
       }
 
       .review__image {
-        height: size(10);
-        padding-right: size(1);
+        height: common.size(10);
+        padding-right: common.size(1);
       }
     `,
   ],

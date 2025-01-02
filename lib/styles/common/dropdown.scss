@@ -1,3 +1,9 @@
+@use 'colors';
+@use 'dark-mode';
+@use 'sizing';
+@use 'typography';
+@use 'utils';
+
 @mixin dropdown-menu-item {
   position: relative;
   display: block;
@@ -5,25 +11,25 @@
   width: 100%;
   white-space: nowrap;
 
-  @include px(4);
-  @include py(1);
-  font-weight: $font-weight-normal;
+  @include sizing.px(4);
+  @include sizing.py(1);
+  font-weight: typography.$font-weight-normal;
 
-  @include no-underline;
+  @include utils.no-underline;
 
-  color: $slate-900;
-  @include dark {
-    color: $slate-300;
+  color: colors.$slate-900;
+  @include dark-mode.dark {
+    color: colors.$slate-300;
   }
 
   &:hover {
-    color: $white;
-    background-color: $primary-800;
+    color: colors.$white;
+    background-color: colors.$primary-800;
     cursor: pointer;
 
-    @include dark {
-      color: $slate-900;
-      background-color: $slate-200;
+    @include dark-mode.dark {
+      color: colors.$slate-900;
+      background-color: colors.$slate-200;
     }
   }
 }

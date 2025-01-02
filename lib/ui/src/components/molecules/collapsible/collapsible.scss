@@ -1,4 +1,4 @@
-@import '~@cg/styles/common';
+@use '~@cg/styles/common';
 
 .collapsible {
   display: block;
@@ -17,10 +17,10 @@
 
 .collapsible__trigger-chevron {
   display: flex;
-  @include icon-xs;
+  @include common.icon-xs;
 
   transform: rotate(0deg);
-  @include quick-transition(transform);
+  @include common.quick-transition(transform);
 }
 
 .collapsible__trigger-chevron--open {
@@ -28,6 +28,6 @@
 }
 
 .collapsible__content {
-  margin-left: size(3);
+  margin-left: common.size(3);
   overflow: hidden;
 }

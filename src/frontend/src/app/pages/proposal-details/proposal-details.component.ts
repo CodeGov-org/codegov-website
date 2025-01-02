@@ -30,7 +30,6 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
 
 @Component({
   selector: 'app-proposal-details',
-  standalone: true,
   imports: [
     CommonModule,
     CardComponent,
@@ -44,14 +43,14 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
-        @include page-content;
+        @include common.page-content;
       }
 
       .proposal {
-        margin-bottom: size(6);
+        margin-bottom: common.size(6);
       }
 
       .proposal__title,
@@ -60,7 +59,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
       }
 
       .proposal__link {
-        margin-right: size(4);
+        margin-right: common.size(4);
       }
 
       .proposal__vote {
@@ -68,11 +67,11 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
       }
 
       .proposal__vote--adopt {
-        color: $success;
+        color: common.$success;
       }
 
       .proposal__vote--reject {
-        color: $error;
+        color: common.$error;
       }
     `,
   ],

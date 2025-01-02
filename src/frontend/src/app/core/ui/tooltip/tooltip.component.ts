@@ -6,22 +6,22 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
-        background-color: $primary-900;
-        border-color: 0.5px solid $primary-600;
+        background-color: common.$primary-900;
+        border-color: 0.5px solid common.$primary-600;
         width: auto;
-        border-radius: $border-radius;
-        @include px(2);
-        @include py(1);
+        border-radius: common.$border-radius;
+        @include common.px(2);
+        @include common.py(1);
 
-        @include text-xs;
-        color: $white;
+        @include common.text-xs;
+        color: common.$white;
 
-        @include dark {
-          background-color: $slate-900;
-          border-color: $slate-500;
+        @include common.dark {
+          background-color: common.$slate-900;
+          border-color: common.$slate-500;
         }
       }
     `,

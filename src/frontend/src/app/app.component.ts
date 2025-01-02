@@ -8,7 +8,6 @@ import { SecondaryNavbarComponent } from '~core/layout';
 import { ProfileService } from '~core/state';
 
 @Component({
-  standalone: true,
   selector: 'app-root',
   imports: [
     CommonModule,
@@ -20,7 +19,7 @@ import { ProfileService } from '~core/state';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .app-container {
         display: flex;
@@ -29,13 +28,13 @@ import { ProfileService } from '~core/state';
       }
 
       .content-container {
-        @include container;
         margin-left: auto;
         margin-right: auto;
         flex: 1;
-        @include px(3);
-        padding-top: size(6);
-        padding-bottom: size(10);
+        @include common.px(3);
+        padding-top: common.size(6);
+        padding-bottom: common.size(10);
+        @include common.container;
       }
     `,
   ],

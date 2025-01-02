@@ -24,7 +24,6 @@ import {
 
 @Component({
   selector: 'app-closed-proposal-summary',
-  standalone: true,
   imports: [
     CardComponent,
     CommonModule,
@@ -38,24 +37,24 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .summary,
       .review,
       .commit {
-        margin-bottom: size(6);
+        margin-bottom: common.size(6);
       }
 
       .summary__vote--adopt {
-        color: $success;
+        color: common.$success;
       }
 
       .summary__vote--reject {
-        color: $error;
+        color: common.$error;
       }
 
       .summary__vote {
-        margin-bottom: size(4);
+        margin-bottom: common.size(4);
       }
 
       .summary__vote-position {
@@ -69,14 +68,14 @@ import {
       }
 
       .commit__highlights-label {
-        color: $black;
-        @include dark {
-          color: $white;
+        color: common.$black;
+        @include common.dark {
+          color: common.$white;
         }
       }
 
       .commit__highlights-content {
-        @include my(2);
+        @include common.my(2);
       }
 
       .commit__highlights-quote {
@@ -84,15 +83,15 @@ import {
       }
 
       .reject-icon {
-        width: size(6);
-        height: size(6);
-        stroke: $error;
+        width: common.size(6);
+        height: common.size(6);
+        stroke: common.$error;
       }
 
       .adopt-icon {
-        width: size(6);
-        height: size(6);
-        stroke: $success;
+        width: common.size(6);
+        height: common.size(6);
+        stroke: common.$success;
       }
     `,
   ],

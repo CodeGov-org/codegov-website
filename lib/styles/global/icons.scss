@@ -1,3 +1,5 @@
+@use '../common/icons';
+
 .icon {
   width: 100%;
   height: 100%;
@@ -6,25 +8,25 @@
 }
 
 .icon-xs {
-  @include icon-xs;
+  @include icons.icon-xs;
 }
 
 .icon-sm {
-  @include icon-sm;
+  @include icons.icon-sm;
 }
 
 .icon-md {
-  @include icon-md;
+  @include icons.icon-md;
 }
 
 .icon-lg {
-  @include icon-lg;
+  @include icons.icon-lg;
 }
 
 .icon-xl {
-  @include icon-xl;
+  @include icons.icon-xl;
 }
 
 .icon-xxl {
-  @include icon-xxl;
+  @include icons.icon-xxl;
 }

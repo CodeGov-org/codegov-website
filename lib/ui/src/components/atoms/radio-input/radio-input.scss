@@ -1,19 +1,19 @@
-@import '~@cg/styles/common';
+@use '~@cg/styles/common';
 
-$radio-border-gap: size(1.5);
-$radio-outer-size: size(6);
+$radio-border-gap: common.size(1.5);
+$radio-outer-size: common.size(6);
 
 :host-context(.input--invalid) {
   .radio-input__input {
-    border-color: $error;
+    border-color: common.$error;
 
     &:focus {
-      border-color: $error;
+      border-color: common.$error;
     }
   }
 
   .radio-input__label {
-    color: $error;
+    color: common.$error;
   }
 }
 
@@ -44,26 +44,26 @@ $radio-outer-size: size(6);
   height: 100%;
   border-radius: 50%;
 
-  border: $border-lg-size solid $slate-400;
-  @include dark {
-    border-color: $slate-500;
+  border: common.$border-lg-size solid common.$slate-400;
+  @include common.dark {
+    border-color: common.$slate-500;
   }
 
-  color: $slate-900;
-  @include dark {
-    color: $slate-200;
+  color: common.$slate-900;
+  @include common.dark {
+    color: common.$slate-200;
   }
 
-  background-color: $white;
-  @include dark {
-    background-color: $slate-950;
+  background-color: common.$white;
+  @include common.dark {
+    background-color: common.$slate-950;
   }
 
   &::after {
     content: '';
     display: block;
     border-radius: 50%;
-    background-color: $primary;
+    background-color: common.$primary;
 
     position: absolute;
     top: 0;
@@ -72,11 +72,11 @@ $radio-outer-size: size(6);
     right: 0;
 
     transform: scale3d(0, 0, 0);
-    @include quick-transition(transform);
+    @include common.quick-transition(transform);
   }
 
   &:checked {
-    border-color: $primary-800;
+    border-color: common.$primary-800;
 
     &::after {
       transform: scale3d(1, 1, 1);
@@ -85,11 +85,11 @@ $radio-outer-size: size(6);
 }
 
 .radio-input__label {
-  padding-left: size(1.5);
-  padding-right: size(3);
+  padding-left: common.size(1.5);
+  padding-right: common.size(3);
 
-  color: $black;
-  @include dark {
-    color: $white;
+  color: common.$black;
+  @include common.dark {
+    color: common.$white;
   }
 }

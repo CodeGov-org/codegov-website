@@ -1,4 +1,5 @@
 @use 'sass:map';
+@use 'colors';
 
 $umbra-map: (
   0: '0px 0px 0px 0px',
@@ -84,7 +85,7 @@ $ambient-map: (
   24: '0px 9px 46px 8px',
 );
 
-$baseline-color: $black;
+$baseline-color: colors.$black;
 $umbra-opacity: 0.2;
 $penumbra-opacity: 0.14;
 $ambient-opacity: 0.12;

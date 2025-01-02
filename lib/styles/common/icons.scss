@@ -1,7 +1,9 @@
+@use 'sizing';
+
 @mixin icon($size) {
   display: inline-block;
-  height: size($size);
-  width: size($size);
+  height: sizing.size($size);
+  width: sizing.size($size);
 }
 
 @mixin icon-xs {

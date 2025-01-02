@@ -1,23 +1,23 @@
-@import '~@cg/styles/common';
+@use '~@cg/styles/common';
 
 .navbar {
-  @include px(4);
-  @include py(3);
-  @include layer-30;
+  @include common.px(4);
+  @include common.py(3);
+  @include common.layer-30;
 
-  color: $white;
-  background-color: $primary-900;
+  color: common.$white;
+  background-color: common.$primary-900;
 
-  @include dark {
-    color: $slate-300;
-    background-color: $slate-800;
+  @include common.dark {
+    color: common.$slate-300;
+    background-color: common.$slate-800;
   }
 }
 
 .navbar__inner {
-  @include container;
   margin-left: auto;
   margin-right: auto;
+  @include common.container;
 }
 
 .navbar__nav {
@@ -34,21 +34,21 @@
 }
 
 .navbar__logo {
-  @include icon-xxl;
-  margin-right: size(3);
+  @include common.icon-xxl;
+  margin-right: common.size(3);
 }
 
 .navbar__desktop-nav {
   display: none;
-  @include px(2);
+  @include common.px(2);
 
-  @include lg {
+  @include common.lg {
     display: flex;
   }
 }
 
 .navbar__sidenav-trigger {
-  @include lg {
+  @include common.lg {
     display: none;
   }
 }

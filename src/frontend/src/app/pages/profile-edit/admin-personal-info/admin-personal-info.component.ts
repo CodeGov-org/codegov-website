@@ -14,7 +14,6 @@ import {
 
 @Component({
   selector: 'app-admin-personal-info',
-  standalone: true,
   imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `

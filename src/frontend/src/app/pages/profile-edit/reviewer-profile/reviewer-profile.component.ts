@@ -22,7 +22,6 @@ import {
 
 @Component({
   selector: 'app-reviewer-profile',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
@@ -39,14 +38,14 @@ import {
   ],
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .reviewer-profile-card,
       .reviewer-personal-info-card {
-        margin-bottom: size(3);
+        margin-bottom: common.size(3);
 
-        @include sm {
-          margin-bottom: size(4);
+        @include common.sm {
+          margin-bottom: common.size(4);
         }
       }
     `,
