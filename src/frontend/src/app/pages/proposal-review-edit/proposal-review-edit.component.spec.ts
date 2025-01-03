@@ -2,19 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 
-import {
-  ProposalService,
-  ReviewService,
-  ReviewSubmissionService,
-} from '~core/state';
+import { ProposalService, ReviewSubmissionService } from '~core/state';
 import {
   ProposalServiceMock,
   proposalServiceMockFactory,
 } from '~core/state/proposal/proposal.service.mock';
-import {
-  ReviewServiceMock,
-  reviewServiceMockFactory,
-} from '~core/state/review/review.service.mock';
 import {
   ReviewSubmissionServiceMock,
   reviewSubmissionServiceMockFactory,
@@ -31,16 +23,12 @@ describe('ProposalReviewEditComponent', () => {
   let fixture: ComponentFixture<ProposalReviewEditComponent>;
 
   let proposalServiceMock: ProposalServiceMock;
-  let reviewServiceMock: ReviewServiceMock;
   let reviewSubmissionServiceMock: ReviewSubmissionServiceMock;
   let activatedRouteMock: ActivatedRouteMock;
 
   beforeEach(async () => {
     proposalServiceMock = proposalServiceMockFactory();
     defineProp(proposalServiceMock, 'currentProposal$', of(null));
-
-    reviewServiceMock = reviewServiceMockFactory();
-    defineProp(reviewServiceMock, 'currentReview$', of(null));
 
     activatedRouteMock = activatedRouteMockFactory();
     defineProp(
@@ -50,12 +38,12 @@ describe('ProposalReviewEditComponent', () => {
     );
 
     reviewSubmissionServiceMock = reviewSubmissionServiceMockFactory();
+    defineProp(reviewSubmissionServiceMock, 'review$', of(null));
 
     await TestBed.configureTestingModule({
       imports: [ProposalReviewEditComponent],
       providers: [
         { provide: ProposalService, useValue: proposalServiceMock },
-        { provide: ReviewService, useValue: reviewServiceMock },
         {
           provide: ActivatedRoute,
           useValue: activatedRouteMock,

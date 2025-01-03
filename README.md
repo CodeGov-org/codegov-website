@@ -294,6 +294,13 @@ Any property preceded by `opt` is optional and can be omitted. For example, to o
 dfx canister call backend update_user_profile '(record { user_id = "${userId}"; username = opt "${username}"; })'
 ```
 
+Or to only upgrade a user to a reviewer:
+
+```bash
+
+dfx canister call backend update_user_profile '(record { user_id = "${userId}"; config = opt variant { reviewer = record {} } })'
+```
+
 ### Listing open proposals
 
 To list open replica version management proposals:

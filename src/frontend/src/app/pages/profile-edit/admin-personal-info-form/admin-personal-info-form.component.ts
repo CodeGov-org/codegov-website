@@ -110,7 +110,7 @@ interface AdminProfileForm {
         <app-loading-button
           btnClass="btn"
           type="submit"
-          [disabled]="profileForm().invalid || isSaving()"
+          [disabled]="profileForm().invalid"
           [isSaving]="isSaving()"
         >
           Save

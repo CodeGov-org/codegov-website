@@ -101,7 +101,7 @@ export type SocialMediaForm = {
         <app-loading-button
           btnClass="btn"
           type="submit"
-          [disabled]="socialMediaForm().invalid || isSaving()"
+          [disabled]="socialMediaForm().invalid"
           [isSaving]="isSaving()"
         >
           Save
