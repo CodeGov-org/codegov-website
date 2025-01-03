@@ -16,7 +16,6 @@ import {
       :host {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        margin-bottom: common.size(8);
 
         gap: common.size(1) common.size(8);
         @include common.md {

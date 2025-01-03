@@ -11,6 +11,8 @@ use std::cell::RefCell;
 
 #[cfg_attr(test, mockall::automock)]
 pub trait UserProfileRepository {
+    fn get_all_reviewer_profiles(&self) -> Vec<(UserId, UserProfile)>;
+
     fn get_user_profile_by_principal(&self, principal: &Principal)
         -> Option<(UserId, UserProfile)>;
 
@@ -46,6 +48,15 @@ impl Default for UserProfileRepositoryImpl {
 }
 
 impl UserProfileRepository for UserProfileRepositoryImpl {
+    fn get_all_reviewer_profiles(&self) -> Vec<(UserId, UserProfile)> {
+        STATE.with_borrow(|s| {
+            s.profiles
+                .iter()
+                .filter(|(_, profile)| profile.is_reviewer())
+                .collect()
+        })
+    }
+
     fn get_user_profile_by_principal(
         &self,
         principal: &Principal,
@@ -191,12 +202,36 @@ mod tests {
     use rstest::*;
 
     #[rstest]
+    async fn get_all_reviewer_profiles() {
+        STATE.set(UserProfileState::default());
+        let repository = UserProfileRepositoryImpl::default();
+
+        repository
+            .create_user_profile(fixtures::principal_a(), fixtures::anonymous_user_profile())
+            .await
+            .unwrap();
+        repository
+            .create_user_profile(fixtures::principal_b(), fixtures::admin_user_profile())
+            .await
+            .unwrap();
+        let reviewer_id = repository
+            .create_user_profile(fixtures::principal_c(), fixtures::reviewer_user_profile())
+            .await
+            .unwrap();
+
+        let result = repository.get_all_reviewer_profiles();
+
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0], (reviewer_id, fixtures::reviewer_user_profile()));
+    }
+
+    #[rstest]
     #[case::anonymous_user(fixtures::anonymous_user_profile())]
     #[case::reviewer(fixtures::reviewer_user_profile())]
     #[case::admin(fixtures::admin_user_profile())]
     async fn create_and_get_user_profile_by_principal(#[case] profile: UserProfile) {
         STATE.set(UserProfileState::default());
-        let principal = fixtures::principal();
+        let principal = fixtures::principal_a();
         let date_time = get_date_time().unwrap();
 
         let repository = UserProfileRepositoryImpl::default();
@@ -233,7 +268,7 @@ mod tests {
         #[case] updated_profile: UserProfile,
     ) {
         STATE.set(UserProfileState::default());
-        let principal = fixtures::principal();
+        let principal = fixtures::principal_a();
         let date_time = get_date_time().unwrap();
 
         let repository = UserProfileRepositoryImpl::default();

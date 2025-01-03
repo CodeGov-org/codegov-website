@@ -26,7 +26,9 @@ describe('AppComponent', () => {
     defineProp(userAuthServiceMock, 'isAuthenticated$', of(true));
 
     profileServiceMock = profileServiceMockFactory();
-    profileServiceMock.loadProfile.and.returnValue(Promise.resolve());
+    profileServiceMock.loadCurrentUserProfile.and.returnValue(
+      Promise.resolve(),
+    );
 
     await TestBed.configureTestingModule({
       imports: [AppComponent],

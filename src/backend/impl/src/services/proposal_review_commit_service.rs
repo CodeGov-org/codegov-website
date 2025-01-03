@@ -381,7 +381,7 @@ mod tests {
             CreateProposalReviewCommitRequest,
         ),
     ) {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (proposal_review_commit, proposal_review, proposal, request) = fixture;
         let user_id = proposal_review_commit.user_id;
         let proposal_review_id = Uuid::try_from(request.proposal_review_id.as_str()).unwrap();
@@ -447,7 +447,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_commit_no_user() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (_, _, _, request) = proposal_review_commit_create_not_reviewed();
 
         let mut u_repository_mock = MockUserProfileRepository::new();
@@ -497,7 +497,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_commit_too_many() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (proposal_review_commit, _, _, request) = proposal_review_commit_create_not_reviewed();
         let user_id = proposal_review_commit.user_id;
         let proposal_review_id = Uuid::try_from(request.proposal_review_id.as_str()).unwrap();
@@ -559,7 +559,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_commit_already_created() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (proposal_review_commit, _, _, request) = proposal_review_commit_create_reviewed();
         let user_id = proposal_review_commit.user_id;
         let proposal_review_id = Uuid::try_from(request.proposal_review_id.as_str()).unwrap();
@@ -629,7 +629,7 @@ mod tests {
             ApiError,
         ),
     ) {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (proposal_review_commit, proposal_review, _, request, expected_result) = fixture;
         let user_id = proposal_review_commit.user_id;
         let proposal_review_id = Uuid::try_from(request.proposal_review_id.as_str()).unwrap();
@@ -682,7 +682,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_commit_proposal_completed() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (proposal_review_commit, proposal_review, proposal, request) =
             proposal_review_commit_create_proposal_completed();
         let user_id = proposal_review_commit.user_id;
@@ -753,7 +753,7 @@ mod tests {
     async fn create_proposal_review_commit_comment_invalid_fields(
         #[case] fixture: (CreateProposalReviewCommitRequest, ApiError),
     ) {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (request, expected_result) = fixture;
 
         let mut u_repository_mock = MockUserProfileRepository::new();
@@ -1067,7 +1067,7 @@ mod tests {
             ProposalReviewCommit,
         ),
     ) {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (
             id,
@@ -1123,7 +1123,7 @@ mod tests {
 
     #[rstest]
     fn update_proposal_review_commit_no_user() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (_, _, _, _, request, _) = proposal_review_commit_update_reviewed();
 
         let mut u_repository_mock = MockUserProfileRepository::new();
@@ -1169,7 +1169,7 @@ mod tests {
 
     #[rstest]
     fn update_proposal_review_commit_not_found() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (id, original_proposal_review_commit, _, _, request, _) =
             proposal_review_commit_update_reviewed();
         let user_id = original_proposal_review_commit.user_id;
@@ -1219,7 +1219,7 @@ mod tests {
 
     #[rstest]
     fn update_proposal_review_commit_another_user() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (id, original_proposal_review_commit, _, _, request, _) =
             proposal_review_commit_update_reviewed();
         let user_id = original_proposal_review_commit.user_id;
@@ -1285,7 +1285,7 @@ mod tests {
             ApiError,
         ),
     ) {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (id, original_proposal_review_commit, proposal_review, request, expected_error) =
             fixture;
         let user_id = original_proposal_review_commit.user_id;
@@ -1331,7 +1331,7 @@ mod tests {
 
     #[rstest]
     fn update_proposal_review_commit_proposal_completed() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (id, original_proposal_review_commit, proposal_review, proposal, request) =
             proposal_review_commit_update_proposal_completed();
         let user_id = original_proposal_review_commit.user_id;
@@ -1394,7 +1394,7 @@ mod tests {
     async fn update_proposal_review_commit_comment_invalid_fields(
         #[case] fixture: (UpdateProposalReviewCommitRequest, ApiError),
     ) {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (request, expected_error) = fixture;
 
         let mut u_repository_mock = MockUserProfileRepository::new();
@@ -1708,7 +1708,7 @@ mod tests {
 
     #[rstest]
     fn delete_proposal_review_commit() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::proposal_review_commit_id();
         let proposal_review_commit = fixtures::proposal_review_commit_reviewed();
         let proposal_review = ProposalReview {
@@ -1765,7 +1765,7 @@ mod tests {
 
     #[rstest]
     fn delete_proposal_review_commit_no_user() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::proposal_review_commit_id();
 
         let mut u_repository_mock = MockUserProfileRepository::new();
@@ -1814,7 +1814,7 @@ mod tests {
 
     #[rstest]
     fn delete_proposal_review_commit_not_found() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::proposal_review_commit_id();
         let user_id = fixtures::user_id();
 
@@ -1866,7 +1866,7 @@ mod tests {
 
     #[rstest]
     fn delete_proposal_review_commit_another_user() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::proposal_review_commit_id();
         let user_id = fixtures::uuid_a();
         let proposal_review_commit = ProposalReviewCommit {
@@ -1933,7 +1933,7 @@ mod tests {
             ApiError,
         ),
     ) {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (id, proposal_review_commit, proposal_review, expected_error) = fixture;
 
         let mut u_repository_mock = MockUserProfileRepository::new();
@@ -1980,7 +1980,7 @@ mod tests {
 
     #[rstest]
     fn delete_proposal_review_commit_proposal_completed() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::proposal_review_commit_id();
         let proposal_review_commit = fixtures::proposal_review_commit_reviewed();
         let proposal_review = ProposalReview {

@@ -1,25 +1,31 @@
 import { TestBed } from '@angular/core/testing';
 
 import { BackendActorService } from '../../services';
+import { ApiError, InMemoryCache } from '../../utils';
 import {
   GetMyUserProfileResponse as GetMyUserProfileApiResponse,
   UpdateMyUserProfileRequest as UpdateMyUserProfileApiRequest,
   SocialLink as ApiSocialLink,
+  ListReviewerProfilesResponse as ListReviewerProfilesApiResponse,
 } from '@cg/backend';
 import {
   BackendActorServiceMock,
   backendActorServiceMockFactory,
 } from '~core/services/backend-actor-service-mock';
 import {
-  AdminGetMyUserProfileResponse,
-  AnonymousGetMyUserProfileResponse,
-  ReviewerGetMyUserProfileResponse,
+  AdminUserProfile,
+  AnonymousUserProfile,
+  ReviewerUserProfile,
   SocialMediaLink,
   SocialMediaLinkType,
   UpdateMyUserProfileRequest,
   UserRole,
 } from './profile-api.model';
-import { ProfileApiService } from './profile-api.service';
+import {
+  CURRENT_USER_CACHE_TTL,
+  ProfileApiService,
+  REVIEWER_CACHE_TTL,
+} from './profile-api.service';
 
 describe('ProfileApiService', () => {
   let service: ProfileApiService;
@@ -86,9 +92,122 @@ describe('ProfileApiService', () => {
     expect(service).toBeTruthy();
   });
 
+  describe('listReviewerProfiles()', () => {
+    const initialDate = new Date();
+    beforeEach(() => {
+      jasmine.clock().mockDate(initialDate);
+      jasmine.clock().install();
+    });
+
+    afterEach(() => {
+      InMemoryCache.getInstance().clear();
+      jasmine.clock().uninstall();
+    });
+
+    it('should return a list of reviewer profiles', async () => {
+      const res: ReviewerUserProfile[] = [
+        {
+          id: 'id1',
+          role: UserRole.Reviewer,
+          username: 'username1',
+          bio: 'bio1',
+          neuronId: 1n,
+          walletAddress: 'walletAddress1',
+          socialMedia: commonSocialMediaLinks,
+        },
+        {
+          id: 'id2',
+          role: UserRole.Reviewer,
+          username: 'username2',
+          bio: 'bio2',
+          neuronId: 2n,
+          walletAddress: 'walletAddress2',
+          socialMedia: commonSocialMediaLinks,
+        },
+      ];
+      const apiRes: ListReviewerProfilesApiResponse = {
+        ok: {
+          profiles: [
+            {
+              id: 'id1',
+              username: 'username1',
+              config: {
+                reviewer: {
+                  bio: 'bio1',
+                  neuron_id: 1n,
+                  wallet_address: 'walletAddress1',
+                  social_links: commonApiSocialMediaLinks,
+                },
+              },
+            },
+            {
+              id: 'id2',
+              username: 'username2',
+              config: {
+                reviewer: {
+                  bio: 'bio2',
+                  neuron_id: 2n,
+                  wallet_address: 'walletAddress2',
+                  social_links: commonApiSocialMediaLinks,
+                },
+              },
+            },
+          ],
+        },
+      };
+      backendActorServiceMock.list_reviewer_profiles.and.resolveTo(apiRes);
+
+      const result = await service.listReviewerProfiles();
+      expect(result).toEqual(res);
+
+      const cachedCallDate = new Date(
+        initialDate.getTime() + REVIEWER_CACHE_TTL - 1_000,
+      );
+      jasmine.clock().mockDate(cachedCallDate);
+      const cachedResult = await service.listReviewerProfiles();
+      expect(cachedResult).toEqual(res);
+
+      const uncachedCallDate = new Date(
+        initialDate.getTime() + REVIEWER_CACHE_TTL + 1_000,
+      );
+      jasmine.clock().mockDate(uncachedCallDate);
+      const uncachedResult = await service.listReviewerProfiles();
+      expect(uncachedResult).toEqual(res);
+
+      expect(
+        backendActorServiceMock.list_reviewer_profiles,
+      ).toHaveBeenCalledTimes(2);
+    });
+
+    it('should throw if an error response is returned', async () => {
+      const apiRes: ListReviewerProfilesApiResponse = {
+        err: {
+          code: 500,
+          message: 'Internal server error',
+        },
+      };
+      backendActorServiceMock.list_reviewer_profiles.and.resolveTo(apiRes);
+
+      await expectAsync(service.listReviewerProfiles()).toBeRejectedWith(
+        new ApiError(apiRes.err),
+      );
+    });
+  });
+
   describe('getMyUserProfile()', () => {
+    const initialDate = new Date();
+    beforeEach(() => {
+      jasmine.clock().mockDate(initialDate);
+      jasmine.clock().install();
+    });
+
+    afterEach(() => {
+      InMemoryCache.getInstance().clear();
+      jasmine.clock().uninstall();
+    });
+
     it('should return an anonymous user profile', async () => {
-      const res: AnonymousGetMyUserProfileResponse = {
+      const res: AnonymousUserProfile = {
         id: 'id',
         role: UserRole.Anonymous,
         username: 'username',
@@ -107,10 +226,28 @@ describe('ProfileApiService', () => {
 
       const result = await service.getMyUserProfile();
       expect(result).toEqual(res);
+
+      const cachedCallDate = new Date(
+        initialDate.getTime() + CURRENT_USER_CACHE_TTL - 1_000,
+      );
+      jasmine.clock().mockDate(cachedCallDate);
+      const cachedResult = await service.getMyUserProfile();
+      expect(cachedResult).toEqual(res);
+
+      const uncachedCallDate = new Date(
+        initialDate.getTime() + CURRENT_USER_CACHE_TTL + 1_000,
+      );
+      jasmine.clock().mockDate(uncachedCallDate);
+      const uncachedResult = await service.getMyUserProfile();
+      expect(uncachedResult).toEqual(res);
+
+      expect(backendActorServiceMock.get_my_user_profile).toHaveBeenCalledTimes(
+        2,
+      );
     });
 
     it('should return an admin user profile', async () => {
-      const res: AdminGetMyUserProfileResponse = {
+      const res: AdminUserProfile = {
         id: 'id',
         role: UserRole.Admin,
         username: 'username',
@@ -135,7 +272,7 @@ describe('ProfileApiService', () => {
     });
 
     it('should return a reviewer user profile', async () => {
-      const res: ReviewerGetMyUserProfileResponse = {
+      const res: ReviewerUserProfile = {
         id: 'id',
         role: UserRole.Reviewer,
         username: 'username',
@@ -163,6 +300,20 @@ describe('ProfileApiService', () => {
 
       const result = await service.getMyUserProfile();
       expect(result).toEqual(res);
+    });
+
+    it('should throw if an error response is returned', async () => {
+      const apiRes: GetMyUserProfileApiResponse = {
+        err: {
+          code: 500,
+          message: 'Internal server error',
+        },
+      };
+      backendActorServiceMock.get_my_user_profile.and.resolveTo(apiRes);
+
+      await expectAsync(service.getMyUserProfile()).toBeRejectedWith(
+        new ApiError(apiRes.err),
+      );
     });
   });
 
@@ -382,11 +533,28 @@ describe('ProfileApiService', () => {
         ).toHaveBeenCalledWith(apiReq);
       });
     });
+
+    it('should throw if an error response is returned', async () => {
+      const apiRes: GetMyUserProfileApiResponse = {
+        err: {
+          code: 500,
+          message: 'Internal server error',
+        },
+      };
+      backendActorServiceMock.update_my_user_profile.and.resolveTo(apiRes);
+
+      await expectAsync(
+        service.updateMyUserProfile({
+          role: UserRole.Anonymous,
+          username: 'username',
+        }),
+      ).toBeRejectedWith(new ApiError(apiRes.err));
+    });
   });
 
   describe('createMyUserProfile()', () => {
     it('should create an anonymous user profile', async () => {
-      const res: AnonymousGetMyUserProfileResponse = {
+      const res: AnonymousUserProfile = {
         id: 'id',
         role: UserRole.Anonymous,
         username: 'username',
@@ -405,6 +573,20 @@ describe('ProfileApiService', () => {
 
       const result = await service.createMyUserProfile();
       expect(result).toEqual(res);
+    });
+
+    it('should throw if an error response is returned', async () => {
+      const apiRes: GetMyUserProfileApiResponse = {
+        err: {
+          code: 500,
+          message: 'Internal server error',
+        },
+      };
+      backendActorServiceMock.create_my_user_profile.and.resolveTo(apiRes);
+
+      await expectAsync(service.createMyUserProfile()).toBeRejectedWith(
+        new ApiError(apiRes.err),
+      );
     });
   });
 });

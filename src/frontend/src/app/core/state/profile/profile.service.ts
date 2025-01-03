@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, map } from 'rxjs';
 
 import {
+  CreateMyUserProfileResponse,
   GetMyUserProfileResponse,
   ProfileApiService,
   UpdateMyUserProfileRequest,
@@ -14,7 +15,11 @@ import {
   LoadingDialogInput,
   getLoadingDialogConfig,
 } from '~core/ui';
-import { ApiError, isNil, isNotNil } from '~core/utils';
+import { ApiError, isNil } from '~core/utils';
+
+const createProfileDialogInput: LoadingDialogInput = {
+  message: 'Creating new profile...',
+};
 
 @Injectable({
   providedIn: 'root',
@@ -24,75 +29,88 @@ export class ProfileService {
   private readonly router = inject(Router);
   private readonly dialog = inject(Dialog);
 
+  private readonly reviewerProfilesSubject = new BehaviorSubject<
+    Record<string, GetMyUserProfileResponse>
+  >({});
+  public readonly reviewerProfiles$ =
+    this.reviewerProfilesSubject.asObservable();
+
   private readonly userProfileSubject =
     new BehaviorSubject<GetMyUserProfileResponse | null>(null);
-  public readonly userProfile$ = this.userProfileSubject.asObservable();
+  public readonly currentUserProfile$ = this.userProfileSubject.asObservable();
 
-  public readonly userRole$ = this.userProfile$.pipe(
-    map(profile => (isNil(profile) ? null : profile.role)),
+  private readonly currentUserRole$ = this.currentUserProfile$.pipe(
+    map(profile => profile?.role ?? null),
   );
-
-  public readonly isReviewer$ = this.userRole$.pipe(
+  public readonly isCurrentUserReviewer$ = this.currentUserRole$.pipe(
     map(role => role === UserRole.Reviewer),
   );
-
-  public readonly isAdmin$ = this.userRole$.pipe(
+  public readonly isCurrentUserAdmin$ = this.currentUserRole$.pipe(
     map(role => role === UserRole.Admin),
   );
 
-  private createProfileMessage: LoadingDialogInput = {
-    message: 'Creating new profile...',
-  };
+  public async loadReviewerProfiles(): Promise<void> {
+    const profiles = await this.profileApiService.listReviewerProfiles();
+    const profilesMap = profiles.reduce<
+      Record<string, GetMyUserProfileResponse>
+    >(
+      (accum, profile) => ({
+        ...accum,
+        [profile.id]: profile,
+      }),
+      {},
+    );
 
-  public async loadProfile(): Promise<void> {
-    const currentProfile = this.userProfileSubject.getValue();
-    if (isNotNil(currentProfile)) {
-      return;
-    }
+    this.reviewerProfilesSubject.next(profilesMap);
+  }
 
+  public async loadCurrentUserProfile(): Promise<void> {
     try {
-      const res = await this.profileApiService.getMyUserProfile();
-      this.userProfileSubject.next(res);
+      await this.getCurrentUserProfile();
     } catch (error) {
       if (error instanceof ApiError && error.code === 404) {
         const loadingDialog = this.dialog.open(
           LoadingDialogComponent,
-          getLoadingDialogConfig(this.createProfileMessage),
+          getLoadingDialogConfig(createProfileDialogInput),
         );
 
         try {
-          await this.createProfile();
+          await this.createCurrentUserProfile();
           this.router.navigate(['profile/edit']);
         } finally {
           loadingDialog.close();
         }
-
-        return;
+      } else {
+        throw error;
       }
-
-      throw error;
     }
   }
 
-  public async saveProfile(
-    profileUpdate: UpdateMyUserProfileRequest,
+  public async updateCurrentUserProfile(
+    req: UpdateMyUserProfileRequest,
   ): Promise<void> {
     const currentProfile = this.userProfileSubject.getValue();
     if (isNil(currentProfile)) {
       throw new Error('User profile not loaded yet');
     }
 
-    await this.profileApiService.updateMyUserProfile(profileUpdate);
+    await this.profileApiService.updateMyUserProfile(req);
 
-    this.userProfileSubject.next(
-      mergeProfileUpdate(currentProfile, profileUpdate),
-    );
+    this.userProfileSubject.next(mergeProfileUpdate(currentProfile, req));
   }
 
-  private async createProfile(): Promise<void> {
-    const res = await this.profileApiService.createMyUserProfile();
-
+  private async getCurrentUserProfile(): Promise<GetMyUserProfileResponse> {
+    const res = await this.profileApiService.getMyUserProfile();
     this.userProfileSubject.next(res);
+
+    return res;
+  }
+
+  private async createCurrentUserProfile(): Promise<CreateMyUserProfileResponse> {
+    const res = await this.profileApiService.createMyUserProfile();
+    this.userProfileSubject.next(res);
+
+    return res;
   }
 }
 

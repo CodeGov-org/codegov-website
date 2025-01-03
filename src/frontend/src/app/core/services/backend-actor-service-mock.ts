@@ -4,6 +4,7 @@ export type BackendActorServiceMock = jasmine.SpyObj<BackendActorService>;
 
 export function backendActorServiceMockFactory(): BackendActorServiceMock {
   return jasmine.createSpyObj<BackendActorServiceMock>('BackendActorService', [
+    'list_reviewer_profiles',
     'get_my_user_profile',
     'get_my_user_profile_history',
     'create_my_user_profile',

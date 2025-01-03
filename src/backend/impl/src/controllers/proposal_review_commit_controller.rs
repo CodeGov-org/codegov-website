@@ -135,7 +135,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_commit() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = CreateProposalReviewCommitRequest {
             proposal_review_id: "proposal_review_id".to_string(),
             commit_sha: "commit_sha".to_string(),
@@ -177,7 +177,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_commit_unauthorized() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = CreateProposalReviewCommitRequest {
             proposal_review_id: "proposal_review_id".to_string(),
             commit_sha: "commit_sha".to_string(),
@@ -215,7 +215,7 @@ mod tests {
 
     #[rstest]
     fn update_proposal_review_commit() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = UpdateProposalReviewCommitRequest {
             id: "id".to_string(),
             state: backend_api::ReviewCommitState::Reviewed {
@@ -249,7 +249,7 @@ mod tests {
 
     #[rstest]
     fn update_proposal_review_commit_unauthorized() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = UpdateProposalReviewCommitRequest {
             id: "id".to_string(),
             state: backend_api::ReviewCommitState::Reviewed {
@@ -285,7 +285,7 @@ mod tests {
 
     #[rstest]
     fn delete_proposal_review_commit() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = DeleteProposalReviewCommitRequest {
             id: "id".to_string(),
         };
@@ -314,7 +314,7 @@ mod tests {
 
     #[rstest]
     fn delete_proposal_review_commit_unauthorized() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = DeleteProposalReviewCommitRequest {
             id: "id".to_string(),
         };

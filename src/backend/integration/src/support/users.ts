@@ -2,6 +2,7 @@ import { Actor, generateRandomIdentity } from '@hadronous/pic';
 import {
   _SERVICE as BackendService,
   CreateMyUserProfileResponse,
+  GetMyUserProfileResponse,
   UserConfigUpdate,
 } from '@cg/backend';
 import { OkResponse, extractOkResponse } from './response';
@@ -27,8 +28,9 @@ export class UsersOM {
         social_links: [],
       },
     });
+    const updatedProfile = await this.getUser(identity);
 
-    return [identity, userProfile];
+    return [identity, updatedProfile];
   }
 
   public async createAdmin(): Promise<
@@ -40,8 +42,9 @@ export class UsersOM {
         bio: [],
       },
     });
+    const updatedProfile = await this.getUser(identity);
 
-    return [identity, userProfile];
+    return [identity, updatedProfile];
   }
 
   public async createAnonymous(): Promise<
@@ -63,6 +66,14 @@ export class UsersOM {
     const createOkRes = extractOkResponse(createRes);
 
     return [identity, createOkRes];
+  }
+
+  private async getUser(
+    identity: Identity,
+  ): Promise<OkResponse<GetMyUserProfileResponse>> {
+    this.actor.setIdentity(identity);
+    const getRes = await this.actor.get_my_user_profile();
+    return extractOkResponse(getRes);
   }
 
   private async updateUser(

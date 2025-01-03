@@ -30,8 +30,8 @@ describe('ProposalListComponent', () => {
     defineProp(proposalServiceMock, 'currentProposalList$', of([]));
 
     profileServiceMock = profileServiceMockFactory();
-    defineProp(profileServiceMock, 'isReviewer$', of(true));
-    defineProp(profileServiceMock, 'userProfile$', of(null));
+    defineProp(profileServiceMock, 'isCurrentUserReviewer$', of(true));
+    defineProp(profileServiceMock, 'currentUserProfile$', of(null));
 
     reviewServiceMock = reviewServiceMockFactory();
     defineProp(reviewServiceMock, 'userReviewList$', of([]));

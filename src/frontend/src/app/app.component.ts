@@ -58,7 +58,7 @@ export class AppComponent implements OnInit {
   constructor(private readonly profileService: ProfileService) {}
 
   public ngOnInit(): void {
-    this.profileService.loadProfile().catch(() => {
+    this.profileService.loadCurrentUserProfile().catch(() => {
       // this error will be thrown if the user is not logged in, so we ignore it
     });
   }

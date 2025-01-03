@@ -16,7 +16,7 @@ import {
 } from '@angular/forms';
 
 import {
-  ReviewerGetMyUserProfileResponse,
+  ReviewerUserProfile,
   UpdateMyUserProfileRequest,
   UserRole,
 } from '~core/api';
@@ -57,19 +57,6 @@ export interface ReviewerProfileForm {
     LoadingButtonComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
-
-      .wallet-address-link {
-        display: block;
-        overflow-x: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        margin-right: common.size(4);
-      }
-    `,
-  ],
   template: `
     <form [formGroup]="profileForm()" (ngSubmit)="onSubmit()">
       <app-key-value-grid>
@@ -127,7 +114,7 @@ export interface ReviewerProfileForm {
             <app-input-hint>
               @if (hasWalletAddress()) {
                 <a
-                  class="wallet-address-link"
+                  class="truncate"
                   [href]="walletAddressLink()"
                   target="_blank"
                   rel="nofollow noreferrer"
@@ -168,8 +155,7 @@ export interface ReviewerProfileForm {
   `,
 })
 export class ReviewerPersonalInfoFormComponent {
-  public readonly userProfile =
-    input.required<ReviewerGetMyUserProfileResponse>();
+  public readonly userProfile = input.required<ReviewerUserProfile>();
 
   public readonly formClose = output();
 
@@ -228,7 +214,7 @@ export class ReviewerPersonalInfoFormComponent {
     };
 
     try {
-      await this.profileService.saveProfile(profileUpdate);
+      await this.profileService.updateCurrentUserProfile(profileUpdate);
     } finally {
       this.isSaving.set(false);
       this.formClose.emit();

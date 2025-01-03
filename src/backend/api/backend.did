@@ -41,12 +41,21 @@ type UserConfig = variant {
   anonymous;
 };
 
-type GetMyUserProfileResponse = variant {
+type UserProfile = record {
+  id : text;
+  username : text;
+  config : UserConfig;
+};
+
+type ListReviewerProfilesResponse = variant {
   ok : record {
-    id : text;
-    username : text;
-    config : UserConfig;
+    profiles : vec UserProfile;
   };
+  err : Err;
+};
+
+type GetMyUserProfileResponse = variant {
+  ok : UserProfile;
   err : Err;
 };
 
@@ -396,6 +405,7 @@ type HttpResponse = record {
 // End HTTP
 
 service : {
+  list_reviewer_profiles : () -> (ListReviewerProfilesResponse) query;
   get_my_user_profile : () -> (GetMyUserProfileResponse) query;
   get_my_user_profile_history : () -> (GetMyUserProfileHistoryResponse) query;
   create_my_user_profile : () -> (CreateMyUserProfileResponse);
