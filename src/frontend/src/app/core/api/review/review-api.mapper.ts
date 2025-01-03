@@ -34,7 +34,7 @@ export function mapCreateProposalReviewRequest(
     review_duration_mins: toCandidOpt(req.reviewDurationMins),
     summary: toCandidOpt(req.summary),
     build_reproduced: toCandidOpt(req.buildReproduced),
-    vote: mapProposalVoteRequest(req.vote),
+    vote: toCandidOpt(mapProposalVoteRequest(req.vote)),
   };
 }
 
@@ -43,12 +43,11 @@ export function mapUpdateProposalReviewRequest(
 ): UpdateProposalReviewApiRequest {
   return {
     proposal_id: req.proposalId,
-    // [TODO] - connect with form once it's implemented
-    status: [],
+    status: toCandidOpt(mapProposalReviewStatusRequest(req.status)),
     review_duration_mins: toCandidOpt(req.reviewDurationMins),
     summary: toCandidOpt(req.summary),
     build_reproduced: toCandidOpt(req.buildReproduced),
-    vote: mapProposalVoteRequest(req.vote),
+    vote: toCandidOpt(mapProposalVoteRequest(req.vote)),
   };
 }
 
@@ -101,6 +100,24 @@ export function mapGetProposalReviewResponse(
   };
 }
 
+function mapProposalReviewStatusRequest(
+  status?: ProposalReviewStatus | null,
+): ProposalReviewStatusApi | null {
+  switch (status) {
+    case ProposalReviewStatus.Published: {
+      return { published: null };
+    }
+
+    case ProposalReviewStatus.Draft: {
+      return { draft: null };
+    }
+
+    default: {
+      return null;
+    }
+  }
+}
+
 function mapProposalReviewStatusResponse(
   res: ProposalReviewStatusApi,
 ): ProposalReviewStatus {
@@ -111,16 +128,16 @@ function mapProposalReviewStatusResponse(
   return ProposalReviewStatus.Draft;
 }
 
-function mapProposalVoteRequest(vote?: boolean | null): [] | [ApiProposalVote] {
+function mapProposalVoteRequest(vote?: boolean | null): ApiProposalVote | null {
   switch (vote) {
     case true: {
-      return [{ yes: null }];
+      return { yes: null };
     }
     case false: {
-      return [{ no: null }];
+      return { no: null };
     }
     default: {
-      return [];
+      return null;
     }
   }
 }

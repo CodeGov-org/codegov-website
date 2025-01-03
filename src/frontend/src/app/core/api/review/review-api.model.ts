@@ -11,6 +11,7 @@ export interface CreateProposalReviewRequest {
 
 export interface UpdateProposalReviewRequest {
   proposalId: string;
+  status?: ProposalReviewStatus | null;
   reviewDurationMins?: number | null;
   summary?: string | null;
   buildReproduced?: boolean | null;
@@ -46,14 +47,14 @@ export interface GetProposalReviewResponse {
 }
 
 export enum ProposalReviewStatus {
-  Draft,
-  Published,
+  Draft = 'Draft',
+  Published = 'Published',
 }
 
 export enum ProposalReviewVote {
-  Adopt,
-  Reject,
-  NoVote,
+  Adopt = 'Adopt',
+  Reject = 'Reject',
+  NoVote = 'NoVote',
 }
 
 export interface ProposalCommitReviewHighlight {

@@ -1,16 +1,17 @@
-import { inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { inject, Signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, map } from 'rxjs';
+import { map } from 'rxjs';
 
 import { filterNotNil } from './nil';
 
-export function routeParam(name: string): Observable<string> {
+export function routeParamSignal(name: string): Signal<string | undefined> {
   const route = inject(ActivatedRoute);
 
-  return route.paramMap.pipe(
-    map(params => params.get(name)),
-    filterNotNil(),
-    takeUntilDestroyed(),
+  return toSignal(
+    route.paramMap.pipe(
+      map(params => params.get(name)),
+      filterNotNil(),
+    ),
   );
 }

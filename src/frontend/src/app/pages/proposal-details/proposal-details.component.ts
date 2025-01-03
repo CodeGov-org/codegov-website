@@ -4,6 +4,7 @@ import {
   Component,
   SecurityContext,
   computed,
+  effect,
   signal,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -25,7 +26,7 @@ import {
   KeyValueGridComponent,
   ValueColComponent,
 } from '~core/ui';
-import { routeParam, toSyncSignal } from '~core/utils';
+import { isNotNil, routeParamSignal, toSyncSignal } from '~core/utils';
 import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
 
 @Component({
@@ -180,7 +181,11 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               proposal.state === ProposalState().InProgress &&
               (isReviewer() || isAdmin())
             ) {
-              <button type="button" class="btn" (click)="onToggleSummary()">
+              <button
+                type="button"
+                class="btn btn--outline"
+                (click)="onToggleSummary()"
+              >
                 {{
                   showSummary()
                     ? 'Show proposal description'
@@ -259,6 +264,8 @@ export class ProposalDetailsComponent {
   public readonly isReviewer = toSyncSignal(this.profileService.isReviewer$);
   public readonly userProfile = toSyncSignal(this.profileService.userProfile$);
 
+  public readonly currentProposalId = routeParamSignal('id');
+
   public readonly userReviewList = toSyncSignal(
     this.reviewService.userReviewList$,
   );
@@ -277,8 +284,11 @@ export class ProposalDetailsComponent {
     private readonly profileService: ProfileService,
     private readonly reviewService: ReviewService,
   ) {
-    routeParam('id').subscribe(proposalId => {
-      this.proposalService.setCurrentProposalId(proposalId);
+    effect(() => {
+      const proposalId = this.currentProposalId();
+      if (isNotNil(proposalId)) {
+        this.proposalService.setCurrentProposalId(proposalId);
+      }
     });
 
     this.proposalService.loadProposalList(ProposalState.Any);

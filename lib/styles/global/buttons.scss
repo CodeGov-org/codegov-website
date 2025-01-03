@@ -58,6 +58,26 @@ $btn-disabled-color: rgba(colors.$primary, 0.45);
     border-color: $btn-disabled-color;
     background-color: transparent;
   }
+
+  &.btn--success {
+    color: colors.$success;
+    border-color: colors.$success;
+
+    &:hover:not(:disabled) {
+      background-color: colors.$success;
+      border-color: colors.$success;
+    }
+  }
+
+  &.btn--error {
+    color: colors.$error;
+    border-color: colors.$error;
+
+    &:hover:not(:disabled) {
+      background-color: colors.$error;
+      border-color: colors.$error;
+    }
+  }
 }
 
 .btn-group {

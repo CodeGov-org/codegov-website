@@ -8,15 +8,29 @@ import { LoadingIconComponent } from '../../icons';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
+      .loading-button {
+        &:disabled {
+          cursor: not-allowed;
+        }
+      }
+
       .loading-button__text--transparent {
         color: transparent;
       }
     `,
   ],
   template: `
-    <button [type]="type()" [disabled]="disabled()" [class]="btnClass()">
+    <button
+      [type]="type()"
+      [disabled]="isSaving() || disabled()"
+      [class]="'loading-button ' + btnClass()"
+    >
       @if (isSaving()) {
-        <app-loading-icon class="btn--loading" aria-label="Saving" />
+        <app-loading-icon
+          class="btn--loading"
+          aria-label="Saving"
+          [theme]="theme()"
+        />
       }
 
       <div
@@ -30,6 +44,8 @@ import { LoadingIconComponent } from '../../icons';
 })
 export class LoadingButtonComponent {
   public readonly type = input<'submit' | 'button'>('button');
+
+  public readonly theme = input<'primary' | 'white'>('primary');
 
   public readonly disabled = input(false);
 

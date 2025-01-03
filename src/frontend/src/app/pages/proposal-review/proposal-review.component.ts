@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -16,7 +17,7 @@ import {
   KeyValueGridComponent,
   ValueColComponent,
 } from '~core/ui';
-import { isNotNil, routeParam } from '~core/utils';
+import { isNotNil, routeParamSignal } from '~core/utils';
 
 @Component({
   selector: 'app-proposal-review',
@@ -200,7 +201,9 @@ export class ProposalReviewComponent {
     () => this.userProfile()?.id === this.currentReview()?.userId,
   );
 
+  public readonly currentReviewId = routeParamSignal('id');
   public readonly currentReview = toSignal(this.reviewService.currentReview$);
+
   public readonly currentProposalId = computed(
     () => this.currentReview()?.proposalId,
   );
@@ -213,8 +216,12 @@ export class ProposalReviewComponent {
     private readonly proposalService: ProposalService,
     private readonly profileService: ProfileService,
   ) {
-    routeParam('id').subscribe(reviewId => {
-      this.reviewService.loadReview(reviewId);
+    effect(() => {
+      const reviewId = this.currentReviewId();
+
+      if (isNotNil(reviewId)) {
+        this.reviewService.loadReview(reviewId);
+      }
     });
 
     if (isNotNil(this.currentProposalId())) {

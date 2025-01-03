@@ -3,21 +3,18 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
+  effect,
   inject,
   signal,
 } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { first } from 'rxjs';
 
 import { CardComponent, BadgeComponent } from '@cg/angular-ui';
 import { ProposalReviewStatus, ProposalState } from '~core/api';
-import {
-  ProposalService,
-  ReviewService,
-  ReviewSubmissionService,
-} from '~core/state';
-import { filterNotNil, routeParam, toSyncSignal } from '~core/utils';
+import { ProposalService, ReviewSubmissionService } from '~core/state';
+import { LoadingButtonComponent } from '~core/ui';
+import { isNotNil, routeParamSignal, toSyncSignal } from '~core/utils';
 import { ReviewCommitsFormComponent } from './review-commits-form';
 import { ReviewDetailsFormComponent } from './review-details-form';
 
@@ -28,6 +25,7 @@ import { ReviewDetailsFormComponent } from './review-details-form';
     ReactiveFormsModule,
     CardComponent,
     BadgeComponent,
+    LoadingButtonComponent,
     ReviewCommitsFormComponent,
     ReviewDetailsFormComponent,
   ],
@@ -49,6 +47,11 @@ import { ReviewDetailsFormComponent } from './review-details-form';
 
       .section-heading {
         margin-top: common.size(8);
+      }
+
+      .publish-btn-group {
+        margin-top: common.size(4);
+        padding-right: common.size(4);
       }
     `,
   ],
@@ -76,37 +79,80 @@ import { ReviewDetailsFormComponent } from './review-details-form';
           <app-review-details-form />
         </div>
       </cg-card>
+
+      <div class="btn-group publish-btn-group">
+        @if (review()?.status === ProposalReviewStatus().Published) {
+          <app-loading-button
+            [isSaving]="isStatusChanging()"
+            class="btn btn--outline btn--error"
+            (click)="editReview()"
+            theme="white"
+          >
+            Edit
+          </app-loading-button>
+        } @else {
+          <app-loading-button
+            [isSaving]="isStatusChanging()"
+            class="btn btn--outline btn--success"
+            (click)="publishReview()"
+            theme="white"
+          >
+            Publish
+          </app-loading-button>
+        }
+      </div>
     }
   `,
 })
 export class ProposalReviewEditComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly proposalService = inject(ProposalService);
-  private readonly reviewService = inject(ReviewService);
   private readonly reviewSubmissionService = inject(ReviewSubmissionService);
 
   public readonly ProposalReviewStatus = signal(ProposalReviewStatus);
+
+  public readonly currentProposalId = routeParamSignal('id');
   public readonly currentProposal = toSyncSignal(
     this.proposalService.currentProposal$,
   );
-  public readonly review = toSyncSignal(this.reviewService.currentReview$);
+  public readonly review = toSyncSignal(this.reviewSubmissionService.review$);
+
+  public readonly isStatusChanging = signal(false);
 
   constructor() {
-    routeParam('id').subscribe(proposalId => {
-      this.proposalService.setCurrentProposalId(proposalId);
-      this.reviewSubmissionService.loadOrCreateReview(proposalId);
+    effect(() => {
+      const proposalId = this.currentProposalId();
+
+      if (isNotNil(proposalId)) {
+        this.proposalService.setCurrentProposalId(proposalId);
+        this.reviewSubmissionService.loadOrCreateReview(proposalId);
+      }
     });
 
-    this.proposalService.currentProposal$
-      .pipe(filterNotNil(), first())
-      .subscribe(proposal => {
+    effect(() => {
+      const proposal = this.currentProposal();
+
+      if (isNotNil(proposal)) {
         if (proposal.state === ProposalState.Completed) {
           this.router.navigate(['review', 'view', { id: proposal.id }]);
         }
-      });
+      }
+    });
   }
 
   public ngOnInit(): void {
     this.proposalService.loadProposalList(ProposalState.InProgress);
+  }
+
+  public async publishReview(): Promise<void> {
+    this.isStatusChanging.set(true);
+    await this.reviewSubmissionService.publishReview();
+    this.isStatusChanging.set(false);
+  }
+
+  public async editReview(): Promise<void> {
+    this.isStatusChanging.set(true);
+    await this.reviewSubmissionService.editReview();
+    this.isStatusChanging.set(false);
   }
 }

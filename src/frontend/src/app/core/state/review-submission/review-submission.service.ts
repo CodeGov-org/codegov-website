@@ -15,6 +15,7 @@ import {
   GetProposalReviewCommitResponse,
   UpdateProposalReviewRequest,
   ReviewCommitDetails,
+  ProposalReviewStatus,
 } from '../../api';
 import { batchApiCall, filterNotNil, isNil, isNotNil } from '../../utils';
 
@@ -79,15 +80,7 @@ export class ReviewSubmissionService {
         takeUntilDestroyed(),
         filterNotNil(),
         batchApiCall(review =>
-          from(
-            this.reviewApiService.updateProposalReview({
-              proposalId: this.proposalId!,
-              summary: review.summary,
-              reviewDurationMins: review.reviewDurationMins,
-              buildReproduced: review.buildReproduced,
-              vote: review.vote,
-            }),
-          ),
+          from(this.reviewApiService.updateProposalReview(review)),
         ),
       )
       .subscribe({});
@@ -133,6 +126,38 @@ export class ReviewSubmissionService {
     }
 
     this.pendingReviewSubject.next(updatedReview);
+  }
+
+  public async publishReview(): Promise<void> {
+    await this.updateStatus(ProposalReviewStatus.Published);
+  }
+
+  public async editReview(): Promise<void> {
+    await this.updateStatus(ProposalReviewStatus.Draft);
+  }
+
+  private async updateStatus(status: ProposalReviewStatus): Promise<void> {
+    if (isNil(this.proposalId)) {
+      throw new Error(
+        'Tried to update review status without selecting a proposal',
+      );
+    }
+
+    const currentReview = this.reviewSubject.value;
+    if (isNil(currentReview)) {
+      throw new Error('Tried to update review status before review was loaded');
+    }
+
+    await this.reviewApiService.updateProposalReview({
+      proposalId: this.proposalId,
+      status,
+    });
+
+    this.reviewSubject.next({
+      ...currentReview,
+      ...(this.pendingReviewSubject.value || {}),
+      status,
+    });
   }
 
   public addCommit(): void {
