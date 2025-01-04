@@ -1,4 +1,5 @@
 export * from './api-response';
+export * from './cachable';
 export * from './candid';
 export * from './form';
 export * from './keys-of';

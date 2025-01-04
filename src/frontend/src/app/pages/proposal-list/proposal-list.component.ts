@@ -112,7 +112,10 @@ interface FilterForm {
     `,
   ],
   template: `
-    <h1 class="h3">Proposals</h1>
+    <div class="page-heading">
+      <h1 class="h3">Proposals</h1>
+    </div>
+
     <form [formGroup]="filterForm()">
       <div class="filter">
         <div class="filter__label">Select code review status:</div>
@@ -243,6 +246,7 @@ interface FilterForm {
               {{ proposal.codeGovVote }}
             </app-value-col>
           </app-key-value-grid>
+
           <div class="btn-group">
             @if (
               proposal.state === proposalState().InProgress && isReviewer()
@@ -274,6 +278,7 @@ interface FilterForm {
                 </a>
               }
             }
+
             <a class="btn btn--outline" [routerLink]="[proposal.id]">
               View details
             </a>
@@ -290,8 +295,12 @@ export class ProposalListComponent {
     this.proposalService.currentProposalList$,
   );
 
-  public readonly isReviewer = toSignal(this.profileService.isReviewer$);
-  public readonly userProfile = toSignal(this.profileService.userProfile$);
+  public readonly isReviewer = toSignal(
+    this.profileService.isCurrentUserReviewer$,
+  );
+  public readonly userProfile = toSignal(
+    this.profileService.currentUserProfile$,
+  );
   public readonly userReviewList = toSignal(this.reviewService.userReviewList$);
 
   public readonly proposalListWithReviewIds = computed(() => {

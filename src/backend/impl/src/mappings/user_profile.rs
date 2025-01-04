@@ -86,6 +86,21 @@ impl From<HistoryAction> for backend_api::HistoryAction {
     }
 }
 
+pub fn map_list_reviewer_profiles_response(
+    profiles: Vec<(UserId, UserProfile)>,
+) -> backend_api::ListReviewerProfilesResponse {
+    backend_api::ListReviewerProfilesResponse {
+        profiles: profiles
+            .into_iter()
+            .map(|(user_id, profile)| backend_api::UserProfile {
+                id: user_id.to_string(),
+                username: profile.username,
+                config: profile.config.into(),
+            })
+            .collect(),
+    }
+}
+
 pub fn map_get_my_user_profile_response(
     user_id: UserId,
     user_profile: UserProfile,

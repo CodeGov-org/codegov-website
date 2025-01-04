@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  OnInit,
   SecurityContext,
   computed,
   effect,
@@ -78,7 +79,9 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
   ],
   template: `
     @if (currentProposal(); as proposal) {
-      <h1 class="h3 proposal-title">{{ proposal.title }}</h1>
+      <div class="page-heading">
+        <h1 class="h3">{{ proposal.title }}</h1>
+      </div>
 
       <cg-card class="proposal">
         <div slot="cardContent">
@@ -196,28 +199,26 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
             @if (
               isReviewer() && proposal.state === ProposalState().InProgress
             ) {
-              @if (userReview() === null) {
+              @let review = userReview();
+
+              @if (review === null) {
                 <a
                   class="btn btn--outline"
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Create review
                 </a>
-              } @else if (
-                userReview()!.status === ProposalReviewStatus().Draft
-              ) {
+              } @else if (review.status === ProposalReviewStatus().Draft) {
                 <a
                   class="btn btn--outline"
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Edit review
                 </a>
-              } @else if (
-                userReview()!.status === ProposalReviewStatus().Published
-              ) {
+              } @else if (review.status === ProposalReviewStatus().Published) {
                 <a
                   class="btn btn--outline"
-                  [routerLink]="['/review', userReview()!.id, 'view']"
+                  [routerLink]="['/review', review.id, 'view']"
                 >
                   My review
                 </a>
@@ -241,7 +242,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
     }
   `,
 })
-export class ProposalDetailsComponent {
+export class ProposalDetailsComponent implements OnInit {
   public readonly ProposalReviewStatus = signal(ProposalReviewStatus);
   public readonly ProposalState = signal(ProposalState);
   public readonly LinkBaseUrl = signal(ProposalLinkBaseUrl);
@@ -260,11 +261,17 @@ export class ProposalDetailsComponent {
     ),
   );
 
-  public readonly isAdmin = toSyncSignal(this.profileService.isAdmin$);
-  public readonly isReviewer = toSyncSignal(this.profileService.isReviewer$);
-  public readonly userProfile = toSyncSignal(this.profileService.userProfile$);
+  public readonly isAdmin = toSyncSignal(
+    this.profileService.isCurrentUserAdmin$,
+  );
+  public readonly isReviewer = toSyncSignal(
+    this.profileService.isCurrentUserReviewer$,
+  );
+  public readonly userProfile = toSyncSignal(
+    this.profileService.currentUserProfile$,
+  );
 
-  public readonly currentProposalId = routeParamSignal('id');
+  public readonly currentProposalId = routeParamSignal('proposalId');
 
   public readonly userReviewList = toSyncSignal(
     this.reviewService.userReviewList$,
@@ -286,11 +293,22 @@ export class ProposalDetailsComponent {
   ) {
     effect(() => {
       const proposalId = this.currentProposalId();
+
       if (isNotNil(proposalId)) {
         this.proposalService.setCurrentProposalId(proposalId);
       }
     });
 
+    effect(() => {
+      const userProfile = this.userProfile();
+
+      if (isNotNil(userProfile)) {
+        this.reviewService.loadReviewListByReviewerId(userProfile.id);
+      }
+    });
+  }
+
+  public ngOnInit(): void {
     this.proposalService.loadProposalList(ProposalState.Any);
   }
 

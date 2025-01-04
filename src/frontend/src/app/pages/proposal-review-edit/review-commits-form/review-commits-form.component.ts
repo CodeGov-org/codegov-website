@@ -92,6 +92,7 @@ import { boolToRadio, isNil, radioToBool, toSyncSignal } from '~core/utils';
                   <app-input-hint>
                     @if (commitForms()[i].controls.commitSha.value) {
                       <a
+                        class="truncate"
                         [href]="
                           'https://github.com/dfinity/ic/commit/' +
                           commitForms()[i].controls.commitSha.value

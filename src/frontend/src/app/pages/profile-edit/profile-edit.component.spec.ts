@@ -32,8 +32,8 @@ describe('ProfileViewComponent', () => {
 
   beforeEach(async () => {
     profileServiceMock = profileServiceMockFactory();
-    defineProp(profileServiceMock, 'userProfile$', of(null));
-    defineProp(profileServiceMock, 'isReviewer$', of(true));
+    defineProp(profileServiceMock, 'currentUserProfile$', of(null));
+    defineProp(profileServiceMock, 'isCurrentUserReviewer$', of(true));
 
     proposalServiceMock = proposalServiceMockFactory();
     defineProp(proposalServiceMock, 'currentProposal$', of(null));

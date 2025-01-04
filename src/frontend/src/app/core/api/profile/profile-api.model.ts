@@ -24,36 +24,36 @@ export interface SocialMediaLink {
   username: string;
 }
 
-/**
- * GetMyUserProfile types
- */
-
-export interface BaseGetMyUserProfileResponse<T extends UserRole> {
+export interface BaseUserProfile<T extends UserRole> {
   role: T;
   id: string;
   username: string;
 }
 
-export type AnonymousGetMyUserProfileResponse =
-  BaseGetMyUserProfileResponse<UserRole.Anonymous>;
+export type AnonymousUserProfile = BaseUserProfile<UserRole.Anonymous>;
 
-export interface ReviewerGetMyUserProfileResponse
-  extends BaseGetMyUserProfileResponse<UserRole.Reviewer> {
+export interface ReviewerUserProfile
+  extends BaseUserProfile<UserRole.Reviewer> {
   neuronId: bigint;
   walletAddress: string;
   bio: string;
   socialMedia: SocialMediaLink[];
 }
 
-export interface AdminGetMyUserProfileResponse
-  extends BaseGetMyUserProfileResponse<UserRole.Admin> {
+export interface AdminUserProfile extends BaseUserProfile<UserRole.Admin> {
   bio: string;
 }
 
-export type GetMyUserProfileResponse =
-  | AnonymousGetMyUserProfileResponse
-  | ReviewerGetMyUserProfileResponse
-  | AdminGetMyUserProfileResponse;
+export type UserProfile =
+  | AnonymousUserProfile
+  | ReviewerUserProfile
+  | AdminUserProfile;
+
+export type ListReviewerProfilesResponse = UserProfile[];
+
+export type GetMyUserProfileResponse = UserProfile;
+
+export type CreateMyUserProfileResponse = UserProfile;
 
 /**
  * UpdateMyUserProfile types

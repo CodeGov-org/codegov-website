@@ -135,7 +135,7 @@ mod tests {
 
     #[rstest]
     #[case::anonymous_principal(Principal::anonymous())]
-    #[case::non_admin_principal(fixtures::principal())]
+    #[case::non_admin_principal(fixtures::principal_a())]
     async fn sync_proposals_unauthorized(#[case] calling_principal: Principal) {
         let error = ApiError::permission_denied(&format!(
             "Principal {} must be an admin to call this endpoint",
@@ -171,7 +171,7 @@ mod tests {
 
     #[rstest]
     async fn sync_proposals() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let synced_proposals_count = 2;
         let completed_proposals_count = 1;
 

@@ -70,9 +70,9 @@ describe('ProposalDetailsComponent', () => {
     );
 
     profileServiceMock = profileServiceMockFactory();
-    defineProp(profileServiceMock, 'isAdmin$', of(false));
-    defineProp(profileServiceMock, 'isReviewer$', of(true));
-    defineProp(profileServiceMock, 'userProfile$', of(null));
+    defineProp(profileServiceMock, 'isCurrentUserAdmin$', of(false));
+    defineProp(profileServiceMock, 'isCurrentUserReviewer$', of(true));
+    defineProp(profileServiceMock, 'currentUserProfile$', of(null));
 
     activatedRouteMock = activatedRouteMockFactory();
     defineProp(

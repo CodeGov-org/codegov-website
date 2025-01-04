@@ -69,7 +69,7 @@ mod tests {
 
     #[rstest]
     #[case::anonymous_principal(Principal::anonymous())]
-    #[case::non_admin_principal(fixtures::principal())]
+    #[case::non_admin_principal(fixtures::principal_a())]
     fn list_logs_unauthorized(#[case] calling_principal: Principal) {
         let request = LogsFilterRequest {
             before_timestamp_ms: None,
@@ -105,7 +105,7 @@ mod tests {
 
     #[rstest]
     fn list_logs() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = LogsFilterRequest {
             before_timestamp_ms: None,
             after_timestamp_ms: None,

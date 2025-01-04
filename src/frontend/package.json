@@ -6,7 +6,7 @@
     "build": "node ./pull-global-config.mjs && ng build frontend -c production",
     "build:dev": "node ./pull-global-config.mjs && ng build frontend -c development",
     "test": "node ./pull-global-config.mjs && ng test frontend --no-watch --no-progress --browsers=ChromeHeadless",
-    "test:watch": "node ./pull-global-config.mjs && ng test frontend",
+    "test:watch": "node ./pull-global-config.mjs && ng test frontend --browsers=ChromeHeadless",
     "test:coverage": "pnpm run test --code-coverage"
   },
   "dependencies": {

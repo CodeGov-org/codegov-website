@@ -3,8 +3,18 @@ use candid::Principal;
 use rstest::*;
 
 #[fixture]
-pub fn principal() -> Principal {
+pub fn principal_a() -> Principal {
     Principal::from_slice(&[0])
+}
+
+#[fixture]
+pub fn principal_b() -> Principal {
+    Principal::from_slice(&[1])
+}
+
+#[fixture]
+pub fn principal_c() -> Principal {
+    Principal::from_slice(&[1])
 }
 
 #[fixture]

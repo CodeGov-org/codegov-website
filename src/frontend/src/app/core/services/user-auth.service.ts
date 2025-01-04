@@ -37,7 +37,7 @@ export class UserAuthService {
       loadingDialog.close();
     }
 
-    await this.profileService.loadProfile();
+    await this.profileService.loadCurrentUserProfile();
   }
 
   public async logout(): Promise<void> {

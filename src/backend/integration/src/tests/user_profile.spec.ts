@@ -30,6 +30,23 @@ describe('User Profile', () => {
     await driver.tearDown();
   });
 
+  describe('list reviewer profiles', () => {
+    it('should return a list of reviewers', async () => {
+      const [[, alice], [, bob]] = await Promise.all([
+        driver.users.createReviewer(),
+        driver.users.createReviewer(),
+        driver.users.createAnonymous(),
+        driver.users.createAdmin(),
+      ]);
+      const res = await driver.actor.list_reviewer_profiles();
+      const resOk = extractOkResponse(res);
+
+      expect(resOk).toEqual({
+        profiles: [alice, bob],
+      });
+    });
+  });
+
   describe('create user profile', () => {
     it('should not allow the anonymous principal', async () => {
       driver.actor.setIdentity(anonymousIdentity);

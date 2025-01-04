@@ -1,5 +1,5 @@
 use crate::{
-    fixtures::{date_time_a, principal},
+    fixtures::{date_time_a, principal_a},
     repositories::{
         HistoryAction, NeuronId, SocialLink, SocialLinkPlatform, UserConfig, UserProfile,
         UserProfileHistoryEntry,
@@ -76,7 +76,7 @@ pub fn admin_user_profile() -> UserProfile {
 pub fn user_profile_history() -> Vec<UserProfileHistoryEntry> {
     vec![UserProfileHistoryEntry {
         action: HistoryAction::Create,
-        principal: principal(),
+        principal: principal_a(),
         date_time: date_time_a(),
         data: UserProfile {
             ..reviewer_user_profile()

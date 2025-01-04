@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 
 import { BackendActorService } from '~core/services';
-import { handleErr } from '~core/utils';
+import { Cachable, handleErr } from '~core/utils';
 import {
   mapGetProposalResponse,
   mapListProposalsRequest,
@@ -11,6 +11,8 @@ import {
   ListProposalsRequest,
   ProposalState,
 } from './proposal-api.model';
+
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 @Injectable({
   providedIn: 'root',
@@ -30,6 +32,7 @@ export class ProposalApiService {
     return await this.listProposals({ state: ProposalState.Any });
   }
 
+  @Cachable({ ttl: CACHE_TTL })
   private async listProposals(
     req: ListProposalsRequest,
   ): Promise<GetProposalResponse[]> {

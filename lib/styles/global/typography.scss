@@ -140,3 +140,24 @@ code {
     background-color: colors.$slate-900;
   }
 }
+
+.truncate {
+  display: block;
+  overflow-x: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-right: sizing.size(4);
+}
+
+.page-heading {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: sizing.size(4);
+
+  > * {
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+}

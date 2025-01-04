@@ -11,7 +11,7 @@ import { ReviewerPersonalInfoFormComponent } from '../reviewer-personal-info-for
 import { ReviewerSocialMediaComponent } from '../reviewer-social-media';
 import { ReviewerSocialMediaFormComponent } from '../reviewer-social-media-form';
 import { CardComponent } from '@cg/angular-ui';
-import { ReviewerGetMyUserProfileResponse } from '~core/api';
+import { ReviewerUserProfile } from '~core/api';
 import { InfoIconComponent } from '~core/icons';
 import {
   KeyColComponent,
@@ -52,7 +52,7 @@ import {
   ],
   template: `
     <cg-card class="reviewer-profile-card">
-      <h2 class="h3" slot="cardTitle">Profile</h2>
+      <h2 class="h4" slot="cardTitle">Profile</h2>
 
       <app-key-value-grid slot="cardContent">
         <app-key-col id="reviewer-id">ID</app-key-col>
@@ -104,7 +104,7 @@ import {
     </cg-card>
 
     <cg-card class="reviewer-personal-info-card">
-      <h2 class="h3" slot="cardTitle">Personal info</h2>
+      <h2 class="h4" slot="cardTitle">Personal info</h2>
 
       <div slot="cardContent">
         @if (isPersonalInfoEditable()) {
@@ -122,7 +122,7 @@ import {
     </cg-card>
 
     <cg-card>
-      <h2 class="h3" slot="cardTitle">Social media</h2>
+      <h2 class="h4" slot="cardTitle">Social media</h2>
 
       <div slot="cardContent">
         @if (isSocialMediaEditable()) {
@@ -141,8 +141,7 @@ import {
   `,
 })
 export class ReviewerProfileComponent {
-  public readonly userProfile =
-    input.required<ReviewerGetMyUserProfileResponse>();
+  public readonly userProfile = input.required<ReviewerUserProfile>();
   public readonly isPersonalInfoEditable = signal(false);
   public readonly isSocialMediaEditable = signal(false);
 

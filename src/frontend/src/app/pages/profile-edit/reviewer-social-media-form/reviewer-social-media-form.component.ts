@@ -17,7 +17,7 @@ import {
 
 import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from '../profile.model';
 import {
-  ReviewerGetMyUserProfileResponse,
+  ReviewerUserProfile,
   SocialMediaLink,
   UpdateMyUserProfileRequest,
   UserRole,
@@ -111,8 +111,7 @@ export type SocialMediaForm = {
   `,
 })
 export class ReviewerSocialMediaFormComponent {
-  public readonly userProfile =
-    input.required<ReviewerGetMyUserProfileResponse>();
+  public readonly userProfile = input.required<ReviewerUserProfile>();
 
   public readonly formClose = output();
   public readonly formSaving = output();
@@ -166,7 +165,7 @@ export class ReviewerSocialMediaFormComponent {
     };
 
     try {
-      await this.profileService.saveProfile(profileUpdate);
+      await this.profileService.updateCurrentUserProfile(profileUpdate);
     } finally {
       this.isSaving.set(false);
       this.formClose.emit();

@@ -5,7 +5,7 @@ import {
   output,
 } from '@angular/core';
 
-import { AdminGetMyUserProfileResponse } from '~core/api';
+import { AdminUserProfile } from '~core/api';
 import {
   KeyColComponent,
   KeyValueGridComponent,
@@ -35,7 +35,7 @@ import {
   `,
 })
 export class AdminPersonalInfoComponent {
-  public readonly userProfile = input.required<AdminGetMyUserProfileResponse>();
+  public readonly userProfile = input.required<AdminUserProfile>();
 
   public readonly edit = output();
 

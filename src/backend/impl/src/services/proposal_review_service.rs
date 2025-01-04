@@ -842,7 +842,7 @@ mod tests {
     async fn create_proposal_review(
         #[case] fixture: (ProposalReview, CreateProposalReviewRequest),
     ) {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::user_id();
         let (proposal_review, request) = fixture;
         let proposal_id = ProposalId::try_from(request.proposal_id.as_str()).unwrap();
@@ -908,7 +908,7 @@ mod tests {
     async fn create_proposal_review_invalid(
         #[case] fixture: (CreateProposalReviewRequest, ApiError),
     ) {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (request, api_error) = fixture;
 
         let mut u_repository_mock = MockUserProfileRepository::new();
@@ -943,7 +943,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_no_user() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (_, request) = proposal_review_create();
 
         let mut u_repository_mock = MockUserProfileRepository::new();
@@ -988,7 +988,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_no_proposal() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::user_id();
         let (_, request) = proposal_review_create();
         let proposal_id = ProposalId::try_from(request.proposal_id.as_str()).unwrap();
@@ -1039,7 +1039,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_proposal_already_completed() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::user_id();
         let (_, request) = proposal_review_create();
         let proposal_id = ProposalId::try_from(request.proposal_id.as_str()).unwrap();
@@ -1092,7 +1092,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_already_created() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::user_id();
         let (_, request) = proposal_review_create();
         let proposal_id = ProposalId::try_from(request.proposal_id.as_str()).unwrap();
@@ -1272,7 +1272,7 @@ mod tests {
             ProposalReview,
         ),
     ) {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (id, original_proposal_review, request, updated_proposal_review) = fixture;
 
@@ -1321,7 +1321,7 @@ mod tests {
 
     #[rstest]
     fn update_proposal_review_no_user() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (_, _, request, _) = proposal_review_update();
 
         let mut u_repository_mock = MockUserProfileRepository::new();
@@ -1365,7 +1365,7 @@ mod tests {
 
     #[rstest]
     fn update_proposal_review_not_found() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (_, original_proposal_review, request, _) = proposal_review_update();
 
@@ -1413,7 +1413,7 @@ mod tests {
 
     #[rstest]
     fn update_proposal_review_proposal_already_completed() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (id, original_proposal_review, request, _) = proposal_review_update();
 
@@ -1472,7 +1472,7 @@ mod tests {
             ProposalReview,
         ),
     ) {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (id, original_proposal_review, request, _) = fixture;
 
@@ -1530,7 +1530,7 @@ mod tests {
 
     #[rstest]
     fn update_proposal_review_already_published_to_draft() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (id, original_proposal_review, request, updated_proposal_review) =
             proposal_review_update_draft();
@@ -1584,7 +1584,7 @@ mod tests {
     #[case::review_duration_zero(proposal_review_update_duration_zero())]
     #[case::review_duration_too_long(proposal_review_update_duration_too_long())]
     fn proposal_review_update_invalid(#[case] fixture: (UpdateProposalReviewRequest, ApiError)) {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let (request, expected_error) = fixture;
 
         let mut u_repository_mock = MockUserProfileRepository::new();
@@ -1631,7 +1631,7 @@ mod tests {
             ApiError,
         ),
     ) {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (id, original_proposal_review, request, expected_error) = fixture;
 
@@ -1999,7 +1999,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_image() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (
             id,
@@ -2072,7 +2072,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_image_already_exists() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (id, original_proposal_review, image_id, _, request, _, _) =
             proposal_review_create_image();
@@ -2136,7 +2136,7 @@ mod tests {
 
     #[rstest]
     async fn delete_proposal_review_image() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (id, original_proposal_review, request, updated_proposal_review) =
             proposal_review_update_image_delete();
@@ -2209,7 +2209,7 @@ mod tests {
 
     #[rstest]
     async fn delete_proposal_review_image_not_found() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (id, original_proposal_review, request, _) = proposal_review_update_image_delete();
 

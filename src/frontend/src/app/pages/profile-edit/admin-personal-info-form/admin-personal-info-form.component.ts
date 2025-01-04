@@ -15,7 +15,7 @@ import {
 } from '@angular/forms';
 
 import {
-  AdminGetMyUserProfileResponse,
+  AdminUserProfile,
   AdminUpdateMyUserProfileRequest,
   UserRole,
 } from '~core/api';
@@ -120,7 +120,7 @@ interface AdminProfileForm {
   `,
 })
 export class AdminPersonalInfoFormComponent {
-  public readonly userProfile = input.required<AdminGetMyUserProfileResponse>();
+  public readonly userProfile = input.required<AdminUserProfile>();
 
   public readonly formClose = output();
 
@@ -162,7 +162,7 @@ export class AdminPersonalInfoFormComponent {
     };
 
     try {
-      await this.profileService.saveProfile(profileUpdate);
+      await this.profileService.updateCurrentUserProfile(profileUpdate);
     } finally {
       this.isSaving.set(false);
       this.formClose.emit();

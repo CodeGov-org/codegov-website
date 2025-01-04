@@ -94,7 +94,7 @@ mod tests {
 
     #[rstest]
     fn assert_principal_not_anonymous() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
 
         let repository_mock = MockUserProfileRepository::new();
         let service = AccessControlServiceImpl::new(repository_mock);
@@ -120,7 +120,7 @@ mod tests {
 
     #[rstest]
     fn assert_principal_is_admin() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
         let profile = fixtures::admin_user_profile();
 
@@ -140,7 +140,7 @@ mod tests {
 
     #[rstest]
     fn assert_principal_is_admin_no_profile() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
 
         let mut repository_mock = MockUserProfileRepository::new();
         repository_mock
@@ -166,7 +166,7 @@ mod tests {
 
     #[rstest]
     fn assert_principal_is_admin_anonymous_user() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
         let profile = fixtures::anonymous_user_profile();
 
@@ -194,7 +194,7 @@ mod tests {
 
     #[rstest]
     fn assert_principal_is_admin_reviewer() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
         let profile = fixtures::reviewer_user_profile();
 
@@ -222,7 +222,7 @@ mod tests {
 
     #[rstest]
     fn assert_principal_is_reviewer() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
         let profile = fixtures::reviewer_user_profile();
 
@@ -242,7 +242,7 @@ mod tests {
 
     #[rstest]
     fn assert_principal_is_reviewer_no_profile() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
 
         let mut repository_mock = MockUserProfileRepository::new();
         repository_mock
@@ -268,7 +268,7 @@ mod tests {
 
     #[rstest]
     fn assert_principal_is_reviewer_anonymous_user() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
         let profile = fixtures::anonymous_user_profile();
 
@@ -296,7 +296,7 @@ mod tests {
 
     #[rstest]
     fn assert_principal_is_reviewer_admin() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
         let profile = fixtures::admin_user_profile();
 

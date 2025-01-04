@@ -85,6 +85,7 @@ $btn-disabled-color: rgba(colors.$primary, 0.45);
   flex-direction: row;
   justify-content: end;
   align-items: center;
+  margin-top: sizing.size(4);
 
   > :not(:last-child) {
     margin-right: sizing.size(2);
