@@ -7,7 +7,6 @@ import {
 
 @Component({
   selector: 'app-input-hint',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-template #hintTemplate>

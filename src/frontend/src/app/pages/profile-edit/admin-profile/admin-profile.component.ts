@@ -9,7 +9,7 @@ import {
 import { AdminPersonalInfoComponent } from '../admin-personal-info';
 import { AdminPersonalInfoFormComponent } from '../admin-personal-info-form';
 import { CardComponent } from '@cg/angular-ui';
-import { AdminGetMyUserProfileResponse } from '~core/api';
+import { AdminUserProfile } from '~core/api';
 import { InfoIconComponent } from '~core/icons';
 import {
   KeyColComponent,
@@ -20,7 +20,6 @@ import {
 
 @Component({
   selector: 'app-admin-profile',
-  standalone: true,
   imports: [
     CommonModule,
     InfoIconComponent,
@@ -35,20 +34,20 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .admin-profile-card {
-        margin-bottom: size(3);
+        margin-bottom: common.size(3);
 
-        @include sm {
-          margin-bottom: size(4);
+        @include common.sm {
+          margin-bottom: common.size(4);
         }
       }
     `,
   ],
   template: `
     <cg-card class="admin-profile-card">
-      <h2 class="h3" slot="cardTitle">Profile</h2>
+      <h2 class="h4" slot="cardTitle">Profile</h2>
 
       <app-key-value-grid slot="cardContent">
         <app-key-col id="admin-id">ID</app-key-col>
@@ -75,7 +74,7 @@ import {
     </cg-card>
 
     <cg-card>
-      <h2 class="h3" slot="cardTitle">Personal Info</h2>
+      <h2 class="h4" slot="cardTitle">Personal Info</h2>
 
       <div slot="cardContent">
         @if (isFormEditable()) {
@@ -94,7 +93,7 @@ import {
   `,
 })
 export class AdminProfileComponent {
-  public readonly userProfile = input.required<AdminGetMyUserProfileResponse>();
+  public readonly userProfile = input.required<AdminUserProfile>();
 
   public readonly adminInfo = signal(
     'Use DFX command to change this property.',

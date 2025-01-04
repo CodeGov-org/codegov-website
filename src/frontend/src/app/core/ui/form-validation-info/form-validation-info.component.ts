@@ -12,19 +12,18 @@ import { isNotNil } from '../../utils';
 
 @Component({
   selector: 'app-form-validation-info',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
         display: block;
         text-align: right;
-        margin-bottom: size(2);
+        margin-bottom: common.size(2);
 
-        color: $error;
-        @include text-sm;
+        color: common.$error;
+        @include common.text-sm;
       }
 
       :host-context(.form-validation-info--hidden) {

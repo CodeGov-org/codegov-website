@@ -4,7 +4,8 @@ export type ProfileServiceMock = jasmine.SpyObj<ProfileService>;
 
 export function profileServiceMockFactory(): ProfileServiceMock {
   return jasmine.createSpyObj<ProfileServiceMock>('ProfileService', [
-    'loadProfile',
-    'saveProfile',
+    'loadReviewerProfiles',
+    'loadCurrentUserProfile',
+    'updateCurrentUserProfile',
   ]);
 }

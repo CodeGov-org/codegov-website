@@ -8,14 +8,13 @@ import {
 
 @Component({
   selector: 'app-input-error',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .input-error {
-        color: $error;
+        color: common.$error;
       }
     `,
   ],

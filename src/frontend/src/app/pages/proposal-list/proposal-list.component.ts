@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -20,8 +21,8 @@ import {
   ValueColComponent,
   FormFieldComponent,
   InputDirective,
-  LabelDirective,
 } from '~core/ui';
+import { isNotNil } from '~core/utils';
 
 enum ReviewPeriodStateFilter {
   InReview = 'InReview',
@@ -41,7 +42,6 @@ interface FilterForm {
 
 @Component({
   selector: 'app-proposal-list',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -50,7 +50,6 @@ interface FilterForm {
     ValueColComponent,
     FormFieldComponent,
     InputDirective,
-    LabelDirective,
     FormatDatePipe,
     RouterLink,
     CardComponent,
@@ -60,14 +59,14 @@ interface FilterForm {
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
-        @include page-content;
+        @include common.page-content;
       }
 
       .proposal {
-        margin-bottom: size(6);
+        margin-bottom: common.size(6);
       }
 
       .proposal__title,
@@ -76,7 +75,7 @@ interface FilterForm {
       }
 
       .proposal__link {
-        margin-right: size(4);
+        margin-right: common.size(4);
       }
 
       .proposal__vote {
@@ -84,36 +83,39 @@ interface FilterForm {
       }
 
       .proposal__vote--adopt {
-        color: $success;
+        color: common.$success;
       }
 
       .proposal__vote--reject {
-        color: $error;
+        color: common.$error;
       }
 
       .filter {
         display: flex;
         flex-direction: column;
-        margin-bottom: size(4);
+        margin-bottom: common.size(4);
 
-        @include sm {
+        @include common.sm {
           flex-direction: row;
         }
       }
 
       .filter__label {
-        margin-bottom: size(2);
-        margin-right: size(2);
+        margin-bottom: common.size(2);
+        margin-right: common.size(2);
         width: 100%;
 
-        @include sm {
+        @include common.sm {
           width: 50%;
         }
       }
     `,
   ],
   template: `
-    <h1 class="h3">Proposals</h1>
+    <div class="page-heading">
+      <h1 class="h3">Proposals</h1>
+    </div>
+
     <form [formGroup]="filterForm()">
       <div class="filter">
         <div class="filter__label">Select code review status:</div>
@@ -244,6 +246,7 @@ interface FilterForm {
               {{ proposal.codeGovVote }}
             </app-value-col>
           </app-key-value-grid>
+
           <div class="btn-group">
             @if (
               proposal.state === proposalState().InProgress && isReviewer()
@@ -275,6 +278,7 @@ interface FilterForm {
                 </a>
               }
             }
+
             <a class="btn btn--outline" [routerLink]="[proposal.id]">
               View details
             </a>
@@ -291,8 +295,12 @@ export class ProposalListComponent {
     this.proposalService.currentProposalList$,
   );
 
-  public readonly isReviewer = toSignal(this.profileService.isReviewer$);
-  public readonly userProfile = toSignal(this.profileService.userProfile$);
+  public readonly isReviewer = toSignal(
+    this.profileService.isCurrentUserReviewer$,
+  );
+  public readonly userProfile = toSignal(
+    this.profileService.currentUserProfile$,
+  );
   public readonly userReviewList = toSignal(this.reviewService.userReviewList$);
 
   public readonly proposalListWithReviewIds = computed(() => {
@@ -326,9 +334,14 @@ export class ProposalListComponent {
     private readonly reviewService: ReviewService,
   ) {
     this.proposalService.loadProposalList(ProposalState.InProgress);
-    if (this.userProfile()) {
-      this.reviewService.loadReviewListByReviewerId(this.userProfile()!.id);
-    }
+
+    effect(() => {
+      const userProfile = this.userProfile();
+
+      if (isNotNil(userProfile)) {
+        this.reviewService.loadReviewListByReviewerId(userProfile.id);
+      }
+    });
 
     this.filterForm()
       .valueChanges.pipe(takeUntilDestroyed())

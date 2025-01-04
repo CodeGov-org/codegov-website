@@ -7,6 +7,7 @@ const meta: Meta = {
   },
   argTypes: {
     class: {
+      control: { type: 'select' },
       options: [
         'icon-xs',
         'icon-sm',
@@ -15,7 +16,6 @@ const meta: Meta = {
         'icon-xl',
         'icon-xxl',
       ],
-      control: { type: 'select' },
     },
   },
   render: args => `

@@ -18,7 +18,10 @@ export class TextInput {
   @Prop({ reflect: true })
   public value?: string;
 
-  @Prop()
+  @Prop({ reflect: true })
+  public placeholder?: string;
+
+  @Prop({ reflect: true })
   public readonly = false;
 
   @State()
@@ -47,6 +50,7 @@ export class TextInput {
           type="text"
           class="text-input__input"
           value={this.value}
+          placeholder={this.placeholder}
           readOnly={this.readonly}
           ref={elem => this.setInputElem(elem)}
           onInput={event => this.handleChange(event)}

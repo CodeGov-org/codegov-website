@@ -20,7 +20,6 @@ type TouchedFn = () => void;
 @DefineCustomElement(defineCustomElement)
 @Component({
   selector: 'cg-radio-input',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
@@ -29,9 +28,7 @@ type TouchedFn = () => void;
       multi: true,
     },
   ],
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class RadioInputComponent implements ControlValueAccessor {
   private notifyChange: ChangeFn = () => {};

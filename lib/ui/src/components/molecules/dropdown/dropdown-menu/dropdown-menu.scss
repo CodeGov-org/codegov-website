@@ -1,17 +1,17 @@
-@import '~@cg/styles/common';
+@use '~@cg/styles/common';
 
 :host-context(.dropdown-menu) {
-  border-radius: $border-radius;
+  border-radius: common.$border-sm-radius;
   overflow: hidden;
   min-width: 8rem;
 
   display: flex;
   flex-direction: column;
 
-  color: $slate-900;
-  background-color: $white;
-  @include dark {
-    color: $slate-200;
-    background-color: $slate-700;
+  color: common.$slate-900;
+  background-color: common.$white;
+  @include common.dark {
+    color: common.$slate-200;
+    background-color: common.$slate-700;
   }
 }

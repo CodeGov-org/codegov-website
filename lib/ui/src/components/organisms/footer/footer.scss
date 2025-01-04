@@ -1,42 +1,43 @@
-@import '~@cg/styles/common';
+@use '~@cg/styles/common';
 
 .footer {
-  background-color: $white;
+  background-color: common.$white;
 
-  @include dark {
-    background-color: $slate-900;
+  @include common.dark {
+    background-color: common.$slate-900;
   }
 }
 
 .footer__main {
-  @include container;
-  @include px(4);
-  @include py(6);
+  @include common.px(4);
+  @include common.py(6);
   margin: auto;
 
   display: flex;
   justify-content: space-between;
   flex-direction: column;
-  @include md {
+
+  @include common.container;
+  @include common.md {
     flex-direction: row;
   }
 }
 
 .footer__copyright {
-  background-color: $slate-100;
+  background-color: common.$slate-100;
 
-  @include dark {
-    background-color: $slate-800;
+  @include common.dark {
+    background-color: common.$slate-800;
   }
 }
 
 .footer__copyright-content {
-  @include container;
-  @include px(4);
-  @include py(6);
+  @include common.px(4);
+  @include common.py(6);
   margin: auto;
 
-  @include md {
+  @include common.container;
+  @include common.md {
     display: flex;
     justify-content: center;
   }
@@ -45,39 +46,39 @@
 .footer__copyright-text {
   font-size: 0.875rem;
 
-  @include dark {
-    color: $slate-300;
+  @include common.dark {
+    color: common.$slate-300;
   }
 }
 
 .footer__link-category-container {
-  @include py(3);
+  @include common.py(3);
 
-  @include md {
-    @include py(5);
+  @include common.md {
+    @include common.py(5);
   }
 }
 
 .footer__link-category-title {
-  @include text-md;
-  font-weight: $font-weight-medium;
+  @include common.text-md;
+  font-weight: common.$font-weight-medium;
   text-transform: uppercase;
 
-  color: $slate-900;
-  @include dark {
-    color: $white;
+  color: common.$slate-900;
+  @include common.dark {
+    color: common.$white;
   }
 }
 
 .footer__link-category {
   list-style: none;
-  font-weight: $font-weight-medium;
+  font-weight: common.$font-weight-medium;
   padding: 0;
   margin: 0;
 
-  color: $slate-500;
-  @include dark {
-    color: $slate-400;
+  color: common.$slate-500;
+  @include common.dark {
+    color: common.$slate-400;
   }
 }
 

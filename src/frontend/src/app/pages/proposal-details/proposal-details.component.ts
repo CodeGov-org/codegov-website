@@ -2,8 +2,10 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  OnInit,
   SecurityContext,
   computed,
+  effect,
   signal,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -25,12 +27,11 @@ import {
   KeyValueGridComponent,
   ValueColComponent,
 } from '~core/ui';
-import { routeParam, toSyncSignal } from '~core/utils';
+import { isNotNil, routeParamSignal, toSyncSignal } from '~core/utils';
 import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
 
 @Component({
   selector: 'app-proposal-details',
-  standalone: true,
   imports: [
     CommonModule,
     CardComponent,
@@ -44,14 +45,14 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
-        @include page-content;
+        @include common.page-content;
       }
 
       .proposal {
-        margin-bottom: size(6);
+        margin-bottom: common.size(6);
       }
 
       .proposal__title,
@@ -60,7 +61,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
       }
 
       .proposal__link {
-        margin-right: size(4);
+        margin-right: common.size(4);
       }
 
       .proposal__vote {
@@ -68,17 +69,19 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
       }
 
       .proposal__vote--adopt {
-        color: $success;
+        color: common.$success;
       }
 
       .proposal__vote--reject {
-        color: $error;
+        color: common.$error;
       }
     `,
   ],
   template: `
     @if (currentProposal(); as proposal) {
-      <h1 class="h3 proposal-title">{{ proposal.title }}</h1>
+      <div class="page-heading">
+        <h1 class="h3">{{ proposal.title }}</h1>
+      </div>
 
       <cg-card class="proposal">
         <div slot="cardContent">
@@ -181,7 +184,11 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               proposal.state === ProposalState().InProgress &&
               (isReviewer() || isAdmin())
             ) {
-              <button type="button" class="btn" (click)="onToggleSummary()">
+              <button
+                type="button"
+                class="btn btn--outline"
+                (click)="onToggleSummary()"
+              >
                 {{
                   showSummary()
                     ? 'Show proposal description'
@@ -192,28 +199,26 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
             @if (
               isReviewer() && proposal.state === ProposalState().InProgress
             ) {
-              @if (userReview() === null) {
+              @let review = userReview();
+
+              @if (review === null) {
                 <a
                   class="btn btn--outline"
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Create review
                 </a>
-              } @else if (
-                userReview()!.status === ProposalReviewStatus().Draft
-              ) {
+              } @else if (review.status === ProposalReviewStatus().Draft) {
                 <a
                   class="btn btn--outline"
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Edit review
                 </a>
-              } @else if (
-                userReview()!.status === ProposalReviewStatus().Published
-              ) {
+              } @else if (review.status === ProposalReviewStatus().Published) {
                 <a
                   class="btn btn--outline"
-                  [routerLink]="['/review', userReview()!.id, 'view']"
+                  [routerLink]="['/review', review.id, 'view']"
                 >
                   My review
                 </a>
@@ -237,7 +242,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
     }
   `,
 })
-export class ProposalDetailsComponent {
+export class ProposalDetailsComponent implements OnInit {
   public readonly ProposalReviewStatus = signal(ProposalReviewStatus);
   public readonly ProposalState = signal(ProposalState);
   public readonly LinkBaseUrl = signal(ProposalLinkBaseUrl);
@@ -256,9 +261,17 @@ export class ProposalDetailsComponent {
     ),
   );
 
-  public readonly isAdmin = toSyncSignal(this.profileService.isAdmin$);
-  public readonly isReviewer = toSyncSignal(this.profileService.isReviewer$);
-  public readonly userProfile = toSyncSignal(this.profileService.userProfile$);
+  public readonly isAdmin = toSyncSignal(
+    this.profileService.isCurrentUserAdmin$,
+  );
+  public readonly isReviewer = toSyncSignal(
+    this.profileService.isCurrentUserReviewer$,
+  );
+  public readonly userProfile = toSyncSignal(
+    this.profileService.currentUserProfile$,
+  );
+
+  public readonly currentProposalId = routeParamSignal('proposalId');
 
   public readonly userReviewList = toSyncSignal(
     this.reviewService.userReviewList$,
@@ -278,10 +291,24 @@ export class ProposalDetailsComponent {
     private readonly profileService: ProfileService,
     private readonly reviewService: ReviewService,
   ) {
-    routeParam('id').subscribe(proposalId => {
-      this.proposalService.setCurrentProposalId(proposalId);
+    effect(() => {
+      const proposalId = this.currentProposalId();
+
+      if (isNotNil(proposalId)) {
+        this.proposalService.setCurrentProposalId(proposalId);
+      }
     });
 
+    effect(() => {
+      const userProfile = this.userProfile();
+
+      if (isNotNil(userProfile)) {
+        this.reviewService.loadReviewListByReviewerId(userProfile.id);
+      }
+    });
+  }
+
+  public ngOnInit(): void {
     this.proposalService.loadProposalList(ProposalState.Any);
   }
 

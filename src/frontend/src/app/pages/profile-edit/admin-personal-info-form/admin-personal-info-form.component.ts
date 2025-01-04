@@ -15,7 +15,7 @@ import {
 } from '@angular/forms';
 
 import {
-  AdminGetMyUserProfileResponse,
+  AdminUserProfile,
   AdminUpdateMyUserProfileRequest,
   UserRole,
 } from '~core/api';
@@ -39,7 +39,6 @@ interface AdminProfileForm {
 
 @Component({
   selector: 'app-admin-personal-info-form',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -111,7 +110,7 @@ interface AdminProfileForm {
         <app-loading-button
           btnClass="btn"
           type="submit"
-          [disabled]="profileForm().invalid || isSaving()"
+          [disabled]="profileForm().invalid"
           [isSaving]="isSaving()"
         >
           Save
@@ -121,7 +120,7 @@ interface AdminProfileForm {
   `,
 })
 export class AdminPersonalInfoFormComponent {
-  public readonly userProfile = input.required<AdminGetMyUserProfileResponse>();
+  public readonly userProfile = input.required<AdminUserProfile>();
 
   public readonly formClose = output();
 
@@ -163,7 +162,7 @@ export class AdminPersonalInfoFormComponent {
     };
 
     try {
-      await this.profileService.saveProfile(profileUpdate);
+      await this.profileService.updateCurrentUserProfile(profileUpdate);
     } finally {
       this.isSaving.set(false);
       this.formClose.emit();

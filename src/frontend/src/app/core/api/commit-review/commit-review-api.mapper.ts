@@ -59,7 +59,6 @@ export function mapGetProposalReviewCommitResponse(
 ): GetProposalReviewCommitResponse {
   return {
     id: res.id,
-    listId: res.id,
     proposalReviewId: res.proposal_review_commit.proposal_review_id,
     userId: res.proposal_review_commit.user_id,
     createdAt: fromCandidDate(res.proposal_review_commit.created_at),
@@ -74,17 +73,17 @@ export function mapGetProposalReviewCommitResponse(
 function mapReviewCommitRequestDetails(
   req: ReviewCommitDetails,
 ): ReviewCommitState {
-  if (req.reviewed === false) {
-    return { not_reviewed: null };
+  if (req.reviewed) {
+    return {
+      reviewed: {
+        highlights: req.highlights,
+        comment: toCandidOpt(req.comment),
+        matches_description: toCandidOpt(req.matchesDescription),
+      },
+    };
   }
 
-  return {
-    reviewed: {
-      highlights: req.highlights,
-      comment: toCandidOpt(req.comment),
-      matches_description: toCandidOpt(req.matchesDescription),
-    },
-  };
+  return { not_reviewed: null };
 }
 
 function mapReviewCommitResponseDetails(

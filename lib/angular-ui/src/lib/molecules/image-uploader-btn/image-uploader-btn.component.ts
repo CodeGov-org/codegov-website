@@ -17,11 +17,8 @@ type ImagesSelectedEvent = CustomEvent<
 @DefineCustomElement(defineCustomElement)
 @Component({
   selector: 'cg-image-uploader-btn',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class ImageUploaderBtnComponent {
   @HostListener('imagesSelected', ['$event'])

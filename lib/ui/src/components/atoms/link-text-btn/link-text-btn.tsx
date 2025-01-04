@@ -6,10 +6,10 @@ import { Component, ComponentInterface, Prop, State, h } from '@stencil/core';
   scoped: true,
 })
 export class TextBtnComponent implements ComponentInterface {
-  @Prop()
+  @Prop({ reflect: true })
   public href!: string;
 
-  @Prop()
+  @Prop({ reflect: true })
   public isExternal? = false;
 
   @State()

@@ -9,13 +9,13 @@ export const mapFromCanisterResponse = (response: HttpResponse): Response => {
   };
 };
 
-export const filterCertificateHeaders = (response: Response): Response => {
+export const upperCaseCertificateHeaders = (response: Response): Response => {
   return {
     ...response,
-    headers: response.headers.filter(
-      ([key]) =>
-        key.toLowerCase() !== 'ic-certificateexpression' &&
-        key.toLowerCase() !== 'ic-certificate',
+    headers: response.headers.map(([key, value]) =>
+      key.toLowerCase() === 'ic-certificate'
+        ? ['IC-Certificate', value]
+        : [key, value],
     ),
   };
 };

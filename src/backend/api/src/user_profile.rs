@@ -52,11 +52,18 @@ pub struct SocialLink {
 }
 
 #[derive(Debug, Clone, CandidType, PartialEq, Eq)]
-pub struct GetMyUserProfileResponse {
+pub struct UserProfile {
     pub id: String,
     pub username: String,
     pub config: UserConfig,
 }
+
+#[derive(Debug, Clone, CandidType, PartialEq, Eq)]
+pub struct ListReviewerProfilesResponse {
+    pub profiles: Vec<UserProfile>,
+}
+
+pub type GetMyUserProfileResponse = UserProfile;
 
 #[derive(Debug, Clone, CandidType, PartialEq, Eq)]
 pub struct CreateMyUserProfileResponse {

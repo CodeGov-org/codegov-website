@@ -8,7 +8,6 @@ import {
 } from '@angular/router';
 import { provideIcAgent, provideIcAuth } from '@hadronous/ic-angular';
 
-import { BackendActorService } from '~core/services';
 import { ENV } from '~env';
 import { ROUTES } from './app.routes';
 
@@ -32,6 +31,5 @@ export const APP_CONFIG: ApplicationConfig = {
       identityProvider: ENV.IDENTITY_PROVIDER,
       derivationOrigin: ENV.DERIVATION_ORIGIN,
     }),
-    BackendActorService,
   ],
 };

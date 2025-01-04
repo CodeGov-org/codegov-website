@@ -6,10 +6,18 @@ use crate::{
 };
 use backend_api::{
     ApiError, ApiResult, CreateMyUserProfileResponse, GetMyUserProfileHistoryResponse,
-    GetMyUserProfileResponse, UpdateMyUserProfileRequest, UpdateUserProfileRequest,
+    GetMyUserProfileResponse, ListReviewerProfilesResponse, UpdateMyUserProfileRequest,
+    UpdateUserProfileRequest,
 };
 use candid::Principal;
 use ic_cdk::*;
+
+#[query]
+fn list_reviewer_profiles() -> ApiResult<ListReviewerProfilesResponse> {
+    UserProfileController::default()
+        .list_reviewer_profiles()
+        .into()
+}
 
 #[query]
 fn get_my_user_profile() -> ApiResult<GetMyUserProfileResponse> {
@@ -82,6 +90,12 @@ impl<A: AccessControlService, U: UserProfileService> UserProfileController<A, U>
             access_control_service,
             user_profile_service,
         }
+    }
+
+    fn list_reviewer_profiles(&self) -> Result<ListReviewerProfilesResponse, ApiError> {
+        let profiles = self.user_profile_service.list_reviewer_profiles()?;
+
+        Ok(profiles)
     }
 
     fn get_my_user_profile(
@@ -163,7 +177,10 @@ mod tests {
     use super::*;
     use crate::{
         fixtures,
-        mappings::{map_get_my_user_profile_history_response, map_get_my_user_profile_response},
+        mappings::{
+            map_get_my_user_profile_history_response, map_get_my_user_profile_response,
+            map_list_reviewer_profiles_response,
+        },
         services::{MockAccessControlService, MockUserProfileService},
     };
     use backend_api::UserConfig;
@@ -171,8 +188,28 @@ mod tests {
     use rstest::*;
 
     #[rstest]
+    fn list_reviewer_profiles() {
+        let profiles = map_list_reviewer_profiles_response(vec![(
+            fixtures::user_id(),
+            fixtures::reviewer_user_profile(),
+        )]);
+
+        let mut service_mock = MockUserProfileService::new();
+        service_mock
+            .expect_list_reviewer_profiles()
+            .once()
+            .return_const(Ok(profiles.clone()));
+
+        let controller = UserProfileController::new(MockAccessControlService::new(), service_mock);
+
+        let result = controller.list_reviewer_profiles().unwrap();
+
+        assert_eq!(result, profiles);
+    }
+
+    #[rstest]
     fn get_my_user_profile() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let profile =
             map_get_my_user_profile_response(fixtures::user_id(), fixtures::admin_user_profile());
 
@@ -224,7 +261,7 @@ mod tests {
 
     #[rstest]
     fn get_my_user_profile_no_profile() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let error = ApiError::not_found("User profile not found");
 
         let mut access_control_service_mock = MockAccessControlService::new();
@@ -253,7 +290,7 @@ mod tests {
 
     #[rstest]
     fn get_my_user_profile_history() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let profile_history =
             map_get_my_user_profile_history_response(fixtures::user_profile_history());
 
@@ -329,7 +366,7 @@ mod tests {
 
     #[rstest]
     async fn create_my_user_profile() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let profile = CreateMyUserProfileResponse {
             id: "id".to_string(),
             username: "username".to_string(),
@@ -387,7 +424,7 @@ mod tests {
 
     #[rstest]
     fn update_user_profile() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::user_id();
         let request = UpdateUserProfileRequest {
             user_id: user_id.to_string(),
@@ -423,7 +460,7 @@ mod tests {
 
     #[rstest]
     fn update_my_user_profile() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = UpdateMyUserProfileRequest {
             username: Some("username".to_string()),
             config: None,
@@ -511,7 +548,7 @@ mod tests {
 
     #[rstest]
     fn update_user_profile_non_admin_principal() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::user_id();
         let request = UpdateUserProfileRequest {
             user_id: user_id.to_string(),

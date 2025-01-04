@@ -1,26 +1,26 @@
-@import '~@cg/styles/common';
+@use '~@cg/styles/common';
 
 :host-context(.card) {
-  @include layer-10;
+  @include common.layer-10;
   display: block;
-  border-radius: $border-radius;
-  border: $border-sm-size solid $slate-300;
-  background-color: $slate-100;
-  padding: size(4);
+  border-radius: common.$border-sm-radius;
+  border: common.$border-sm-size solid common.$slate-300;
+  background-color: common.$slate-100;
+  padding: common.size(4);
 
-  @include dark {
-    border-color: $slate-700;
-    background-color: $slate-800;
+  @include common.dark {
+    border-color: common.$slate-700;
+    background-color: common.$slate-800;
   }
 }
 
 .card__title:not(:empty) {
-  margin-bottom: size(6);
-  border-bottom: $border-sm-size solid $slate-300;
-  color: $black;
+  margin-bottom: common.size(6);
+  border-bottom: common.$border-sm-size solid common.$slate-300;
+  color: common.$black;
 
-  @include dark {
-    border-color: $slate-700;
-    color: $white;
+  @include common.dark {
+    border-color: common.$slate-700;
+    color: common.$white;
   }
 }

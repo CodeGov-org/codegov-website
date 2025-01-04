@@ -1,3 +1,5 @@
+@use 'responsiveness';
+
 $font-family-base:
   system-ui,
   -apple-system,
@@ -45,7 +47,7 @@ $font-weight-bolder: 800;
   line-height: $line-height-base * 1.1;
 
   font-size: $font-size-base * 1.1;
-  @include sm {
+  @include responsiveness.sm {
     font-size: $font-size-base * 1.3;
   }
 }
@@ -54,7 +56,7 @@ $font-weight-bolder: 800;
   line-height: $line-height-base * 1.3;
 
   font-size: $font-size-base * 1.3;
-  @include sm {
+  @include responsiveness.sm {
     font-size: $font-size-base * 1.5;
   }
 }
@@ -63,7 +65,7 @@ $font-weight-bolder: 800;
   line-height: $line-height-base * 1.5;
 
   font-size: $font-size-base * 1.5;
-  @include sm {
+  @include responsiveness.sm {
     font-size: $font-size-base * 1.7;
   }
 }
@@ -72,7 +74,7 @@ $font-weight-bolder: 800;
   line-height: $line-height-base * 1.7;
 
   font-size: $font-size-base * 1.7;
-  @include sm {
+  @include responsiveness.sm {
     font-size: $font-size-base * 1.9;
   }
 }
@@ -81,7 +83,7 @@ $font-weight-bolder: 800;
   line-height: $line-height-base * 2;
 
   font-size: $font-size-base * 2;
-  @include sm {
+  @include responsiveness.sm {
     font-size: $font-size-base * 2.2;
   }
 }

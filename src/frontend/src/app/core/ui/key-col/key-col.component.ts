@@ -2,27 +2,25 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-key-col',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
         grid-column: span 3;
-        @include md {
+        color: common.$black;
+
+        @include common.md {
           grid-column: span 1;
         }
 
-        color: $black;
-        @include dark {
-          color: $white;
+        @include common.dark {
+          color: common.$white;
         }
       }
     `,
   ],
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class KeyColComponent {}

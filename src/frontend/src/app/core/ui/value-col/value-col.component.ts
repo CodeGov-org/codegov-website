@@ -2,11 +2,10 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-value-col',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
         display: flex;
@@ -14,16 +13,14 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
         align-items: center;
 
         grid-column: span 3;
-        margin-bottom: size(6);
-        @include md {
+        margin-bottom: common.size(6);
+        @include common.md {
           grid-column: span 2;
           margin-bottom: 0;
         }
       }
     `,
   ],
-  template: `
-    <ng-content />
-  `,
+  template: `<ng-content />`,
 })
 export class ValueColComponent {}

@@ -2,20 +2,23 @@ import { Ok, toCandidOpt } from '../../utils';
 import {
   GetMyUserProfileResponse as GetMyUserProfileApiResponse,
   UpdateMyUserProfileRequest as UpdateMyUserProfileApiRequest,
+  UserProfile as ApiUserProfile,
   SocialLink as ApiSocialLink,
   SocialLinkPlatform as ApiSocialLinkPlatform,
+  ListReviewerProfilesResponse as ListReviewerProfilesApiResponse,
+  CreateMyUserProfileResponse as CreateMyUserProfileApiResponse,
 } from '@cg/backend';
 import {
+  CreateMyUserProfileResponse,
   GetMyUserProfileResponse,
+  ListReviewerProfilesResponse,
   SocialMediaLink,
   SocialMediaLinkType,
   UpdateMyUserProfileRequest,
   UserRole,
 } from './profile-api.model';
 
-export function mapGetMyUserProfileResponse(
-  res: Ok<GetMyUserProfileApiResponse>,
-): GetMyUserProfileResponse {
+function mapUserProfileResponse(res: ApiUserProfile): GetMyUserProfileResponse {
   if ('reviewer' in res.config) {
     const config = res.config.reviewer;
 
@@ -42,6 +45,24 @@ export function mapGetMyUserProfileResponse(
       username: res.username,
     };
   }
+}
+
+export function mapListReviewerProfilesResponse(
+  res: Ok<ListReviewerProfilesApiResponse>,
+): ListReviewerProfilesResponse {
+  return res.profiles.map(mapUserProfileResponse);
+}
+
+export function mapGetMyUserProfileResponse(
+  res: Ok<GetMyUserProfileApiResponse>,
+): GetMyUserProfileResponse {
+  return mapUserProfileResponse(res);
+}
+
+export function mapCreateMyUserProfileResponse(
+  res: Ok<CreateMyUserProfileApiResponse>,
+): CreateMyUserProfileResponse {
+  return mapUserProfileResponse(res);
 }
 
 function mapSocialLinksResponse(

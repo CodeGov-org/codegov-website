@@ -2,16 +2,15 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-info-icon',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .info-icon {
-        width: size(5);
-        height: size(5);
-        margin-left: size(2);
+        width: common.size(5);
+        height: common.size(5);
+        margin-left: common.size(2);
         vertical-align: text-bottom;
       }
     `,

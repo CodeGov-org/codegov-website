@@ -12,7 +12,6 @@ import { ReviewerProfileComponent } from './reviewer-profile';
 
 @Component({
   selector: 'app-profile-edit',
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     CommonModule,
@@ -24,19 +23,17 @@ import { ReviewerProfileComponent } from './reviewer-profile';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
-        @include page-content;
-      }
-
-      .profile-edit__title {
-        @include py(2);
+        @include common.page-content;
       }
     `,
   ],
   template: `
-    <h1 class="profile-edit__title">Edit profile</h1>
+    <div class="page-heading">
+      <h1 class="h3">Edit profile</h1>
+    </div>
 
     @if (userProfile(); as userProfile) {
       @switch (userProfile.role) {
@@ -54,12 +51,14 @@ import { ReviewerProfileComponent } from './reviewer-profile';
   `,
 })
 export class ProfileEditComponent implements OnInit {
-  public readonly userProfile = toSignal(this.profileService.userProfile$);
+  public readonly userProfile = toSignal(
+    this.profileService.currentUserProfile$,
+  );
   public readonly UserRole = UserRole;
 
   constructor(private readonly profileService: ProfileService) {}
 
   public ngOnInit(): void {
-    this.profileService.loadProfile();
+    this.profileService.loadCurrentUserProfile();
   }
 }

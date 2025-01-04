@@ -5,7 +5,7 @@ import {
   output,
 } from '@angular/core';
 
-import { ReviewerGetMyUserProfileResponse } from '~core/api';
+import { ReviewerUserProfile } from '~core/api';
 import {
   KeyColComponent,
   KeyValueGridComponent,
@@ -14,18 +14,8 @@ import {
 
 @Component({
   selector: 'app-reviewer-personal-info',
-  standalone: true,
   imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @import '@cg/styles/common';
-
-      .reviewer-wallet-address {
-        word-break: break-word;
-      }
-    `,
-  ],
   template: `
     <app-key-value-grid>
       <app-key-col id="reviewer-username">Username</app-key-col>
@@ -39,11 +29,9 @@ import {
       </app-value-col>
 
       <app-key-col id="reviewer-wallet-address">Wallet address</app-key-col>
-      <app-value-col
-        class="reviewer-wallet-address"
-        aria-labelledby="reviewer-wallet-address"
-      >
+      <app-value-col aria-labelledby="reviewer-wallet-address">
         <a
+          class="truncate"
           [href]="
             'https://dashboard.internetcomputer.org/account/' +
             userProfile().walletAddress
@@ -62,8 +50,7 @@ import {
   `,
 })
 export class ReviewerPersonalInfoComponent {
-  public readonly userProfile =
-    input.required<ReviewerGetMyUserProfileResponse>();
+  public readonly userProfile = input.required<ReviewerUserProfile>();
 
   public readonly edit = output();
 

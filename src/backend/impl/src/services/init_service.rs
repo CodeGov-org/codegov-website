@@ -55,7 +55,7 @@ mod tests {
 
     #[rstest]
     async fn init_with_new_principal() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
         let profile = UserProfile::new_admin();
 
@@ -78,7 +78,7 @@ mod tests {
 
     #[rstest]
     async fn init_with_existing_principal() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
 
         let mut repository_mock = MockUserProfileRepository::new();

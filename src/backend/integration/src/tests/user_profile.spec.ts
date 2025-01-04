@@ -11,7 +11,13 @@ import {
   extractOkResponse,
 } from '../support';
 
-const initialDate = new Date(1988, 1, 14, 0, 0, 0, 0);
+const initialDate = new Date();
+
+function addDays(date: Date, days: number): Date {
+  const newDate = new Date(date);
+  newDate.setDate(date.getDate() + days);
+  return newDate;
+}
 
 describe('User Profile', () => {
   let driver: TestDriver;
@@ -22,6 +28,23 @@ describe('User Profile', () => {
 
   afterAll(async () => {
     await driver.tearDown();
+  });
+
+  describe('list reviewer profiles', () => {
+    it('should return a list of reviewers', async () => {
+      const [[, alice], [, bob]] = await Promise.all([
+        driver.users.createReviewer(),
+        driver.users.createReviewer(),
+        driver.users.createAnonymous(),
+        driver.users.createAdmin(),
+      ]);
+      const res = await driver.actor.list_reviewer_profiles();
+      const resOk = extractOkResponse(res);
+
+      expect(resOk).toEqual({
+        profiles: [alice, bob],
+      });
+    });
   });
 
   describe('create user profile', () => {
@@ -313,7 +336,7 @@ describe('User Profile', () => {
       const bobCreateRes = await driver.actor.create_my_user_profile();
       const bobCreate = extractOkResponse(bobCreateRes);
 
-      const aliceUpdateDate = new Date(1988, 1, 15, 0, 0, 0, 0);
+      const aliceUpdateDate = addDays(initialDate, 1);
       await driver.pic.setTime(aliceUpdateDate.getTime());
 
       driver.actor.setIdentity(controllerIdentity);
@@ -325,7 +348,7 @@ describe('User Profile', () => {
         config: [{ admin: { bio: [aliceUpdateBio] } }],
       });
 
-      const bobUpdateDate = new Date(1988, 1, 16, 0, 0, 0, 0);
+      const bobUpdateDate = addDays(initialDate, 2);
       await driver.pic.setTime(bobUpdateDate.getTime());
 
       driver.actor.setIdentity(controllerIdentity);
@@ -355,7 +378,7 @@ describe('User Profile', () => {
         ],
       });
 
-      const aliceFinalUpdateDate = new Date(1988, 1, 17, 0, 0, 0, 0);
+      const aliceFinalUpdateDate = addDays(initialDate, 3);
       await driver.pic.setTime(aliceFinalUpdateDate.getTime());
 
       driver.actor.setIdentity(alice);
@@ -366,7 +389,7 @@ describe('User Profile', () => {
         config: [{ admin: { bio: [aliceFinalUpdateBio] } }],
       });
 
-      const bobFinalUpdateDate = new Date(1988, 1, 18, 0, 0, 0, 0);
+      const bobFinalUpdateDate = addDays(initialDate, 4);
       await driver.pic.setTime(bobFinalUpdateDate.getTime());
 
       driver.actor.setIdentity(bob);
@@ -393,7 +416,7 @@ describe('User Profile', () => {
         ],
       });
 
-      const adminFinalUpdateDate = new Date(1988, 1, 19, 0, 0, 0, 0);
+      const adminFinalUpdateDate = addDays(initialDate, 5);
       await driver.pic.setTime(adminFinalUpdateDate.getTime());
 
       driver.actor.setIdentity(controllerIdentity);
@@ -638,7 +661,7 @@ describe('User Profile', () => {
       const bobCreateRes = await driver.actor.create_my_user_profile();
       const bobCreate = extractOkResponse(bobCreateRes);
 
-      const aliceUpdateDate = new Date(1988, 1, 20, 0, 0, 0, 0);
+      const aliceUpdateDate = addDays(initialDate, 6);
       await driver.pic.setTime(aliceUpdateDate.getTime());
 
       driver.actor.setIdentity(controllerIdentity);
@@ -650,7 +673,7 @@ describe('User Profile', () => {
         config: [{ admin: { bio: [aliceUpdateBio] } }],
       });
 
-      const bobUpdateDate = new Date(1988, 1, 21, 0, 0, 0, 0);
+      const bobUpdateDate = addDays(initialDate, 7);
       await driver.pic.setTime(bobUpdateDate.getTime());
 
       driver.actor.setIdentity(alice);

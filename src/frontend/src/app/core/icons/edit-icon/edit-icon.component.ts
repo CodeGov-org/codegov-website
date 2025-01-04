@@ -2,15 +2,14 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-edit-icon',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .edit-icon {
-        width: size(6);
-        height: size(6);
+        width: common.size(6);
+        height: common.size(6);
       }
     `,
   ],

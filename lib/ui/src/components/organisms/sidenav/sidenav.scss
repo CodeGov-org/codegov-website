@@ -1,32 +1,32 @@
-@import '~@cg/styles/common';
+@use '~@cg/styles/common';
 
 .sidenav {
-  @include layer-50;
+  @include common.layer-50;
   position: fixed;
   top: 0;
   bottom: 0;
   right: 0;
   width: 100%;
   overflow-y: auto;
-  @include px(4);
-  @include py(3);
+  @include common.px(4);
+  @include common.py(3);
 
-  color: $white;
-  background-color: $primary-900;
-  @include dark {
-    background-color: $slate-900;
-    color: $slate-300;
+  color: common.$white;
+  background-color: common.$primary-900;
+  @include common.dark {
+    background-color: common.$slate-900;
+    color: common.$slate-300;
   }
 
-  @include sm {
+  @include common.sm {
     max-width: 24rem;
   }
 }
 
 .sidenav__close-btn {
   position: absolute;
-  top: size(3);
-  right: size(4);
+  top: common.size(3);
+  right: common.size(4);
 }
 
 .sidenav__brand {
@@ -36,12 +36,12 @@
 }
 
 .sidenav__brand-logo {
-  @include icon-xxl;
-  margin-right: size(3);
+  @include common.icon-xxl;
+  margin-right: common.size(3);
 }
 
 .sidebar__nav {
-  margin-top: size(3);
+  margin-top: common.size(3);
 }
 
 .sidenav__item {

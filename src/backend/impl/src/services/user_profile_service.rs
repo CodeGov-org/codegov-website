@@ -1,7 +1,7 @@
 use crate::{
     mappings::{
         map_create_my_user_profile_response, map_get_my_user_profile_history_response,
-        map_get_my_user_profile_response,
+        map_get_my_user_profile_response, map_list_reviewer_profiles_response,
     },
     repositories::{
         UserConfig, UserId, UserProfile, UserProfileRepository, UserProfileRepositoryImpl,
@@ -9,12 +9,15 @@ use crate::{
 };
 use backend_api::{
     ApiError, CreateMyUserProfileResponse, GetMyUserProfileHistoryResponse,
-    GetMyUserProfileResponse, UpdateMyUserProfileRequest, UpdateUserProfileRequest,
+    GetMyUserProfileResponse, ListReviewerProfilesResponse, UpdateMyUserProfileRequest,
+    UpdateUserProfileRequest,
 };
 use candid::Principal;
 
 #[cfg_attr(test, mockall::automock)]
 pub trait UserProfileService {
+    fn list_reviewer_profiles(&self) -> Result<ListReviewerProfilesResponse, ApiError>;
+
     fn get_my_user_profile(
         &self,
         calling_principal: Principal,
@@ -54,6 +57,12 @@ impl Default for UserProfileServiceImpl<UserProfileRepositoryImpl> {
 }
 
 impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> {
+    fn list_reviewer_profiles(&self) -> Result<ListReviewerProfilesResponse, ApiError> {
+        let profiles = self.user_profile_repository.get_all_reviewer_profiles();
+
+        Ok(map_list_reviewer_profiles_response(profiles))
+    }
+
     fn get_my_user_profile(
         &self,
         calling_principal: Principal,
@@ -304,8 +313,25 @@ mod tests {
     use rstest::*;
 
     #[rstest]
+    async fn list_reviewer_profiles() {
+        let profiles = vec![(fixtures::user_id(), fixtures::reviewer_user_profile())];
+
+        let mut repository_mock = MockUserProfileRepository::new();
+        repository_mock
+            .expect_get_all_reviewer_profiles()
+            .once()
+            .return_const(profiles.clone());
+
+        let service = UserProfileServiceImpl::new(repository_mock);
+
+        let result = service.list_reviewer_profiles().unwrap();
+
+        assert_eq!(result, map_list_reviewer_profiles_response(profiles))
+    }
+
+    #[rstest]
     async fn get_my_user_profile() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
         let profile = fixtures::admin_user_profile();
 
@@ -332,7 +358,7 @@ mod tests {
 
     #[rstest]
     async fn get_my_user_profile_no_profile() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
 
         let mut repository_mock = MockUserProfileRepository::new();
         repository_mock
@@ -356,7 +382,7 @@ mod tests {
 
     #[rstest]
     fn get_my_user_profile_history() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let history = fixtures::user_profile_history();
 
         let mut repository_mock = MockUserProfileRepository::new();
@@ -390,7 +416,7 @@ mod tests {
 
     #[rstest]
     fn get_my_user_profile_history_no_history() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
 
         let mut repository_mock = MockUserProfileRepository::new();
         repository_mock
@@ -416,7 +442,7 @@ mod tests {
 
     #[rstest]
     async fn create_my_user_profile() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
         let profile = UserProfile::new_anonymous();
 
@@ -451,7 +477,7 @@ mod tests {
 
     #[rstest]
     async fn create_my_user_profile_existing_profile() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
 
         let mut repository_mock = MockUserProfileRepository::new();
@@ -486,7 +512,7 @@ mod tests {
         #[case] fixture: (UserProfile, UpdateMyUserProfileRequest, UserProfile),
     ) {
         let (original_profile, profile_update_request, updated_profile) = fixture;
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = UserId::try_from(fixtures::user_id().to_string().as_str()).unwrap();
 
         let mut repository_mock = MockUserProfileRepository::new();
@@ -586,7 +612,7 @@ mod tests {
 
     #[rstest]
     fn update_my_user_profile_no_user_id() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = UpdateMyUserProfileRequest {
             username: None,
             config: None,
@@ -618,7 +644,7 @@ mod tests {
 
     #[rstest]
     fn update_my_user_profile_no_profile() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::user_id();
         let request = UpdateMyUserProfileRequest {
             username: None,
@@ -661,7 +687,7 @@ mod tests {
     #[case(admin_reviewer_update())]
     fn update_user_profile(#[case] fixture: (UserProfile, UpdateUserProfileRequest, UserProfile)) {
         let (original_profile, profile_update_request, updated_profile) = fixture;
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = UserId::try_from(profile_update_request.user_id.as_str()).unwrap();
 
         let mut repository_mock = MockUserProfileRepository::new();
@@ -830,7 +856,7 @@ mod tests {
 
     #[rstest]
     fn update_user_profile_no_profile() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let user_id = fixtures::user_id();
         let request = UpdateUserProfileRequest {
             user_id: user_id.to_string(),

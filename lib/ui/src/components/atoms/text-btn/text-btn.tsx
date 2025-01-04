@@ -7,7 +7,7 @@ import { AriaHasPopup, ButtonType } from '../../../types';
   scoped: true,
 })
 export class TextBtnComponent implements ComponentInterface {
-  @Prop()
+  @Prop({ reflect: true })
   public type: ButtonType = 'button';
 
   @Prop({ reflect: true, attribute: 'aria-haspopup' })

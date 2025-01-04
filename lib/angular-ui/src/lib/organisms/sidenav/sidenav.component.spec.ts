@@ -13,6 +13,8 @@ describe('SidenavComponent', () => {
 
     fixture = TestBed.createComponent(SidenavComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('links', []);
+    fixture.componentRef.setInput('homeUrl', 'https://example.com');
     fixture.detectChanges();
   });
 

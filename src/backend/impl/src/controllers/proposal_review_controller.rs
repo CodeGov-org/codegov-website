@@ -250,7 +250,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = CreateProposalReviewRequest {
             proposal_id: "proposal_id".to_string(),
             summary: Some("summary".to_string()),
@@ -293,7 +293,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_unauthorized() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = CreateProposalReviewRequest {
             proposal_id: "proposal_id".to_string(),
             summary: Some("summary".to_string()),
@@ -333,7 +333,7 @@ mod tests {
 
     #[rstest]
     fn update_proposal_review() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = UpdateProposalReviewRequest {
             proposal_id: fixtures::proposal_id().to_string(),
             status: None,
@@ -369,7 +369,7 @@ mod tests {
 
     #[rstest]
     fn update_proposal_review_unauthorized() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = UpdateProposalReviewRequest {
             proposal_id: fixtures::proposal_id().to_string(),
             status: None,
@@ -409,7 +409,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_image() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = CreateProposalReviewImageRequest {
             proposal_id: fixtures::proposal_id().to_string(),
             content_type: "image/png".to_string(),
@@ -448,7 +448,7 @@ mod tests {
 
     #[rstest]
     async fn create_proposal_review_image_unauthorized() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = CreateProposalReviewImageRequest {
             proposal_id: fixtures::proposal_id().to_string(),
             content_type: "image/png".to_string(),
@@ -486,7 +486,7 @@ mod tests {
 
     #[rstest]
     async fn delete_proposal_review_image() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = DeleteProposalReviewImageRequest {
             proposal_id: fixtures::proposal_id().to_string(),
             image_path: "/images/reviews/dummy-image-id".to_string(),
@@ -518,7 +518,7 @@ mod tests {
 
     #[rstest]
     async fn delete_proposal_review_image_unauthorized() {
-        let calling_principal = fixtures::principal();
+        let calling_principal = fixtures::principal_a();
         let request = DeleteProposalReviewImageRequest {
             proposal_id: fixtures::proposal_id().to_string(),
             image_path: "/images/reviews/dummy-image-id".to_string(),

@@ -5,41 +5,40 @@ import { LoadingIconComponent } from '~core/icons';
 
 @Component({
   selector: 'app-loading-content',
-  standalone: true,
   imports: [LoadingIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       :host {
-        @include layer-50;
+        @include common.layer-50;
 
         display: flex;
         flex-direction: row;
         align-items: center;
 
-        @include px(4);
-        @include py(4);
+        @include common.px(4);
+        @include common.py(4);
         width: auto;
-        border-radius: $border-radius;
+        border-radius: common.$border-md-radius;
 
-        color: $white;
-        background-color: $primary-800;
+        color: common.$white;
+        background-color: common.$primary-800;
 
-        @include dark {
-          background-color: $slate-700;
-          color: $slate-200;
+        @include common.dark {
+          background-color: common.$slate-700;
+          color: common.$slate-200;
         }
       }
 
       .dialog__icon {
-        width: size(11);
-        height: size(11);
+        width: common.size(11);
+        height: common.size(11);
       }
 
       .dialog__text {
-        @include mx(4);
+        @include common.mx(4);
         margin-bottom: 0;
       }
     `,

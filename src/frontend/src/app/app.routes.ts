@@ -15,17 +15,17 @@ export const ROUTES: Routes = [
     canActivate: [isAuthenticatedGuard],
   },
   {
-    path: ':id',
+    path: ':proposalId',
     loadComponent: () =>
       import('./pages/proposal-details').then(m => m.ProposalDetailsComponent),
   },
   {
-    path: 'review/:id/view',
+    path: 'review/:reviewId/view',
     loadComponent: () =>
       import('./pages/proposal-review').then(m => m.ProposalReviewComponent),
   },
   {
-    path: 'review/:id/edit',
+    path: 'review/:proposalId/edit',
     pathMatch: 'full',
     loadComponent: () =>
       import('./pages/proposal-review-edit').then(

@@ -1,48 +1,53 @@
+@use '../common/colors';
+@use '../common/dark-mode';
+@use '../common/sizing';
+@use '../common/typography';
+
 %heading {
   margin-top: 0;
-  margin-bottom: size(3);
-  font-weight: $font-weight-semibold;
+  margin-bottom: sizing.size(3);
+  font-weight: typography.$font-weight-semibold;
 }
 
 h1,
 .h1 {
   @extend %heading;
-  @include text-xxxxl;
+  @include typography.text-xxxxl;
 }
 
 h2,
 .h2 {
   @extend %heading;
-  @include text-xxxl;
+  @include typography.text-xxxl;
 }
 
 h3,
 .h3 {
   @extend %heading;
-  @include text-xxl;
+  @include typography.text-xxl;
 }
 
 h4,
 .h4 {
   @extend %heading;
-  @include text-xl;
+  @include typography.text-xl;
 }
 
 h5,
 .h5 {
   @extend %heading;
-  @include text-lg;
+  @include typography.text-lg;
 }
 
 h6,
 .h6 {
   @extend %heading;
-  @include text-md;
+  @include typography.text-md;
 }
 
 p {
   margin-top: 0;
-  margin-bottom: size(3);
+  margin-bottom: sizing.size(3);
 
   a {
     text-decoration-line: underline;
@@ -56,7 +61,7 @@ p {
 
 a {
   outline: none;
-  color: $primary;
+  color: colors.$primary;
   text-underline-offset: 2px;
   text-decoration-thickness: 1px;
   text-decoration: none;
@@ -70,8 +75,8 @@ a {
 ul,
 ol {
   margin-top: 0;
-  margin-bottom: size(3);
-  padding-left: size(8);
+  margin-bottom: sizing.size(3);
+  padding-left: sizing.size(8);
 }
 
 ul {
@@ -90,16 +95,16 @@ li {
 }
 
 blockquote {
-  @include mx(0);
-  @include my(4);
-  padding: size(4);
+  @include sizing.mx(0);
+  @include sizing.my(4);
+  padding: sizing.size(4);
 
-  border-left: $border-lg-size solid $slate-500;
-  background-color: $slate-200;
+  border-left: sizing.$border-lg-size solid colors.$slate-500;
+  background-color: colors.$slate-200;
 
-  @include dark {
-    color: $slate-300;
-    background-color: $slate-900;
+  @include dark-mode.dark {
+    color: colors.$slate-300;
+    background-color: colors.$slate-900;
   }
 
   & > p {
@@ -108,30 +113,51 @@ blockquote {
 }
 
 hr {
-  margin-top: size(8);
-  margin-bottom: size(8);
+  margin-top: sizing.size(8);
+  margin-bottom: sizing.size(8);
 
   border: none;
-  background-color: $slate-200;
-  height: $border-lg-size;
+  background-color: colors.$slate-200;
+  height: sizing.$border-lg-size;
 
-  @include dark {
-    background-color: $slate-900;
+  @include dark-mode.dark {
+    background-color: colors.$slate-900;
   }
 }
 
 code {
-  font-family: $font-family-monospace;
-  font-size: $font-size-base;
+  font-family: typography.$font-family-monospace;
+  font-size: typography.$font-size-base;
 
   display: block;
   width: 100%;
   overflow-x: auto;
-  padding: size(4);
-  border-radius: $border-radius;
+  padding: sizing.size(4);
+  border-radius: sizing.$border-sm-radius;
 
-  background-color: $slate-200;
-  @include dark {
-    background-color: $slate-900;
+  background-color: colors.$slate-200;
+  @include dark-mode.dark {
+    background-color: colors.$slate-900;
+  }
+}
+
+.truncate {
+  display: block;
+  overflow-x: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-right: sizing.size(4);
+}
+
+.page-heading {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: sizing.size(4);
+
+  > * {
+    margin-bottom: 0;
+    margin-top: 0;
   }
 }

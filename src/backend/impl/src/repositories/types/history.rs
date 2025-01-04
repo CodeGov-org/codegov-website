@@ -76,7 +76,7 @@ mod tests {
     #[fixture]
     fn create_action() -> UserProfileHistoryEntry {
         let user_profile = fixtures::reviewer_user_profile();
-        let principal = fixtures::principal();
+        let principal = fixtures::principal_a();
 
         HistoryEntry::create_action(principal, user_profile).unwrap()
     }
@@ -84,7 +84,7 @@ mod tests {
     #[fixture]
     fn update_action() -> UserProfileHistoryEntry {
         let user_profile = fixtures::reviewer_user_profile();
-        let principal = fixtures::principal();
+        let principal = fixtures::principal_a();
 
         HistoryEntry::update_action(principal, user_profile).unwrap()
     }

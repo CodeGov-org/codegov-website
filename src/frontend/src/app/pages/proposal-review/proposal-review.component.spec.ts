@@ -38,8 +38,8 @@ describe('ProposalReviewComponent', () => {
     defineProp(proposalServiceMock, 'currentProposal$', of(null));
 
     profileServiceMock = profileServiceMockFactory();
-    defineProp(profileServiceMock, 'userProfile$', of(null));
-    defineProp(profileServiceMock, 'isReviewer$', of(true));
+    defineProp(profileServiceMock, 'currentUserProfile$', of(null));
+    defineProp(profileServiceMock, 'reviewerProfiles$', of({}));
 
     activatedRouteMock = activatedRouteMockFactory();
     defineProp(

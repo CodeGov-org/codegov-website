@@ -1,4 +1,4 @@
-@import '~@cg/styles/common';
+@use '~@cg/styles/common';
 
 :host-context(.copy-to-clipboard) {
   display: flex;
@@ -6,7 +6,7 @@
 }
 
 .copy-to-clipboard__input {
-  margin-right: size(3);
+  margin-right: common.size(3);
 }
 
 .copy-to-clipboard__btn-content {
@@ -15,6 +15,6 @@
 }
 
 .copy-to-clipboard__btn-icon {
-  @include icon-xs;
-  margin-right: size(2);
+  @include common.icon-xs;
+  margin-right: common.size(2);
 }

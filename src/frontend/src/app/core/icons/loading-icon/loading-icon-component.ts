@@ -1,12 +1,11 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-loading-icon',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
-      @import '@cg/styles/common';
+      @use '@cg/styles/common';
 
       .loading-icon {
         width: 100%;
@@ -17,9 +16,16 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       }
 
       .loading-icon__svg {
-        stroke: $primary;
         fill: none;
         stroke-width: 10px;
+      }
+
+      .loading-icon__svg--primary {
+        stroke: common.$primary;
+      }
+
+      .loading-icon__svg--white {
+        stroke: common.$white;
       }
     `,
   ],
@@ -33,7 +39,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       preserveAspectRatio="xMidYMid"
     >
       <circle
-        class="loading-icon__svg"
+        [class]="'loading-icon__svg loading-icon__svg--' + theme()"
         cx="50"
         cy="50"
         r="32"
@@ -52,4 +58,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     </svg>
   `,
 })
-export class LoadingIconComponent {}
+export class LoadingIconComponent {
+  public readonly theme = input<'white' | 'primary'>('primary');
+}
