@@ -11,6 +11,7 @@ dev = []
 
 [dependencies]
 backend_api = { path = "../api" }
+backend_macros = { path = "../macros" }
 external_canisters = { path = "../external_canisters" }
 
 ic-cdk.workspace = true

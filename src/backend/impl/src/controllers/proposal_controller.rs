@@ -8,10 +8,12 @@ use crate::{
 use backend_api::{
     ApiError, ApiResult, ListProposalsRequest, ListProposalsResponse, SyncProposalsResponse,
 };
+use backend_macros::log_errors;
 use candid::Principal;
 use ic_cdk::*;
 
 #[update]
+#[log_errors(crate::services::log_update_call_error)]
 async fn sync_proposals() -> ApiResult<SyncProposalsResponse> {
     let calling_principal = caller();
 

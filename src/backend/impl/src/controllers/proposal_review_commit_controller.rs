@@ -2,6 +2,7 @@ use backend_api::{
     ApiError, ApiResult, CreateProposalReviewCommitRequest, CreateProposalReviewCommitResponse,
     DeleteProposalReviewCommitRequest, UpdateProposalReviewCommitRequest,
 };
+use backend_macros::log_errors;
 use candid::Principal;
 use ic_cdk::*;
 
@@ -17,6 +18,7 @@ use crate::{
 };
 
 #[update]
+#[log_errors(crate::services::log_update_call_error)]
 async fn create_proposal_review_commit(
     request: CreateProposalReviewCommitRequest,
 ) -> ApiResult<CreateProposalReviewCommitResponse> {
@@ -29,6 +31,7 @@ async fn create_proposal_review_commit(
 }
 
 #[update]
+#[log_errors(crate::services::log_update_call_error)]
 async fn update_proposal_review_commit(
     request: UpdateProposalReviewCommitRequest,
 ) -> ApiResult<()> {
@@ -40,6 +43,7 @@ async fn update_proposal_review_commit(
 }
 
 #[update]
+#[log_errors(crate::services::log_update_call_error)]
 async fn delete_proposal_review_commit(
     request: DeleteProposalReviewCommitRequest,
 ) -> ApiResult<()> {
