@@ -21,10 +21,10 @@ const sidenavAnimation: PropertyIndexedKeyframes = {
   scoped: true,
 })
 export class SidenavComponent implements ComponentInterface {
-  @Prop()
+  @Prop({ reflect: true })
   public homeUrl = '/';
 
-  @Prop()
+  @Prop({ reflect: true })
   public links: Array<NavLink | NavLinkCategory> = [];
 
   @State()

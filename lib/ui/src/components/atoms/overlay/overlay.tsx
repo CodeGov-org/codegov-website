@@ -19,7 +19,7 @@ const overlayAnimation: PropertyIndexedKeyframes = {
   scoped: true,
 })
 export class OverlayComponent implements ComponentInterface {
-  @Prop()
+  @Prop({ reflect: true })
   public isOpen = false;
 
   @Element()

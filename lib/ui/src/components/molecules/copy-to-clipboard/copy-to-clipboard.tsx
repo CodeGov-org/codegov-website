@@ -6,8 +6,11 @@ import { Component, Host, Prop, State, h } from '@stencil/core';
   scoped: true,
 })
 export class CopyToClipboardComponent {
-  @Prop()
+  @Prop({ reflect: true })
   public value!: string;
+
+  @Prop({ reflect: true })
+  public type: 'text' | 'textarea' = 'text';
 
   @State()
   private isCopied = false;
@@ -15,14 +18,31 @@ export class CopyToClipboardComponent {
   private timeoutId: number | undefined;
 
   public render() {
+    const isTextArea = this.type === 'textarea';
+
     return (
-      <Host class="copy-to-clipboard" aria-live="polite">
-        <cg-text-input
-          class="copy-to-clipboard__input"
-          value={this.value}
-          readonly
-          ref={elem => this.setInputElem(elem)}
-        />
+      <Host
+        class={{
+          'copy-to-clipboard': true,
+          'copy-to-clipboard--textarea': isTextArea,
+        }}
+        aria-live="polite"
+      >
+        {isTextArea ? (
+          <cg-text-area
+            class="copy-to-clipboard__input"
+            value={this.value}
+            readonly
+            ref={elem => this.setInputElem(elem)}
+          />
+        ) : (
+          <cg-text-input
+            class="copy-to-clipboard__input"
+            value={this.value}
+            readonly
+            ref={elem => this.setInputElem(elem)}
+          />
+        )}
 
         <cg-text-btn onClick={() => this.onClicked()}>
           {this.isCopied ? (

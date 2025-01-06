@@ -6,10 +6,10 @@ import { Component, Host, Prop, h } from '@stencil/core';
   scoped: true,
 })
 export class MenuComponent {
-  @Prop()
+  @Prop({ reflect: true })
   public menuId?: string;
 
-  @Prop()
+  @Prop({ reflect: true })
   public triggerId?: string;
 
   public render() {

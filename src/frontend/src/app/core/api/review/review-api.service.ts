@@ -5,6 +5,8 @@ import { ApiError, handleErr } from '../../utils';
 import {
   mapCreateProposalReviewRequest,
   mapGetMyProposalReviewRequest,
+  mapGetMyProposalReviewSummaryRequest,
+  mapGetMyProposalReviewSummaryResponse,
   mapGetProposalReviewRequest,
   mapGetProposalReviewResponse,
   mapListProposalReviewsRequest,
@@ -13,6 +15,8 @@ import {
 import {
   CreateProposalReviewRequest,
   GetMyProposalReviewRequest,
+  GetMyProposalReviewSummaryRequest,
+  GetMyProposalReviewSummaryResponse,
   GetProposalReviewRequest,
   GetProposalReviewResponse,
   ListProposalReviewsRequest,
@@ -78,6 +82,17 @@ export class ReviewApiService {
     const okRes = handleErr(res);
 
     return mapGetProposalReviewResponse(okRes);
+  }
+
+  public async getMyProposalReviewSummary(
+    req: GetMyProposalReviewSummaryRequest,
+  ): Promise<GetMyProposalReviewSummaryResponse> {
+    const apiReq = mapGetMyProposalReviewSummaryRequest(req);
+
+    const res = await this.actorService.get_my_proposal_review_summary(apiReq);
+    const okRes = handleErr(res);
+
+    return mapGetMyProposalReviewSummaryResponse(okRes);
   }
 
   public async getOrCreateMyProposalReview(

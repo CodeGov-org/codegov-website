@@ -1,10 +1,11 @@
 @use '~@cg/styles/common';
 
-:host-context(.text-input) {
+:host-context(.text-area) {
   position: relative;
   border-radius: common.$border-sm-radius;
 }
 
-.text-input__input {
+.text-area__input {
   @include common.input-common;
+  @include common.text-area;
 }

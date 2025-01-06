@@ -14,10 +14,10 @@ import {
   scoped: true,
 })
 export class DropdownLinkMenuItemComponent {
-  @Prop()
+  @Prop({ reflect: true })
   public href!: string;
 
-  @Prop()
+  @Prop({ reflect: true })
   public isExternal? = false;
 
   @Event()

@@ -33,6 +33,7 @@ describe('ProposalReviewComponent', () => {
   beforeEach(async () => {
     reviewServiceMock = reviewServiceMockFactory();
     defineProp(reviewServiceMock, 'currentReview$', of(null));
+    defineProp(reviewServiceMock, 'currentUserReviewSummary$', of(null));
 
     proposalServiceMock = proposalServiceMockFactory();
     defineProp(proposalServiceMock, 'currentProposal$', of(null));

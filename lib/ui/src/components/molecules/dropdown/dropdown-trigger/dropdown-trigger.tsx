@@ -16,19 +16,19 @@ import {
   scoped: true,
 })
 export class DropdownTriggerComponent implements ComponentInterface {
-  @Prop()
+  @Prop({ reflect: true })
   public menuId?: string;
 
-  @Prop()
+  @Prop({ reflect: true })
   public triggerId?: string;
 
-  @Prop()
+  @Prop({ reflect: true })
   public isOpen?: boolean;
 
-  @Prop()
+  @Prop({ reflect: true })
   public isIconBtn?: boolean;
 
-  @Prop()
+  @Prop({ reflect: true })
   public btnLabel?: string;
 
   @Watch('menuId')

@@ -2,6 +2,7 @@ import {
   fromCandidDate,
   fromCandidOpt,
   fromCandidOptDate,
+  Ok,
   toCandidOpt,
 } from '../../utils';
 import { mapGetProposalReviewCommitResponse } from '../commit-review/commit-review-api.mapper';
@@ -15,6 +16,8 @@ import {
   GetMyProposalReviewRequest as GetMyProposalReviewApiRequest,
   ProposalReviewStatus as ProposalReviewStatusApi,
   ProposalVote as ApiProposalVote,
+  GetMyProposalReviewSummaryRequest as GetMyProposalReviewSummaryApiRequest,
+  GetMyProposalReviewSummaryResponse as GetMyProposalReviewSummaryApiResponse,
 } from '@cg/backend';
 import {
   GetProposalReviewResponse,
@@ -24,6 +27,7 @@ import {
   ListProposalReviewsRequest,
   GetProposalReviewRequest,
   ProposalReviewStatus,
+  GetMyProposalReviewSummaryResponse,
 } from './review-api.model';
 
 export function mapCreateProposalReviewRequest(
@@ -94,6 +98,22 @@ export function mapGetProposalReviewResponse(
     commits: res.proposal_review.proposal_review_commits.map(
       mapGetProposalReviewCommitResponse,
     ),
+  };
+}
+
+export function mapGetMyProposalReviewSummaryRequest(
+  req: GetMyProposalReviewRequest,
+): GetMyProposalReviewSummaryApiRequest {
+  return {
+    proposal_id: req.proposalId,
+  };
+}
+
+export function mapGetMyProposalReviewSummaryResponse(
+  res: Ok<GetMyProposalReviewSummaryApiResponse>,
+): GetMyProposalReviewSummaryResponse {
+  return {
+    summaryMarkdown: res.summary_markdown,
   };
 }
 
