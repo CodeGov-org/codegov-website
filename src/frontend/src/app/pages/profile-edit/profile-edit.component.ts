@@ -51,9 +51,7 @@ import { ReviewerProfileComponent } from './reviewer-profile';
   `,
 })
 export class ProfileEditComponent implements OnInit {
-  public readonly userProfile = toSignal(
-    this.profileService.currentUserProfile$,
-  );
+  public readonly userProfile = toSignal(this.profileService.currentUser$);
   public readonly UserRole = UserRole;
 
   constructor(private readonly profileService: ProfileService) {}

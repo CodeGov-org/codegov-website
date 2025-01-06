@@ -28,7 +28,6 @@ pub struct ProposalReview {
     pub last_updated_at: Option<String>,
     pub status: ProposalReviewStatus,
     pub summary: Option<String>,
-    pub review_duration_mins: Option<u16>,
     pub build_reproduced: Option<bool>,
     pub images_paths: Vec<String>,
     pub proposal_review_commits: Vec<ProposalReviewCommitWithId>,
@@ -45,7 +44,6 @@ pub struct ProposalReviewWithId {
 pub struct CreateProposalReviewRequest {
     pub proposal_id: String,
     pub summary: Option<String>,
-    pub review_duration_mins: Option<u16>,
     pub build_reproduced: Option<bool>,
     pub vote: Option<ProposalVote>,
 }
@@ -57,7 +55,6 @@ pub struct UpdateProposalReviewRequest {
     pub proposal_id: String,
     pub status: Option<ProposalReviewStatus>,
     pub summary: Option<String>,
-    pub review_duration_mins: Option<u16>,
     pub build_reproduced: Option<bool>,
     pub vote: Option<ProposalVote>,
 }

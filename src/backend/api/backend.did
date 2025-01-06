@@ -230,7 +230,6 @@ type ProposalReview = record {
   last_updated_at : opt text;
   status : ProposalReviewStatus;
   summary : opt text;
-  review_duration_mins : opt nat16;
   build_reproduced : opt bool;
   images_paths : vec text;
   proposal_review_commits : vec ProposalReviewCommitWithId;
@@ -245,7 +244,6 @@ type ProposalReviewWithId = record {
 type CreateProposalReviewRequest = record {
   proposal_id : text;
   summary : opt text;
-  review_duration_mins : opt nat16;
   build_reproduced : opt bool;
   vote : opt ProposalVote;
 };
@@ -259,7 +257,6 @@ type UpdateProposalReviewRequest = record {
   proposal_id : text;
   status : opt ProposalReviewStatus;
   summary : opt text;
-  review_duration_mins : opt nat16;
   build_reproduced : opt bool;
   vote : opt ProposalVote;
 };
@@ -296,7 +293,6 @@ type ReviewCommitState = variant {
   reviewed : record {
     matches_description : opt bool;
     comment : opt text;
-    highlights : vec text;
   };
   not_reviewed;
 };

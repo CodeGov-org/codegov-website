@@ -44,7 +44,6 @@ describe('Proposal Review', () => {
       const res = await driver.actor.create_proposal_review({
         proposal_id: 'proposal-id',
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ unspecified: null }],
       });
@@ -66,7 +65,6 @@ describe('Proposal Review', () => {
       const resAnonymous = await driver.actor.create_proposal_review({
         proposal_id: 'proposal-id',
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ unspecified: null }],
       });
@@ -85,7 +83,6 @@ describe('Proposal Review', () => {
       const resAdmin = await driver.actor.create_proposal_review({
         proposal_id: 'proposal-id',
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ unspecified: null }],
       });
@@ -115,7 +112,6 @@ describe('Proposal Review', () => {
       const resFull = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ yes: null }],
       });
@@ -130,7 +126,6 @@ describe('Proposal Review', () => {
           created_at: dateToRfc3339(proposalReviewCreationDate),
           last_updated_at: [],
           summary: ['summary'],
-          review_duration_mins: [60],
           build_reproduced: [true],
           images_paths: [],
           proposal_review_commits: [],
@@ -155,7 +150,6 @@ describe('Proposal Review', () => {
       const resEmpty = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: [],
-        review_duration_mins: [],
         build_reproduced: [],
         vote: [],
       });
@@ -170,7 +164,6 @@ describe('Proposal Review', () => {
           created_at: dateToRfc3339(proposalReviewCreationDate),
           last_updated_at: [],
           summary: [],
-          review_duration_mins: [],
           build_reproduced: [],
           images_paths: [],
           proposal_review_commits: [],
@@ -188,7 +181,6 @@ describe('Proposal Review', () => {
       const res = await driver.actor.create_proposal_review({
         proposal_id: nonExistentProposalId,
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ unspecified: null }],
       });
@@ -214,7 +206,6 @@ describe('Proposal Review', () => {
       const res = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ yes: null }],
       });
@@ -240,7 +231,6 @@ describe('Proposal Review', () => {
       const resAliceCreated = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ yes: null }],
       });
@@ -249,7 +239,6 @@ describe('Proposal Review', () => {
       const res = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ yes: null }],
       });
@@ -264,7 +253,6 @@ describe('Proposal Review', () => {
       const resBobCreated = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ yes: null }],
       });
@@ -285,7 +273,6 @@ describe('Proposal Review', () => {
       const resEmptySummary = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: [''],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ unspecified: null }],
       });
@@ -299,7 +286,6 @@ describe('Proposal Review', () => {
       const resLongSummary = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: ['a'.repeat(1501)],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ unspecified: null }],
       });
@@ -308,34 +294,6 @@ describe('Proposal Review', () => {
       expect(resLongSummaryErr).toEqual({
         code: 400,
         message: 'Summary must be less than 1500 characters',
-      });
-
-      const resZeroDuration = await driver.actor.create_proposal_review({
-        proposal_id: proposalId,
-        summary: ['summary'],
-        review_duration_mins: [0],
-        build_reproduced: [true],
-        vote: [{ unspecified: null }],
-      });
-      const resZeroDurationErr = extractErrResponse(resZeroDuration);
-
-      expect(resZeroDurationErr).toEqual({
-        code: 400,
-        message: 'Review duration cannot be 0',
-      });
-
-      const resLongDuration = await driver.actor.create_proposal_review({
-        proposal_id: proposalId,
-        summary: ['summary'],
-        review_duration_mins: [3 * 60 + 1],
-        build_reproduced: [true],
-        vote: [{ unspecified: null }],
-      });
-      const resLongDurationErr = extractErrResponse(resLongDuration);
-
-      expect(resLongDurationErr).toEqual({
-        code: 400,
-        message: 'Review duration must be less than 180 minutes',
       });
     });
   });
@@ -348,7 +306,6 @@ describe('Proposal Review', () => {
         proposal_id: 'proposal-id',
         status: [{ draft: null }],
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ unspecified: null }],
       });
@@ -371,7 +328,6 @@ describe('Proposal Review', () => {
         proposal_id: 'proposal-id',
         status: [{ draft: null }],
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ yes: null }],
       });
@@ -391,7 +347,6 @@ describe('Proposal Review', () => {
         proposal_id: 'proposal-id',
         status: [{ draft: null }],
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ no: null }],
       });
@@ -416,7 +371,6 @@ describe('Proposal Review', () => {
         proposal_id: nonExistentProposalId,
         status: [{ draft: null }],
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ yes: null }],
       });
@@ -444,7 +398,6 @@ describe('Proposal Review', () => {
         proposal_id: proposalId,
         status: [{ draft: null }],
         summary: ['summary'],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ yes: null }],
       });
@@ -471,7 +424,6 @@ describe('Proposal Review', () => {
         proposal_id: proposalId,
         status: [{ draft: null }],
         summary: ['updated summary'],
-        review_duration_mins: [120],
         build_reproduced: [false],
         vote: [{ no: null }],
       });
@@ -495,7 +447,6 @@ describe('Proposal Review', () => {
         proposal_id: proposalId,
         status: [{ published: null }],
         summary: [],
-        review_duration_mins: [],
         build_reproduced: [],
         vote: [],
       });
@@ -517,7 +468,6 @@ describe('Proposal Review', () => {
       const resProposalReview = await driver.actor.create_proposal_review({
         proposal_id: proposalId,
         summary: [],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ yes: null }],
       });
@@ -529,7 +479,6 @@ describe('Proposal Review', () => {
         proposal_id: proposalId,
         status: [{ draft: null }],
         summary: ['updated summary'],
-        review_duration_mins: [1],
         build_reproduced: [false],
         vote: [{ yes: null }],
       });
@@ -557,7 +506,6 @@ describe('Proposal Review', () => {
         proposal_id: proposalId,
         status: [{ published: null }],
         summary: [],
-        review_duration_mins: [],
         build_reproduced: [],
         vote: [],
       });
@@ -567,7 +515,6 @@ describe('Proposal Review', () => {
         proposal_id: proposalId,
         status: [],
         summary: ['updated summary'],
-        review_duration_mins: [1],
         build_reproduced: [false],
         vote: [{ yes: null }],
       });
@@ -582,7 +529,6 @@ describe('Proposal Review', () => {
         proposal_id: proposalId,
         status: [{ published: null }],
         summary: ['updated summary'],
-        review_duration_mins: [1],
         build_reproduced: [false],
         vote: [{ no: null }],
       });
@@ -609,7 +555,6 @@ describe('Proposal Review', () => {
         proposal_id: proposalId,
         status: [{ published: null }],
         summary: [],
-        review_duration_mins: [],
         build_reproduced: [],
         vote: [],
       });
@@ -619,7 +564,6 @@ describe('Proposal Review', () => {
         proposal_id: proposalId,
         status: [{ draft: null }],
         summary: ['updated summary'],
-        review_duration_mins: [1],
         build_reproduced: [false],
         vote: [{ yes: null }],
       });
@@ -643,7 +587,6 @@ describe('Proposal Review', () => {
         proposal_id: proposalId,
         status: [],
         summary: [''],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ yes: null }],
       });
@@ -658,7 +601,6 @@ describe('Proposal Review', () => {
         proposal_id: proposalId,
         status: [],
         summary: ['a'.repeat(1501)],
-        review_duration_mins: [60],
         build_reproduced: [true],
         vote: [{ yes: null }],
       });
@@ -668,43 +610,12 @@ describe('Proposal Review', () => {
         code: 400,
         message: 'Summary must be less than 1500 characters',
       });
-
-      const resZeroDuration = await driver.actor.update_proposal_review({
-        proposal_id: proposalId,
-        status: [],
-        summary: ['summary'],
-        review_duration_mins: [0],
-        build_reproduced: [true],
-        vote: [{ yes: null }],
-      });
-      const resZeroDurationErr = extractErrResponse(resZeroDuration);
-
-      expect(resZeroDurationErr).toEqual({
-        code: 400,
-        message: 'Review duration cannot be 0',
-      });
-
-      const resLongDuration = await driver.actor.update_proposal_review({
-        proposal_id: proposalId,
-        status: [],
-        summary: ['summary'],
-        review_duration_mins: [3 * 60 + 1],
-        build_reproduced: [true],
-        vote: [{ yes: null }],
-      });
-      const resLongDurationErr = extractErrResponse(resLongDuration);
-
-      expect(resLongDurationErr).toEqual({
-        code: 400,
-        message: 'Review duration must be less than 180 minutes',
-      });
     });
 
     it.each<[Partial<UpdateProposalReviewRequest>, string]>([
       [
         {
           summary: [],
-          review_duration_mins: [60],
           build_reproduced: [false],
         },
         'Summary cannot be empty',
@@ -712,18 +623,9 @@ describe('Proposal Review', () => {
       [
         {
           summary: ['Summary'],
-          review_duration_mins: [60],
           build_reproduced: [],
         },
         'Build reproduced cannot be empty',
-      ],
-      [
-        {
-          summary: ['Summary'],
-          review_duration_mins: [],
-          build_reproduced: [false],
-        },
-        'Review duration cannot be empty',
       ],
     ])(
       'should not allow to publish a review that has invalid fields',
@@ -741,7 +643,6 @@ describe('Proposal Review', () => {
         const resProposalReview = await driver.actor.create_proposal_review({
           proposal_id: proposalId,
           summary: [],
-          review_duration_mins: [],
           build_reproduced: [],
           vote: [],
         });

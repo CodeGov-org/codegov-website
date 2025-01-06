@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   effect,
+  inject,
   OnInit,
   signal,
 } from '@angular/core';
@@ -51,10 +52,6 @@ import { isNil, isNotNil, routeParamSignal } from '~core/utils';
 
       .answer--negative {
         color: common.$error;
-      }
-
-      .answer--neutral {
-        color: common.$white;
       }
 
       .review__image {
@@ -107,7 +104,7 @@ import { isNil, isNotNil, routeParamSignal } from '~core/utils';
                       <span class="answer--negative">Reject</span>
                     }
                     @default {
-                      <span class="answer--neutral">No vote</span>
+                      No vote
                     }
                   }
                 </app-value-col>
@@ -122,7 +119,7 @@ import { isNil, isNotNil, routeParamSignal } from '~core/utils';
                       <span class="answer--negative">Unsuccessful</span>
                     }
                     @default {
-                      <span class="answer--neutral">Not Applicable</span>
+                      Not applicable
                     }
                   }
                 </app-value-col>
@@ -131,17 +128,15 @@ import { isNil, isNotNil, routeParamSignal } from '~core/utils';
                   Build verification images
                 </app-key-col>
                 <app-value-col aria-labelledby="review-mages">
-                  @if (review.reproducedBuildImageId.length === 0) {
+                  @for (
+                    image of review.reproducedBuildImageId;
+                    track image.sm.url
+                  ) {
+                    <a [href]="image.xxl.url" target="_blank">
+                      <img [src]="image.sm.url" class="review__image" />
+                    </a>
+                  } @empty {
                     No build verification images were provided for this review.
-                  } @else {
-                    @for (
-                      image of review.reproducedBuildImageId;
-                      track image.sm.url
-                    ) {
-                      <a [href]="image.xxl.url" target="_blank">
-                        <img [src]="image.sm.url" class="review__image" />
-                      </a>
-                    }
                   }
                 </app-value-col>
               </app-key-value-grid>
@@ -200,13 +195,6 @@ import { isNil, isNotNil, routeParamSignal } from '~core/utils';
                     <app-value-col [attr.labelledby]="'summary-id-' + i">
                       {{ commit.details.comment }}
                     </app-value-col>
-
-                    <app-key-col [id]="'highlights-id-' + i">
-                      Commit highlights
-                    </app-key-col>
-                    <app-value-col [attr.labelledby]="'highlights-id-' + i">
-                      {{ commit.details.highlights }}
-                    </app-value-col>
                   }
                 </app-key-value-grid>
               </div>
@@ -218,12 +206,14 @@ import { isNil, isNotNil, routeParamSignal } from '~core/utils';
   `,
 })
 export class ProposalReviewComponent implements OnInit {
+  private readonly reviewService = inject(ReviewService);
+  private readonly proposalService = inject(ProposalService);
+  private readonly profileService = inject(ProfileService);
+
   public readonly proposalReviewStatus = signal(ProposalReviewStatus);
   public readonly ProposalState = signal(ProposalState);
 
-  public readonly userProfile = toSignal(
-    this.profileService.currentUserProfile$,
-  );
+  public readonly userProfile = toSignal(this.profileService.currentUser$);
   public readonly isReviewOwner = computed(() => {
     const userId = this.currentReview()?.userId;
 
@@ -240,7 +230,7 @@ export class ProposalReviewComponent implements OnInit {
     this.proposalService.currentProposal$,
   );
 
-  public readonly reviewers = toSignal(this.profileService.reviewerProfiles$);
+  public readonly reviewers = toSignal(this.profileService.reviewers$);
   public readonly currentReviewerId = computed(
     () => this.currentReview()?.userId ?? null,
   );
@@ -253,11 +243,7 @@ export class ProposalReviewComponent implements OnInit {
     return this.reviewers()?.[reviewerId] ?? null;
   });
 
-  constructor(
-    private readonly reviewService: ReviewService,
-    private readonly proposalService: ProposalService,
-    private readonly profileService: ProfileService,
-  ) {
+  constructor() {
     effect(() => {
       const reviewId = this.currentReviewId();
 

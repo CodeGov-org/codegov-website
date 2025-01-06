@@ -31,7 +31,6 @@ export function mapCreateProposalReviewRequest(
 ): CreateProposalReviewApiRequest {
   return {
     proposal_id: req.proposalId,
-    review_duration_mins: toCandidOpt(req.reviewDurationMins),
     summary: toCandidOpt(req.summary),
     build_reproduced: toCandidOpt(req.buildReproduced),
     vote: toCandidOpt(mapProposalVoteRequest(req.vote)),
@@ -44,7 +43,6 @@ export function mapUpdateProposalReviewRequest(
   return {
     proposal_id: req.proposalId,
     status: toCandidOpt(mapProposalReviewStatusRequest(req.status)),
-    review_duration_mins: toCandidOpt(req.reviewDurationMins),
     summary: toCandidOpt(req.summary),
     build_reproduced: toCandidOpt(req.buildReproduced),
     vote: toCandidOpt(mapProposalVoteRequest(req.vote)),
@@ -90,7 +88,6 @@ export function mapGetProposalReviewResponse(
     lastUpdatedAt: fromCandidOptDate(review.last_updated_at),
     status: mapProposalReviewStatusResponse(review.status),
     summary: fromCandidOpt(review.summary),
-    reviewDurationMins: fromCandidOpt(review.review_duration_mins),
     buildReproduced: fromCandidOpt(review.build_reproduced),
     // [TODO] - connect with API once it's implemented
     reproducedBuildImageId: getReviewImages(),

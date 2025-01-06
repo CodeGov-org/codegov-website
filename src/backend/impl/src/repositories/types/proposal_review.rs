@@ -45,7 +45,6 @@ pub struct ProposalReview {
     pub last_updated_at: Option<DateTime>,
     pub status: ProposalReviewStatus,
     pub summary: Option<String>,
-    pub review_duration_mins: Option<u16>,
     pub build_reproduced: Option<bool>,
     pub images_ids: Vec<ImageId>,
     pub vote: ProposalVote,

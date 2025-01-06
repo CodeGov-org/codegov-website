@@ -12,8 +12,7 @@ export class ReviewService {
   private readonly proposalReviewListSubject = new BehaviorSubject<
     GetProposalReviewResponse[]
   >([]);
-  public readonly proposalReviewList$ =
-    this.proposalReviewListSubject.asObservable();
+  public readonly reviews$ = this.proposalReviewListSubject.asObservable();
 
   private readonly currentReviewSubject =
     new BehaviorSubject<GetProposalReviewResponse | null>(null);
@@ -22,9 +21,10 @@ export class ReviewService {
   private readonly userReviewListSubject = new BehaviorSubject<
     GetProposalReviewResponse[]
   >([]);
-  public readonly userReviewList$ = this.userReviewListSubject.asObservable();
+  public readonly currentUserReviews$ =
+    this.userReviewListSubject.asObservable();
 
-  public async loadReviewListByProposalId(proposalId: string): Promise<void> {
+  public async loadReviewsByProposalId(proposalId: string): Promise<void> {
     const getResponse = await this.reviewApiService.listProposalReviews({
       proposalId,
     });
@@ -32,7 +32,7 @@ export class ReviewService {
     this.proposalReviewListSubject.next(getResponse);
   }
 
-  public async loadReviewListByReviewerId(userId: string): Promise<void> {
+  public async loadReviewsByReviewerId(userId: string): Promise<void> {
     const getResponse = await this.reviewApiService.listProposalReviews({
       userId,
     });

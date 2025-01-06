@@ -43,21 +43,6 @@ import { boolToRadio, isNil, radioToBool, toSyncSignal } from '~core/utils';
     <ng-container [formGroup]="reviewForm()">
       <app-key-value-grid>
         <app-key-col>
-          <label appLabel for="reviewDurationMins">Time spent (minutes)</label>
-        </app-key-col>
-        <app-value-col>
-          <app-form-field>
-            <input
-              appInput
-              id="reviewDurationMins"
-              formControlName="reviewDurationMins"
-              type="number"
-              min="0"
-            />
-          </app-form-field>
-        </app-value-col>
-
-        <app-key-col>
           <div>Summary</div>
         </app-key-col>
         <app-value-col>
@@ -145,7 +130,6 @@ export class ReviewDetailsFormComponent implements OnDestroy {
 
   public readonly reviewForm = signal(
     new FormGroup<ReviewForm>({
-      reviewDurationMins: new FormControl(null),
       summary: new FormControl(null),
       buildReproduced: new FormControl(null),
       vote: new FormControl(null),
@@ -177,7 +161,6 @@ export class ReviewDetailsFormComponent implements OnDestroy {
 
       this.reviewForm().setValue(
         {
-          reviewDurationMins: review.reviewDurationMins,
           summary: review.summary,
           buildReproduced: boolToRadio(review.buildReproduced),
           vote: boolToRadio(review.vote),
@@ -207,7 +190,6 @@ export class ReviewDetailsFormComponent implements OnDestroy {
     this.reviewSubmissionService.updateReview({
       proposalId: review.proposalId,
       summary: value.summary ?? null,
-      reviewDurationMins: value.reviewDurationMins ?? null,
       buildReproduced: radioToBool(value.buildReproduced),
       vote: radioToBool(value.vote),
     });
@@ -215,14 +197,12 @@ export class ReviewDetailsFormComponent implements OnDestroy {
 }
 
 interface ReviewFormValue {
-  reviewDurationMins: number | null;
   summary: string | null;
   buildReproduced: 0 | 1 | null;
   vote: 0 | 1 | null;
 }
 
 interface ReviewForm {
-  reviewDurationMins: FormControl<number | null>;
   summary: FormControl<string | null>;
   buildReproduced: FormControl<0 | 1 | null>;
   vote: FormControl<0 | 1 | null>;

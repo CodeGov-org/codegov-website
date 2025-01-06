@@ -22,7 +22,6 @@ use candid::Principal;
 use std::{path::PathBuf, str::FromStr};
 
 const MAX_PROPOSAL_REVIEW_SUMMARY_CHARS: usize = 1500;
-const MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS: u16 = 60 * 3; // 3 hours
 
 const PROPOSAL_REVIEW_IMAGES_SUB_PATH: &str = "reviews";
 
@@ -129,7 +128,7 @@ impl<
         calling_principal: Principal,
         request: CreateProposalReviewRequest,
     ) -> Result<CreateProposalReviewResponse, ApiError> {
-        self.validate_fields(request.summary.as_ref(), request.review_duration_mins)?;
+        self.validate_fields(request.summary.as_ref())?;
 
         let user_id = self
             .user_profile_repository
@@ -181,7 +180,6 @@ impl<
             created_at: DateTime::new(date_time)?,
             last_updated_at: None,
             summary: request.summary,
-            review_duration_mins: request.review_duration_mins,
             build_reproduced: request.build_reproduced,
             images_ids: vec![],
             vote: request
@@ -202,7 +200,7 @@ impl<
         calling_principal: Principal,
         request: UpdateProposalReviewRequest,
     ) -> Result<(), ApiError> {
-        self.validate_fields(request.summary.as_ref(), request.review_duration_mins)?;
+        self.validate_fields(request.summary.as_ref())?;
 
         let (id, mut current_proposal_review, _) = self.get_current_proposal_review_with_user_id(
             request.proposal_id,
@@ -212,9 +210,6 @@ impl<
 
         if request.summary.is_some() {
             current_proposal_review.summary = request.summary;
-        }
-        if request.review_duration_mins.is_some() {
-            current_proposal_review.review_duration_mins = request.review_duration_mins;
         }
         if request.build_reproduced.is_some() {
             current_proposal_review.build_reproduced = request.build_reproduced;
@@ -229,7 +224,6 @@ impl<
                 // unless the review is set back to draft
                 self.validate_published_fields(
                     current_proposal_review.summary.as_ref(),
-                    current_proposal_review.review_duration_mins,
                     current_proposal_review.build_reproduced,
                 )
                 .map_err(|e| {
@@ -503,11 +497,7 @@ impl<
         }
     }
 
-    fn validate_fields(
-        &self,
-        summary: Option<&String>,
-        review_duration_mins: Option<u16>,
-    ) -> Result<(), ApiError> {
+    fn validate_fields(&self, summary: Option<&String>) -> Result<(), ApiError> {
         if let Some(summary) = summary {
             if summary.is_empty() {
                 return Err(ApiError::invalid_argument("Summary cannot be empty"));
@@ -517,19 +507,6 @@ impl<
                 return Err(ApiError::invalid_argument(&format!(
                     "Summary must be less than {} characters",
                     MAX_PROPOSAL_REVIEW_SUMMARY_CHARS
-                )));
-            }
-        }
-
-        if let Some(review_duration_mins) = review_duration_mins {
-            if review_duration_mins == 0 {
-                return Err(ApiError::invalid_argument("Review duration cannot be 0"));
-            }
-
-            if review_duration_mins > MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS {
-                return Err(ApiError::invalid_argument(&format!(
-                    "Review duration must be less than {} minutes",
-                    MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS
                 )));
             }
         }
@@ -621,17 +598,10 @@ impl<
     fn validate_published_fields(
         &self,
         summary: Option<&String>,
-        review_duration_mins: Option<u16>,
         build_reproduced: Option<bool>,
     ) -> Result<(), ApiError> {
         if summary.is_none() {
             return Err(ApiError::invalid_argument("Summary cannot be empty"));
-        }
-
-        if review_duration_mins.is_none() {
-            return Err(ApiError::invalid_argument(
-                "Review duration cannot be empty",
-            ));
         }
 
         if build_reproduced.is_none() {
@@ -640,7 +610,7 @@ impl<
             ));
         }
 
-        self.validate_fields(summary, review_duration_mins)?;
+        self.validate_fields(summary)?;
 
         Ok(())
     }
@@ -714,7 +684,6 @@ impl<
 /// - **[commit sha truncated to 9 characters]**:
 ///   Matches description: [true or false]
 ///   Comment: [commit comment]
-///   Highlights: [comma-separated list of commit highlights]
 /// - **[commit sha truncated to 9 characters]**:
 ///   ...
 /// ...
@@ -903,8 +872,6 @@ mod tests {
     #[rstest]
     #[case::summary_empty(proposal_review_create_summary_empty())]
     #[case::summary_too_long(proposal_review_create_summary_too_long())]
-    #[case::review_duration_zero(proposal_review_create_review_duration_zero())]
-    #[case::review_duration_too_long(proposal_review_create_review_duration_too_long())]
     async fn create_proposal_review_invalid(
         #[case] fixture: (CreateProposalReviewRequest, ApiError),
     ) {
@@ -1160,7 +1127,6 @@ mod tests {
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
                 summary: proposal_review.summary.clone(),
-                review_duration_mins: proposal_review.review_duration_mins,
                 build_reproduced: proposal_review.build_reproduced,
                 vote: Some(proposal_review.vote.into()),
             },
@@ -1173,7 +1139,6 @@ mod tests {
         let proposal_review = ProposalReview {
             created_at: DateTime::new(date_time).unwrap(),
             summary: None,
-            review_duration_mins: None,
             build_reproduced: None,
             ..fixtures::proposal_review_draft()
         };
@@ -1183,7 +1148,6 @@ mod tests {
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
                 summary: proposal_review.summary,
-                review_duration_mins: proposal_review.review_duration_mins,
                 build_reproduced: proposal_review.build_reproduced,
                 vote: Some(proposal_review.vote.into()),
             },
@@ -1198,7 +1162,6 @@ mod tests {
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
                 summary: Some("".to_string()),
-                review_duration_mins: proposal_review.review_duration_mins,
                 build_reproduced: proposal_review.build_reproduced,
                 vote: Some(proposal_review.vote.into()),
             },
@@ -1214,49 +1177,12 @@ mod tests {
             CreateProposalReviewRequest {
                 proposal_id: proposal_review.proposal_id.to_string(),
                 summary: Some("a".repeat(MAX_PROPOSAL_REVIEW_SUMMARY_CHARS + 1)),
-                review_duration_mins: proposal_review.review_duration_mins,
                 build_reproduced: proposal_review.build_reproduced,
                 vote: Some(proposal_review.vote.into()),
             },
             ApiError::invalid_argument(&format!(
                 "Summary must be less than {} characters",
                 MAX_PROPOSAL_REVIEW_SUMMARY_CHARS
-            )),
-        )
-    }
-
-    #[fixture]
-    fn proposal_review_create_review_duration_zero() -> (CreateProposalReviewRequest, ApiError) {
-        let proposal_review = fixtures::proposal_review_draft();
-
-        (
-            CreateProposalReviewRequest {
-                proposal_id: proposal_review.proposal_id.to_string(),
-                summary: proposal_review.summary,
-                review_duration_mins: Some(0),
-                build_reproduced: proposal_review.build_reproduced,
-                vote: Some(proposal_review.vote.into()),
-            },
-            ApiError::invalid_argument("Review duration cannot be 0"),
-        )
-    }
-
-    #[fixture]
-    fn proposal_review_create_review_duration_too_long() -> (CreateProposalReviewRequest, ApiError)
-    {
-        let proposal_review = fixtures::proposal_review_draft();
-
-        (
-            CreateProposalReviewRequest {
-                proposal_id: proposal_review.proposal_id.to_string(),
-                summary: proposal_review.summary,
-                review_duration_mins: Some(MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS + 1),
-                build_reproduced: proposal_review.build_reproduced,
-                vote: Some(proposal_review.vote.into()),
-            },
-            ApiError::invalid_argument(&format!(
-                "Review duration must be less than {} minutes",
-                MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS
             )),
         )
     }
@@ -1581,8 +1507,6 @@ mod tests {
     #[rstest]
     #[case::summary_empty(proposal_review_update_summary_empty())]
     #[case::summary_too_long(proposal_review_update_summary_too_long())]
-    #[case::review_duration_zero(proposal_review_update_duration_zero())]
-    #[case::review_duration_too_long(proposal_review_update_duration_too_long())]
     fn proposal_review_update_invalid(#[case] fixture: (UpdateProposalReviewRequest, ApiError)) {
         let calling_principal = fixtures::principal_a();
         let (request, expected_error) = fixture;
@@ -1619,9 +1543,6 @@ mod tests {
     #[rstest]
     #[case::summary_empty(proposal_review_update_publish_summary_empty())]
     #[case::summary_too_long(proposal_review_update_publish_summary_too_long())]
-    #[case::review_duration_zero(proposal_review_update_publish_duration_zero())]
-    #[case::no_summary(proposal_review_update_publish_duration_too_long())]
-    #[case::no_duration(proposal_review_update_publish_no_duration())]
     #[case::no_build_reproduced(proposal_review_update_publish_no_build_reproduced())]
     fn proposal_review_update_publish_invalid(
         #[case] fixture: (
@@ -1690,7 +1611,6 @@ mod tests {
             ..fixtures::proposal_review_draft()
         };
         let summary = "Updated summary".to_string();
-        let review_duration_mins = 120;
         let build_reproduced = false;
 
         (
@@ -1700,13 +1620,11 @@ mod tests {
                 proposal_id: original_proposal_review.proposal_id.to_string(),
                 status: None,
                 summary: Some(summary.clone()),
-                review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
                 vote: Some(backend_api::ProposalVote::Yes),
             },
             ProposalReview {
                 summary: Some(summary),
-                review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
                 last_updated_at: Some(DateTime::new(date_time).unwrap()),
                 vote: ProposalVote::Yes,
@@ -1730,7 +1648,6 @@ mod tests {
         };
         let status = ProposalReviewStatus::Draft;
         let summary = "Updated summary".to_string();
-        let review_duration_mins = 120;
         let build_reproduced = false;
         let vote = ProposalVote::No;
 
@@ -1741,14 +1658,12 @@ mod tests {
                 proposal_id: original_proposal_review.proposal_id.to_string(),
                 status: Some(status.clone().into()),
                 summary: Some(summary.clone()),
-                review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
                 vote: Some(vote.clone().into()),
             },
             ProposalReview {
                 status,
                 summary: Some(summary),
-                review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
                 last_updated_at: Some(DateTime::new(date_time).unwrap()),
                 vote,
@@ -1772,7 +1687,6 @@ mod tests {
         };
         let status = ProposalReviewStatus::Published;
         let summary = "Updated summary".to_string();
-        let review_duration_mins = 120;
         let build_reproduced = false;
 
         (
@@ -1782,14 +1696,12 @@ mod tests {
                 proposal_id: original_proposal_review.proposal_id.to_string(),
                 status: Some(status.clone().into()),
                 summary: Some(summary.clone()),
-                review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
                 vote: None,
             },
             ProposalReview {
                 status,
                 summary: Some(summary),
-                review_duration_mins: Some(review_duration_mins),
                 build_reproduced: Some(build_reproduced),
                 last_updated_at: Some(DateTime::new(date_time).unwrap()),
                 ..original_proposal_review
@@ -1804,7 +1716,6 @@ mod tests {
                 proposal_id: fixtures::proposal_id().to_string(),
                 status: None,
                 summary: Some("".to_string()),
-                review_duration_mins: None,
                 build_reproduced: None,
                 vote: None,
             },
@@ -1819,46 +1730,12 @@ mod tests {
                 proposal_id: fixtures::proposal_id().to_string(),
                 status: None,
                 summary: Some("a".repeat(MAX_PROPOSAL_REVIEW_SUMMARY_CHARS + 1)),
-                review_duration_mins: None,
                 build_reproduced: None,
                 vote: None,
             },
             ApiError::invalid_argument(&format!(
                 "Summary must be less than {} characters",
                 MAX_PROPOSAL_REVIEW_SUMMARY_CHARS
-            )),
-        )
-    }
-
-    #[fixture]
-    fn proposal_review_update_duration_zero() -> (UpdateProposalReviewRequest, ApiError) {
-        (
-            UpdateProposalReviewRequest {
-                proposal_id: fixtures::proposal_id().to_string(),
-                status: None,
-                summary: None,
-                review_duration_mins: Some(0),
-                build_reproduced: None,
-                vote: None,
-            },
-            ApiError::invalid_argument("Review duration cannot be 0"),
-        )
-    }
-
-    #[fixture]
-    fn proposal_review_update_duration_too_long() -> (UpdateProposalReviewRequest, ApiError) {
-        (
-            UpdateProposalReviewRequest {
-                proposal_id: fixtures::proposal_id().to_string(),
-                status: None,
-                summary: None,
-                review_duration_mins: Some(MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS + 1),
-                build_reproduced: None,
-                vote: None,
-            },
-            ApiError::invalid_argument(&format!(
-                "Review duration must be less than {} minutes",
-                MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS
             )),
         )
     }
@@ -1884,7 +1761,6 @@ mod tests {
                 proposal_id: original_proposal_review.proposal_id.to_string(),
                 status: Some(backend_api::ProposalReviewStatus::Published),
                 summary: None,
-                review_duration_mins: None,
                 build_reproduced: None,
                 vote: None,
             },
@@ -1919,74 +1795,6 @@ mod tests {
                 proposal_id: original_proposal_review.proposal_id.to_string(),
                 status: Some(backend_api::ProposalReviewStatus::Published),
                 summary: None,
-                review_duration_mins: None,
-                build_reproduced: None,
-                vote: None,
-            },
-            ApiError::conflict(&format!(
-                "Proposal review cannot be published due to invalid field: {}",
-                error_message
-            )),
-        )
-    }
-
-    #[fixture]
-    fn proposal_review_update_publish_duration_zero() -> (
-        ProposalReviewId,
-        ProposalReview,
-        UpdateProposalReviewRequest,
-        ApiError,
-    ) {
-        let id = fixtures::proposal_review_id();
-        let original_proposal_review = ProposalReview {
-            user_id: fixtures::uuid_a(),
-            review_duration_mins: Some(0),
-            ..fixtures::proposal_review_draft()
-        };
-
-        (
-            id,
-            original_proposal_review.clone(),
-            UpdateProposalReviewRequest {
-                proposal_id: original_proposal_review.proposal_id.to_string(),
-                status: Some(backend_api::ProposalReviewStatus::Published),
-                summary: None,
-                review_duration_mins: None,
-                build_reproduced: None,
-                vote: None,
-            },
-            ApiError::conflict(
-                "Proposal review cannot be published due to invalid field: Review duration cannot be 0",
-            ),
-        )
-    }
-
-    #[fixture]
-    fn proposal_review_update_publish_duration_too_long() -> (
-        ProposalReviewId,
-        ProposalReview,
-        UpdateProposalReviewRequest,
-        ApiError,
-    ) {
-        let id = fixtures::proposal_review_id();
-        let original_proposal_review = ProposalReview {
-            user_id: fixtures::uuid_a(),
-            review_duration_mins: Some(MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS + 1),
-            ..fixtures::proposal_review_draft()
-        };
-        let error_message = format!(
-            "Review duration must be less than {} minutes",
-            MAX_PROPOSAL_REVIEW_REVIEW_DURATION_MINS
-        );
-
-        (
-            id,
-            original_proposal_review.clone(),
-            UpdateProposalReviewRequest {
-                proposal_id: original_proposal_review.proposal_id.to_string(),
-                status: Some(backend_api::ProposalReviewStatus::Published),
-                summary: None,
-                review_duration_mins: None,
                 build_reproduced: None,
                 vote: None,
             },
@@ -2417,43 +2225,11 @@ mod tests {
                 proposal_id: original_proposal_review.proposal_id.to_string(),
                 status: Some(backend_api::ProposalReviewStatus::Published),
                 summary: None,
-                review_duration_mins: None,
                 build_reproduced: None,
                 vote: None,
             },
             ApiError::conflict(
                 "Proposal review cannot be published due to invalid field: Summary cannot be empty",
-            ),
-        )
-    }
-
-    #[fixture]
-    fn proposal_review_update_publish_no_duration() -> (
-        ProposalReviewId,
-        ProposalReview,
-        UpdateProposalReviewRequest,
-        ApiError,
-    ) {
-        let id = fixtures::proposal_review_id();
-        let original_proposal_review = ProposalReview {
-            user_id: fixtures::uuid_a(),
-            review_duration_mins: None,
-            ..fixtures::proposal_review_draft()
-        };
-
-        (
-            id,
-            original_proposal_review.clone(),
-            UpdateProposalReviewRequest {
-                proposal_id: original_proposal_review.proposal_id.to_string(),
-                status: Some(backend_api::ProposalReviewStatus::Published),
-                summary: None,
-                review_duration_mins: None,
-                build_reproduced: None,
-                vote: None,
-            },
-            ApiError::conflict(
-                "Proposal review cannot be published due to invalid field: Review duration cannot be empty",
             ),
         )
     }
@@ -2479,7 +2255,6 @@ mod tests {
                 proposal_id: original_proposal_review.proposal_id.to_string(),
                 status: Some(backend_api::ProposalReviewStatus::Published),
                 summary: None,
-                review_duration_mins: None,
                 build_reproduced: None,
                 vote: None,
             },
@@ -2523,7 +2298,6 @@ mod tests {
                     state: ReviewCommitState::Reviewed(ReviewedCommitState {
                         matches_description: Some(true),
                         comment: Some("Good commit".to_string()),
-                        highlights: vec!["Feature A".to_string(), "Bug fix B".to_string()],
                     }),
                     ..fixtures::proposal_review_commit_reviewed()
                 },
@@ -2535,7 +2309,6 @@ mod tests {
                     state: ReviewCommitState::Reviewed(ReviewedCommitState {
                         matches_description: Some(false),
                         comment: Some("Issues found".to_string()),
-                        highlights: vec!["Missing tests".to_string()],
                     }),
                     ..fixtures::proposal_review_commit_reviewed()
                 },
@@ -2561,7 +2334,6 @@ mod tests {
                     state: ReviewCommitState::Reviewed(ReviewedCommitState {
                         matches_description: None,
                         comment: Some("Good commit".to_string()),
-                        highlights: vec!["Feature A".to_string(), "Bug fix B".to_string()],
                     }),
                     ..fixtures::proposal_review_commit_reviewed()
                 },
@@ -2573,7 +2345,6 @@ mod tests {
                     state: ReviewCommitState::Reviewed(ReviewedCommitState {
                         matches_description: None,
                         comment: Some("Issues found".to_string()),
-                        highlights: vec!["Missing tests".to_string()],
                     }),
                     ..fixtures::proposal_review_commit_reviewed()
                 },
@@ -2599,7 +2370,6 @@ mod tests {
                     state: ReviewCommitState::Reviewed(ReviewedCommitState {
                         matches_description: Some(true),
                         comment: Some("Good commit".to_string()),
-                        highlights: vec!["Feature A".to_string(), "Bug fix B".to_string()],
                     }),
                     ..fixtures::proposal_review_commit_reviewed()
                 },
@@ -2611,7 +2381,6 @@ mod tests {
                     state: ReviewCommitState::Reviewed(ReviewedCommitState {
                         matches_description: None,
                         comment: Some("Issues found".to_string()),
-                        highlights: vec!["Missing tests".to_string()],
                     }),
                     ..fixtures::proposal_review_commit_reviewed()
                 },
@@ -2671,11 +2440,9 @@ Commits review:
 - **28111ed23**:
   Matches description: {}
   Comment: Good commit
-  Highlights: Feature A, Bug fix B
 - **47d98477c**:
   Matches description: {}
   Comment: Issues found
-  Highlights: Missing tests
 "#,
                 commits_matches.0, commits_matches.1
             )

@@ -15,7 +15,6 @@ pub type ProposalReviewCommitId = Uuid;
 pub struct ReviewedCommitState {
     pub matches_description: Option<bool>,
     pub comment: Option<String>,
-    pub highlights: Vec<String>,
 }
 
 impl Display for ReviewedCommitState {
@@ -30,13 +29,6 @@ impl Display for ReviewedCommitState {
             if !comment.is_empty() {
                 commit_details = format!("{}\nComment: {}", commit_details, comment);
             }
-        }
-        if !self.highlights.is_empty() {
-            commit_details = format!(
-                "{}\nHighlights: {}",
-                commit_details,
-                self.highlights.join(", ")
-            );
         }
         write!(f, "{}", commit_details)
     }
@@ -215,7 +207,6 @@ mod tests {
         let mut state = ReviewedCommitState {
             matches_description: None,
             comment: None,
-            highlights: vec![],
         };
 
         assert_eq!(state.to_string(), "Matches description: Unanswered");
@@ -233,18 +224,6 @@ mod tests {
         assert_eq!(
             state.to_string(),
             "Matches description: true\nComment: test"
-        );
-
-        state.highlights = vec!["test".to_string()];
-        assert_eq!(
-            state.to_string(),
-            "Matches description: true\nComment: test\nHighlights: test"
-        );
-
-        state.highlights = vec!["test1".to_string(), "test2".to_string()];
-        assert_eq!(
-            state.to_string(),
-            "Matches description: true\nComment: test\nHighlights: test1, test2"
         );
     }
 }
