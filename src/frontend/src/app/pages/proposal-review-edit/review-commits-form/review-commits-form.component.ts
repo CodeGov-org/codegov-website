@@ -31,7 +31,13 @@ import {
   KeyValueGridComponent,
   ValueColComponent,
 } from '~core/ui';
-import { boolToRadio, isNil, radioToBool, toSyncSignal } from '~core/utils';
+import {
+  boolToRadio,
+  isNil,
+  isNotNil,
+  radioToBool,
+  toSyncSignal,
+} from '~core/utils';
 
 @Component({
   selector: 'app-review-commits-form',
@@ -364,7 +370,9 @@ export class ReviewCommitsFormComponent implements OnDestroy {
       return;
     }
 
-    commitForm.controls.commitSha.setValue(result, { emitEvent: false });
+    if (result !== commitSha) {
+      commitForm.controls.commitSha.setValue(result, { emitEvent: false });
+    }
   }
 
   private focusCommitForm(index: number): void {
@@ -404,7 +412,7 @@ export class ReviewCommitsFormComponent implements OnDestroy {
         (commit, i) => i !== index && commit.commit.commitSha === commitSha,
       );
 
-      return existingCommit ? { uniqueSha: true } : null;
+      return isNotNil(existingCommit) ? { uniqueSha: true } : null;
     };
   }
 }
@@ -423,7 +431,7 @@ interface ReviewCommitForm {
   comment: FormControl<string | null>;
 }
 
-const commitShaRegex = /[0-9a-f]{7,40}/;
+const commitShaRegex = /^[a-f0-9]{40}$/;
 
 function extractCommitSha(commitSha: string): string | null {
   return commitShaRegex.exec(commitSha)?.[0] ?? null;
@@ -435,19 +443,20 @@ function commitToFormValue(
 ): ReviewCommitFormValue {
   const reviewed = boolToRadio(commit.reviewed);
 
-  let matchesDescription = null;
-  let comment = null;
-
   if (commit.reviewed) {
-    matchesDescription = boolToRadio(commit.matchesDescription);
-    comment = commit.comment;
+    return {
+      commitSha,
+      reviewed,
+      matchesDescription: boolToRadio(commit.matchesDescription),
+      comment: commit.comment,
+    };
   }
 
   return {
-    commitSha: commitSha,
-    matchesDescription,
+    commitSha,
     reviewed,
-    comment,
+    matchesDescription: null,
+    comment: null,
   };
 }
 
@@ -461,7 +470,6 @@ function commitFromFormValue(
       matchesDescription: radioToBool(formValue.matchesDescription),
       reviewed: true,
       comment: formValue.comment ?? null,
-      highlights: [],
     };
   }
 

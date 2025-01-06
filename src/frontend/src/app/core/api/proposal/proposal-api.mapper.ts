@@ -70,7 +70,6 @@ export function mapGetProposalResponse(
           ProposalLinkBaseUrl.ICLight + res.proposal.nervous_system.network.id,
       },
     ],
-    codeGovVote: 'ADOPT',
   };
 }
 

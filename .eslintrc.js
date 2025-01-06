@@ -53,6 +53,9 @@ module.exports = {
         ecmaVersion: 'latest',
         project: ['./src/{docs,marketing}/tsconfig.json'],
       },
+      rules: {
+        '@typescript-eslint/triple-slash-reference': 0,
+      },
     },
     {
       files: ['src/frontend/**/*.ts'],

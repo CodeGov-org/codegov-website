@@ -52,7 +52,6 @@ impl From<ProposalReview> for backend_api::ProposalReview {
             last_updated_at: proposal_review.last_updated_at.map(|dt| dt.to_string()),
             status: proposal_review.status.into(),
             summary: proposal_review.summary,
-            review_duration_mins: proposal_review.review_duration_mins,
             build_reproduced: proposal_review.build_reproduced,
             images_paths: vec![],
             proposal_review_commits: vec![],

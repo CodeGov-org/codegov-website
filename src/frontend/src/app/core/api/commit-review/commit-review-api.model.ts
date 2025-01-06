@@ -30,7 +30,6 @@ export type ReviewCommitDetails =
 export interface ReviewedCommitDetails {
   reviewed: true;
   comment: string | null;
-  highlights: string[];
   matchesDescription: boolean | null;
 }
 

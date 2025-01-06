@@ -32,7 +32,7 @@ describe('ProfileViewComponent', () => {
 
   beforeEach(async () => {
     profileServiceMock = profileServiceMockFactory();
-    defineProp(profileServiceMock, 'currentUserProfile$', of(null));
+    defineProp(profileServiceMock, 'currentUser$', of(null));
     defineProp(profileServiceMock, 'isCurrentUserReviewer$', of(true));
 
     proposalServiceMock = proposalServiceMockFactory();
@@ -42,8 +42,8 @@ describe('ProfileViewComponent', () => {
     activatedRouteMock.params = of([{ id: 1 }]);
 
     reviewServiceMock = reviewServiceMockFactory();
-    defineProp(reviewServiceMock, 'proposalReviewList$', of([]));
-    defineProp(reviewServiceMock, 'userReviewList$', of([]));
+    defineProp(reviewServiceMock, 'reviews$', of([]));
+    defineProp(reviewServiceMock, 'currentUserReviews$', of([]));
 
     await TestBed.configureTestingModule({
       imports: [ProfileEditComponent, RouterModule],

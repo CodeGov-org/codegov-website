@@ -149,9 +149,6 @@ describe('get my proposal review summary', () => {
         if (commit.state.reviewed.comment) {
           commitReview += `\n${INDENT}Comment: ${commit.state.reviewed.comment}`;
         }
-        if (commit.state.reviewed.highlights.length > 0) {
-          commitReview += `\n${INDENT}Highlights: ${commit.state.reviewed.highlights.join(', ')}`;
-        }
         expectedMarkdown += `- **${commit.commit_sha.slice(0, 9)}**:\n${commitReview}\n`;
       }
     }

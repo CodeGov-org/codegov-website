@@ -231,20 +231,6 @@ interface FilterForm {
                   : 'Not yet decided'
               }}
             </app-value-col>
-
-            <app-key-col [id]="'proposal-codegov-vote-' + i">
-              CodeGov vote
-            </app-key-col>
-            <app-value-col
-              [attr.aria-labelledby]="'proposal-codegov-vote-' + i"
-              class="proposal__vote"
-              [ngClass]="{
-                'proposal__vote--adopt': proposal.codeGovVote === 'ADOPT',
-                'proposal__vote--reject': proposal.codeGovVote === 'REJECT',
-              }"
-            >
-              {{ proposal.codeGovVote }}
-            </app-value-col>
           </app-key-value-grid>
 
           <div class="btn-group">
@@ -298,10 +284,10 @@ export class ProposalListComponent {
   public readonly isReviewer = toSignal(
     this.profileService.isCurrentUserReviewer$,
   );
-  public readonly userProfile = toSignal(
-    this.profileService.currentUserProfile$,
+  public readonly userProfile = toSignal(this.profileService.currentUser$);
+  public readonly userReviewList = toSignal(
+    this.reviewService.currentUserReviews$,
   );
-  public readonly userReviewList = toSignal(this.reviewService.userReviewList$);
 
   public readonly proposalListWithReviewIds = computed(() => {
     return this.proposalList()?.map(proposal => {
@@ -339,7 +325,7 @@ export class ProposalListComponent {
       const userProfile = this.userProfile();
 
       if (isNotNil(userProfile)) {
-        this.reviewService.loadReviewListByReviewerId(userProfile.id);
+        this.reviewService.loadReviewsByReviewerId(userProfile.id);
       }
     });
 

@@ -179,7 +179,6 @@ describe('ReviewSubmissionService', () => {
       ]);
       expect(commitsSpy).toHaveBeenCalledWith([
         createUiProposalReviewCommit({
-          apiId: '0',
           uiId: '0',
           commit: {
             commitSha,
@@ -319,7 +318,6 @@ describe('ReviewSubmissionService', () => {
       ]);
       expect(commitsSpy).toHaveBeenCalledWith([
         createUiProposalReviewCommit({
-          apiId: '0',
           uiId: '0',
           commit: {
             commitSha,
@@ -337,7 +335,6 @@ describe('ReviewSubmissionService', () => {
           reviewed: true,
           comment: null,
           matchesDescription: null,
-          highlights: [],
         }),
       ).toBeRejectedWithError(
         'Tried to update a commit for a review without selecting a proposal',
@@ -360,7 +357,6 @@ describe('ReviewSubmissionService', () => {
           reviewed: true,
           comment: null,
           matchesDescription: null,
-          highlights: [],
         }),
       ).toBeRejectedWithError(
         `Tried to update a commit with SHA ${commitSha} from proposal with Id ${proposalId} but it does not exist`,
@@ -382,7 +378,6 @@ function createProposalReviewResponse(
     lastUpdatedAt: null,
     status: ProposalReviewStatus.Draft,
     summary: null,
-    reviewDurationMins: null,
     buildReproduced: null,
     reproducedBuildImageId: [],
     commits: [],

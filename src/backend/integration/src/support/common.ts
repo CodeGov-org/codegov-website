@@ -129,7 +129,6 @@ export async function createProposalReview(
   const res = await actor.create_proposal_review({
     proposal_id: proposalId,
     summary: ['summary'],
-    review_duration_mins: [60],
     build_reproduced: [true],
     vote: [{ yes: null }],
   });
@@ -196,7 +195,6 @@ export async function publishProposalReview(
     proposal_id: proposalId,
     status: [{ published: null }],
     summary: [],
-    review_duration_mins: [],
     build_reproduced: [],
     vote: [],
   });
@@ -247,7 +245,6 @@ export async function createProposalReviewCommit(
       reviewed: {
         matches_description: [true],
         comment: ['comment'],
-        highlights: ['first highlight', 'second highlight'],
       },
     },
   });
@@ -284,7 +281,6 @@ export function validateProposalReview(
       created_at: expect.any(String),
       last_updated_at: expected.lastUpdatedAt ? [expected.lastUpdatedAt] : [],
       summary: expect.any(Array),
-      review_duration_mins: expect.any(Array),
       build_reproduced: expect.any(Array),
       images_paths: expect.any(Array),
       vote: expected.vote,
