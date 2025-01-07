@@ -7,10 +7,10 @@ import { NavLink, NavLinkCategory, isLinkCategory } from '../../../types';
   scoped: true,
 })
 export class Navbar {
-  @Prop()
+  @Prop({ reflect: true })
   public homeUrl = '/';
 
-  @Prop()
+  @Prop({ reflect: true })
   public links: Array<NavLink | NavLinkCategory> = [];
 
   render() {

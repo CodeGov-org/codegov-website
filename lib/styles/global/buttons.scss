@@ -1,24 +1,19 @@
-@use '../common/colors';
-@use '../common/dark-mode';
-@use '../common/effects';
-@use '../common/icons';
-@use '../common/sizing';
-@use '../common/utils';
+@use '../common';
 
-$btn-color: colors.$primary;
-$bn-hover-color: colors.$primary-600;
-$btn-disabled-color: rgba(colors.$primary, 0.45);
+$btn-color: common.$primary;
+$bn-hover-color: common.$primary-600;
+$btn-disabled-color: rgba(common.$primary, 0.45);
 
 .btn {
-  @include sizing.px(4);
-  @include sizing.py(1);
-  @include utils.no-underline;
+  @include common.px(4);
+  @include common.py(1);
+  @include common.no-underline;
 
-  border: sizing.$border-md-size solid transparent;
-  border-radius: sizing.$border-sm-radius;
+  border: common.$border-md-size solid transparent;
+  border-radius: common.$border-sm-radius;
   outline: none;
 
-  color: colors.$white;
+  color: common.$white;
   background-color: $btn-color;
   position: relative;
 
@@ -28,10 +23,10 @@ $btn-disabled-color: rgba(colors.$primary, 0.45);
   }
 
   &:focus:not(:disabled) {
-    @include effects.ring(colors.$primary-400);
+    @include common.ring(common.$primary-400);
 
-    @include dark-mode.dark {
-      @include effects.ring(colors.$primary-800);
+    @include common.dark {
+      @include common.ring(common.$primary-800);
     }
   }
 
@@ -50,7 +45,7 @@ $btn-disabled-color: rgba(colors.$primary, 0.45);
   background-color: transparent;
 
   &:hover:not(:disabled) {
-    color: colors.$white;
+    color: common.$white;
   }
 
   &:disabled {
@@ -60,22 +55,22 @@ $btn-disabled-color: rgba(colors.$primary, 0.45);
   }
 
   &.btn--success {
-    color: colors.$success;
-    border-color: colors.$success;
+    color: common.$success;
+    border-color: common.$success;
 
     &:hover:not(:disabled) {
-      background-color: colors.$success;
-      border-color: colors.$success;
+      background-color: common.$success;
+      border-color: common.$success;
     }
   }
 
   &.btn--error {
-    color: colors.$error;
-    border-color: colors.$error;
+    color: common.$error;
+    border-color: common.$error;
 
     &:hover:not(:disabled) {
-      background-color: colors.$error;
-      border-color: colors.$error;
+      background-color: common.$error;
+      border-color: common.$error;
     }
   }
 }
@@ -85,10 +80,10 @@ $btn-disabled-color: rgba(colors.$primary, 0.45);
   flex-direction: row;
   justify-content: end;
   align-items: center;
-  margin-top: sizing.size(4);
+  margin-top: common.size(4);
 
   > :not(:last-child) {
-    margin-right: sizing.size(2);
+    margin-right: common.size(2);
   }
 }
 
@@ -96,6 +91,6 @@ $btn-disabled-color: rgba(colors.$primary, 0.45);
   position: absolute;
   left: 50%;
   top: 50%;
-  @include icons.icon-xxl;
+  @include common.icon-xxl;
   transform: translate(-50%, -50%);
 }

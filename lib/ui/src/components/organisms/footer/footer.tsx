@@ -7,7 +7,7 @@ import { NavLinkCategory } from '../../../types';
   scoped: true,
 })
 export class FooterComponent {
-  @Prop()
+  @Prop({ reflect: true })
   public links!: NavLinkCategory[];
 
   public currentYear = new Date().getFullYear();

@@ -1,0 +1,40 @@
+@use 'sizing';
+@use 'colors';
+@use 'dark-mode';
+@use 'effects';
+
+@mixin input-common {
+  display: block;
+  width: 100%;
+
+  border-radius: sizing.$border-sm-radius;
+  border: sizing.$border-md-size solid colors.$slate-400;
+  padding: sizing.size(2.5);
+
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+
+  color: colors.$slate-900;
+  background-color: colors.$white;
+  outline: none;
+
+  &:focus {
+    border-color: colors.$primary;
+    @include effects.ring(colors.$primary-400);
+
+    @include dark-mode.dark {
+      @include effects.ring(colors.$primary-800);
+    }
+  }
+
+  @include dark-mode.dark {
+    color: colors.$slate-200;
+    background-color: colors.$slate-950;
+    border-color: colors.$slate-500;
+  }
+}
+
+@mixin text-area {
+  height: sizing.size(24);
+  resize: vertical;
+}

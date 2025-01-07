@@ -43,6 +43,14 @@ export interface GetProposalReviewResponse {
   commits: GetProposalReviewCommitResponse[];
 }
 
+export interface GetMyProposalReviewSummaryRequest {
+  proposalId: string;
+}
+
+export interface GetMyProposalReviewSummaryResponse {
+  summaryMarkdown: string;
+}
+
 export enum ProposalReviewStatus {
   Draft = 'Draft',
   Published = 'Published',

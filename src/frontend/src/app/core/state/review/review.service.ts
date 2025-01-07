@@ -1,7 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-import { GetProposalReviewResponse, ReviewApiService } from '~core/api';
+import {
+  GetMyProposalReviewSummaryResponse,
+  GetProposalReviewResponse,
+  ReviewApiService,
+} from '~core/api';
 
 @Injectable({
   providedIn: 'root',
@@ -18,11 +22,15 @@ export class ReviewService {
     new BehaviorSubject<GetProposalReviewResponse | null>(null);
   public readonly currentReview$ = this.currentReviewSubject.asObservable();
 
-  private readonly userReviewListSubject = new BehaviorSubject<
+  private readonly userReviewsSubject = new BehaviorSubject<
     GetProposalReviewResponse[]
   >([]);
-  public readonly currentUserReviews$ =
-    this.userReviewListSubject.asObservable();
+  public readonly currentUserReviews$ = this.userReviewsSubject.asObservable();
+
+  private readonly currentUserReviewSummarySubject =
+    new BehaviorSubject<GetMyProposalReviewSummaryResponse | null>(null);
+  public readonly currentUserReviewSummary$ =
+    this.currentUserReviewSummarySubject.asObservable();
 
   public async loadReviewsByProposalId(proposalId: string): Promise<void> {
     const getResponse = await this.reviewApiService.listProposalReviews({
@@ -37,7 +45,7 @@ export class ReviewService {
       userId,
     });
 
-    this.userReviewListSubject.next(getResponse);
+    this.userReviewsSubject.next(getResponse);
   }
 
   public async loadReview(proposalReviewId: string): Promise<void> {
@@ -46,5 +54,13 @@ export class ReviewService {
     });
 
     this.currentReviewSubject.next(getResponse);
+  }
+
+  public async loadReviewSummary(proposalId: string): Promise<void> {
+    const getResponse = await this.reviewApiService.getMyProposalReviewSummary({
+      proposalId,
+    });
+
+    this.currentUserReviewSummarySubject.next(getResponse);
   }
 }

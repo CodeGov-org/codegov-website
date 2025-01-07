@@ -1,53 +1,50 @@
-@use '../common/colors';
-@use '../common/dark-mode';
-@use '../common/sizing';
-@use '../common/typography';
+@use '../common';
 
 %heading {
   margin-top: 0;
-  margin-bottom: sizing.size(3);
-  font-weight: typography.$font-weight-semibold;
+  margin-bottom: common.size(3);
+  font-weight: common.$font-weight-semibold;
 }
 
 h1,
 .h1 {
   @extend %heading;
-  @include typography.text-xxxxl;
+  @include common.text-xxxxl;
 }
 
 h2,
 .h2 {
   @extend %heading;
-  @include typography.text-xxxl;
+  @include common.text-xxxl;
 }
 
 h3,
 .h3 {
   @extend %heading;
-  @include typography.text-xxl;
+  @include common.text-xxl;
 }
 
 h4,
 .h4 {
   @extend %heading;
-  @include typography.text-xl;
+  @include common.text-xl;
 }
 
 h5,
 .h5 {
   @extend %heading;
-  @include typography.text-lg;
+  @include common.text-lg;
 }
 
 h6,
 .h6 {
   @extend %heading;
-  @include typography.text-md;
+  @include common.text-md;
 }
 
 p {
   margin-top: 0;
-  margin-bottom: sizing.size(3);
+  margin-bottom: common.size(3);
 
   a {
     text-decoration-line: underline;
@@ -61,7 +58,7 @@ p {
 
 a {
   outline: none;
-  color: colors.$primary;
+  color: common.$primary;
   text-underline-offset: 2px;
   text-decoration-thickness: 1px;
   text-decoration: none;
@@ -75,8 +72,8 @@ a {
 ul,
 ol {
   margin-top: 0;
-  margin-bottom: sizing.size(3);
-  padding-left: sizing.size(8);
+  margin-bottom: common.size(3);
+  padding-left: common.size(8);
 }
 
 ul {
@@ -95,16 +92,16 @@ li {
 }
 
 blockquote {
-  @include sizing.mx(0);
-  @include sizing.my(4);
-  padding: sizing.size(4);
+  @include common.mx(0);
+  @include common.my(4);
+  padding: common.size(4);
 
-  border-left: sizing.$border-lg-size solid colors.$slate-500;
-  background-color: colors.$slate-200;
+  border-left: common.$border-lg-size solid common.$slate-500;
+  background-color: common.$slate-200;
 
-  @include dark-mode.dark {
-    color: colors.$slate-300;
-    background-color: colors.$slate-900;
+  @include common.dark {
+    color: common.$slate-300;
+    background-color: common.$slate-900;
   }
 
   & > p {
@@ -113,31 +110,31 @@ blockquote {
 }
 
 hr {
-  margin-top: sizing.size(8);
-  margin-bottom: sizing.size(8);
+  margin-top: common.size(8);
+  margin-bottom: common.size(8);
 
   border: none;
-  background-color: colors.$slate-200;
-  height: sizing.$border-lg-size;
+  background-color: common.$slate-200;
+  height: common.$border-lg-size;
 
-  @include dark-mode.dark {
-    background-color: colors.$slate-900;
+  @include common.dark {
+    background-color: common.$slate-900;
   }
 }
 
 code {
-  font-family: typography.$font-family-monospace;
-  font-size: typography.$font-size-base;
+  font-family: common.$font-family-monospace;
+  font-size: common.$font-size-base;
 
   display: block;
   width: 100%;
   overflow-x: auto;
-  padding: sizing.size(4);
-  border-radius: sizing.$border-sm-radius;
+  padding: common.size(4);
+  border-radius: common.$border-sm-radius;
 
-  background-color: colors.$slate-200;
-  @include dark-mode.dark {
-    background-color: colors.$slate-900;
+  background-color: common.$slate-200;
+  @include common.dark {
+    background-color: common.$slate-900;
   }
 }
 
@@ -146,7 +143,7 @@ code {
   overflow-x: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  margin-right: sizing.size(4);
+  margin-right: common.size(4);
 }
 
 .page-heading {
@@ -154,7 +151,7 @@ code {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: sizing.size(4);
+  margin-bottom: common.size(4);
 
   > * {
     margin-bottom: 0;
