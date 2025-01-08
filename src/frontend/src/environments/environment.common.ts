@@ -5,6 +5,10 @@ export const API_GATEWAY = IS_MAINNET
   : window.location.origin;
 
 export const CANISTER_ID_BACKEND = import.meta.CANISTER_ID_BACKEND ?? '';
+export const BACKEND_ORIGIN = IS_MAINNET
+  ? `https://${CANISTER_ID_BACKEND}.icp0.io`
+  : `http://${CANISTER_ID_BACKEND}.localhost:8080`;
+
 export const CANISTER_ID_MARKETING = import.meta.CANISTER_ID_MARKETING ?? '';
 
 export const CANISTER_ID_INTERNET_IDENTITY =

@@ -379,7 +379,7 @@ function createProposalReviewResponse(
     status: ProposalReviewStatus.Draft,
     summary: null,
     buildReproduced: null,
-    reproducedBuildImageId: [],
+    images: [],
     commits: [],
   };
 }

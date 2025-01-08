@@ -16,6 +16,7 @@ import {
 } from '@angular/forms';
 
 import { SOCIAL_MEDIA_INPUTS, SocialMediaInputs } from '../profile.model';
+import { LoadingBtnComponent, TextBtnComponent } from '@cg/angular-ui';
 import {
   ReviewerUserProfile,
   SocialMediaLink,
@@ -32,7 +33,6 @@ import {
   KeyColComponent,
   KeyValueGridComponent,
   LabelDirective,
-  LoadingButtonComponent,
   ValueColComponent,
 } from '~core/ui';
 import { keysOf } from '~core/utils';
@@ -54,7 +54,8 @@ export type SocialMediaForm = {
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
-    LoadingButtonComponent,
+    LoadingBtnComponent,
+    TextBtnComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -90,22 +91,17 @@ export type SocialMediaForm = {
       <app-form-validation-info />
 
       <div class="btn-group">
-        <button
-          class="btn btn--outline"
-          (click)="onCancelEdits()"
-          [disabled]="isSaving()"
-        >
+        <cg-text-btn (click)="onCancelEdits()" [disabled]="isSaving()">
           Cancel
-        </button>
+        </cg-text-btn>
 
-        <app-loading-button
-          btnClass="btn"
+        <cg-loading-btn
           type="submit"
           [disabled]="socialMediaForm().invalid"
-          [isSaving]="isSaving()"
+          [isLoading]="isSaving()"
         >
           Save
-        </app-loading-button>
+        </cg-loading-btn>
       </div>
     </form>
   `,

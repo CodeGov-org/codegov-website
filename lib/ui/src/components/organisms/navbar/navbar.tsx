@@ -1,4 +1,4 @@
-import { Component, Prop, h } from '@stencil/core';
+import { Component, ComponentInterface, Prop, h } from '@stencil/core';
 import { NavLink, NavLinkCategory, isLinkCategory } from '../../../types';
 
 @Component({
@@ -6,7 +6,7 @@ import { NavLink, NavLinkCategory, isLinkCategory } from '../../../types';
   styleUrl: 'navbar.scss',
   scoped: true,
 })
-export class Navbar {
+export class Navbar implements ComponentInterface {
   @Prop({ reflect: true })
   public homeUrl = '/';
 

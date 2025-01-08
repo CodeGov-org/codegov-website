@@ -21,15 +21,13 @@ import { ReviewerProfileComponent } from './reviewer-profile';
     AdminProfileComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      :host {
-        @include common.page-content;
-      }
-    `,
-  ],
+    :host {
+      @include common.page-content;
+    }
+  `,
   template: `
     <div class="page-heading">
       <h1 class="h3">Edit profile</h1>

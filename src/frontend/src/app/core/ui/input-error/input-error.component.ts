@@ -9,15 +9,13 @@ import {
 @Component({
   selector: 'app-input-error',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      .input-error {
-        color: common.$error;
-      }
-    `,
-  ],
+    .input-error {
+      color: common.$error;
+    }
+  `,
   template: `
     <ng-template #errorTemplate>
       <div class="input-error">

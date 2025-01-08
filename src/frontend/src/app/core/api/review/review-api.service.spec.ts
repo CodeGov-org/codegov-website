@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ImageSet } from '@cg/angular-ui';
 import {
   CreateProposalReviewRequest as CreateProposalReviewApiRequest,
   CreateProposalReviewResponse as CreateProposalReviewApiResponse,
@@ -93,8 +92,7 @@ describe('ReviewApiService', () => {
       status: ProposalReviewStatus.Draft,
       summary: null,
       buildReproduced: null,
-      // [TODO] - remove when API is implemented
-      reproducedBuildImageId: jasmine.any(Array) as unknown as ImageSet[],
+      images: [],
       commits: [],
     };
 
@@ -235,8 +233,7 @@ describe('ReviewApiService', () => {
         status: ProposalReviewStatus.Draft,
         summary: null,
         buildReproduced: null,
-        // [TODO] - remove when API is implemented
-        reproducedBuildImageId: jasmine.any(Array) as unknown as ImageSet[],
+        images: [],
         commits: [],
       },
       {
@@ -249,8 +246,7 @@ describe('ReviewApiService', () => {
         status: ProposalReviewStatus.Draft,
         summary: null,
         buildReproduced: null,
-        // [TODO] - remove when API is implemented
-        reproducedBuildImageId: jasmine.any(Array) as unknown as ImageSet[],
+        images: [],
         commits: [],
       },
     ];
@@ -318,8 +314,7 @@ describe('ReviewApiService', () => {
       status: ProposalReviewStatus.Draft,
       summary: null,
       buildReproduced: null,
-      // [TODO] - remove when API is implemented
-      reproducedBuildImageId: jasmine.any(Array) as unknown as ImageSet[],
+      images: [],
       commits: [],
     };
 
@@ -388,8 +383,7 @@ describe('ReviewApiService', () => {
       status: ProposalReviewStatus.Draft,
       summary: null,
       buildReproduced: null,
-      // [TODO] - remove when API is implemented
-      reproducedBuildImageId: jasmine.any(Array) as unknown as ImageSet[],
+      images: [],
       commits: [],
     };
 
@@ -464,8 +458,7 @@ describe('ReviewApiService', () => {
       status: ProposalReviewStatus.Draft,
       summary: null,
       buildReproduced: null,
-      // [TODO] - remove when API is implemented
-      reproducedBuildImageId: jasmine.any(Array) as unknown as ImageSet[],
+      images: [],
       commits: [],
     };
 

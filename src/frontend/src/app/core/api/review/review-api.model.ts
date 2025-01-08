@@ -1,5 +1,4 @@
 import { GetProposalReviewCommitResponse } from '../commit-review';
-import { ImageSet } from '@cg/angular-ui';
 
 export interface CreateProposalReviewRequest {
   proposalId: string;
@@ -39,8 +38,12 @@ export interface GetProposalReviewResponse {
   status: ProposalReviewStatus;
   summary: string | null;
   buildReproduced: boolean | null;
-  reproducedBuildImageId: ImageSet[];
+  images: ProposalReviewImage[];
   commits: GetProposalReviewCommitResponse[];
+}
+
+export interface ProposalReviewImage {
+  path: string;
 }
 
 export interface GetMyProposalReviewSummaryRequest {
@@ -49,6 +52,21 @@ export interface GetMyProposalReviewSummaryRequest {
 
 export interface GetMyProposalReviewSummaryResponse {
   summaryMarkdown: string;
+}
+
+export interface CreateProposalReviewImageRequest {
+  proposalId: string;
+  contentType: string;
+  contentBytes: Uint8Array;
+}
+
+export interface CreateProposalReviewImageResponse {
+  path: string;
+}
+
+export interface DeleteProposalReviewImageRequest {
+  proposalId: string;
+  imagePath: string;
 }
 
 export enum ProposalReviewStatus {

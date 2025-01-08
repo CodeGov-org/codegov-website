@@ -1,7 +1,11 @@
 $white: #ffffff;
 $black: #000000;
+
 $error: #f43f53;
+$error-dark: #a30c1b;
+
 $success: #099621;
+$success-dark: #0a7d0a;
 
 $slate: #64748b;
 
@@ -18,6 +22,7 @@ $slate-900: #0f172a;
 $slate-950: #020617;
 
 $primary: #29abe2;
+$primary-dark: #0e6896;
 
 $primary-50: #f1f9fe;
 $primary-100: #e2f2fc;
@@ -26,7 +31,7 @@ $primary-300: #86d1f3;
 $primary-400: #46baea;
 $primary-500: $primary;
 $primary-600: #1082b9;
-$primary-700: #0e6896;
+$primary-700: $primary-dark;
 $primary-800: #10577c;
 $primary-900: #134967;
 $primary-950: #0d2f44;

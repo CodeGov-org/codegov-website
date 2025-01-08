@@ -12,7 +12,11 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { marked } from 'marked';
 
-import { CardComponent } from '@cg/angular-ui';
+import {
+  CardComponent,
+  LinkTextBtnComponent,
+  TextBtnComponent,
+} from '@cg/angular-ui';
 import {
   GetProposalReviewResponse,
   ProposalLinkBaseUrl,
@@ -41,30 +45,30 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
     FormatDatePipe,
     ClosedProposalSummaryComponent,
     RouterLink,
+    TextBtnComponent,
+    LinkTextBtnComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      :host {
-        @include common.page-content;
-      }
+    :host {
+      @include common.page-content;
+    }
 
-      .proposal {
-        margin-bottom: common.size(6);
-      }
+    .proposal {
+      margin-bottom: common.size(6);
+    }
 
-      .proposal__title,
-      .proposal__proposer {
-        word-break: break-word;
-      }
+    .proposal__title,
+    .proposal__proposer {
+      word-break: break-word;
+    }
 
-      .proposal__link {
-        margin-right: common.size(4);
-      }
-    `,
-  ],
+    .proposal__link {
+      margin-right: common.size(4);
+    }
+  `,
   template: `
     @if (currentProposal(); as proposal) {
       <div class="page-heading">
@@ -160,17 +164,13 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               proposal.state === ProposalState().InProgress &&
               (isReviewer() || isAdmin())
             ) {
-              <button
-                type="button"
-                class="btn btn--outline"
-                (click)="onToggleSummary()"
-              >
+              <cg-text-btn (click)="onToggleSummary()">
                 {{
                   showSummary()
                     ? 'Show proposal description'
                     : 'Show preliminary summary'
                 }}
-              </button>
+              </cg-text-btn>
             }
             @if (
               isReviewer() && proposal.state === ProposalState().InProgress
@@ -178,26 +178,23 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               @let review = userReview();
 
               @if (review === null) {
-                <a
-                  class="btn btn--outline"
+                <cg-link-text-btn
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Create review
-                </a>
+                </cg-link-text-btn>
               } @else if (review.status === ProposalReviewStatus().Draft) {
-                <a
-                  class="btn btn--outline"
+                <cg-link-text-btn
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Edit review
-                </a>
+                </cg-link-text-btn>
               } @else if (review.status === ProposalReviewStatus().Published) {
-                <a
-                  class="btn btn--outline"
-                  [routerLink]="['/review', review.id, 'view']"
+                <cg-link-text-btn
+                  [routerLink]="['/review', proposal.id, 'view']"
                 >
                   My review
-                </a>
+                </cg-link-text-btn>
               }
             }
           </div>

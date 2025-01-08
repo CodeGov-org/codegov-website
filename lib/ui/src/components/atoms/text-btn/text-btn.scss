@@ -4,4 +4,16 @@
   @include common.btn-common;
   @include common.transparent-btn;
   @include common.rectangular-btn;
+
+  &.text-btn--primary {
+    @include common.transparent-btn--primary;
+  }
+
+  &.text-btn--success {
+    @include common.transparent-btn--success;
+  }
+
+  &.text-btn--error {
+    @include common.transparent-btn--error;
+  }
 }

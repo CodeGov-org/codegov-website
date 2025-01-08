@@ -6,9 +6,7 @@ import {
   toCandidOpt,
 } from '../../utils';
 import { mapGetProposalReviewCommitResponse } from '../commit-review/commit-review-api.mapper';
-import { ImageSet } from '@cg/angular-ui';
 import {
-  ProposalReviewWithId,
   CreateProposalReviewRequest as CreateProposalReviewApiRequest,
   UpdateProposalReviewRequest as UpdateProposalReviewApiRequest,
   ListProposalReviewsRequest as ListProposalReviewsApiRequest,
@@ -18,7 +16,12 @@ import {
   ProposalVote as ApiProposalVote,
   GetMyProposalReviewSummaryRequest as GetMyProposalReviewSummaryApiRequest,
   GetMyProposalReviewSummaryResponse as GetMyProposalReviewSummaryApiResponse,
+  GetProposalReviewResponse as GetProposalReviewApiResponse,
+  CreateProposalReviewImageRequest as CreateProposalReviewImageApiRequest,
+  CreateProposalReviewImageResponse as CreateProposalReviewImageApiResponse,
+  DeleteProposalReviewImageRequest as DeleteProposalReviewImageApiRequest,
 } from '@cg/backend';
+import { ENV } from '~env';
 import {
   GetProposalReviewResponse,
   UpdateProposalReviewRequest,
@@ -28,6 +31,9 @@ import {
   GetProposalReviewRequest,
   ProposalReviewStatus,
   GetMyProposalReviewSummaryResponse,
+  CreateProposalReviewImageRequest,
+  CreateProposalReviewImageResponse,
+  DeleteProposalReviewImageRequest,
 } from './review-api.model';
 
 export function mapCreateProposalReviewRequest(
@@ -79,7 +85,7 @@ export function mapGetMyProposalReviewRequest(
 }
 
 export function mapGetProposalReviewResponse(
-  res: ProposalReviewWithId,
+  res: Ok<GetProposalReviewApiResponse>,
 ): GetProposalReviewResponse {
   const review = res.proposal_review;
 
@@ -93,9 +99,11 @@ export function mapGetProposalReviewResponse(
     status: mapProposalReviewStatusResponse(review.status),
     summary: fromCandidOpt(review.summary),
     buildReproduced: fromCandidOpt(review.build_reproduced),
-    // [TODO] - connect with API once it's implemented
-    reproducedBuildImageId: getReviewImages(),
-    commits: res.proposal_review.proposal_review_commits.map(
+    images: review.images_paths.map(path => ({
+      // [TODO]: use current domain when canisters are merged
+      path: `${ENV.BACKEND_ORIGIN}${path}`,
+    })),
+    commits: review.proposal_review_commits.map(
       mapGetProposalReviewCommitResponse,
     ),
   };
@@ -114,6 +122,34 @@ export function mapGetMyProposalReviewSummaryResponse(
 ): GetMyProposalReviewSummaryResponse {
   return {
     summaryMarkdown: res.summary_markdown,
+  };
+}
+
+export function mapCreateProposalReviewImageRequest(
+  req: CreateProposalReviewImageRequest,
+): CreateProposalReviewImageApiRequest {
+  return {
+    proposal_id: req.proposalId,
+    content_type: req.contentType,
+    content_bytes: req.contentBytes,
+  };
+}
+
+export function mapCreateProposalReviewImageResponse(
+  res: Ok<CreateProposalReviewImageApiResponse>,
+): CreateProposalReviewImageResponse {
+  return {
+    // [TODO]: use current domain when canisters are merged
+    path: `${ENV.BACKEND_ORIGIN}${res.path}`,
+  };
+}
+
+export function mapDeleteProposalReviewImageRequest(
+  req: DeleteProposalReviewImageRequest,
+): DeleteProposalReviewImageApiRequest {
+  return {
+    proposal_id: req.proposalId,
+    image_path: req.imagePath,
   };
 }
 
@@ -169,73 +205,4 @@ function mapProposalVoteResponse(vote: ApiProposalVote): boolean | null {
   }
 
   return null;
-}
-
-function getReviewImages(): ImageSet[] {
-  return [
-    {
-      sm: {
-        url: '../assets/apple-touch-icon.png',
-        size: 10,
-        width: 10,
-        height: 10,
-      },
-      md: {
-        url: '../assets/apple-touch-icon.png',
-        size: 100,
-        width: 100,
-        height: 100,
-      },
-      lg: {
-        url: '../assets/apple-touch-icon.png',
-        size: 100,
-        width: 100,
-        height: 100,
-      },
-      xl: {
-        url: '../assets/apple-touch-icon.png',
-        size: 100,
-        width: 100,
-        height: 100,
-      },
-      xxl: {
-        url: '../assets/apple-touch-icon.png',
-        size: 100,
-        width: 100,
-        height: 100,
-      },
-    },
-    {
-      sm: {
-        url: '../assets/codegov-logo.png',
-        size: 10,
-        width: 10,
-        height: 10,
-      },
-      md: {
-        url: '../assets/codegov-logo.png',
-        size: 100,
-        width: 100,
-        height: 100,
-      },
-      lg: {
-        url: '../assets/codegov-logo.png',
-        size: 100,
-        width: 100,
-        height: 100,
-      },
-      xl: {
-        url: '../assets/codegov-logo.png',
-        size: 100,
-        width: 100,
-        height: 100,
-      },
-      xxl: {
-        url: '../assets/codegov-logo.png',
-        size: 100,
-        width: 100,
-        height: 100,
-      },
-    },
-  ];
 }

@@ -13,24 +13,22 @@ import { isNotNil } from '../../utils';
 @Component({
   selector: 'app-form-validation-info',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      :host {
-        display: block;
-        text-align: right;
-        margin-bottom: common.size(2);
+    :host {
+      display: block;
+      text-align: right;
+      margin-top: common.size(4);
 
-        color: common.$error;
-        @include common.text-sm;
-      }
+      color: common.$error;
+      @include common.text-sm;
+    }
 
-      :host-context(.form-validation-info--hidden) {
-        color: transparent;
-      }
-    `,
-  ],
+    :host-context(.form-validation-info--hidden) {
+      color: transparent;
+    }
+  `,
   template: `
     There are some errors in your form. Please fix them and try again.
   `,

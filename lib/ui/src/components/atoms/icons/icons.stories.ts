@@ -7,7 +7,17 @@ const meta: Meta = {
   },
   argTypes: {
     class: {
-      control: { type: 'select' },
+      control: {
+        type: 'select',
+        labels: {
+          'icon-xs': 'XS',
+          'icon-sm': 'SM',
+          'icon-md': 'MD',
+          'icon-lg': 'LG',
+          'icon-xl': 'XL',
+          'icon-xxl': 'XXL',
+        },
+      },
       options: [
         'icon-xs',
         'icon-sm',
@@ -80,7 +90,12 @@ const meta: Meta = {
 
       <div class="grid-entry">
         <cg-check-circle-icon class="${args.class}"></cg-check-circle-icon>
-        <code>cg-dash-circle-icon</code>
+        <code>cg-check-circle-icon</code>
+      </div>
+
+      <div class="grid-entry">
+        <cg-loading-icon class="${args.class}"></cg-loading-icon>
+        <code>cg-loading-icon</code>
       </div>
     </div>
   `,

@@ -2,17 +2,19 @@ import { Meta, StoryObj } from '@storybook/html';
 
 const meta: Meta = {
   title: 'Atoms/Cards',
-  args: {
-    title: 'Hello, World!',
-    content: 'How are you today?',
-  },
   argTypes: {
     title: {
+      name: 'Title',
       control: { type: 'text' },
     },
     content: {
+      name: 'Content',
       control: { type: 'text' },
     },
+  },
+  args: {
+    title: 'Hello, World!',
+    content: 'How are you today?',
   },
   render: args => `
     <cg-card>

@@ -6,12 +6,17 @@ const meta: Meta = {
     ariaLabel: {
       control: { type: 'text' },
     },
+    disabled: {
+      name: 'Disabled',
+      control: { type: 'boolean' },
+    },
   },
   args: {
     ariaLabel: 'Login',
+    disabled: false,
   },
   render: args => `
-    <cg-icon-btn label="${args.ariaLabel}">
+    <cg-icon-btn label="${args.ariaLabel}" disabled="${args.disabled}">
       <cg-profile-icon></cg-profile-icon>
     </cg-icon-btn>
   `,

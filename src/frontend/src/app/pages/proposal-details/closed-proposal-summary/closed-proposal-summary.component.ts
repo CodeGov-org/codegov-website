@@ -35,46 +35,46 @@ import { isNil, isNotNil, routeParamSignal, toSyncSignal } from '~core/utils';
     RouterLink,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      .summary,
-      .review,
-      .commit {
-        margin-bottom: common.size(6);
-      }
+    .summary,
+    .review,
+    .commit {
+      margin-bottom: common.size(6);
+    }
 
-      .answer--positive {
-        color: common.$success;
-      }
+    .answer--positive {
+      color: common.$success;
+    }
 
-      .answer--negative {
-        color: common.$error;
-      }
+    .answer--negative {
+      color: common.$error;
+    }
 
-      .summary__vote {
-        margin-bottom: common.size(4);
-      }
+    .summary__vote {
+      margin-bottom: common.size(4);
+    }
 
-      .summary__vote-position {
-        display: flex;
-        flex-direction: row;
-      }
+    .summary__vote-position {
+      display: flex;
+      flex-direction: row;
+    }
 
-      .reject-icon {
-        width: common.size(6);
-        height: common.size(6);
-        stroke: common.$error;
-      }
+    .reject-icon {
+      width: common.size(6);
+      height: common.size(6);
+      stroke: common.$error;
+      margin-right: common.size(2);
+    }
 
-      .adopt-icon {
-        width: common.size(6);
-        height: common.size(6);
-        stroke: common.$success;
-      }
-    `,
-  ],
+    .adopt-icon {
+      width: common.size(6);
+      height: common.size(6);
+      stroke: common.$success;
+      margin-right: common.size(2);
+    }
+  `,
   template: `
     @let reviews = this.reviews();
     @let reviewers = this.reviewers();

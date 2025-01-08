@@ -4,6 +4,7 @@ const meta: Meta = {
   title: 'Atoms/Link Text Buttons',
   argTypes: {
     content: {
+      name: 'Content',
       control: { type: 'text' },
     },
   },

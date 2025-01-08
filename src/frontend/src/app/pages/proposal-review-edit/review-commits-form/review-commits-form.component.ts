@@ -19,7 +19,11 @@ import {
 } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
-import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
+import {
+  CardComponent,
+  RadioInputComponent,
+  TextBtnComponent,
+} from '@cg/angular-ui';
 import { ReviewCommitDetails } from '~core/api';
 import { ReviewSubmissionService } from '~core/state';
 import {
@@ -53,20 +57,22 @@ import {
     InputErrorComponent,
     InputHintComponent,
     RadioInputComponent,
+    TextBtnComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      .commit-review-card {
-        margin-bottom: common.size(4);
-      }
-    `,
-  ],
+    .commit-review-card {
+      margin-bottom: common.size(4);
+    }
+  `,
   template: `
-    @for (commit of commits(); track commit.uiId; let i = $index) {
-      <ng-container [formGroup]="commitForms()[i]">
+    @let commitForms = this.commitForms();
+    @let commits = this.commits();
+
+    @for (commit of commits; track commit.uiId; let i = $index) {
+      <ng-container [formGroup]="commitForms[i]">
         <cg-card class="commit-review-card">
           <div slot="cardContent">
             <app-key-value-grid>
@@ -96,18 +102,18 @@ import {
                   </app-input-error>
 
                   <app-input-hint>
-                    @if (commitForms()[i].controls.commitSha.value) {
+                    @if (commitForms[i].controls.commitSha.value) {
                       <a
                         class="truncate"
                         [href]="
                           'https://github.com/dfinity/ic/commit/' +
-                          commitForms()[i].controls.commitSha.value
+                          commitForms[i].controls.commitSha.value
                         "
                         target="_blank"
                         rel="nofollow noreferrer"
                       >
                         https://github.com/dfinity/ic/commit/{{
-                          commitForms()[i].controls.commitSha.value
+                          commitForms[i].controls.commitSha.value
                         }}
                       </a>
                     } @else {
@@ -151,7 +157,7 @@ import {
 
               <ng-container>
                 <ng-container
-                  *ngIf="commitForms()[i].controls.reviewed.value === 1"
+                  *ngIf="commitForms[i].controls.reviewed.value === 1"
                 >
                   <app-key-col>
                     <div>Matches description</div>
@@ -206,24 +212,22 @@ import {
             </app-key-value-grid>
 
             <div class="btn-group">
-              <button class="btn btn--outline" (click)="onRemoveCommitForm(i)">
-                Remove
-              </button>
+              <cg-text-btn theme="error" (click)="onRemoveCommitForm(i)">
+                Remove commit
+              </cg-text-btn>
             </div>
           </div>
         </cg-card>
       </ng-container>
     }
 
-    <div>
-      <button
-        class="btn btn--outline"
-        (click)="onAddCommitForm()"
-        [disabled]="!canAddCommitForm()"
-      >
-        Add commit
-      </button>
-    </div>
+    <cg-text-btn
+      theme="success"
+      (click)="onAddCommitForm()"
+      [disabled]="!canAddCommitForm()"
+    >
+      Add commit
+    </cg-text-btn>
   `,
 })
 export class ReviewCommitsFormComponent implements OnDestroy {
@@ -238,6 +242,10 @@ export class ReviewCommitsFormComponent implements OnDestroy {
       commitForm.setValue(
         commitToFormValue(commit.commit.commitSha, commit.commit.details),
       );
+
+      this.onCommitReviewedChange(commit.commit.details.reviewed, commitForm);
+      this.onCommitShaChange(commit.commit.commitSha, commitForm);
+
       return commitForm;
     });
   });

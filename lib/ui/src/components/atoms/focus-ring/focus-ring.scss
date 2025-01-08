@@ -1,7 +1,7 @@
 @use '~@cg/styles/common';
 
 $focus-ring-width: 3px;
-$focus-ring-color: common.$primary-700;
+$focus-ring-color: common.$primary-dark;
 
 :host-context(.focus-ring) {
   border-radius: inherit;
@@ -19,4 +19,12 @@ $focus-ring-color: common.$primary-700;
 
 :host-context(.focus-ring--visible) {
   opacity: 1;
+}
+
+:host-context(.focus-ring--success) {
+  box-shadow: 0 0 0 $focus-ring-width common.$success;
+}
+
+:host-context(.focus-ring--error) {
+  box-shadow: 0 0 0 $focus-ring-width common.$error;
 }

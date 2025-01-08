@@ -20,22 +20,78 @@
     color: colors.$slate-300;
   }
 
-  @include effects.quick-transition(background-color);
-
-  &:hover {
+  &:hover:not(:disabled) {
+    color: colors.$slate-800;
     background-color: colors.$slate-200;
 
     @include dark-mode.dark {
+      color: colors.$slate-200;
       background-color: colors.$slate-800;
     }
   }
 
-  &:active {
+  &:active:not(:disabled) {
     background-color: colors.$slate-300;
 
     @include dark-mode.dark {
       background-color: colors.$slate-700;
     }
+  }
+
+  &:disabled {
+    color: rgba(colors.$slate-900, 0.45);
+    @include dark-mode.dark {
+      color: rgba(colors.$slate-300, 0.45);
+    }
+
+    &:hover {
+      cursor: not-allowed;
+    }
+  }
+}
+
+@mixin transparent-btn--primary {
+  &:not(:disabled) {
+    color: colors.$primary;
+  }
+
+  &:hover:not(:disabled) {
+    color: colors.$slate-200;
+    background-color: colors.$primary;
+  }
+
+  &:active:not(:disabled) {
+    background-color: colors.$primary-dark;
+  }
+}
+
+@mixin transparent-btn--success {
+  &:not(:disabled) {
+    color: colors.$success;
+  }
+
+  &:hover:not(:disabled) {
+    color: colors.$slate-200;
+    background-color: colors.$success;
+  }
+
+  &:active:not(:disabled) {
+    background-color: colors.$success-dark;
+  }
+}
+
+@mixin transparent-btn--error {
+  &:not(:disabled) {
+    color: colors.$error;
+  }
+
+  &:hover:not(:disabled) {
+    color: colors.$slate-200;
+    background-color: colors.$error;
+  }
+
+  &:active:not(:disabled) {
+    background-color: colors.$error-dark;
   }
 }
 

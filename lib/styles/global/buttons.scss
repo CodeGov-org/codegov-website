@@ -86,11 +86,3 @@ $btn-disabled-color: rgba(common.$primary, 0.45);
     margin-right: common.size(2);
   }
 }
-
-.btn--loading {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  @include common.icon-xxl;
-  transform: translate(-50%, -50%);
-}

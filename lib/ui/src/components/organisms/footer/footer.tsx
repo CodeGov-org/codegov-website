@@ -1,4 +1,4 @@
-import { Component, Prop, h } from '@stencil/core';
+import { Component, ComponentInterface, Prop, h } from '@stencil/core';
 import { NavLinkCategory } from '../../../types';
 
 @Component({
@@ -6,7 +6,7 @@ import { NavLinkCategory } from '../../../types';
   styleUrl: 'footer.scss',
   scoped: true,
 })
-export class FooterComponent {
+export class FooterComponent implements ComponentInterface {
   @Prop({ reflect: true })
   public links!: NavLinkCategory[];
 

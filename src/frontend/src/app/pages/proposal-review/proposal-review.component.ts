@@ -14,6 +14,7 @@ import {
   BadgeComponent,
   CardComponent,
   CopyToClipboardComponent,
+  LinkTextBtnComponent,
 } from '@cg/angular-ui';
 import { ProposalReviewStatus, ProposalState } from '~core/api';
 import { ProfileService, ProposalService, ReviewService } from '~core/state';
@@ -35,35 +36,29 @@ import { isNil, isNotNil, routeParamSignal, toSyncSignal } from '~core/utils';
     KeyValueGridComponent,
     ValueColComponent,
     KeyColComponent,
+    LinkTextBtnComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      :host {
-        @include common.page-content;
-      }
+    :host {
+      @include common.page-content;
+    }
 
-      .review__details,
-      .review__commit {
-        margin-bottom: common.size(6);
-      }
+    .review__details,
+    .review__commit {
+      margin-bottom: common.size(6);
+    }
 
-      .answer--positive {
-        color: common.$success;
-      }
+    .answer--positive {
+      color: common.$success;
+    }
 
-      .answer--negative {
-        color: common.$error;
-      }
-
-      .review__image {
-        height: common.size(10);
-        padding-right: common.size(1);
-      }
-    `,
-  ],
+    .answer--negative {
+      color: common.$error;
+    }
+  `,
   template: `
     @let review = this.currentReview();
     @let proposal = this.currentProposal();
@@ -133,30 +128,24 @@ import { isNil, isNotNil, routeParamSignal, toSyncSignal } from '~core/utils';
             </app-value-col>
 
             <app-key-col id="review-images">
-              Build verification images
+              Build verification image
             </app-key-col>
             <app-value-col aria-labelledby="review-mages">
-              @for (
-                image of review.reproducedBuildImageId;
-                track image.sm.url
-              ) {
-                <a [href]="image.xxl.url" target="_blank">
-                  <img [src]="image.sm.url" class="review__image" />
+              @for (image of review.images; track image.path) {
+                <a [href]="image.path" target="_blank">
+                  <img [src]="image.path" />
                 </a>
               } @empty {
-                No build verification images were provided for this review.
+                No build verification image was provided for this review.
               }
             </app-value-col>
           </app-key-value-grid>
 
           <div class="btn-group">
             @if (isReviewOwner && proposal.state === ProposalState.InProgress) {
-              <a
-                class="btn btn--outline"
-                [routerLink]="['/review', proposal.id, 'edit']"
-              >
+              <cg-link-text-btn [routerLink]="['/review', proposal.id, 'edit']">
                 Edit review
-              </a>
+              </cg-link-text-btn>
             }
           </div>
         </div>

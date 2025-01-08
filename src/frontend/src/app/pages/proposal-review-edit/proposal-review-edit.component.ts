@@ -10,11 +10,15 @@ import {
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
-import { CardComponent, BadgeComponent } from '@cg/angular-ui';
+import { isNotNil, routeParamSignal, toSyncSignal } from '../../core/utils';
+import {
+  CardComponent,
+  BadgeComponent,
+  LoadingBtnComponent,
+  LinkTextBtnComponent,
+} from '@cg/angular-ui';
 import { ProposalReviewStatus, ProposalState } from '~core/api';
 import { ProposalService, ReviewSubmissionService } from '~core/state';
-import { LoadingButtonComponent } from '~core/ui';
-import { isNotNil, routeParamSignal, toSyncSignal } from '~core/utils';
 import { ReviewCommitsFormComponent } from './review-commits-form';
 import { ReviewDetailsFormComponent } from './review-details-form';
 
@@ -26,29 +30,28 @@ import { ReviewDetailsFormComponent } from './review-details-form';
     RouterLink,
     CardComponent,
     BadgeComponent,
-    LoadingButtonComponent,
+    LinkTextBtnComponent,
+    LoadingBtnComponent,
     ReviewCommitsFormComponent,
     ReviewDetailsFormComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      :host {
-        @include common.page-content;
-      }
+    :host {
+      @include common.page-content;
+    }
 
-      .section-heading {
-        margin-top: common.size(8);
-      }
+    .section-heading {
+      margin-top: common.size(8);
+    }
 
-      .publish-btn-group {
-        margin-top: common.size(4);
-        padding-right: common.size(4);
-      }
-    `,
-  ],
+    .publish-btn-group {
+      margin-top: common.size(4);
+      padding-right: common.size(4);
+    }
+  `,
   template: `
     @if (currentReview(); as review) {
       @if (currentProposal(); as proposal) {
@@ -78,31 +81,26 @@ import { ReviewDetailsFormComponent } from './review-details-form';
         </cg-card>
 
         <div class="btn-group publish-btn-group">
-          <a
-            class="btn btn--outline"
-            [routerLink]="['/review', review.id, 'view']"
-          >
+          <cg-link-text-btn [routerLink]="['/review', review.id, 'view']">
             View review
-          </a>
+          </cg-link-text-btn>
 
           @if (review.status === ProposalReviewStatus.Published) {
-            <app-loading-button
-              [isSaving]="isStatusChanging()"
-              btnClass="btn btn--outline btn--error"
+            <cg-loading-btn
+              [isLoading]="isStatusChanging()"
               (click)="editReview()"
-              theme="white"
+              theme="error"
             >
               Unpublish
-            </app-loading-button>
+            </cg-loading-btn>
           } @else {
-            <app-loading-button
-              [isSaving]="isStatusChanging()"
-              btnClass="btn btn--outline btn--success"
+            <cg-loading-btn
+              [isLoading]="isStatusChanging()"
               (click)="publishReview()"
-              theme="white"
+              theme="success"
             >
               Publish
-            </app-loading-button>
+            </cg-loading-btn>
           }
         </div>
       }
