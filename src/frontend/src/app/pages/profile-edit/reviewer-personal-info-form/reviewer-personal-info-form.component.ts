@@ -15,6 +15,7 @@ import {
   Validators,
 } from '@angular/forms';
 
+import { LoadingBtnComponent, TextBtnComponent } from '@cg/angular-ui';
 import {
   ReviewerUserProfile,
   UpdateMyUserProfileRequest,
@@ -30,7 +31,6 @@ import {
   KeyColComponent,
   KeyValueGridComponent,
   LabelDirective,
-  LoadingButtonComponent,
   ValueColComponent,
 } from '~core/ui';
 
@@ -54,7 +54,8 @@ export interface ReviewerProfileForm {
     KeyValueGridComponent,
     KeyColComponent,
     ValueColComponent,
-    LoadingButtonComponent,
+    LoadingBtnComponent,
+    TextBtnComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -134,22 +135,17 @@ export interface ReviewerProfileForm {
       <app-form-validation-info />
 
       <div class="btn-group">
-        <button
-          class="btn btn--outline"
-          (click)="onCancelEdits()"
-          [disabled]="isSaving()"
-        >
+        <cg-text-btn (click)="onCancelEdits()" [disabled]="isSaving()">
           Cancel
-        </button>
+        </cg-text-btn>
 
-        <app-loading-button
-          btnClass="btn"
+        <cg-loading-btn
           type="submit"
           [disabled]="profileForm().invalid"
-          [isSaving]="isSaving()"
+          [isLoading]="isSaving()"
         >
           Save
-        </app-loading-button>
+        </cg-loading-btn>
       </div>
     </form>
   `,

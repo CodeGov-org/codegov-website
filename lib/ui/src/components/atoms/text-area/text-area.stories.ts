@@ -4,6 +4,7 @@ const meta: Meta = {
   title: 'Atoms/Text Areas',
   argTypes: {
     content: {
+      name: 'Content',
       control: { type: 'text' },
     },
   },

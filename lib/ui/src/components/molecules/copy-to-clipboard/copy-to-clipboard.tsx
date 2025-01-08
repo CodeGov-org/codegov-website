@@ -1,11 +1,18 @@
-import { Component, Host, Prop, State, h } from '@stencil/core';
+import {
+  Component,
+  ComponentInterface,
+  Host,
+  Prop,
+  State,
+  h,
+} from '@stencil/core';
 
 @Component({
   tag: 'cg-copy-to-clipboard',
   styleUrl: 'copy-to-clipboard.scss',
   scoped: true,
 })
-export class CopyToClipboardComponent {
+export class CopyToClipboardComponent implements ComponentInterface {
   @Prop({ reflect: true })
   public value!: string;
 
@@ -14,7 +21,7 @@ export class CopyToClipboardComponent {
 
   @State()
   private isCopied = false;
-  private inputElem!: HTMLCgTextInputElement;
+  private inputElem!: HTMLCgTextInputElement | HTMLCgTextAreaElement;
   private timeoutId: number | undefined;
 
   public render() {
@@ -67,7 +74,9 @@ export class CopyToClipboardComponent {
     );
   }
 
-  private setInputElem(elem?: HTMLCgTextInputElement): void {
+  private setInputElem(
+    elem?: HTMLCgTextInputElement | HTMLCgTextAreaElement,
+  ): void {
     if (!elem) {
       throw new Error('Input element not found');
     }

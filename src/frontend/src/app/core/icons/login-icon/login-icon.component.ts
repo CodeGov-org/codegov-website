@@ -3,16 +3,14 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 @Component({
   selector: 'app-login-icon',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      .login-icon {
-        width: common.size(6);
-        height: common.size(6);
-      }
-    `,
-  ],
+    .login-icon {
+      width: common.size(6);
+      height: common.size(6);
+    }
+  `,
   template: `
     <svg
       class="login-icon"

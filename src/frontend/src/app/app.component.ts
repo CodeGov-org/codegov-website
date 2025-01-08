@@ -17,27 +17,25 @@ import { ProfileService } from '~core/state';
     FooterComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      .app-container {
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-      }
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
 
-      .content-container {
-        margin-left: auto;
-        margin-right: auto;
-        flex: 1;
-        @include common.px(3);
-        padding-top: common.size(6);
-        padding-bottom: common.size(10);
-        @include common.container;
-      }
-    `,
-  ],
+    .content-container {
+      margin-left: auto;
+      margin-right: auto;
+      flex: 1;
+      @include common.px(3);
+      padding-top: common.size(6);
+      padding-bottom: common.size(10);
+      @include common.container;
+    }
+  `,
   template: `
     <div class="app-container">
       <cg-navbar [homeUrl]="'/'" [links]="navbarLinks" />

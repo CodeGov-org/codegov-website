@@ -3,7 +3,10 @@ import { Injectable, inject } from '@angular/core';
 import { BackendActorService } from '../../services';
 import { ApiError, handleErr } from '../../utils';
 import {
+  mapCreateProposalReviewImageRequest,
+  mapCreateProposalReviewImageResponse,
   mapCreateProposalReviewRequest,
+  mapDeleteProposalReviewImageRequest,
   mapGetMyProposalReviewRequest,
   mapGetMyProposalReviewSummaryRequest,
   mapGetMyProposalReviewSummaryResponse,
@@ -13,7 +16,10 @@ import {
   mapUpdateProposalReviewRequest,
 } from './review-api.mapper';
 import {
+  CreateProposalReviewImageRequest,
+  CreateProposalReviewImageResponse,
   CreateProposalReviewRequest,
+  DeleteProposalReviewImageRequest,
   GetMyProposalReviewRequest,
   GetMyProposalReviewSummaryRequest,
   GetMyProposalReviewSummaryResponse,
@@ -107,5 +113,27 @@ export class ReviewApiService {
 
       throw error;
     }
+  }
+
+  public async createProposalReviewImage(
+    req: CreateProposalReviewImageRequest,
+  ): Promise<CreateProposalReviewImageResponse> {
+    const apiReq = mapCreateProposalReviewImageRequest(req);
+
+    const res = await this.actorService.create_proposal_review_image(apiReq);
+    const okRes = handleErr(res);
+
+    return mapCreateProposalReviewImageResponse(okRes);
+  }
+
+  public async deleteProposalReviewImage(
+    req: DeleteProposalReviewImageRequest,
+  ): Promise<null> {
+    const apiReq = mapDeleteProposalReviewImageRequest(req);
+
+    const res = await this.actorService.delete_proposal_review_image(apiReq);
+    const okRes = handleErr(res);
+
+    return okRes;
   }
 }

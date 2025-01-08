@@ -1,50 +1,48 @@
 import { DialogRef } from '@angular/cdk/dialog';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 
-import { LoadingIconComponent } from '~core/icons';
+import { LoadingIconComponent } from '@cg/angular-ui';
 
 @Component({
   selector: 'app-loading-content',
   imports: [LoadingIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      :host {
-        @include common.layer-50;
+    :host {
+      @include common.layer-50;
 
-        display: flex;
-        flex-direction: row;
-        align-items: center;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
 
-        @include common.px(4);
-        @include common.py(4);
-        width: auto;
-        border-radius: common.$border-md-radius;
+      @include common.px(4);
+      @include common.py(4);
+      width: auto;
+      border-radius: common.$border-md-radius;
 
-        color: common.$white;
-        background-color: common.$primary-800;
+      color: common.$white;
+      background-color: common.$primary-800;
 
-        @include common.dark {
-          background-color: common.$slate-700;
-          color: common.$slate-200;
-        }
+      @include common.dark {
+        background-color: common.$slate-700;
+        color: common.$slate-200;
       }
+    }
 
-      .dialog__icon {
-        width: common.size(11);
-        height: common.size(11);
-      }
+    .dialog__icon {
+      width: common.size(11);
+      height: common.size(11);
+    }
 
-      .dialog__text {
-        @include common.mx(4);
-        margin-bottom: 0;
-      }
-    `,
-  ],
+    .dialog__text {
+      @include common.mx(4);
+      margin-bottom: 0;
+    }
+  `,
   template: `
-    <app-loading-icon class="dialog__icon" />
+    <cg-loading-icon class="dialog__icon" />
 
     <h3 class="dialog__text">{{ infoText() }}</h3>
   `,

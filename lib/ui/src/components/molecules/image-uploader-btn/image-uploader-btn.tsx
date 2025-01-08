@@ -4,12 +4,14 @@ import {
   Event,
   EventEmitter,
   Host,
+  Prop,
   State,
   h,
 } from '@stencil/core';
 
 export interface ImageMetadata {
   url: string;
+  bytes: Uint8Array;
   size: number;
   width: number;
   height: number;
@@ -21,6 +23,7 @@ export interface ImageSet {
   lg: ImageMetadata;
   xl: ImageMetadata;
   xxl: ImageMetadata;
+  type: string;
 }
 
 const SM_IMAGE_WIDTH = 640;
@@ -38,6 +41,12 @@ const IMAGE_QUALITY = 0.8;
   scoped: true,
 })
 export class ImageUploaderBtnComponent implements ComponentInterface {
+  @Prop({ reflect: true })
+  public isLoading?: boolean;
+
+  @Prop({ reflect: true })
+  public disabled?: boolean;
+
   @Event()
   public imagesSelected!: EventEmitter<ImageSet[]>;
 
@@ -50,16 +59,20 @@ export class ImageUploaderBtnComponent implements ComponentInterface {
       <Host>
         <input
           type="file"
-          multiple
           hidden
           accept="image/*"
+          disabled={this.disabled}
           ref={elem => this.setFileInputElem(elem)}
           onChange={() => this.onFileInputChanged()}
         />
 
-        <cg-text-btn onClick={() => this.onSelectImagesBtnClicked()}>
+        <cg-loading-btn
+          isLoading={this.isLoading}
+          disabled={this.disabled}
+          onClick={() => this.onSelectImagesBtnClicked()}
+        >
           <slot />
-        </cg-text-btn>
+        </cg-loading-btn>
       </Host>
     );
   }
@@ -113,8 +126,8 @@ export class ImageUploaderBtnComponent implements ComponentInterface {
   }
 }
 
-async function getImageSetFromFile(blob: Blob): Promise<ImageSet> {
-  const dataUrl = URL.createObjectURL(blob);
+async function getImageSetFromFile(file: File): Promise<ImageSet> {
+  const dataUrl = URL.createObjectURL(file);
 
   const [sm, md, lg, xl, xxl] = await Promise.all([
     await getImageMetadata(dataUrl, SM_IMAGE_WIDTH),
@@ -132,6 +145,7 @@ async function getImageSetFromFile(blob: Blob): Promise<ImageSet> {
     lg,
     xl,
     xxl,
+    type: file.type,
   };
 }
 
@@ -145,6 +159,7 @@ async function getImageMetadata(
 
   return {
     url: resizedDataUrl,
+    bytes: new Uint8Array(await resizedBlob.arrayBuffer()),
     size: resizedBlob.size,
     width: resizedImageElem.width,
     height: resizedImageElem.height,

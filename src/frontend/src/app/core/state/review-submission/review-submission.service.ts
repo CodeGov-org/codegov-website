@@ -16,6 +16,7 @@ import {
   UpdateProposalReviewRequest,
   ReviewCommitDetails,
   ProposalReviewStatus,
+  CreateProposalReviewImageResponse,
 } from '../../api';
 import { batchApiCall, filterNotNil, isNil, isNotNil } from '../../utils';
 
@@ -321,6 +322,36 @@ export class ReviewSubmissionService {
       .subscribe({});
 
     return [commitSubject, subscription];
+  }
+
+  public async createProposalReviewImage(
+    type: string,
+    bytes: Uint8Array,
+  ): Promise<CreateProposalReviewImageResponse> {
+    if (isNil(this.proposalId)) {
+      throw new Error(
+        'Tried to create a proposal image without selecting a proposal',
+      );
+    }
+
+    return await this.reviewApiService.createProposalReviewImage({
+      contentType: type,
+      contentBytes: bytes,
+      proposalId: this.proposalId,
+    });
+  }
+
+  public async deleteProposalReviewImage(imagePath: string): Promise<void> {
+    if (isNil(this.proposalId)) {
+      throw new Error(
+        'Tried to delete a proposal image without selecting a proposal',
+      );
+    }
+
+    await this.reviewApiService.deleteProposalReviewImage({
+      imagePath,
+      proposalId: this.proposalId,
+    });
   }
 
   private emitUpdatedComits(): void {

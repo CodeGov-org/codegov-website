@@ -9,29 +9,27 @@ import {
 @Component({
   selector: 'app-key-value-grid',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      :host {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+    :host {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
 
-        gap: common.size(1) common.size(8);
-        @include common.md {
-          gap: common.size(6) common.size(8);
-        }
+      gap: common.size(1) common.size(8);
+      @include common.md {
+        gap: common.size(6) common.size(8);
       }
+    }
 
-      :host-context(.key-value-grid--1-col) {
-        grid-template-columns: repeat(3, 1fr);
-      }
+    :host-context(.key-value-grid--1-col) {
+      grid-template-columns: repeat(3, 1fr);
+    }
 
-      :host-context(.key-value-grid--2-col) {
-        grid-template-columns: repeat(6, 1fr);
-      }
-    `,
-  ],
+    :host-context(.key-value-grid--2-col) {
+      grid-template-columns: repeat(6, 1fr);
+    }
+  `,
   template: `<ng-content />`,
 })
 export class KeyValueGridComponent {

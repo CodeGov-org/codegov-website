@@ -36,20 +36,18 @@ import {
     ReviewerSocialMediaFormComponent,
     ReviewerSocialMediaComponent,
   ],
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      .reviewer-profile-card,
-      .reviewer-personal-info-card {
-        margin-bottom: common.size(3);
+    .reviewer-profile-card,
+    .reviewer-personal-info-card {
+      margin-bottom: common.size(3);
 
-        @include common.sm {
-          margin-bottom: common.size(4);
-        }
+      @include common.sm {
+        margin-bottom: common.size(4);
       }
-    `,
-  ],
+    }
+  `,
   template: `
     <cg-card class="reviewer-profile-card">
       <h2 class="h4" slot="cardTitle">Profile</h2>

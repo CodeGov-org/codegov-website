@@ -24,7 +24,10 @@ export class TextArea implements ComponentInterface {
   public placeholder?: string;
 
   @Prop({ reflect: true })
-  public readonly = false;
+  public disabled?: boolean;
+
+  @Prop({ reflect: true })
+  public readonly?: boolean;
 
   @State()
   private isFocused = false;
@@ -62,6 +65,7 @@ export class TextArea implements ComponentInterface {
           value={this.value}
           placeholder={this.placeholder}
           readOnly={this.readonly}
+          disabled={this.disabled}
           ref={elem => this.setInputElem(elem)}
           onInput={event => this.handleChange(event)}
           onFocus={() => this.onFocused()}

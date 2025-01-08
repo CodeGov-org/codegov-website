@@ -9,13 +9,16 @@ const meta: Meta = {
     },
     type: {
       name: 'Type',
-      control: { type: 'select' },
+      control: {
+        type: 'select',
+        labels: { text: 'Text', textarea: 'Text Area' },
+      },
       options: ['text', 'textarea'],
     },
   },
   args: {
     content: 'Super secret code',
-    inputType: 'text',
+    type: 'text',
   },
   render: args => `
     <cg-copy-to-clipboard
