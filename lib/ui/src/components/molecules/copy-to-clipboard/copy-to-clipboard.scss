@@ -5,7 +5,12 @@
   align-items: center;
 }
 
+:host-context(.copy-to-clipboard--textarea) {
+  align-items: flex-start;
+}
+
 .copy-to-clipboard__input {
+  flex: 1;
   margin-right: common.size(3);
 }
 

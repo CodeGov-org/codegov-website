@@ -24,7 +24,7 @@ const menuContainerAnimation: PropertyIndexedKeyframes = {
   scoped: true,
 })
 export class DropdownComponent implements ComponentInterface {
-  @Prop()
+  @Prop({ reflect: true })
   public anchorAlign: 'left' | 'right' = 'left';
 
   @Element()

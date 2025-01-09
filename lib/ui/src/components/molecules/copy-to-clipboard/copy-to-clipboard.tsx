@@ -1,28 +1,55 @@
-import { Component, Host, Prop, State, h } from '@stencil/core';
+import {
+  Component,
+  ComponentInterface,
+  Host,
+  Prop,
+  State,
+  h,
+} from '@stencil/core';
 
 @Component({
   tag: 'cg-copy-to-clipboard',
   styleUrl: 'copy-to-clipboard.scss',
   scoped: true,
 })
-export class CopyToClipboardComponent {
-  @Prop()
+export class CopyToClipboardComponent implements ComponentInterface {
+  @Prop({ reflect: true })
   public value!: string;
+
+  @Prop({ reflect: true })
+  public type: 'text' | 'textarea' = 'text';
 
   @State()
   private isCopied = false;
-  private inputElem!: HTMLCgTextInputElement;
+  private inputElem!: HTMLCgTextInputElement | HTMLCgTextAreaElement;
   private timeoutId: number | undefined;
 
   public render() {
+    const isTextArea = this.type === 'textarea';
+
     return (
-      <Host class="copy-to-clipboard" aria-live="polite">
-        <cg-text-input
-          class="copy-to-clipboard__input"
-          value={this.value}
-          readonly
-          ref={elem => this.setInputElem(elem)}
-        />
+      <Host
+        class={{
+          'copy-to-clipboard': true,
+          'copy-to-clipboard--textarea': isTextArea,
+        }}
+        aria-live="polite"
+      >
+        {isTextArea ? (
+          <cg-text-area
+            class="copy-to-clipboard__input"
+            value={this.value}
+            readonly
+            ref={elem => this.setInputElem(elem)}
+          />
+        ) : (
+          <cg-text-input
+            class="copy-to-clipboard__input"
+            value={this.value}
+            readonly
+            ref={elem => this.setInputElem(elem)}
+          />
+        )}
 
         <cg-text-btn onClick={() => this.onClicked()}>
           {this.isCopied ? (
@@ -47,7 +74,9 @@ export class CopyToClipboardComponent {
     );
   }
 
-  private setInputElem(elem?: HTMLCgTextInputElement): void {
+  private setInputElem(
+    elem?: HTMLCgTextInputElement | HTMLCgTextAreaElement,
+  ): void {
     if (!elem) {
       throw new Error('Input element not found');
     }

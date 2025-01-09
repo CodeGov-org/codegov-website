@@ -1,5 +1,6 @@
 import { Component, ComponentInterface, Host, Prop, h } from '@stencil/core';
 import { Theme } from '../../../types';
+import { coerceTheme } from '../../../coercion';
 
 @Component({
   tag: 'cg-badge',
@@ -8,7 +9,13 @@ import { Theme } from '../../../types';
 })
 export class BadgeComponent implements ComponentInterface {
   @Prop({ reflect: true })
-  public theme: Theme = 'primary';
+  public get theme(): Theme {
+    return this.#theme;
+  }
+  public set theme(value: Theme) {
+    this.#theme = coerceTheme(value);
+  }
+  #theme: Theme = 'primary';
 
   public render() {
     return (

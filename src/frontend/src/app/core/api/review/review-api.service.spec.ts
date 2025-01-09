@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ImageSet } from '@cg/angular-ui';
 import {
   CreateProposalReviewRequest as CreateProposalReviewApiRequest,
   CreateProposalReviewResponse as CreateProposalReviewApiResponse,
@@ -54,13 +53,12 @@ describe('ReviewApiService', () => {
     const commonRequest: CreateProposalReviewRequest = {
       proposalId: 'proposalId',
       summary: null,
-      reviewDurationMins: null,
       buildReproduced: null,
     };
     const commonApiRequest: CreateProposalReviewApiRequest = {
       proposal_id: 'proposalId',
       summary: [],
-      review_duration_mins: [],
+
       build_reproduced: [],
       vote: [],
     };
@@ -76,7 +74,7 @@ describe('ReviewApiService', () => {
             draft: null,
           },
           summary: [],
-          review_duration_mins: [],
+
           build_reproduced: [],
           images_paths: [],
           proposal_review_commits: [],
@@ -93,10 +91,8 @@ describe('ReviewApiService', () => {
       lastUpdatedAt: null,
       status: ProposalReviewStatus.Draft,
       summary: null,
-      reviewDurationMins: null,
       buildReproduced: null,
-      // [TODO] - remove when API is implemented
-      reproducedBuildImageId: jasmine.any(Array) as unknown as ImageSet[],
+      images: [],
       commits: [],
     };
 
@@ -133,14 +129,13 @@ describe('ReviewApiService', () => {
     const commonRequest: UpdateProposalReviewRequest = {
       proposalId: 'proposalId',
       summary: null,
-      reviewDurationMins: null,
       buildReproduced: null,
     };
     const commonApiRequest: UpdateProposalReviewApiRequest = {
       proposal_id: 'proposalId',
       status: [],
       summary: [],
-      review_duration_mins: [],
+
       build_reproduced: [],
       vote: [],
     };
@@ -199,7 +194,7 @@ describe('ReviewApiService', () => {
                 draft: null,
               },
               summary: [],
-              review_duration_mins: [],
+
               build_reproduced: [],
               images_paths: [],
               proposal_review_commits: [],
@@ -217,7 +212,7 @@ describe('ReviewApiService', () => {
                 draft: null,
               },
               summary: [],
-              review_duration_mins: [],
+
               build_reproduced: [],
               images_paths: [],
               proposal_review_commits: [],
@@ -237,10 +232,8 @@ describe('ReviewApiService', () => {
         lastUpdatedAt: null,
         status: ProposalReviewStatus.Draft,
         summary: null,
-        reviewDurationMins: null,
         buildReproduced: null,
-        // [TODO] - remove when API is implemented
-        reproducedBuildImageId: jasmine.any(Array) as unknown as ImageSet[],
+        images: [],
         commits: [],
       },
       {
@@ -252,10 +245,8 @@ describe('ReviewApiService', () => {
         lastUpdatedAt: null,
         status: ProposalReviewStatus.Draft,
         summary: null,
-        reviewDurationMins: null,
         buildReproduced: null,
-        // [TODO] - remove when API is implemented
-        reproducedBuildImageId: jasmine.any(Array) as unknown as ImageSet[],
+        images: [],
         commits: [],
       },
     ];
@@ -305,7 +296,7 @@ describe('ReviewApiService', () => {
             draft: null,
           },
           summary: [],
-          review_duration_mins: [],
+
           build_reproduced: [],
           images_paths: [],
           proposal_review_commits: [],
@@ -322,10 +313,8 @@ describe('ReviewApiService', () => {
       lastUpdatedAt: null,
       status: ProposalReviewStatus.Draft,
       summary: null,
-      reviewDurationMins: null,
       buildReproduced: null,
-      // [TODO] - remove when API is implemented
-      reproducedBuildImageId: jasmine.any(Array) as unknown as ImageSet[],
+      images: [],
       commits: [],
     };
 
@@ -376,7 +365,7 @@ describe('ReviewApiService', () => {
             draft: null,
           },
           summary: [],
-          review_duration_mins: [],
+
           build_reproduced: [],
           images_paths: [],
           proposal_review_commits: [],
@@ -393,10 +382,8 @@ describe('ReviewApiService', () => {
       lastUpdatedAt: null,
       status: ProposalReviewStatus.Draft,
       summary: null,
-      reviewDurationMins: null,
       buildReproduced: null,
-      // [TODO] - remove when API is implemented
-      reproducedBuildImageId: jasmine.any(Array) as unknown as ImageSet[],
+      images: [],
       commits: [],
     };
 
@@ -429,13 +416,12 @@ describe('ReviewApiService', () => {
     const commonCreateRequest: CreateProposalReviewRequest = {
       proposalId: 'proposalId',
       summary: null,
-      reviewDurationMins: null,
       buildReproduced: null,
     };
     const commonApiCreateRequest: CreateProposalReviewApiRequest = {
       proposal_id: 'proposalId',
       summary: [],
-      review_duration_mins: [],
+
       build_reproduced: [],
       vote: [],
     };
@@ -454,7 +440,7 @@ describe('ReviewApiService', () => {
             draft: null,
           },
           summary: [],
-          review_duration_mins: [],
+
           build_reproduced: [],
           images_paths: [],
           proposal_review_commits: [],
@@ -471,10 +457,8 @@ describe('ReviewApiService', () => {
       lastUpdatedAt: null,
       status: ProposalReviewStatus.Draft,
       summary: null,
-      reviewDurationMins: null,
       buildReproduced: null,
-      // [TODO] - remove when API is implemented
-      reproducedBuildImageId: jasmine.any(Array) as unknown as ImageSet[],
+      images: [],
       commits: [],
     };
 

@@ -1,4 +1,4 @@
-import { type Preview } from '@storybook/html';
+import { type Preview } from '@storybook/web-components';
 import { defineCustomElements } from '../loader';
 import '@cg/styles/global.scss';
 
@@ -8,6 +8,7 @@ const preview: Preview = {
   parameters: {
     actions: { argTypesRegex: '^on[A-Z].*' },
     controls: {
+      exclude: ['theme'],
       matchers: {
         color: /(background|color)$/i,
         date: /Date$/i,

@@ -19,7 +19,11 @@ import {
 } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
-import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
+import {
+  CardComponent,
+  RadioInputComponent,
+  TextBtnComponent,
+} from '@cg/angular-ui';
 import { ReviewCommitDetails } from '~core/api';
 import { ReviewSubmissionService } from '~core/state';
 import {
@@ -31,7 +35,13 @@ import {
   KeyValueGridComponent,
   ValueColComponent,
 } from '~core/ui';
-import { boolToRadio, isNil, radioToBool, toSyncSignal } from '~core/utils';
+import {
+  boolToRadio,
+  isNil,
+  isNotNil,
+  radioToBool,
+  toSyncSignal,
+} from '~core/utils';
 
 @Component({
   selector: 'app-review-commits-form',
@@ -47,20 +57,22 @@ import { boolToRadio, isNil, radioToBool, toSyncSignal } from '~core/utils';
     InputErrorComponent,
     InputHintComponent,
     RadioInputComponent,
+    TextBtnComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      .commit-review-card {
-        margin-bottom: common.size(4);
-      }
-    `,
-  ],
+    .commit-review-card {
+      margin-bottom: common.size(4);
+    }
+  `,
   template: `
-    @for (commit of commits(); track commit.uiId; let i = $index) {
-      <ng-container [formGroup]="commitForms()[i]">
+    @let commitForms = this.commitForms();
+    @let commits = this.commits();
+
+    @for (commit of commits; track commit.uiId; let i = $index) {
+      <ng-container [formGroup]="commitForms[i]">
         <cg-card class="commit-review-card">
           <div slot="cardContent">
             <app-key-value-grid>
@@ -90,18 +102,18 @@ import { boolToRadio, isNil, radioToBool, toSyncSignal } from '~core/utils';
                   </app-input-error>
 
                   <app-input-hint>
-                    @if (commitForms()[i].controls.commitSha.value) {
+                    @if (commitForms[i].controls.commitSha.value) {
                       <a
                         class="truncate"
                         [href]="
                           'https://github.com/dfinity/ic/commit/' +
-                          commitForms()[i].controls.commitSha.value
+                          commitForms[i].controls.commitSha.value
                         "
                         target="_blank"
                         rel="nofollow noreferrer"
                       >
                         https://github.com/dfinity/ic/commit/{{
-                          commitForms()[i].controls.commitSha.value
+                          commitForms[i].controls.commitSha.value
                         }}
                       </a>
                     } @else {
@@ -145,7 +157,7 @@ import { boolToRadio, isNil, radioToBool, toSyncSignal } from '~core/utils';
 
               <ng-container>
                 <ng-container
-                  *ngIf="commitForms()[i].controls.reviewed.value === 1"
+                  *ngIf="commitForms[i].controls.reviewed.value === 1"
                 >
                   <app-key-col>
                     <div>Matches description</div>
@@ -200,24 +212,22 @@ import { boolToRadio, isNil, radioToBool, toSyncSignal } from '~core/utils';
             </app-key-value-grid>
 
             <div class="btn-group">
-              <button class="btn btn--outline" (click)="onRemoveCommitForm(i)">
-                Remove
-              </button>
+              <cg-text-btn theme="error" (click)="onRemoveCommitForm(i)">
+                Remove commit
+              </cg-text-btn>
             </div>
           </div>
         </cg-card>
       </ng-container>
     }
 
-    <div>
-      <button
-        class="btn btn--outline"
-        (click)="onAddCommitForm()"
-        [disabled]="!canAddCommitForm()"
-      >
-        Add commit
-      </button>
-    </div>
+    <cg-text-btn
+      theme="success"
+      (click)="onAddCommitForm()"
+      [disabled]="!canAddCommitForm()"
+    >
+      Add commit
+    </cg-text-btn>
   `,
 })
 export class ReviewCommitsFormComponent implements OnDestroy {
@@ -232,6 +242,10 @@ export class ReviewCommitsFormComponent implements OnDestroy {
       commitForm.setValue(
         commitToFormValue(commit.commit.commitSha, commit.commit.details),
       );
+
+      this.onCommitReviewedChange(commit.commit.details.reviewed, commitForm);
+      this.onCommitShaChange(commit.commit.commitSha, commitForm);
+
       return commitForm;
     });
   });
@@ -364,7 +378,9 @@ export class ReviewCommitsFormComponent implements OnDestroy {
       return;
     }
 
-    commitForm.controls.commitSha.setValue(result, { emitEvent: false });
+    if (result !== commitSha) {
+      commitForm.controls.commitSha.setValue(result, { emitEvent: false });
+    }
   }
 
   private focusCommitForm(index: number): void {
@@ -404,7 +420,7 @@ export class ReviewCommitsFormComponent implements OnDestroy {
         (commit, i) => i !== index && commit.commit.commitSha === commitSha,
       );
 
-      return existingCommit ? { uniqueSha: true } : null;
+      return isNotNil(existingCommit) ? { uniqueSha: true } : null;
     };
   }
 }
@@ -423,7 +439,7 @@ interface ReviewCommitForm {
   comment: FormControl<string | null>;
 }
 
-const commitShaRegex = /[0-9a-f]{7,40}/;
+const commitShaRegex = /^[a-f0-9]{40}$/;
 
 function extractCommitSha(commitSha: string): string | null {
   return commitShaRegex.exec(commitSha)?.[0] ?? null;
@@ -435,19 +451,20 @@ function commitToFormValue(
 ): ReviewCommitFormValue {
   const reviewed = boolToRadio(commit.reviewed);
 
-  let matchesDescription = null;
-  let comment = null;
-
   if (commit.reviewed) {
-    matchesDescription = boolToRadio(commit.matchesDescription);
-    comment = commit.comment;
+    return {
+      commitSha,
+      reviewed,
+      matchesDescription: boolToRadio(commit.matchesDescription),
+      comment: commit.comment,
+    };
   }
 
   return {
-    commitSha: commitSha,
-    matchesDescription,
+    commitSha,
     reviewed,
-    comment,
+    matchesDescription: null,
+    comment: null,
   };
 }
 
@@ -461,7 +478,6 @@ function commitFromFormValue(
       matchesDescription: radioToBool(formValue.matchesDescription),
       reviewed: true,
       comment: formValue.comment ?? null,
-      highlights: [],
     };
   }
 

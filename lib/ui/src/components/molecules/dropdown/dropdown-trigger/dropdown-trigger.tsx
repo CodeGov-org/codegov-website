@@ -16,19 +16,19 @@ import {
   scoped: true,
 })
 export class DropdownTriggerComponent implements ComponentInterface {
-  @Prop()
+  @Prop({ reflect: true })
   public menuId?: string;
 
-  @Prop()
+  @Prop({ reflect: true })
   public triggerId?: string;
 
-  @Prop()
+  @Prop({ reflect: true })
   public isOpen?: boolean;
 
-  @Prop()
+  @Prop({ reflect: true })
   public isIconBtn?: boolean;
 
-  @Prop()
+  @Prop({ reflect: true })
   public btnLabel?: string;
 
   @Watch('menuId')
@@ -52,7 +52,7 @@ export class DropdownTriggerComponent implements ComponentInterface {
   @Event()
   public dropdownTriggerClick!: EventEmitter<void>;
 
-  private btnElem!: HTMLCgTextBtnElement | HTMLCgIconBtnElement;
+  private btnElem?: HTMLCgTextBtnElement | HTMLCgIconBtnElement;
 
   @Listen('click')
   public onClick(): void {
@@ -97,12 +97,6 @@ export class DropdownTriggerComponent implements ComponentInterface {
   private setBtnElem(
     btnElem?: HTMLCgTextBtnElement | HTMLCgIconBtnElement,
   ): void {
-    if (!btnElem) {
-      throw new Error(
-        '`cg-dropdown-trigger` must have a `button` child element',
-      );
-    }
-
     if (btnElem !== this.btnElem) {
       this.btnElem = btnElem;
       this.setBtnAttributes();
@@ -110,6 +104,11 @@ export class DropdownTriggerComponent implements ComponentInterface {
   }
 
   private setBtnAttributes(): void {
+    // [TODO]: Use isNil from @cg/utils
+    if (!this.btnElem) {
+      return;
+    }
+
     this.btnElem.setAttribute('aria-haspopup', 'menu');
 
     this.setBtnIsOpen();
@@ -118,20 +117,30 @@ export class DropdownTriggerComponent implements ComponentInterface {
   }
 
   private setBtnIsOpen(): void {
-    const isOpen = this.isOpen ?? false;
+    // [TODO]: Use isNil from @cg/utils
+    if (!this.btnElem) {
+      return;
+    }
 
+    const isOpen = this.isOpen ?? false;
     this.btnElem.setAttribute('aria-expanded', isOpen.toString());
   }
 
   private setBtnId(): void {
-    if (this.triggerId) {
-      this.btnElem.id = this.triggerId;
+    // [TODO]: Use isNil from @cg/utils
+    if (!this.btnElem || !this.triggerId) {
+      return;
     }
+
+    this.btnElem.id = this.triggerId;
   }
 
   private setBtnControls(): void {
-    if (this.menuId) {
-      this.btnElem.setAttribute('aria-controls', this.menuId);
+    // [TODO]: Use isNil from @cg/utils
+    if (!this.btnElem || !this.menuId) {
+      return;
     }
+
+    this.btnElem.setAttribute('aria-controls', this.menuId);
   }
 }

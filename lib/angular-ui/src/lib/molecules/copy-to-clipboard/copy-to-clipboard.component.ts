@@ -20,6 +20,8 @@ export class CopyToClipboardComponent {
   public readonly value =
     input.required<HTMLCgCopyToClipboardElement['value']>();
 
+  public readonly type = input<HTMLCgCopyToClipboardElement['type']>();
+
   constructor(
     private readonly ngZone: NgZone,
     private readonly elementRef: ElementRef<HTMLCgCopyToClipboardElement>,
@@ -29,6 +31,18 @@ export class CopyToClipboardComponent {
 
       this.ngZone.runOutsideAngular(() => {
         this.elementRef.nativeElement.value = value;
+      });
+    });
+
+    effect(() => {
+      const type = this.type();
+      // [TODO]: use `isNil` from `@cg/utils` package
+      if (!type) {
+        return;
+      }
+
+      this.ngZone.runOutsideAngular(() => {
+        this.elementRef.nativeElement.type = type;
       });
     });
   }

@@ -10,7 +10,11 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
-import { CardComponent, RadioInputComponent } from '@cg/angular-ui';
+import {
+  CardComponent,
+  LinkTextBtnComponent,
+  RadioInputComponent,
+} from '@cg/angular-ui';
 import { ProposalLinkBaseUrl, ProposalReviewStatus } from '~core/api';
 import { ProposalState } from '~core/api';
 import { FormatDatePipe } from '~core/pipes';
@@ -55,62 +59,61 @@ interface FilterForm {
     CardComponent,
     KeyValuePipe,
     RadioInputComponent,
+    LinkTextBtnComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      :host {
-        @include common.page-content;
+    :host {
+      @include common.page-content;
+    }
+
+    .proposal {
+      margin-bottom: common.size(6);
+    }
+
+    .proposal__title,
+    .proposal__proposer {
+      word-break: break-word;
+    }
+
+    .proposal__link {
+      margin-right: common.size(4);
+    }
+
+    .proposal__vote {
+      font-weight: bold;
+    }
+
+    .proposal__vote--adopt {
+      color: common.$success;
+    }
+
+    .proposal__vote--reject {
+      color: common.$error;
+    }
+
+    .filter {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: common.size(4);
+
+      @include common.sm {
+        flex-direction: row;
       }
+    }
 
-      .proposal {
-        margin-bottom: common.size(6);
+    .filter__label {
+      margin-bottom: common.size(2);
+      margin-right: common.size(2);
+      width: 100%;
+
+      @include common.sm {
+        width: 50%;
       }
-
-      .proposal__title,
-      .proposal__proposer {
-        word-break: break-word;
-      }
-
-      .proposal__link {
-        margin-right: common.size(4);
-      }
-
-      .proposal__vote {
-        font-weight: bold;
-      }
-
-      .proposal__vote--adopt {
-        color: common.$success;
-      }
-
-      .proposal__vote--reject {
-        color: common.$error;
-      }
-
-      .filter {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: common.size(4);
-
-        @include common.sm {
-          flex-direction: row;
-        }
-      }
-
-      .filter__label {
-        margin-bottom: common.size(2);
-        margin-right: common.size(2);
-        width: 100%;
-
-        @include common.sm {
-          width: 50%;
-        }
-      }
-    `,
-  ],
+    }
+  `,
   template: `
     <div class="page-heading">
       <h1 class="h3">Proposals</h1>
@@ -231,20 +234,6 @@ interface FilterForm {
                   : 'Not yet decided'
               }}
             </app-value-col>
-
-            <app-key-col [id]="'proposal-codegov-vote-' + i">
-              CodeGov vote
-            </app-key-col>
-            <app-value-col
-              [attr.aria-labelledby]="'proposal-codegov-vote-' + i"
-              class="proposal__vote"
-              [ngClass]="{
-                'proposal__vote--adopt': proposal.codeGovVote === 'ADOPT',
-                'proposal__vote--reject': proposal.codeGovVote === 'REJECT',
-              }"
-            >
-              {{ proposal.codeGovVote }}
-            </app-value-col>
           </app-key-value-grid>
 
           <div class="btn-group">
@@ -252,36 +241,33 @@ interface FilterForm {
               proposal.state === proposalState().InProgress && isReviewer()
             ) {
               @if (proposal.reviewState === undefined) {
-                <a
-                  class="btn btn--outline"
+                <cg-link-text-btn
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Create review
-                </a>
+                </cg-link-text-btn>
               } @else if (
                 proposal.reviewState === ProposalReviewStatus().Draft
               ) {
-                <a
-                  class="btn btn--outline"
+                <cg-link-text-btn
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Edit review
-                </a>
+                </cg-link-text-btn>
               } @else if (
                 proposal.reviewState === ProposalReviewStatus().Published
               ) {
-                <a
-                  class="btn btn--outline"
-                  [routerLink]="['/review', proposal.reviewId, 'view']"
+                <cg-link-text-btn
+                  [routerLink]="['/review', proposal.reviewId ?? '', 'view']"
                 >
                   My review
-                </a>
+                </cg-link-text-btn>
               }
             }
 
-            <a class="btn btn--outline" [routerLink]="[proposal.id]">
+            <cg-link-text-btn [routerLink]="[proposal.id]">
               View details
-            </a>
+            </cg-link-text-btn>
           </div>
         </div>
       </cg-card>
@@ -298,10 +284,10 @@ export class ProposalListComponent {
   public readonly isReviewer = toSignal(
     this.profileService.isCurrentUserReviewer$,
   );
-  public readonly userProfile = toSignal(
-    this.profileService.currentUserProfile$,
+  public readonly userProfile = toSignal(this.profileService.currentUser$);
+  public readonly userReviewList = toSignal(
+    this.reviewService.currentUserReviews$,
   );
-  public readonly userReviewList = toSignal(this.reviewService.userReviewList$);
 
   public readonly proposalListWithReviewIds = computed(() => {
     return this.proposalList()?.map(proposal => {
@@ -339,7 +325,7 @@ export class ProposalListComponent {
       const userProfile = this.userProfile();
 
       if (isNotNil(userProfile)) {
-        this.reviewService.loadReviewListByReviewerId(userProfile.id);
+        this.reviewService.loadReviewsByReviewerId(userProfile.id);
       }
     });
 

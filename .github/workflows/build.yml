@@ -1,0 +1,31 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-node
+
+      - name: Setup environment files
+        uses: ./.github/actions/setup-env-files
+        with:
+          storyblok-token: ${{ secrets.STAGING_STORYBLOK_TOKEN }}
+
+      - name: Setup DFX
+        uses: ./.github/actions/setup-dfx
+
+      - name: DFX build
+        run: dfx build --check

@@ -16,21 +16,22 @@
     "build": "stencil build",
     "watch": "stencil build --watch",
     "storybook": "storybook dev -p 6006 --no-open",
-    "build:storybook": "storybook build"
+    "build:storybook": "storybook build",
+    "test": "playwright test",
+    "test:watch": "playwright test --ui"
   },
   "dependencies": {
     "@cg/styles": "workspace:*",
-    "@stencil/core": "^4.14.1"
+    "@stencil/core": "^4.23.1"
   },
   "devDependencies": {
-    "@stencil/sass": "^3.0.11",
-    "@storybook/addon-essentials": "^8.0.6",
-    "@storybook/blocks": "^8.0.6",
-    "@storybook/html": "^8.0.6",
-    "@storybook/html-vite": "^8.0.6",
-    "@storybook/test": "^8.0.6",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "storybook": "^8.0.6"
+    "@stencil/playwright": "^0.2.1",
+    "@stencil/sass": "^3.0.12",
+    "@storybook/addon-essentials": "^8.4.7",
+    "@storybook/blocks": "^8.4.7",
+    "@storybook/test": "^8.4.7",
+    "@storybook/web-components": "^8.4.7",
+    "@storybook/web-components-vite": "^8.4.7",
+    "storybook": "^8.4.7"
   }
 }

@@ -6,32 +6,5 @@
 }
 
 .text-input__input {
-  display: block;
-  width: 100%;
-
-  border-radius: common.$border-sm-radius;
-  border: common.$border-md-size solid common.$slate-400;
-  padding: common.size(2.5);
-
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-
-  color: common.$slate-900;
-  background-color: common.$white;
-  outline: none;
-
-  &:focus {
-    border-color: common.$primary;
-    @include common.ring(common.$primary-400);
-
-    @include common.dark {
-      @include common.ring(common.$primary-800);
-    }
-  }
-
-  @include common.dark {
-    color: common.$slate-200;
-    background-color: common.$slate-950;
-    border-color: common.$slate-500;
-  }
+  @include common.input-common;
 }

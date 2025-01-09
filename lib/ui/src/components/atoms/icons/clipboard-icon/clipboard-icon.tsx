@@ -1,9 +1,9 @@
-import { Component, h } from '@stencil/core';
+import { Component, ComponentInterface, h } from '@stencil/core';
 
 @Component({
   tag: 'cg-clipboard-icon',
 })
-export class ClipboardIconComponent {
+export class ClipboardIconComponent implements ComponentInterface {
   public render() {
     return (
       <svg class="icon" viewBox="0 0 16 16">

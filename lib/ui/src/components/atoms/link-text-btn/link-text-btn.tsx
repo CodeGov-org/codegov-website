@@ -10,7 +10,7 @@ export class TextBtnComponent implements ComponentInterface {
   public href!: string;
 
   @Prop({ reflect: true })
-  public isExternal? = false;
+  public isExternal?: boolean;
 
   @State()
   private isFocused = false;

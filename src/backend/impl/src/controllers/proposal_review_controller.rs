@@ -254,7 +254,6 @@ mod tests {
         let request = CreateProposalReviewRequest {
             proposal_id: "proposal_id".to_string(),
             summary: Some("summary".to_string()),
-            review_duration_mins: Some(10),
             build_reproduced: Some(true),
             vote: Some(ProposalVote::Yes),
         };
@@ -297,7 +296,6 @@ mod tests {
         let request = CreateProposalReviewRequest {
             proposal_id: "proposal_id".to_string(),
             summary: Some("summary".to_string()),
-            review_duration_mins: Some(10),
             build_reproduced: Some(true),
             vote: Some(ProposalVote::No),
         };
@@ -338,7 +336,6 @@ mod tests {
             proposal_id: fixtures::proposal_id().to_string(),
             status: None,
             summary: Some("summary".to_string()),
-            review_duration_mins: Some(10),
             build_reproduced: Some(true),
             vote: Some(ProposalVote::Yes),
         };
@@ -374,7 +371,6 @@ mod tests {
             proposal_id: fixtures::proposal_id().to_string(),
             status: None,
             summary: Some("summary".to_string()),
-            review_duration_mins: Some(10),
             build_reproduced: Some(true),
             vote: None,
         };

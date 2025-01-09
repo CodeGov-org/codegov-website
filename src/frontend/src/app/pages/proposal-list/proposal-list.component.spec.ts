@@ -31,10 +31,10 @@ describe('ProposalListComponent', () => {
 
     profileServiceMock = profileServiceMockFactory();
     defineProp(profileServiceMock, 'isCurrentUserReviewer$', of(true));
-    defineProp(profileServiceMock, 'currentUserProfile$', of(null));
+    defineProp(profileServiceMock, 'currentUser$', of(null));
 
     reviewServiceMock = reviewServiceMockFactory();
-    defineProp(reviewServiceMock, 'userReviewList$', of([]));
+    defineProp(reviewServiceMock, 'currentUserReviews$', of([]));
 
     await TestBed.configureTestingModule({
       imports: [ProposalListComponent, RouterModule],

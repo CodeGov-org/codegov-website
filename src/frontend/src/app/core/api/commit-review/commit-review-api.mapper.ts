@@ -28,7 +28,6 @@ export function mapCreateProposalReviewCommitRequest(
     state: req.reviewed
       ? {
           reviewed: {
-            highlights: [],
             comment: [],
             matches_description: [],
           },
@@ -76,7 +75,6 @@ function mapReviewCommitRequestDetails(
   if (req.reviewed) {
     return {
       reviewed: {
-        highlights: req.highlights,
         comment: toCandidOpt(req.comment),
         matches_description: toCandidOpt(req.matchesDescription),
       },
@@ -94,7 +92,6 @@ function mapReviewCommitResponseDetails(
       reviewed: true,
       comment: fromCandidOpt(state.reviewed.comment),
       matchesDescription: fromCandidOpt(state.reviewed.matches_description),
-      highlights: state.reviewed.highlights,
     };
   }
 

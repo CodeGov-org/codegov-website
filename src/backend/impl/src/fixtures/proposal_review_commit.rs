@@ -15,7 +15,6 @@ pub fn proposal_review_commit_reviewed() -> ProposalReviewCommit {
         state: ReviewCommitState::Reviewed(ReviewedCommitState {
             matches_description: Some(true),
             comment: Some("Review commit comment".to_string()),
-            highlights: vec![],
         }),
     }
 }

@@ -1,9 +1,14 @@
-import { Meta, StoryObj } from '@storybook/html';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 const meta: Meta = {
   title: 'Molecules/Collapsible',
   argTypes: {
+    title: {
+      name: 'Title',
+      control: { type: 'text' },
+    },
     content: {
+      name: 'Content',
       control: { type: 'text' },
     },
   },
