@@ -3,16 +3,10 @@ import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import {
-  ProposalLinkBaseUrl,
-  ProposalTopic,
-  ProposalState,
-  ProposalVotingLinkType,
-} from '~core/api';
-import { ProposalService } from '~core/state';
-import {
-  ProposalServiceMock,
-  proposalServiceMockFactory,
-} from '~core/state/proposal/proposal.service.mock';
+  ProfileServiceMock,
+  profileServiceMockFactory,
+} from '../../../core/state/profile/profile.service.mock';
+import { ProfileService } from '~core/state';
 import { ReviewService } from '~core/state/review/review.service';
 import {
   ReviewServiceMock,
@@ -28,81 +22,33 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary.compon
 describe('ClosedProposalSummaryComponent', () => {
   let component: ClosedProposalSummaryComponent;
   let fixture: ComponentFixture<ClosedProposalSummaryComponent>;
-  let proposalServiceMock: ProposalServiceMock;
+
+  let activatedRouteMock: ActivatedRouteMock;
   let reviewServiceMock: ReviewServiceMock;
-  let activatedRoute: ActivatedRouteMock;
+  let profileServiceMock: ProfileServiceMock;
 
   beforeEach(async () => {
-    proposalServiceMock = proposalServiceMockFactory();
-    defineProp(
-      proposalServiceMock,
-      'currentProposal$',
-      of({
-        id: '1',
-        nsProposalId: 1n,
-        title: 'title',
-        topic: ProposalTopic.RVM,
-        type: 'unknown',
-        state: ProposalState.InProgress,
-        reviewPeriodEnd: new Date(2024, 1, 17, 1, 1, 25),
-        votingPeriodEnd: new Date(2024, 1, 19, 1, 1, 25),
-        reviewCompletedAt: null,
-        decidedAt: null,
-        proposedAt: new Date(2024, 1, 15, 1, 1, 25),
-        proposedBy: 432432432423n,
-        summary: 'Elect new replica binary revision',
-        codeGovVote: null,
-        proposalLinks: [
-          {
-            type: ProposalVotingLinkType.NNSDApp,
-            link: ProposalLinkBaseUrl.NNSDApp + 1,
-          },
-        ],
-      }),
-    );
+    activatedRouteMock = activatedRouteMockFactory();
+    activatedRouteMock.params = of([{ proposalId: 1 }]);
 
     reviewServiceMock = reviewServiceMockFactory();
-    defineProp(reviewServiceMock, 'proposalReviewList$', of([]));
+    defineProp(reviewServiceMock, 'reviews$', of([]));
 
-    activatedRoute = activatedRouteMockFactory();
-    activatedRoute.params = of([{ id: 1 }]);
+    profileServiceMock = profileServiceMockFactory();
+    defineProp(profileServiceMock, 'reviewers$', of({}));
 
     await TestBed.configureTestingModule({
       imports: [ClosedProposalSummaryComponent],
       providers: [
-        { provide: ProposalService, useValue: proposalServiceMock },
         { provide: ReviewService, useValue: reviewServiceMock },
-        {
-          provide: ActivatedRoute,
-          useValue: activatedRoute,
-        },
+        { provide: ProfileService, useValue: profileServiceMock },
+        { provide: ActivatedRoute, useValue: activatedRouteMock },
         provideRouter([]),
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ClosedProposalSummaryComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('proposal', {
-      id: 1n,
-      title: 'title',
-      topic: ProposalTopic.RVM,
-      type: 'unknown',
-      state: ProposalState.Completed,
-      reviewPeriodEnd: new Date(2024, 1, 17, 1, 1, 25),
-      votingPeriodEnd: new Date(2024, 1, 19, 1, 1, 25),
-      proposedAt: new Date(2024, 1, 15, 1, 1, 25),
-      proposedBy: 432432432423n,
-      reviewCompletedAt: new Date(2024, 1, 19, 1, 1, 25),
-      decidedAt: new Date(2024, 1, 19, 1, 1, 25),
-      summary: 'Elect new replica binary revision',
-      proposalLinks: [
-        {
-          type: ProposalVotingLinkType.NNSDApp,
-          link: ProposalLinkBaseUrl.NNSDApp + 1,
-        },
-      ],
-      codeGovVote: 'ADOPT',
-    });
 
     fixture.detectChanges();
   });

@@ -17,8 +17,6 @@ use crate::{
 
 const MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER: usize = 50;
 const MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS: usize = 1000;
-const MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHTS_COUNT: usize = 5;
-const MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHT_CHARS: usize = 100;
 
 #[cfg_attr(test, mockall::automock)]
 pub trait ProposalReviewCommitService {
@@ -240,41 +238,18 @@ impl<
 
     fn validate_fields(&self, state: &backend_api::ReviewCommitState) -> Result<(), ApiError> {
         if let backend_api::ReviewCommitState::Reviewed {
-            comment,
-            highlights,
+            comment: Some(comment),
             ..
         } = state
         {
-            if let Some(comment) = comment {
-                if comment.is_empty() {
-                    return Err(ApiError::invalid_argument("Comment cannot be empty"));
-                }
-                if comment.chars().count() > MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS {
-                    return Err(ApiError::invalid_argument(&format!(
-                        "Comment must be less than {} characters",
-                        MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS
-                    )));
-                }
+            if comment.is_empty() {
+                return Err(ApiError::invalid_argument("Comment cannot be empty"));
             }
-
-            if highlights.len() > MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHTS_COUNT {
+            if comment.chars().count() > MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS {
                 return Err(ApiError::invalid_argument(&format!(
-                    "Number of highlights must be less than {}",
-                    MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHTS_COUNT
+                    "Comment must be less than {} characters",
+                    MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS
                 )));
-            }
-
-            for highlight in highlights {
-                if highlight.is_empty() {
-                    return Err(ApiError::invalid_argument("Highlight cannot be empty"));
-                }
-
-                if highlight.chars().count() > MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHT_CHARS {
-                    return Err(ApiError::invalid_argument(&format!(
-                        "Each highlight must be less than {} characters",
-                        MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHT_CHARS
-                    )));
-                }
             }
         }
 
@@ -747,9 +722,6 @@ mod tests {
     #[rstest]
     #[case::comment_empty(proposal_review_commit_create_comment_empty())]
     #[case::comment_too_long(proposal_review_commit_create_comment_too_long())]
-    #[case::highlights_too_many(proposal_review_commit_create_highlights_too_many())]
-    #[case::highlight_item_empty(proposal_review_commit_create_highlights_item_empty())]
-    #[case::highlight_item_too_long(proposal_review_commit_create_highlights_item_too_long())]
     async fn create_proposal_review_commit_comment_invalid_fields(
         #[case] fixture: (CreateProposalReviewCommitRequest, ApiError),
     ) {
@@ -957,7 +929,6 @@ mod tests {
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: Some("".to_string()),
                     matches_description: None,
-                    highlights: vec![],
                 },
             },
             ApiError::invalid_argument("Comment cannot be empty"),
@@ -976,80 +947,11 @@ mod tests {
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: Some("a".repeat(MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS + 1)),
                     matches_description: None,
-                    highlights: vec![],
                 },
             },
             ApiError::invalid_argument(&format!(
                 "Comment must be less than {} characters",
                 MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS
-            )),
-        )
-    }
-
-    #[fixture]
-    fn proposal_review_commit_create_highlights_too_many(
-    ) -> (CreateProposalReviewCommitRequest, ApiError) {
-        let proposal_review_commit = fixtures::proposal_review_commit_reviewed();
-
-        (
-            CreateProposalReviewCommitRequest {
-                proposal_review_id: proposal_review_commit.proposal_review_id.to_string(),
-                commit_sha: proposal_review_commit.commit_sha.to_string(),
-                state: backend_api::ReviewCommitState::Reviewed {
-                    comment: None,
-                    matches_description: None,
-                    highlights: std::iter::repeat("a".to_string())
-                        .take(MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHTS_COUNT + 1)
-                        .collect(),
-                },
-            },
-            ApiError::invalid_argument(&format!(
-                "Number of highlights must be less than {}",
-                MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHTS_COUNT
-            )),
-        )
-    }
-
-    #[fixture]
-    fn proposal_review_commit_create_highlights_item_empty(
-    ) -> (CreateProposalReviewCommitRequest, ApiError) {
-        let proposal_review_commit = fixtures::proposal_review_commit_reviewed();
-
-        (
-            CreateProposalReviewCommitRequest {
-                proposal_review_id: proposal_review_commit.proposal_review_id.to_string(),
-                commit_sha: proposal_review_commit.commit_sha.to_string(),
-                state: backend_api::ReviewCommitState::Reviewed {
-                    comment: None,
-                    matches_description: None,
-                    highlights: vec!["highlight".to_string(), "".to_string()],
-                },
-            },
-            ApiError::invalid_argument("Highlight cannot be empty"),
-        )
-    }
-
-    #[fixture]
-    fn proposal_review_commit_create_highlights_item_too_long(
-    ) -> (CreateProposalReviewCommitRequest, ApiError) {
-        let proposal_review_commit = fixtures::proposal_review_commit_reviewed();
-
-        (
-            CreateProposalReviewCommitRequest {
-                proposal_review_id: proposal_review_commit.proposal_review_id.to_string(),
-                commit_sha: proposal_review_commit.commit_sha.to_string(),
-                state: backend_api::ReviewCommitState::Reviewed {
-                    comment: None,
-                    matches_description: None,
-                    highlights: vec![
-                        "highlight".to_string(),
-                        "a".repeat(MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHT_CHARS + 1),
-                    ],
-                },
-            },
-            ApiError::invalid_argument(&format!(
-                "Each highlight must be less than {} characters",
-                MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHT_CHARS
             )),
         )
     }
@@ -1388,9 +1290,6 @@ mod tests {
     #[rstest]
     #[case::comment_empty(proposal_review_commit_update_comment_empty())]
     #[case::comment_too_long(proposal_review_commit_update_comment_too_long())]
-    #[case::highlights_too_many(proposal_review_commit_update_highlights_too_many())]
-    #[case::highlight_item_empty(proposal_review_commit_update_highlights_item_empty())]
-    #[case::highlight_item_too_long(proposal_review_commit_update_highlights_item_too_long())]
     async fn update_proposal_review_commit_comment_invalid_fields(
         #[case] fixture: (UpdateProposalReviewCommitRequest, ApiError),
     ) {
@@ -1452,7 +1351,6 @@ mod tests {
         let state = backend_api::ReviewCommitState::Reviewed {
             comment: Some("Review commit comment".to_string()),
             matches_description: Some(true),
-            highlights: vec![],
         };
 
         (
@@ -1613,7 +1511,6 @@ mod tests {
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: Some("".to_string()),
                     matches_description: None,
-                    highlights: vec![],
                 },
             },
             ApiError::invalid_argument("Comment cannot be empty"),
@@ -1631,77 +1528,11 @@ mod tests {
                 state: backend_api::ReviewCommitState::Reviewed {
                     comment: Some("a".repeat(MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS + 1)),
                     matches_description: None,
-                    highlights: vec![],
                 },
             },
             ApiError::invalid_argument(&format!(
                 "Comment must be less than {} characters",
                 MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS
-            )),
-        )
-    }
-
-    #[fixture]
-    fn proposal_review_commit_update_highlights_too_many(
-    ) -> (UpdateProposalReviewCommitRequest, ApiError) {
-        let id = fixtures::proposal_review_commit_id();
-
-        (
-            UpdateProposalReviewCommitRequest {
-                id: id.to_string(),
-                state: backend_api::ReviewCommitState::Reviewed {
-                    comment: None,
-                    matches_description: None,
-                    highlights: std::iter::repeat("a".to_string())
-                        .take(MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHTS_COUNT + 1)
-                        .collect(),
-                },
-            },
-            ApiError::invalid_argument(&format!(
-                "Number of highlights must be less than {}",
-                MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHTS_COUNT
-            )),
-        )
-    }
-
-    #[fixture]
-    fn proposal_review_commit_update_highlights_item_empty(
-    ) -> (UpdateProposalReviewCommitRequest, ApiError) {
-        let id = fixtures::proposal_review_commit_id();
-
-        (
-            UpdateProposalReviewCommitRequest {
-                id: id.to_string(),
-                state: backend_api::ReviewCommitState::Reviewed {
-                    comment: None,
-                    matches_description: None,
-                    highlights: vec!["highlight".to_string(), "".to_string()],
-                },
-            },
-            ApiError::invalid_argument("Highlight cannot be empty"),
-        )
-    }
-
-    #[fixture]
-    fn proposal_review_commit_update_highlights_item_too_long(
-    ) -> (UpdateProposalReviewCommitRequest, ApiError) {
-        let id = fixtures::proposal_review_commit_id();
-
-        (
-            UpdateProposalReviewCommitRequest {
-                id: id.to_string(),
-                state: backend_api::ReviewCommitState::Reviewed {
-                    comment: None,
-                    matches_description: None,
-                    highlights: vec![
-                        "highlight".to_string(),
-                        "a".repeat(MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHT_CHARS + 1),
-                    ],
-                },
-            },
-            ApiError::invalid_argument(&format!(
-                "Each highlight must be less than {} characters",
-                MAX_PROPOSAL_REVIEW_COMMIT_HIGHLIGHT_CHARS
             )),
         )
     }

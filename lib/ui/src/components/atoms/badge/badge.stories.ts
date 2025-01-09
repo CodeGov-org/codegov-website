@@ -1,21 +1,24 @@
-import { Meta, StoryObj } from '@storybook/html';
+import { Meta, StoryObj } from '@storybook/web-components';
+import { Theme } from '../../../types';
 
-const meta: Meta = {
+interface Args {
+  content: string;
+  theme: Theme;
+}
+
+const meta: Meta<Args> = {
   title: 'Atoms/Badges',
+  argTypes: {
+    content: {
+      name: 'Content',
+      control: { type: 'text' },
+    },
+  },
   args: {
     content: 'Approved',
   },
-  argTypes: {
-    content: {
-      control: { type: 'text' },
-    },
-    theme: {
-      control: { type: 'select' },
-      options: ['primary', 'success', 'error'],
-    },
-  },
   render: args => `
-    <cg-badge theme="${args.theme ?? 'primary'}">
+    <cg-badge theme="${args.theme}">
       ${args.content}
     </cg-badge>
   `,
@@ -23,8 +26,20 @@ const meta: Meta = {
 
 export default meta;
 
-export const Default: StoryObj = {
+export const Primary: StoryObj<Args> = {
   args: {
     theme: 'primary',
+  },
+};
+
+export const Success: StoryObj<Args> = {
+  args: {
+    theme: 'success',
+  },
+};
+
+export const Error: StoryObj<Args> = {
+  args: {
+    theme: 'error',
   },
 };

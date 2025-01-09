@@ -6,6 +6,7 @@ import {
   Prop,
   Method,
   Host,
+  ComponentInterface,
 } from '@stencil/core';
 
 @Component({
@@ -14,7 +15,7 @@ import {
   formAssociated: true,
   scoped: true,
 })
-export class TextInput {
+export class TextInput implements ComponentInterface {
   @Prop({ reflect: true })
   public value?: string;
 
@@ -22,7 +23,10 @@ export class TextInput {
   public placeholder?: string;
 
   @Prop({ reflect: true })
-  public readonly = false;
+  public readonly?: boolean;
+
+  @Prop({ reflect: true })
+  public disabled?: boolean;
 
   @State()
   private isFocused = false;
@@ -52,6 +56,7 @@ export class TextInput {
           value={this.value}
           placeholder={this.placeholder}
           readOnly={this.readonly}
+          disabled={this.disabled}
           ref={elem => this.setInputElem(elem)}
           onInput={event => this.handleChange(event)}
           onFocus={() => this.onFocused()}

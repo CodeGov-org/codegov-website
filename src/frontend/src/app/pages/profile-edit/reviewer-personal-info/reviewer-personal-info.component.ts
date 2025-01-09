@@ -5,6 +5,7 @@ import {
   output,
 } from '@angular/core';
 
+import { TextBtnComponent } from '@cg/angular-ui';
 import { ReviewerUserProfile } from '~core/api';
 import {
   KeyColComponent,
@@ -14,7 +15,12 @@ import {
 
 @Component({
   selector: 'app-reviewer-personal-info',
-  imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
+  imports: [
+    KeyValueGridComponent,
+    KeyColComponent,
+    ValueColComponent,
+    TextBtnComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-key-value-grid>
@@ -45,7 +51,7 @@ import {
     </app-key-value-grid>
 
     <div class="btn-group">
-      <button type="button" class="btn" (click)="onEditForm()">Edit</button>
+      <cg-text-btn (click)="onEditForm()">Edit</cg-text-btn>
     </div>
   `,
 })

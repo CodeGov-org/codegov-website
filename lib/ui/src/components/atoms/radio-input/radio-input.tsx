@@ -18,7 +18,7 @@ export class RadioInput implements ComponentInterface {
   public name?: string;
 
   @Prop({ reflect: true })
-  public disabled = false;
+  public disabled?: boolean;
 
   @State()
   private isFocused = false;
@@ -27,7 +27,13 @@ export class RadioInput implements ComponentInterface {
 
   public render() {
     return (
-      <label htmlFor={this.radioId}>
+      <label
+        htmlFor={this.radioId}
+        class={{
+          'radio-input__label': true,
+          'radio-input__label--disabled': this.disabled ?? false,
+        }}
+      >
         <span class="radio-input__input-container">
           <span class="radio-input__focus-ring-container">
             <cg-focus-ring isFocused={this.isFocused} />
@@ -46,7 +52,12 @@ export class RadioInput implements ComponentInterface {
           />
         </span>
 
-        <span class="radio-input__label">
+        <span
+          class={{
+            'radio-input__content': true,
+            'radio-input__content--disabled': this.disabled ?? false,
+          }}
+        >
           <slot />
         </span>
       </label>

@@ -1,58 +1,27 @@
-@use '../common/colors';
-@use '../common/dark-mode';
-@use '../common/effects';
-@use '../common/sizing';
+@use '../common';
 
 .input {
-  display: block;
-  width: 100%;
-
-  border-radius: sizing.$border-sm-radius;
-  border: sizing.$border-md-size solid colors.$slate-400;
-  padding: sizing.size(2.5);
-
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-
-  color: colors.$slate-900;
-  background-color: colors.$white;
-  outline: none;
-
-  &:focus {
-    border-color: colors.$primary;
-    @include effects.ring(colors.$primary-400);
-
-    @include dark-mode.dark {
-      @include effects.ring(colors.$primary-800);
-    }
-  }
-
-  @include dark-mode.dark {
-    color: colors.$slate-200;
-    background-color: colors.$slate-950;
-    border-color: colors.$slate-500;
-  }
+  @include common.input-common;
 }
 
 .input--invalid {
-  border-color: colors.$error;
+  border-color: common.$error;
 
   &:focus {
-    border-color: colors.$error;
+    border-color: common.$error;
 
-    @include effects.ring(colors.$error);
+    @include common.ring(common.$error);
   }
 }
 
 .input--textarea {
-  height: sizing.size(24);
-  resize: vertical;
+  @include common.text-area;
 }
 
 .label {
-  color: colors.$black;
+  color: common.$black;
 
-  @include dark-mode.dark {
-    color: colors.$white;
+  @include common.dark {
+    color: common.$white;
   }
 }

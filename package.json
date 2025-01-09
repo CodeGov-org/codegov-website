@@ -10,12 +10,14 @@
   "scripts": {
     "turbo": "dotenv -- turbo --cache-dir=.turbo",
     "build": "pnpm turbo build",
+    "test": "pnpm turbo test",
     "lint": "eslint -c .eslintrc.js .",
     "lint:fix": "eslint -c .eslintrc.js --fix .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "cloc": "pnpx cloc --exclude-dir=node_modules,target,build,dist,.dfx,.docusaurus --exclude-ext=yaml,yml,md,toml,json .",
-    "postinstall": "./scripts/postinstall.sh"
+    "postinstall": "./scripts/postinstall.sh",
+    "playwright-install": "playwright install --with-deps"
   },
   "dependencies": {
     "@angular/animations": "^19.0.5",
@@ -59,6 +61,7 @@
     "@hadronous/ic-angular": "0.5.1",
     "@hadronous/ic-build-angular": "0.5.1",
     "@hadronous/pic": "0.11.0",
+    "@playwright/test": "^1.49.1",
     "@types/bun": "^1.1.14",
     "@types/jasmine": "~5.1.5",
     "@types/node": "^20.17.11",
@@ -83,7 +86,7 @@
     "ng-packagr": "^19.0.1",
     "prettier": "^3.4.2",
     "prettier-plugin-astro": "^0.13.0",
-    "turbo": "^1.13.4",
+    "turbo": "^2.3.3",
     "typescript": "~5.5.4"
   }
 }

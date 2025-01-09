@@ -3,18 +3,16 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 @Component({
   selector: 'app-info-icon',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      .info-icon {
-        width: common.size(5);
-        height: common.size(5);
-        margin-left: common.size(2);
-        vertical-align: text-bottom;
-      }
-    `,
-  ],
+    .info-icon {
+      width: common.size(5);
+      height: common.size(5);
+      margin-left: common.size(2);
+      vertical-align: text-bottom;
+    }
+  `,
   template: `
     <svg
       class="info-icon"

@@ -1,7 +1,11 @@
 use super::DateTime;
+use backend_api::ApiError;
 use candid::{CandidType, Decode, Deserialize, Encode};
-use ic_stable_structures::{storable::Bound, Storable};
-use std::borrow::Cow;
+use ic_stable_structures::{
+    storable::{Blob, Bound},
+    Storable,
+};
+use std::{borrow::Cow, ops::RangeBounds};
 
 pub type LogId = u64;
 
@@ -16,18 +20,6 @@ pub struct LogsFilter {
 
 impl LogsFilter {
     pub fn matches(&self, log_entry: &LogEntry) -> bool {
-        if let Some(before) = &self.before {
-            if log_entry.date_time > *before {
-                return false;
-            }
-        }
-
-        if let Some(after) = &self.after {
-            if log_entry.date_time < *after {
-                return false;
-            }
-        }
-
         if let Some(level) = &self.level {
             if log_entry.level != *level {
                 return false;
@@ -82,10 +74,77 @@ impl Storable for LogEntry {
     const BOUND: Bound = Bound::Unbounded;
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct LogTimestampKey(Blob<{ Self::MAX_SIZE as usize }>);
+
+impl LogTimestampKey {
+    const MAX_SIZE: u32 = <(DateTime, LogId)>::BOUND.max_size();
+
+    pub fn new(date_time: DateTime, log_id: LogId) -> Result<Self, ApiError> {
+        Ok(Self(
+            Blob::try_from((date_time, log_id).to_bytes().as_ref()).map_err(|_| {
+                ApiError::internal(&format!(
+                    "Failed to convert date time {:?} and log id {} to bytes.",
+                    date_time, log_id
+                ))
+            })?,
+        ))
+    }
+}
+
+impl Storable for LogTimestampKey {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        self.0.to_bytes()
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Self(Blob::from_bytes(bytes))
+    }
+
+    const BOUND: Bound = Bound::Bounded {
+        max_size: Self::MAX_SIZE,
+        is_fixed_size: true,
+    };
+}
+
+pub struct LogTimestampRange {
+    start_bound: LogTimestampKey,
+    end_bound: LogTimestampKey,
+}
+
+impl LogTimestampRange {
+    pub fn new(
+        min_date_time: Option<DateTime>,
+        max_date_time: Option<DateTime>,
+    ) -> Result<Self, ApiError> {
+        let max_date_time = match max_date_time {
+            Some(max_date_time) => max_date_time,
+            None => DateTime::max()?,
+        };
+        Ok(Self {
+            start_bound: LogTimestampKey::new(
+                min_date_time.unwrap_or_else(DateTime::min),
+                LogId::MIN,
+            )?,
+            end_bound: LogTimestampKey::new(max_date_time, LogId::MAX)?,
+        })
+    }
+}
+
+impl RangeBounds<LogTimestampKey> for LogTimestampRange {
+    fn start_bound(&self) -> std::ops::Bound<&LogTimestampKey> {
+        std::ops::Bound::Included(&self.start_bound)
+    }
+
+    fn end_bound(&self) -> std::ops::Bound<&LogTimestampKey> {
+        std::ops::Bound::Included(&self.end_bound)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::fixtures;
+    use crate::{fixtures, system_api::get_date_time};
     use rstest::*;
 
     #[rstest]
@@ -99,23 +158,27 @@ mod tests {
 
     #[rstest]
     #[case::empty_filter(fixtures::filters::empty_filter())]
-    #[case::before_filter_matching(fixtures::filters::before_filter_matching())]
-    #[case::before_filter_not_matching(fixtures::filters::before_filter_not_matching())]
-    #[case::after_filter_matching(fixtures::filters::after_filter_matching())]
-    #[case::after_filter_not_matching(fixtures::filters::after_filter_not_matching())]
-    #[case::time_range_filter_matching(fixtures::filters::time_range_filter_matching())]
-    #[case::time_range_filter_not_matching(fixtures::filters::time_range_filter_not_matching())]
     #[case::level_filter_matching(fixtures::filters::level_filter_matching())]
     #[case::level_filter_not_matching(fixtures::filters::level_filter_not_matching())]
     #[case::context_filter_matching(fixtures::filters::context_filter_matching())]
     #[case::context_filter_not_matching(fixtures::filters::context_filter_not_matching())]
     #[case::message_filter_matching(fixtures::filters::message_filter_matching())]
-    #[case::message_filter_not_matchingd(fixtures::filters::message_filter_not_matching())]
-    #[case::all_matching(fixtures::filters::all_matching())]
-    #[case::all_not_matching(fixtures::filters::all_not_matching())]
+    #[case::message_filter_not_matching(fixtures::filters::message_filter_not_matching())]
     fn filter_matches(#[case] fixture: (LogEntry, LogsFilter, bool)) {
         let (log_entry, filter, expected) = fixture;
 
         assert_eq!(filter.matches(&log_entry), expected);
+    }
+
+    #[rstest]
+    fn log_timestamp_key_storable_impl() {
+        let date_time = get_date_time().unwrap();
+        let log_id: LogId = 1234;
+
+        let key = LogTimestampKey::new(DateTime::new(date_time).unwrap(), log_id).unwrap();
+        let serialized_key = key.to_bytes();
+        let deserialized_key = LogTimestampKey::from_bytes(serialized_key);
+
+        assert_eq!(key, deserialized_key);
     }
 }

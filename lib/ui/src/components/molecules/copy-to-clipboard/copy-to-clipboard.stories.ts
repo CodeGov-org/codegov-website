@@ -1,18 +1,30 @@
-import { Meta, StoryObj } from '@storybook/html';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 const meta: Meta = {
   title: 'Molecules/Copy To Clipboard',
   argTypes: {
     content: {
+      name: 'Content',
       value: { type: 'text' },
+    },
+    type: {
+      name: 'Type',
+      control: {
+        type: 'select',
+        labels: { text: 'Text', textarea: 'Text Area' },
+      },
+      options: ['text', 'textarea'],
     },
   },
   args: {
-    value: 'Super secret code',
+    content: 'Super secret code',
+    type: 'text',
   },
   render: args => `
-    <cg-copy-to-clipboard value="${args.value}">
-    </cg-copy-to-clipboard>
+    <cg-copy-to-clipboard
+      value="${args.content}"
+      type="${args.type ?? 'text'}"
+    ></cg-copy-to-clipboard>
   `,
 };
 

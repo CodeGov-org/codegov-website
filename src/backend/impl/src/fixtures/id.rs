@@ -14,7 +14,7 @@ pub fn principal_b() -> Principal {
 
 #[fixture]
 pub fn principal_c() -> Principal {
-    Principal::from_slice(&[1])
+    Principal::from_slice(&[2])
 }
 
 #[fixture]

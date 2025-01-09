@@ -1,9 +1,16 @@
-import { Meta, StoryObj } from '@storybook/html';
+import { Meta, StoryObj } from '@storybook/web-components';
+import { Theme } from '../../../types';
 
-const meta: Meta = {
+interface Args {
+  content: string;
+  theme: Theme;
+}
+
+const meta: Meta<Args> = {
   title: 'Atoms/Text Buttons',
   argTypes: {
     content: {
+      name: 'Content',
       control: { type: 'text' },
     },
   },
@@ -11,10 +18,30 @@ const meta: Meta = {
     content: 'Click me!',
   },
   render: args => `
-    <cg-text-btn>${args.content}</cg-text-btn>
+    <cg-text-btn theme="${args.theme}">
+      ${args.content}
+    </cg-text-btn>
   `,
 };
 
 export default meta;
 
-export const Default: StoryObj = {};
+export const Default: StoryObj<Args> = {};
+
+export const Primary: StoryObj<Args> = {
+  args: {
+    theme: 'primary',
+  },
+};
+
+export const Success: StoryObj<Args> = {
+  args: {
+    theme: 'success',
+  },
+};
+
+export const Error: StoryObj<Args> = {
+  args: {
+    theme: 'error',
+  },
+};

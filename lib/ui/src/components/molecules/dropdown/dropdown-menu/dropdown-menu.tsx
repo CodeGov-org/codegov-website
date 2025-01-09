@@ -1,15 +1,15 @@
-import { Component, Host, Prop, h } from '@stencil/core';
+import { Component, ComponentInterface, Host, Prop, h } from '@stencil/core';
 
 @Component({
   tag: 'cg-dropdown-menu',
   styleUrl: 'dropdown-menu.scss',
   scoped: true,
 })
-export class MenuComponent {
-  @Prop()
+export class MenuComponent implements ComponentInterface {
+  @Prop({ reflect: true })
   public menuId?: string;
 
-  @Prop()
+  @Prop({ reflect: true })
   public triggerId?: string;
 
   public render() {

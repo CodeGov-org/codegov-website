@@ -1,5 +1,6 @@
 import {
   Component,
+  ComponentInterface,
   Event,
   EventEmitter,
   Listen,
@@ -12,7 +13,7 @@ import {
   styleUrl: 'dropdown-btn-menu-item.scss',
   scoped: true,
 })
-export class DropdownLinkMenuItemComponent {
+export class DropdownLinkMenuItemComponent implements ComponentInterface {
   @Event()
   public menuItemClick!: EventEmitter<void>;
 

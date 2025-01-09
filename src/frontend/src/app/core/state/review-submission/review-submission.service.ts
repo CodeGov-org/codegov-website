@@ -16,6 +16,7 @@ import {
   UpdateProposalReviewRequest,
   ReviewCommitDetails,
   ProposalReviewStatus,
+  CreateProposalReviewImageResponse,
 } from '../../api';
 import { batchApiCall, filterNotNil, isNil, isNotNil } from '../../utils';
 
@@ -41,14 +42,6 @@ export class ReviewSubmissionService {
   public readonly review$ = this.reviewSubject
     .asObservable()
     .pipe(distinctUntilChanged());
-  private get review(): GetProposalReviewResponse {
-    const review = this.reviewSubject.value;
-    if (isNil(review)) {
-      throw new Error('Review is not loaded');
-    }
-
-    return review;
-  }
 
   private readonly commitsSubject = new BehaviorSubject<
     UiProposalReviewCommit[] | null
@@ -117,7 +110,7 @@ export class ReviewSubmissionService {
     });
 
     this.reviewSubject.next(res);
-    this.commitsSubject.next(Array.from(this.commits.values()));
+    this.emitUpdatedComits();
   }
 
   public updateReview(updatedReview: UpdateProposalReviewRequest): void {
@@ -173,6 +166,9 @@ export class ReviewSubmissionService {
       );
     }
 
+    // only add the commit locally first, once we have the minimum
+    // required information to create it, we will make the
+    // API call to create it in `updateCommit` method
     this.commits.set(null, {
       apiId: null,
       uiId: String(this.listId++),
@@ -183,7 +179,7 @@ export class ReviewSubmissionService {
         },
       },
     });
-    this.commitsSubject.next(Array.from(this.commits.values()));
+    this.emitUpdatedComits();
   }
 
   public async removeCommit(commitSha: string | null): Promise<void> {
@@ -200,15 +196,19 @@ export class ReviewSubmissionService {
       );
     }
 
+    // do the optimistic update first
     this.commits.delete(commitSha);
-    this.commitsSubject.next(Array.from(this.commits.values()));
+    this.emitUpdatedComits();
 
-    if (isNotNil(commit.apiId)) {
-      commit;
-      await this.commitReviewApiService.deleteProposalReviewCommit({
-        proposalReviewCommitId: commit.apiId,
-      });
-    }
+    // before deleting the commit, we make sure to wait for any
+    // pending creation calls to complete,
+    // otherwise we won't have the API ID to delete it
+    const createdCommitId = await this.pendingCommitCreation(commit);
+
+    await this.deleteCommit({
+      ...commit,
+      apiId: createdCommitId ?? commit.apiId,
+    });
   }
 
   public async updateCommit(
@@ -229,10 +229,11 @@ export class ReviewSubmissionService {
       );
     }
 
+    // do the optimistic update first
     if (oldCommitSha !== newCommitSha) {
       this.commits.delete(oldCommitSha);
     }
-    const updatedCommit: UiProposalReviewCommit = {
+    let updatedCommit: UiProposalReviewCommit = {
       apiId: oldLocalCommit.apiId,
       uiId: oldLocalCommit.uiId,
       commit: {
@@ -241,74 +242,57 @@ export class ReviewSubmissionService {
       },
     };
     this.commits.set(newCommitSha, updatedCommit);
-    this.commitsSubject.next(Array.from(this.commits.values()));
+    this.emitUpdatedComits();
 
-    const existingPromise = this.commitCreatePromises.get(oldCommitSha);
-    if (isNotNil(existingPromise)) {
-      const oldRemoteCommit = await existingPromise;
-
-      this.commits.set(newCommitSha, {
-        apiId: oldRemoteCommit.id,
-        uiId: oldLocalCommit.uiId,
-        commit: {
-          commitSha: newCommitSha,
-          details: newCommit,
-        },
-      });
+    // if commit creation is pending, we wait for it to complete
+    const createdCommitId = await this.pendingCommitCreation(updatedCommit);
+    if (isNotNil(createdCommitId)) {
+      const createdCommit = this.updateCommitWithId(
+        newCommitSha,
+        createdCommitId,
+      );
+      if (isNotNil(createdCommit)) {
+        updatedCommit = createdCommit;
+        this.commits.set(newCommitSha, createdCommit);
+      }
     }
 
+    // if the commit is not created yet or the commit sha has changed,
+    // and we have all the required information to create it,
+    // we proceed with the creation
     if (
-      isNil(oldLocalCommit.apiId) &&
+      (isNil(updatedCommit?.apiId) || oldCommitSha !== newCommitSha) &&
       isNotNil(newCommitSha) &&
       isNotNil(newCommit.reviewed)
     ) {
-      const promise = this.commitReviewApiService.createProposalCommitReview({
-        commitSha: newCommitSha,
-        proposalReviewId: this.review.id,
-        reviewed: newCommit.reviewed,
-      });
-      this.commitCreatePromises.set(oldCommitSha, promise);
+      const createdCommitId = await this.createCommit(
+        newCommitSha,
+        newCommit.reviewed,
+      );
 
-      const createdCommit = await promise;
-      updatedCommit.apiId = createdCommit.id;
-
-      this.commitCreatePromises.delete(oldCommitSha);
-      this.commits.set(newCommitSha, updatedCommit);
-
-      const [observable, subscription] = this.createCommitObservable();
-      this.commitObservables.set(oldCommitSha, observable);
-      this.commitSubscriptions.set(oldCommitSha, subscription);
+      const createdCommit = this.updateCommitWithId(
+        newCommitSha,
+        createdCommitId,
+      );
+      if (isNotNil(createdCommit)) {
+        updatedCommit = createdCommit;
+        this.commits.set(newCommitSha, createdCommit);
+      }
     }
 
+    // if the commit was not previously created, we don't need to make
+    // any further updates
     if (isNil(oldLocalCommit.apiId)) {
       return;
     }
 
+    // if the commit was previously created, and the commit sha has changed,
+    // we need to delete the old commit on the API
     if (oldCommitSha !== newCommitSha) {
-      this.handleCommitShaChange(oldCommitSha, newCommitSha);
+      await this.deleteCommit(oldLocalCommit);
     }
 
     this.commitObservables.get(newCommitSha)?.next(updatedCommit);
-  }
-
-  private handleCommitShaChange(
-    previousCommitSha: string | null,
-    newCommitSha: string | null,
-  ): void {
-    const prevObservable = this.commitObservables.get(previousCommitSha);
-    const prevSubscription = this.commitSubscriptions.get(previousCommitSha);
-
-    if (isNil(prevObservable) || isNil(prevSubscription)) {
-      throw new Error(
-        `Missing observable or subscription for commit ${previousCommitSha}`,
-      );
-    }
-
-    this.commitObservables.delete(previousCommitSha);
-    this.commitSubscriptions.delete(previousCommitSha);
-
-    this.commitObservables.set(newCommitSha, prevObservable);
-    this.commitSubscriptions.set(newCommitSha, prevSubscription);
   }
 
   private createCommitObservable(): [
@@ -328,7 +312,7 @@ export class ReviewSubmissionService {
           isNotNil(commit.apiId)
             ? from(
                 this.commitReviewApiService.updateProposalReviewCommit({
-                  proposalReviewCommitId: commit.apiId!,
+                  proposalReviewCommitId: commit.apiId,
                   details: commit.commit.details,
                 }),
               )
@@ -338,5 +322,122 @@ export class ReviewSubmissionService {
       .subscribe({});
 
     return [commitSubject, subscription];
+  }
+
+  public async createProposalReviewImage(
+    type: string,
+    bytes: Uint8Array,
+  ): Promise<CreateProposalReviewImageResponse> {
+    if (isNil(this.proposalId)) {
+      throw new Error(
+        'Tried to create a proposal image without selecting a proposal',
+      );
+    }
+
+    return await this.reviewApiService.createProposalReviewImage({
+      contentType: type,
+      contentBytes: bytes,
+      proposalId: this.proposalId,
+    });
+  }
+
+  public async deleteProposalReviewImage(imagePath: string): Promise<void> {
+    if (isNil(this.proposalId)) {
+      throw new Error(
+        'Tried to delete a proposal image without selecting a proposal',
+      );
+    }
+
+    await this.reviewApiService.deleteProposalReviewImage({
+      imagePath,
+      proposalId: this.proposalId,
+    });
+  }
+
+  private emitUpdatedComits(): void {
+    this.commitsSubject.next(Array.from(this.commits.values()));
+  }
+
+  private async deleteCommit(
+    pendingCommit: UiProposalReviewCommit,
+  ): Promise<void> {
+    this.commitSubscriptions.get(pendingCommit.commit.commitSha)?.unsubscribe();
+    this.commitSubscriptions.delete(pendingCommit.commit.commitSha);
+    this.commitObservables.delete(pendingCommit.commit.commitSha);
+
+    // if there's no API ID,
+    // it means the commit was never created on the API side
+    if (isNotNil(pendingCommit.apiId)) {
+      await this.commitReviewApiService.deleteProposalReviewCommit({
+        proposalReviewCommitId: pendingCommit.apiId,
+      });
+    }
+  }
+
+  private async createCommit(
+    commitSha: string,
+    reviewed: boolean,
+  ): Promise<string> {
+    const review = this.reviewSubject.value;
+    if (isNil(review)) {
+      throw new Error(
+        'Tried to create a commit for a review before it is loaded',
+      );
+    }
+
+    const crateCommitPromise =
+      this.commitReviewApiService.createProposalCommitReview({
+        commitSha,
+        reviewed,
+        proposalReviewId: review.id,
+      });
+    this.commitCreatePromises.set(commitSha, crateCommitPromise);
+
+    const createdCommit = await crateCommitPromise;
+
+    this.commitCreatePromises.delete(commitSha);
+
+    const [observable, subscription] = this.createCommitObservable();
+    this.commitObservables.set(commitSha, observable);
+    this.commitSubscriptions.set(commitSha, subscription);
+
+    return createdCommit.id;
+  }
+
+  private async pendingCommitCreation(
+    pendingCommit: UiProposalReviewCommit,
+  ): Promise<string | null> {
+    const existingPromise = this.commitCreatePromises.get(
+      pendingCommit.commit.commitSha,
+    );
+
+    if (isNil(existingPromise)) {
+      return null;
+    }
+
+    const createdCommit = await existingPromise;
+    return createdCommit.id;
+  }
+
+  private updateCommitWithId(
+    commitSha: string | null,
+    apiId: string,
+  ): UiProposalReviewCommit | null {
+    // in case there was some optimistic updates,
+    // we need to make sure we get the latest commit
+    const currentCommit = this.commits.get(commitSha);
+
+    // if the commit is now null, it means it was optimisitcally deleted,
+    // so we don't need to update it. it will be deleted by the
+    // `remoteCommit` method that waits for creation to complete before
+    // deleting.
+    if (isNotNil(currentCommit)) {
+      return {
+        ...currentCommit,
+        apiId,
+      };
+    }
+
+    return null;
   }
 }

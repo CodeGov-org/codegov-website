@@ -23,7 +23,6 @@ export interface GetProposalResponse {
   decidedAt: Date | null;
   summary: string;
   proposalLinks: ProposalVotingLink[];
-  codeGovVote: ProposalCodeGovVote | null;
 }
 
 export enum ProposalTopic {

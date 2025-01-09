@@ -10,6 +10,9 @@ export class IconBtnComponent implements ComponentInterface {
   @Prop({ reflect: true })
   public type: ButtonType = 'button';
 
+  @Prop({ reflect: true })
+  public disabled?: boolean;
+
   @Prop({ reflect: true, attribute: 'aria-label' })
   public ariaLabel!: string;
 
@@ -30,6 +33,7 @@ export class IconBtnComponent implements ComponentInterface {
       <button
         class="icon-btn"
         type={this.type}
+        disabled={this.disabled}
         aria-label={this.ariaLabel}
         aria-haspopup={this.ariaHasPopup}
         aria-expanded={this.ariaExpanded}

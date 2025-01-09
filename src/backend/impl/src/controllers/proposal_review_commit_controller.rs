@@ -146,7 +146,6 @@ mod tests {
             state: backend_api::ReviewCommitState::Reviewed {
                 matches_description: Some(true),
                 comment: Some("comment".to_string()),
-                highlights: vec![],
             },
         };
         let response = CreateProposalReviewCommitResponse {
@@ -188,7 +187,6 @@ mod tests {
             state: backend_api::ReviewCommitState::Reviewed {
                 matches_description: Some(true),
                 comment: Some("comment".to_string()),
-                highlights: vec![],
             },
         };
         let error = ApiError::permission_denied(&format!(
@@ -225,7 +223,6 @@ mod tests {
             state: backend_api::ReviewCommitState::Reviewed {
                 matches_description: Some(true),
                 comment: Some("comment".to_string()),
-                highlights: vec![],
             },
         };
 
@@ -259,7 +256,6 @@ mod tests {
             state: backend_api::ReviewCommitState::Reviewed {
                 matches_description: Some(true),
                 comment: Some("comment".to_string()),
-                highlights: vec![],
             },
         };
         let error = ApiError::permission_denied(&format!(

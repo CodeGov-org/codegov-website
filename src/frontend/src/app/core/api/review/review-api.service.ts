@@ -3,16 +3,26 @@ import { Injectable, inject } from '@angular/core';
 import { BackendActorService } from '../../services';
 import { ApiError, handleErr } from '../../utils';
 import {
+  mapCreateProposalReviewImageRequest,
+  mapCreateProposalReviewImageResponse,
   mapCreateProposalReviewRequest,
+  mapDeleteProposalReviewImageRequest,
   mapGetMyProposalReviewRequest,
+  mapGetMyProposalReviewSummaryRequest,
+  mapGetMyProposalReviewSummaryResponse,
   mapGetProposalReviewRequest,
   mapGetProposalReviewResponse,
   mapListProposalReviewsRequest,
   mapUpdateProposalReviewRequest,
 } from './review-api.mapper';
 import {
+  CreateProposalReviewImageRequest,
+  CreateProposalReviewImageResponse,
   CreateProposalReviewRequest,
+  DeleteProposalReviewImageRequest,
   GetMyProposalReviewRequest,
+  GetMyProposalReviewSummaryRequest,
+  GetMyProposalReviewSummaryResponse,
   GetProposalReviewRequest,
   GetProposalReviewResponse,
   ListProposalReviewsRequest,
@@ -80,6 +90,17 @@ export class ReviewApiService {
     return mapGetProposalReviewResponse(okRes);
   }
 
+  public async getMyProposalReviewSummary(
+    req: GetMyProposalReviewSummaryRequest,
+  ): Promise<GetMyProposalReviewSummaryResponse> {
+    const apiReq = mapGetMyProposalReviewSummaryRequest(req);
+
+    const res = await this.actorService.get_my_proposal_review_summary(apiReq);
+    const okRes = handleErr(res);
+
+    return mapGetMyProposalReviewSummaryResponse(okRes);
+  }
+
   public async getOrCreateMyProposalReview(
     req: CreateProposalReviewRequest,
   ): Promise<GetProposalReviewResponse> {
@@ -92,5 +113,27 @@ export class ReviewApiService {
 
       throw error;
     }
+  }
+
+  public async createProposalReviewImage(
+    req: CreateProposalReviewImageRequest,
+  ): Promise<CreateProposalReviewImageResponse> {
+    const apiReq = mapCreateProposalReviewImageRequest(req);
+
+    const res = await this.actorService.create_proposal_review_image(apiReq);
+    const okRes = handleErr(res);
+
+    return mapCreateProposalReviewImageResponse(okRes);
+  }
+
+  public async deleteProposalReviewImage(
+    req: DeleteProposalReviewImageRequest,
+  ): Promise<null> {
+    const apiReq = mapDeleteProposalReviewImageRequest(req);
+
+    const res = await this.actorService.delete_proposal_review_image(apiReq);
+    const okRes = handleErr(res);
+
+    return okRes;
   }
 }

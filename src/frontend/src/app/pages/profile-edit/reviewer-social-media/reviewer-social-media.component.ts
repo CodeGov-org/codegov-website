@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 
 import { SOCIAL_MEDIA_INPUTS } from '../profile.model';
+import { TextBtnComponent } from '@cg/angular-ui';
 import { ReviewerUserProfile } from '~core/api';
 import {
   KeyColComponent,
@@ -18,7 +19,12 @@ import { keysOf } from '~core/utils';
 
 @Component({
   selector: 'app-reviewer-social-media',
-  imports: [KeyValueGridComponent, KeyColComponent, ValueColComponent],
+  imports: [
+    KeyValueGridComponent,
+    KeyColComponent,
+    ValueColComponent,
+    TextBtnComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-key-value-grid>
@@ -41,7 +47,7 @@ import { keysOf } from '~core/utils';
     </app-key-value-grid>
 
     <div class="btn-group">
-      <button type="button" class="btn" (click)="editForm()">Edit</button>
+      <cg-text-btn (click)="onEditForm()">Edit</cg-text-btn>
     </div>
   `,
 })
@@ -87,7 +93,7 @@ export class ReviewerSocialMediaComponent {
     ),
   );
 
-  public editForm(): void {
+  public onEditForm(): void {
     this.edit.emit();
   }
 }

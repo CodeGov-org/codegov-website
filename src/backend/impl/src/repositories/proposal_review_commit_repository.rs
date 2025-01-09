@@ -510,7 +510,6 @@ mod tests {
             state: ReviewCommitState::Reviewed(ReviewedCommitState {
                 matches_description: Some(false),
                 comment: Some("Updated comment".to_string()),
-                highlights: vec![],
             }),
             ..fixtures::proposal_review_commit_not_reviewed()
         }

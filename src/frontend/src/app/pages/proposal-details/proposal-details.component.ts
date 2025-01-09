@@ -12,7 +12,11 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { marked } from 'marked';
 
-import { CardComponent } from '@cg/angular-ui';
+import {
+  CardComponent,
+  LinkTextBtnComponent,
+  TextBtnComponent,
+} from '@cg/angular-ui';
 import {
   GetProposalReviewResponse,
   ProposalLinkBaseUrl,
@@ -41,42 +45,30 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
     FormatDatePipe,
     ClosedProposalSummaryComponent,
     RouterLink,
+    TextBtnComponent,
+    LinkTextBtnComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      :host {
-        @include common.page-content;
-      }
+    :host {
+      @include common.page-content;
+    }
 
-      .proposal {
-        margin-bottom: common.size(6);
-      }
+    .proposal {
+      margin-bottom: common.size(6);
+    }
 
-      .proposal__title,
-      .proposal__proposer {
-        word-break: break-word;
-      }
+    .proposal__title,
+    .proposal__proposer {
+      word-break: break-word;
+    }
 
-      .proposal__link {
-        margin-right: common.size(4);
-      }
-
-      .proposal__vote {
-        font-weight: bold;
-      }
-
-      .proposal__vote--adopt {
-        color: common.$success;
-      }
-
-      .proposal__vote--reject {
-        color: common.$error;
-      }
-    `,
-  ],
+    .proposal__link {
+      margin-right: common.size(4);
+    }
+  `,
   template: `
     @if (currentProposal(); as proposal) {
       <div class="page-heading">
@@ -165,18 +157,6 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
                   : 'Not yet decided'
               }}
             </app-value-col>
-
-            <app-key-col id="proposal-codegov-vote">CodeGov vote</app-key-col>
-            <app-value-col
-              aria-labelledby="proposal-codegov-vote"
-              class="proposal__vote"
-              [ngClass]="{
-                'proposal__vote--adopt': proposal.codeGovVote === 'ADOPT',
-                'proposal__vote--reject': proposal.codeGovVote === 'REJECT',
-              }"
-            >
-              {{ proposal.codeGovVote }}
-            </app-value-col>
           </app-key-value-grid>
 
           <div class="btn-group">
@@ -184,17 +164,13 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               proposal.state === ProposalState().InProgress &&
               (isReviewer() || isAdmin())
             ) {
-              <button
-                type="button"
-                class="btn btn--outline"
-                (click)="onToggleSummary()"
-              >
+              <cg-text-btn (click)="onToggleSummary()">
                 {{
                   showSummary()
                     ? 'Show proposal description'
                     : 'Show preliminary summary'
                 }}
-              </button>
+              </cg-text-btn>
             }
             @if (
               isReviewer() && proposal.state === ProposalState().InProgress
@@ -202,26 +178,23 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
               @let review = userReview();
 
               @if (review === null) {
-                <a
-                  class="btn btn--outline"
+                <cg-link-text-btn
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Create review
-                </a>
+                </cg-link-text-btn>
               } @else if (review.status === ProposalReviewStatus().Draft) {
-                <a
-                  class="btn btn--outline"
+                <cg-link-text-btn
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Edit review
-                </a>
+                </cg-link-text-btn>
               } @else if (review.status === ProposalReviewStatus().Published) {
-                <a
-                  class="btn btn--outline"
-                  [routerLink]="['/review', review.id, 'view']"
+                <cg-link-text-btn
+                  [routerLink]="['/review', proposal.id, 'view']"
                 >
                   My review
-                </a>
+                </cg-link-text-btn>
               }
             }
           </div>
@@ -229,9 +202,10 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
       </cg-card>
 
       @if (showSummary() || proposal.state === ProposalState().Completed) {
-        <app-closed-proposal-summary [proposal]="proposal" />
+        <app-closed-proposal-summary />
       } @else {
         <h2 class="h4">Proposal summary</h2>
+
         <cg-card>
           <div
             slot="cardContent"
@@ -251,7 +225,7 @@ export class ProposalDetailsComponent implements OnInit {
     this.proposalService.currentProposal$,
   );
   public readonly currentProposalReviews = toSyncSignal(
-    this.reviewService.proposalReviewList$,
+    this.reviewService.reviews$,
   );
 
   public readonly proposalSummaryInMarkdown = computed<string | null>(() =>
@@ -267,14 +241,12 @@ export class ProposalDetailsComponent implements OnInit {
   public readonly isReviewer = toSyncSignal(
     this.profileService.isCurrentUserReviewer$,
   );
-  public readonly userProfile = toSyncSignal(
-    this.profileService.currentUserProfile$,
-  );
+  public readonly userProfile = toSyncSignal(this.profileService.currentUser$);
 
   public readonly currentProposalId = routeParamSignal('proposalId');
 
   public readonly userReviewList = toSyncSignal(
-    this.reviewService.userReviewList$,
+    this.reviewService.currentUserReviews$,
   );
   public readonly userReview = computed<GetProposalReviewResponse | null>(
     () =>
@@ -303,7 +275,7 @@ export class ProposalDetailsComponent implements OnInit {
       const userProfile = this.userProfile();
 
       if (isNotNil(userProfile)) {
-        this.reviewService.loadReviewListByReviewerId(userProfile.id);
+        this.reviewService.loadReviewsByReviewerId(userProfile.id);
       }
     });
   }

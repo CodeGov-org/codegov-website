@@ -5,6 +5,7 @@ import {
   DestroyRef,
   Optional,
   SkipSelf,
+  TemplateRef,
   computed,
   contentChild,
   contentChildren,
@@ -23,24 +24,22 @@ import { InputHintComponent } from '../input-hint';
   selector: 'app-form-field',
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      :host {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-      }
+    :host {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
 
-      .form-field__feedback {
-        margin-left: common.size(1);
-        height: common.size(4);
-        padding-top: common.size(1);
-        @include common.text-xs;
-      }
-    `,
-  ],
+    .form-field__feedback {
+      margin-left: common.size(1);
+      height: common.size(4);
+      padding-top: common.size(1);
+      @include common.text-xs;
+    }
+  `,
   template: `
     <ng-content></ng-content>
 
@@ -87,15 +86,7 @@ export class FormFieldComponent {
     descendants: true,
   });
   public readonly hasError = signal(false);
-  public readonly errorTemplate = computed(() => {
-    for (const inputError of this.inputErrorComponents()) {
-      if (this.formControl().errors?.[inputError.key()]) {
-        return inputError.getTemplateRef();
-      }
-    }
-
-    return null;
-  });
+  public readonly errorTemplate = signal<TemplateRef<HTMLElement> | null>(null);
 
   constructor(
     @SkipSelf()
@@ -108,17 +99,30 @@ export class FormFieldComponent {
         .statusChanges.pipe(takeUntilDestroyed(onDestroy))
         .subscribe(() => {
           this.setHasError();
+          this.setErrorTemplate();
         });
     });
 
     effect(() => {
       this.inputDirective().touchChange.subscribe(() => {
         this.setHasError();
+        this.setErrorTemplate();
       });
     });
   }
 
   private setHasError(): void {
     this.hasError.set(formHasError(this.formControl()));
+  }
+
+  private setErrorTemplate(): void {
+    const formControl = this.formControl();
+    const inputErrorComponents = this.inputErrorComponents();
+
+    for (const inputError of inputErrorComponents) {
+      if (formControl.errors?.[inputError.key()]) {
+        this.errorTemplate.set(inputError.getTemplateRef());
+      }
+    }
   }
 }

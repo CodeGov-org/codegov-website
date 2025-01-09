@@ -52,7 +52,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: [],
-            highlights: [],
           },
         },
       });
@@ -78,7 +77,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [],
             comment: ['comment'],
-            highlights: [],
           },
         },
       });
@@ -101,7 +99,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment'],
-            highlights: [],
           },
         },
       });
@@ -135,7 +132,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment'],
-            highlights: [],
           },
         },
       });
@@ -153,7 +149,6 @@ describe('Proposal Review Commit', () => {
             reviewed: {
               matches_description: [true],
               comment: ['comment'],
-              highlights: [],
             },
           },
         },
@@ -200,7 +195,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [],
             comment: [],
-            highlights: [],
           },
         },
       });
@@ -230,7 +224,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment'],
-            highlights: [],
           },
         },
       });
@@ -260,7 +253,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment'],
-            highlights: [],
           },
         },
       });
@@ -290,7 +282,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment'],
-            highlights: [],
           },
         },
       });
@@ -303,7 +294,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment'],
-            highlights: [],
           },
         },
       });
@@ -334,7 +324,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment 1'],
-            highlights: [],
           },
         },
       });
@@ -351,7 +340,6 @@ describe('Proposal Review Commit', () => {
             reviewed: {
               matches_description: [true],
               comment: ['comment 1'],
-              highlights: [],
             },
           },
         },
@@ -365,7 +353,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment 2'],
-            highlights: ['highlight a', 'highlight b'],
           },
         },
       });
@@ -382,7 +369,6 @@ describe('Proposal Review Commit', () => {
             reviewed: {
               matches_description: [true],
               comment: ['comment 2'],
-              highlights: ['highlight a', 'highlight b'],
             },
           },
         },
@@ -405,7 +391,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment alice'],
-            highlights: [],
           },
         },
       });
@@ -422,7 +407,6 @@ describe('Proposal Review Commit', () => {
             reviewed: {
               matches_description: [true],
               comment: ['comment alice'],
-              highlights: [],
             },
           },
         },
@@ -440,7 +424,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment bob'],
-            highlights: ['highlight bob a', 'highlight bob b'],
           },
         },
       });
@@ -457,7 +440,6 @@ describe('Proposal Review Commit', () => {
             reviewed: {
               matches_description: [true],
               comment: ['comment bob'],
-              highlights: ['highlight bob a', 'highlight bob b'],
             },
           },
         },
@@ -486,7 +468,6 @@ describe('Proposal Review Commit', () => {
             reviewed: {
               matches_description: [true],
               comment: ['comment alice'],
-              highlights: [],
             },
           },
         });
@@ -500,7 +481,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment alice'],
-            highlights: [],
           },
         },
       });
@@ -531,7 +511,6 @@ describe('Proposal Review Commit', () => {
             reviewed: {
               matches_description: [true],
               comment: ['comment alice'],
-              highlights: [],
             },
           },
         });
@@ -545,7 +524,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment alice'],
-            highlights: [],
           },
         },
       });
@@ -579,7 +557,6 @@ describe('Proposal Review Commit', () => {
             reviewed: {
               matches_description: [true],
               comment: ['comment alice'],
-              highlights: [],
             },
           },
         });
@@ -593,7 +570,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment alice'],
-            highlights: [],
           },
         },
       });
@@ -622,7 +598,6 @@ describe('Proposal Review Commit', () => {
             reviewed: {
               matches_description: [true],
               comment: ['comment bob'],
-              highlights: [],
             },
           },
         });
@@ -636,7 +611,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment bob'],
-            highlights: [],
           },
         },
       });
@@ -667,7 +641,6 @@ describe('Proposal Review Commit', () => {
             reviewed: {
               matches_description: [],
               comment: [],
-              highlights: [],
             },
           },
         });
@@ -687,7 +660,6 @@ describe('Proposal Review Commit', () => {
             reviewed: {
               matches_description: [],
               comment: [],
-              highlights: [],
             },
           },
         });
@@ -708,7 +680,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [],
             comment: [''],
-            highlights: [],
           },
         },
       });
@@ -725,7 +696,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [],
             comment: ['a'.repeat(1001)],
-            highlights: [],
           },
         },
       });
@@ -733,61 +703,6 @@ describe('Proposal Review Commit', () => {
       expect(resLongCommentErr).toEqual({
         code: 400,
         message: 'Comment must be less than 1000 characters',
-      });
-
-      const resTooManyHighlights =
-        await driver.actor.create_proposal_review_commit({
-          proposal_review_id: proposalReviewId,
-          commit_sha: VALID_COMMIT_SHA_A,
-          state: {
-            reviewed: {
-              matches_description: [],
-              comment: ['comment'],
-              highlights: Array(6).fill('highlight'),
-            },
-          },
-        });
-      const resTooManyHighlightsErr = extractErrResponse(resTooManyHighlights);
-      expect(resTooManyHighlightsErr).toEqual({
-        code: 400,
-        message: 'Number of highlights must be less than 5',
-      });
-
-      const resEmptyHighlight =
-        await driver.actor.create_proposal_review_commit({
-          proposal_review_id: proposalReviewId,
-          commit_sha: VALID_COMMIT_SHA_A,
-          state: {
-            reviewed: {
-              matches_description: [true],
-              comment: ['comment'],
-              highlights: ['valid highlight', ''],
-            },
-          },
-        });
-      const resEmptyHighlightErr = extractErrResponse(resEmptyHighlight);
-      expect(resEmptyHighlightErr).toEqual({
-        code: 400,
-        message: 'Highlight cannot be empty',
-      });
-
-      const resLongHighlight = await driver.actor.create_proposal_review_commit(
-        {
-          proposal_review_id: proposalReviewId,
-          commit_sha: VALID_COMMIT_SHA_A,
-          state: {
-            reviewed: {
-              matches_description: [true],
-              comment: ['comment'],
-              highlights: ['a'.repeat(101), 'valid highlight'],
-            },
-          },
-        },
-      );
-      const resLongHighlightErr = extractErrResponse(resLongHighlight);
-      expect(resLongHighlightErr).toEqual({
-        code: 400,
-        message: 'Each highlight must be less than 100 characters',
       });
     });
   });
@@ -802,7 +717,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [],
             comment: [],
-            highlights: [],
           },
         },
       });
@@ -827,7 +741,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [],
             comment: ['comment'],
-            highlights: [],
           },
         },
       });
@@ -849,7 +762,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [true],
             comment: ['comment'],
-            highlights: [],
           },
         },
       });
@@ -880,7 +792,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [false],
             comment: ['comment'],
-            highlights: ['highlight a', 'highlight b'],
           },
         },
       });
@@ -928,7 +839,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [],
             comment: ['comment'],
-            highlights: ['highlight a', 'highlight b'],
           },
         },
       });
@@ -959,7 +869,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [],
             comment: ['comment'],
-            highlights: ['highlight a', 'highlight b'],
           },
         },
       });
@@ -990,7 +899,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [false],
             comment: ['comment'],
-            highlights: ['highlight a', 'highlight b'],
           },
         },
       });
@@ -1020,7 +928,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [],
             comment: [''],
-            highlights: [],
           },
         },
       });
@@ -1036,7 +943,6 @@ describe('Proposal Review Commit', () => {
           reviewed: {
             matches_description: [],
             comment: ['a'.repeat(1001)],
-            highlights: [],
           },
         },
       });
@@ -1044,58 +950,6 @@ describe('Proposal Review Commit', () => {
       expect(resLongCommentErr).toEqual({
         code: 400,
         message: 'Comment must be less than 1000 characters',
-      });
-
-      const resTooManyHighlights =
-        await driver.actor.update_proposal_review_commit({
-          id: proposalReviewCommitId,
-          state: {
-            reviewed: {
-              matches_description: [],
-              comment: ['comment'],
-              highlights: Array(6).fill('highlight'),
-            },
-          },
-        });
-      const resTooManyHighlightsErr = extractErrResponse(resTooManyHighlights);
-      expect(resTooManyHighlightsErr).toEqual({
-        code: 400,
-        message: 'Number of highlights must be less than 5',
-      });
-
-      const resEmptyHighlight =
-        await driver.actor.update_proposal_review_commit({
-          id: proposalReviewCommitId,
-          state: {
-            reviewed: {
-              matches_description: [],
-              comment: ['comment'],
-              highlights: ['valid highlight', ''],
-            },
-          },
-        });
-      const resEmptyHighlightErr = extractErrResponse(resEmptyHighlight);
-      expect(resEmptyHighlightErr).toEqual({
-        code: 400,
-        message: 'Highlight cannot be empty',
-      });
-
-      const resLongHighlight = await driver.actor.update_proposal_review_commit(
-        {
-          id: proposalReviewCommitId,
-          state: {
-            reviewed: {
-              matches_description: [],
-              comment: ['comment'],
-              highlights: ['a'.repeat(101), 'valid highlight'],
-            },
-          },
-        },
-      );
-      const resLongHighlightErr = extractErrResponse(resLongHighlight);
-      expect(resLongHighlightErr).toEqual({
-        code: 400,
-        message: 'Each highlight must be less than 100 characters',
       });
     });
   });

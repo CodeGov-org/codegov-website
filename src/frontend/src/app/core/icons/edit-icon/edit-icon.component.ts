@@ -3,16 +3,14 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 @Component({
   selector: 'app-edit-icon',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      .edit-icon {
-        width: common.size(6);
-        height: common.size(6);
-      }
-    `,
-  ],
+    .edit-icon {
+      width: common.size(6);
+      height: common.size(6);
+    }
+  `,
   template: `
     <svg
       class="edit-icon"

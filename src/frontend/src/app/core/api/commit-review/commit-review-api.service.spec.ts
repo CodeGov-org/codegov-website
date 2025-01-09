@@ -54,7 +54,6 @@ describe('CommitReviewApiService', () => {
       state: {
         reviewed: {
           comment: [],
-          highlights: [],
           matches_description: [],
         },
       },
@@ -71,7 +70,6 @@ describe('CommitReviewApiService', () => {
           state: {
             reviewed: {
               comment: [],
-              highlights: [],
               matches_description: [],
             },
           },
@@ -88,7 +86,6 @@ describe('CommitReviewApiService', () => {
       details: {
         reviewed: true,
         comment: null,
-        highlights: [],
         matchesDescription: null,
       },
     };
@@ -175,7 +172,6 @@ describe('CommitReviewApiService', () => {
       details: {
         reviewed: true,
         comment: null,
-        highlights: [],
         matchesDescription: null,
       },
     };
@@ -184,7 +180,6 @@ describe('CommitReviewApiService', () => {
       state: {
         reviewed: {
           comment: [],
-          highlights: [],
           matches_description: [],
         },
       },

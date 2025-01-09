@@ -36,84 +36,82 @@ import { UserAuthService } from '~core/services';
     DropdownTriggerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      .secondary-navbar {
-        background-color: common.$primary-950;
-        @include common.layer-20;
-        color: common.$white;
+    .secondary-navbar {
+      background-color: common.$primary-950;
+      @include common.layer-20;
+      color: common.$white;
+
+      @include common.dark {
+        background-color: common.$slate-900;
+        color: common.$slate-200;
+      }
+    }
+
+    .secondary-navbar__inner {
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      @include common.container;
+    }
+
+    .secondary-navbar__left {
+      padding-left: common.size(4);
+      display: flex;
+      flex: 1;
+      flex-direction: row;
+      align-items: end;
+    }
+
+    .secondary-navbar__right {
+      @include common.py(3);
+      padding-right: common.size(4);
+      display: flex;
+      flex-direction: row;
+    }
+
+    .profile-menu__item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .profile-menu__item-icon {
+      margin-right: common.size(2);
+    }
+
+    .secondary-navbar__link {
+      color: common.$white;
+
+      @include common.no-underline;
+      @include common.py(2);
+      @include common.mx(4);
+      border-bottom: 3px solid transparent;
+
+      &:hover {
+        border-color: common.$slate-400;
 
         @include common.dark {
-          background-color: common.$slate-900;
-          color: common.$slate-200;
+          border-color: common.$slate-700;
         }
       }
+    }
 
-      .secondary-navbar__inner {
-        margin-left: auto;
-        margin-right: auto;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        @include common.container;
+    .active-link,
+    .active-link:hover {
+      color: common.$primary-400;
+      border-color: common.$primary-400;
+
+      @include common.dark {
+        color: common.$primary;
+        border-color: common.$primary;
       }
-
-      .secondary-navbar__left {
-        padding-left: common.size(4);
-        display: flex;
-        flex: 1;
-        flex-direction: row;
-        align-items: end;
-      }
-
-      .secondary-navbar__right {
-        @include common.py(3);
-        padding-right: common.size(4);
-        display: flex;
-        flex-direction: row;
-      }
-
-      .profile-menu__item {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-      }
-
-      .profile-menu__item-icon {
-        margin-right: common.size(2);
-      }
-
-      .secondary-navbar__link {
-        color: common.$white;
-
-        @include common.no-underline;
-        @include common.py(2);
-        @include common.mx(4);
-        border-bottom: 3px solid transparent;
-
-        &:hover {
-          border-color: common.$slate-400;
-
-          @include common.dark {
-            border-color: common.$slate-700;
-          }
-        }
-      }
-
-      .active-link,
-      .active-link:hover {
-        color: common.$primary-400;
-        border-color: common.$primary-400;
-
-        @include common.dark {
-          color: common.$primary;
-          border-color: common.$primary;
-        }
-      }
-    `,
-  ],
+    }
+  `,
   template: `
     <nav class="secondary-navbar">
       <div class="secondary-navbar__inner">

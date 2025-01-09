@@ -32,14 +32,13 @@ export class ProfileService {
   private readonly reviewerProfilesSubject = new BehaviorSubject<
     Record<string, GetMyUserProfileResponse>
   >({});
-  public readonly reviewerProfiles$ =
-    this.reviewerProfilesSubject.asObservable();
+  public readonly reviewers$ = this.reviewerProfilesSubject.asObservable();
 
   private readonly userProfileSubject =
     new BehaviorSubject<GetMyUserProfileResponse | null>(null);
-  public readonly currentUserProfile$ = this.userProfileSubject.asObservable();
+  public readonly currentUser$ = this.userProfileSubject.asObservable();
 
-  private readonly currentUserRole$ = this.currentUserProfile$.pipe(
+  private readonly currentUserRole$ = this.currentUser$.pipe(
     map(profile => profile?.role ?? null),
   );
   public readonly isCurrentUserReviewer$ = this.currentUserRole$.pipe(

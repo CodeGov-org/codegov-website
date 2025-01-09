@@ -6,7 +6,6 @@ pub enum ReviewCommitState {
     Reviewed {
         matches_description: Option<bool>,
         comment: Option<String>,
-        highlights: Vec<String>,
     },
     #[serde(rename = "not_reviewed")]
     NotReviewed,

@@ -33,6 +33,12 @@ $radio-outer-size: common.size(6);
   bottom: -$radio-border-gap;
 }
 
+.radio-input__label {
+  &.radio-input__label--disabled {
+    cursor: not-allowed;
+  }
+}
+
 .radio-input__input {
   appearance: none;
   outline: none;
@@ -44,19 +50,24 @@ $radio-outer-size: common.size(6);
   height: 100%;
   border-radius: 50%;
 
+  color: common.$slate-900;
+  background-color: common.$white;
   border: common.$border-lg-size solid common.$slate-400;
+
   @include common.dark {
+    color: common.$slate-200;
+    background-color: common.$slate-950;
     border-color: common.$slate-500;
   }
 
-  color: common.$slate-900;
-  @include common.dark {
-    color: common.$slate-200;
-  }
+  &:disabled {
+    color: rgba(common.$slate-900, 0.45);
+    border-color: common.$slate-400;
 
-  background-color: common.$white;
-  @include common.dark {
-    background-color: common.$slate-950;
+    @include common.dark {
+      color: rgba(common.$slate-200, 0.45);
+      border-color: rgba(common.$slate-500, 0.45);
+    }
   }
 
   &::after {
@@ -84,12 +95,20 @@ $radio-outer-size: common.size(6);
   }
 }
 
-.radio-input__label {
+.radio-input__content {
   padding-left: common.size(1.5);
   padding-right: common.size(3);
 
   color: common.$black;
   @include common.dark {
     color: common.$white;
+  }
+
+  &.radio-input__content--disabled {
+    color: rgba(common.$black, 0.45);
+
+    @include common.dark {
+      color: rgba(common.$white, 0.45);
+    }
   }
 }

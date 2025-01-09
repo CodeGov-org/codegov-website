@@ -50,9 +50,7 @@ impl<A: AccessControlService, L: LogService> LogController<A, L> {
         self.access_control_service
             .assert_principal_is_admin(&calling_principal)?;
 
-        let logs = self.log_service.list_logs(request);
-
-        Ok(logs)
+        self.log_service.list_logs(request)
     }
 }
 
@@ -128,7 +126,7 @@ mod tests {
             .expect_list_logs()
             .once()
             .with(eq(request.clone()))
-            .return_const(logs.clone());
+            .return_const(Ok(logs.clone()));
 
         let controller = LogController::new(access_control_service_mock, service_mock);
 

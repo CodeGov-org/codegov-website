@@ -1,9 +1,10 @@
-import { Meta, StoryObj } from '@storybook/html';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 const meta: Meta = {
   title: 'Atoms/Link Text Buttons',
   argTypes: {
     content: {
+      name: 'Content',
       control: { type: 'text' },
     },
   },

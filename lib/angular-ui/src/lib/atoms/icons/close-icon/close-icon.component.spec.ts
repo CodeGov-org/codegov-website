@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LoadingIconComponent } from './loading-icon-component';
+import { CloseIconComponent } from './close-icon.component';
 
-describe('LoadingIconComponent', () => {
-  let component: LoadingIconComponent;
-  let fixture: ComponentFixture<LoadingIconComponent>;
+describe('CloseIconComponent', () => {
+  let component: CloseIconComponent;
+  let fixture: ComponentFixture<CloseIconComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LoadingIconComponent],
+      imports: [CloseIconComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(LoadingIconComponent);
+    fixture = TestBed.createComponent(CloseIconComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

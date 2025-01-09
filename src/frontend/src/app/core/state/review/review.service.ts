@@ -1,7 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-import { GetProposalReviewResponse, ReviewApiService } from '~core/api';
+import {
+  GetMyProposalReviewSummaryResponse,
+  GetProposalReviewResponse,
+  ReviewApiService,
+} from '~core/api';
 
 @Injectable({
   providedIn: 'root',
@@ -12,19 +16,23 @@ export class ReviewService {
   private readonly proposalReviewListSubject = new BehaviorSubject<
     GetProposalReviewResponse[]
   >([]);
-  public readonly proposalReviewList$ =
-    this.proposalReviewListSubject.asObservable();
+  public readonly reviews$ = this.proposalReviewListSubject.asObservable();
 
   private readonly currentReviewSubject =
     new BehaviorSubject<GetProposalReviewResponse | null>(null);
   public readonly currentReview$ = this.currentReviewSubject.asObservable();
 
-  private readonly userReviewListSubject = new BehaviorSubject<
+  private readonly userReviewsSubject = new BehaviorSubject<
     GetProposalReviewResponse[]
   >([]);
-  public readonly userReviewList$ = this.userReviewListSubject.asObservable();
+  public readonly currentUserReviews$ = this.userReviewsSubject.asObservable();
 
-  public async loadReviewListByProposalId(proposalId: string): Promise<void> {
+  private readonly currentUserReviewSummarySubject =
+    new BehaviorSubject<GetMyProposalReviewSummaryResponse | null>(null);
+  public readonly currentUserReviewSummary$ =
+    this.currentUserReviewSummarySubject.asObservable();
+
+  public async loadReviewsByProposalId(proposalId: string): Promise<void> {
     const getResponse = await this.reviewApiService.listProposalReviews({
       proposalId,
     });
@@ -32,12 +40,12 @@ export class ReviewService {
     this.proposalReviewListSubject.next(getResponse);
   }
 
-  public async loadReviewListByReviewerId(userId: string): Promise<void> {
+  public async loadReviewsByReviewerId(userId: string): Promise<void> {
     const getResponse = await this.reviewApiService.listProposalReviews({
       userId,
     });
 
-    this.userReviewListSubject.next(getResponse);
+    this.userReviewsSubject.next(getResponse);
   }
 
   public async loadReview(proposalReviewId: string): Promise<void> {
@@ -46,5 +54,13 @@ export class ReviewService {
     });
 
     this.currentReviewSubject.next(getResponse);
+  }
+
+  public async loadReviewSummary(proposalId: string): Promise<void> {
+    const getResponse = await this.reviewApiService.getMyProposalReviewSummary({
+      proposalId,
+    });
+
+    this.currentUserReviewSummarySubject.next(getResponse);
   }
 }

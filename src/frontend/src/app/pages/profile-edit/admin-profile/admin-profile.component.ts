@@ -32,19 +32,17 @@ import {
     AdminPersonalInfoComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [
-    `
-      @use '@cg/styles/common';
+  styles: `
+    @use '@cg/styles/common';
 
-      .admin-profile-card {
-        margin-bottom: common.size(3);
+    .admin-profile-card {
+      margin-bottom: common.size(3);
 
-        @include common.sm {
-          margin-bottom: common.size(4);
-        }
+      @include common.sm {
+        margin-bottom: common.size(4);
       }
-    `,
-  ],
+    }
+  `,
   template: `
     <cg-card class="admin-profile-card">
       <h2 class="h4" slot="cardTitle">Profile</h2>

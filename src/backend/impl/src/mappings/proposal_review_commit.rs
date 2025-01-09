@@ -8,11 +8,9 @@ impl From<ReviewCommitState> for backend_api::ReviewCommitState {
             ReviewCommitState::Reviewed(ReviewedCommitState {
                 matches_description,
                 comment,
-                highlights,
             }) => backend_api::ReviewCommitState::Reviewed {
                 matches_description,
                 comment,
-                highlights,
             },
             ReviewCommitState::NotReviewed => backend_api::ReviewCommitState::NotReviewed,
         }
@@ -25,11 +23,9 @@ impl From<backend_api::ReviewCommitState> for ReviewCommitState {
             backend_api::ReviewCommitState::Reviewed {
                 matches_description,
                 comment,
-                highlights,
             } => ReviewCommitState::Reviewed(ReviewedCommitState {
                 matches_description,
                 comment,
-                highlights,
             }),
             backend_api::ReviewCommitState::NotReviewed => ReviewCommitState::NotReviewed,
         }

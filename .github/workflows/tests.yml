@@ -1,0 +1,76 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  rust_tests:
+    name: Rust tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Cargo test
+        run: cargo test
+
+  typescript_tests:
+    name: Typescript tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-node
+
+      - name: Install Playwright dependencies
+        run: pnpm run playwright-install
+
+      - name: Setup dfx
+        uses: ./.github/actions/setup-dfx
+
+      - name: Setup environment files
+        uses: ./.github/actions/setup-env-files
+        with:
+          storyblok-token: ${{ secrets.STAGING_STORYBLOK_TOKEN }}
+
+      - name: UI library tests
+        run: pnpm turbo test -F @cg/ui
+
+      - name: Angular UI library tests
+        run: pnpm turbo test -F @cg/angular-ui
+
+      - name: Frontend unit tests
+        run: pnpm turbo test -F frontend
+
+  backend_integration_tests:
+    name: Backend integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-node
+
+      - name: Setup bun
+        uses: ./.github/actions/setup-bun
+
+      - name: Setup dfx
+        uses: ./.github/actions/setup-dfx
+
+      - name: DFX build
+        run: dfx build backend --check
+
+      - name: Backend integration tests
+        run: pnpm turbo test -F backend-integration

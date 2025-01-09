@@ -1,10 +1,8 @@
 import { GetProposalReviewCommitResponse } from '../commit-review';
-import { ImageSet } from '@cg/angular-ui';
 
 export interface CreateProposalReviewRequest {
   proposalId: string;
   summary?: string | null;
-  reviewDurationMins?: number | null;
   buildReproduced?: boolean | null;
   vote?: boolean | null;
 }
@@ -12,7 +10,6 @@ export interface CreateProposalReviewRequest {
 export interface UpdateProposalReviewRequest {
   proposalId: string;
   status?: ProposalReviewStatus | null;
-  reviewDurationMins?: number | null;
   summary?: string | null;
   buildReproduced?: boolean | null;
   vote?: boolean | null;
@@ -40,10 +37,36 @@ export interface GetProposalReviewResponse {
   lastUpdatedAt: Date | null;
   status: ProposalReviewStatus;
   summary: string | null;
-  reviewDurationMins: number | null;
   buildReproduced: boolean | null;
-  reproducedBuildImageId: ImageSet[];
+  images: ProposalReviewImage[];
   commits: GetProposalReviewCommitResponse[];
+}
+
+export interface ProposalReviewImage {
+  path: string;
+}
+
+export interface GetMyProposalReviewSummaryRequest {
+  proposalId: string;
+}
+
+export interface GetMyProposalReviewSummaryResponse {
+  summaryMarkdown: string;
+}
+
+export interface CreateProposalReviewImageRequest {
+  proposalId: string;
+  contentType: string;
+  contentBytes: Uint8Array;
+}
+
+export interface CreateProposalReviewImageResponse {
+  path: string;
+}
+
+export interface DeleteProposalReviewImageRequest {
+  proposalId: string;
+  imagePath: string;
 }
 
 export enum ProposalReviewStatus {
@@ -55,19 +78,4 @@ export enum ProposalReviewVote {
   Adopt = 'Adopt',
   Reject = 'Reject',
   NoVote = 'NoVote',
-}
-
-export interface ProposalCommitReviewHighlight {
-  reviewerId: string;
-  text: string;
-}
-
-export interface ProposalCommitReviewSummary {
-  proposalId: string;
-  commitId: string;
-  commitSha: string | null;
-  highlights: ProposalCommitReviewHighlight[];
-  totalReviewers: number;
-  reviewedCount: number;
-  matchesDescriptionCount: number;
 }
