@@ -4,6 +4,7 @@ import { sass } from '@stencil/sass';
 export const config: Config = {
   namespace: 'cg-ui',
   plugins: [sass()],
+  buildDist: true,
   outputTargets: [
     {
       type: 'dist',
@@ -12,6 +13,11 @@ export const config: Config = {
     },
     {
       type: 'dist-custom-elements',
+    },
+    {
+      type: 'www',
+      serviceWorker: null,
+      copy: [{ src: '**/*.html' }, { src: '**/*.css' }],
     },
   ],
   validatePrimaryPackageOutputTarget: true,

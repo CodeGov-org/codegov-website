@@ -10,18 +10,21 @@ jobs:
       name: mainnet
       url: https://npiey-xiaaa-aaaal-qcx2q-cai.icp0.io
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
-      - uses: ./.github/actions/setup-node
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-node
 
-      - uses: ./.github/actions/setup-env-files
+      - name: Setup environment files
+        uses: ./.github/actions/setup-env-files
         with:
           storyblok-token: ${{ secrets.PRODUCTION_STORYBLOK_TOKEN }}
 
-      - uses: ./.github/actions/setup-dfx
+      - name: Setup DFX
+        uses: ./.github/actions/setup-dfx
 
       - name: Import DFX identity
         run: |

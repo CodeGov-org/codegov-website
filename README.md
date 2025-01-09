@@ -54,6 +54,20 @@ Else, refer to the following sections.
 | `dfx deploy docs`          | Deploy to a local DFX replica  |
 | `pnpm turbo start -F docs` | Run a local development server |
 
+### `@cg/ui`
+
+| Command                      | Description       |
+| ---------------------------- | ----------------- |
+| `pnpm turbo build -F @cg/ui` | Build the library |
+| `pnpm turbo test -F @cg/ui`  | Run unit tests    |
+
+### `@cg/ui-angular`
+
+| Command                              | Description       |
+| ------------------------------------ | ----------------- |
+| `pnpm turbo build -F @cg/ui-angular` | Build the library |
+| `pnpm turbo test -F @cg/ui-angular`  | Run unit tests    |
+
 ### Backend
 
 The primary backend canister for CodeGov proposal review management.
@@ -297,7 +311,6 @@ dfx canister call backend update_user_profile '(record { user_id = "${userId}"; 
 Or to only upgrade a user to a reviewer:
 
 ```bash
-
 dfx canister call backend update_user_profile '(record { user_id = "${userId}"; config = opt variant { reviewer = record {} } })'
 ```
 
@@ -352,6 +365,33 @@ To list open replica version management proposals:
   - `nns_function` is a number corresponding to the NNS function to execute. The mapping between numbers and NNS functions can be found in the [`NnsFunction`](https://github.com/dfinity/ic/blob/master/rs/nns/governance/src/gen/ic_nns_governance.pb.v1.rs#L3440-L3612) enum.
   - `payload` is the Candid encoded argument for the corresponding NNS function. The types for this argument can be found in the appropriate canister's declaration. A mapping between NNS functions and their corresponding canisters can be found in the [`NnsFunction::canister_and_function`](https://github.com/dfinity/ic/blob/master/rs/nns/governance/src/governance.rs#L527-L631) function definition.
   - For example, the `UpdateElectedReplicaVersions` uses number `38` and its payload is the [`UpdateElectedReplicaVersionsPayload`](https://github.com/dfinity/ic/blob/master/rs/registry/canister/canister/registry.did#L217-L223) record.
+
+### Getting proposals for testing
+
+Open the [NNS canister interface on the dashboard](https://dashboard.internetcomputer.org/canister/rrkah-fqaaa-aaaaa-aaaaq-cai#list_proposals). It should open on the `list_proposals` method.
+
+- Set `limit` to whatever you want, although lower numbers are recommended for a more manageable data set.
+- Set the `exclude_topic` length to `17`
+- Add the following topics to the `exclude_topic` list:
+  - `0` for `Unspecified`
+  - `1` for `NeuronManagement`
+  - `2` for `ExchangeRate`
+  - `3` for `NetworkEconomics`
+  - `4` for `Governance`
+  - `5` for `NodeAdmin`
+  - `6` for `ParticipantManagement`
+  - `7` for `SubnetManagement`
+  - `8` for `NetworkCanisterManagement`
+  - `9` for `Kyc`
+  - `10` for `NodeProviderRewards`
+  - `12` for `IcOsVersionDeployment`
+  - `14` for `SnsAndCommunityFund`
+  - `15` for `ApiBoundaryNodeManagement`
+  - `16` for `SubnetRental`
+  - `17` for `ProtocolCanisterManagement`
+  - `18` for `ServiceNervousSystemManagement`
+- Note that `11` currently doesn't exist, and `13` is `IcOsVersionElection`, the topic we want.
+- Finally, click the `Call` button to get a list of proposals.
 
 ### Manually syncing proposals
 

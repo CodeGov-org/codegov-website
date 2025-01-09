@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from '@storybook/html';
+import { Meta, StoryObj } from '@storybook/web-components';
 import { Theme } from '../../../types';
 
 interface Args {

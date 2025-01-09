@@ -19,6 +19,8 @@ dist/
 .turbo/
 coverage/
 .angular/
+www/
+test-results/
 
 # environment variables
 .env
