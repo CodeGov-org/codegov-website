@@ -1,6 +1,5 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDotEnv": [".env"],
   "globalDependencies": [
     ".editorconfig",
     ".eslintrc.js",
@@ -10,22 +9,20 @@
     "angular.json",
     "dfx.json",
     "prettier.config.cjs",
-    "tsconfig.json"
+    "tsconfig.json",
+    ".env"
   ],
-  "pipeline": {
+  "tasks": {
     "build": {
-      "outputs": ["dist/**", "build/**", ".docusaurus/**"],
-      "dotEnv": [".env"],
+      "outputs": ["dist/**", "build/**", ".docusaurus/**", "loader/**", "www"],
       "dependsOn": ["^build"]
     },
     "test": {
       "outputs": [],
-      "dotEnv": [".env"],
       "dependsOn": ["^build"]
     },
     "start": {
       "outputs": [],
-      "dotEnv": [".env"],
       "dependsOn": ["^build"]
     }
   }

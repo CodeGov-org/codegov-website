@@ -1,0 +1,41 @@
+name: Codestyle
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  rust_codestyle:
+    name: Rust codestyle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Cargo fmt
+        run: cargo fmt -- --check
+
+      - name: Cargo clippy
+        run: cargo clippy --all-targets --all-features
+
+  typescript_codestyle:
+    name: TypeScript codestyle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-node
+
+      - name: Check TypeScript formatting
+        run: pnpm format:check
+
+      - name: Run ESLint
+        run: pnpm lint

@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from '@storybook/html';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 const meta: Meta = {
   title: 'Molecules/Loading Button',

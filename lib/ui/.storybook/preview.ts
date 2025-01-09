@@ -1,4 +1,4 @@
-import { type Preview } from '@storybook/html';
+import { type Preview } from '@storybook/web-components';
 import { defineCustomElements } from '../loader';
 import '@cg/styles/global.scss';
 
