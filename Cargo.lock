@@ -401,6 +401,7 @@ version = "0.1.0"
 dependencies = [
  "async-std",
  "backend_api",
+ "backend_macros",
  "base64 0.22.0",
  "candid",
  "candid_parser",
@@ -443,6 +444,15 @@ dependencies = [
  "serde",
  "serde_bytes",
  "tokio",
+]
+
+[[package]]
+name = "backend_macros"
+version = "0.1.0"
+dependencies = [
+ "backend_api",
+ "quote",
+ "syn 2.0.48",
 ]
 
 [[package]]

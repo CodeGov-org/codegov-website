@@ -9,6 +9,7 @@ use backend_api::{
     GetMyUserProfileResponse, ListReviewerProfilesResponse, UpdateMyUserProfileRequest,
     UpdateUserProfileRequest,
 };
+use backend_macros::log_errors;
 use candid::Principal;
 use ic_cdk::*;
 
@@ -38,6 +39,7 @@ fn get_my_user_profile_history() -> ApiResult<GetMyUserProfileHistoryResponse> {
 }
 
 #[update]
+#[log_errors(crate::services::log_update_call_error)]
 async fn create_my_user_profile() -> ApiResult<CreateMyUserProfileResponse> {
     let calling_principal = caller();
 
@@ -48,6 +50,7 @@ async fn create_my_user_profile() -> ApiResult<CreateMyUserProfileResponse> {
 }
 
 #[update]
+#[log_errors(crate::services::log_update_call_error)]
 fn update_my_user_profile(request: UpdateMyUserProfileRequest) -> ApiResult<()> {
     let calling_principal = caller();
 
@@ -57,6 +60,7 @@ fn update_my_user_profile(request: UpdateMyUserProfileRequest) -> ApiResult<()> 
 }
 
 #[update]
+#[log_errors(crate::services::log_update_call_error)]
 async fn update_user_profile(request: UpdateUserProfileRequest) -> ApiResult<()> {
     let calling_principal = caller();
 

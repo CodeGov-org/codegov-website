@@ -5,6 +5,7 @@ members = [
   "src/backend/impl",
   "src/backend/external_canisters",
   "src/backend/logs",
+  "src/backend/macros",
 ]
 
 [profile.release]
