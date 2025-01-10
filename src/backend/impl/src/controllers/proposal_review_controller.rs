@@ -16,10 +16,12 @@ use backend_api::{
     GetMyProposalReviewSummaryResponse, GetProposalReviewRequest, GetProposalReviewResponse,
     ListProposalReviewsRequest, ListProposalReviewsResponse, UpdateProposalReviewRequest,
 };
+use backend_macros::log_errors;
 use candid::Principal;
 use ic_cdk::*;
 
 #[update]
+#[log_errors(crate::services::log_update_call_error)]
 async fn create_proposal_review(
     request: CreateProposalReviewRequest,
 ) -> ApiResult<CreateProposalReviewResponse> {
@@ -32,6 +34,7 @@ async fn create_proposal_review(
 }
 
 #[update]
+#[log_errors(crate::services::log_update_call_error)]
 fn update_proposal_review(request: UpdateProposalReviewRequest) -> ApiResult<()> {
     let calling_principal = caller();
 
@@ -61,6 +64,7 @@ fn get_proposal_review(request: GetProposalReviewRequest) -> ApiResult<GetPropos
 }
 
 #[update]
+#[log_errors(crate::services::log_update_call_error)]
 async fn create_proposal_review_image(
     request: CreateProposalReviewImageRequest,
 ) -> ApiResult<CreateProposalReviewImageResponse> {
@@ -73,6 +77,7 @@ async fn create_proposal_review_image(
 }
 
 #[update]
+#[log_errors(crate::services::log_update_call_error)]
 fn delete_proposal_review_image(request: DeleteProposalReviewImageRequest) -> ApiResult<()> {
     let calling_principal = caller();
 

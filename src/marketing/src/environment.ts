@@ -1,7 +1,8 @@
 import dotenv from 'dotenv';
+import path from 'path';
 
 dotenv.config({
-  path: '.env',
+  path: path.resolve(process.cwd(), '..', '..', '.env'),
 });
 
 const dfxNetwork = process.env.DFX_NETWORK ?? 'local';

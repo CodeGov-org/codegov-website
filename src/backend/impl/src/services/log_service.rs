@@ -85,6 +85,24 @@ impl<T: LogRepository> LogServiceImpl<T> {
     }
 }
 
+/// Mainly used with the `log_errors` macro.
+///
+/// # Example
+/// ```
+/// use ic_cdk::update;
+/// use backend_macros::log_errors;
+///
+/// #[update]
+/// #[log_errors(crate::services::log_update_call_error)]
+/// async fn create_proposal_review() -> ApiResult<()> {
+///     Ok(())
+/// }
+/// ```
+pub fn log_update_call_error(message: String, context: String) {
+    // We can ignore this error
+    let _ = LogServiceImpl::default().log_error(message, Some(context));
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

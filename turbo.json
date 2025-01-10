@@ -9,12 +9,12 @@
     "angular.json",
     "dfx.json",
     "prettier.config.cjs",
-    "tsconfig.json",
-    ".env"
+    "tsconfig.json"
   ],
   "tasks": {
     "build": {
       "outputs": ["dist/**", "build/**", ".docusaurus/**", "loader/**", "www"],
+      "inputs": ["$TURBO_DEFAULT$", ".env"],
       "dependsOn": ["^build"]
     },
     "test": {
