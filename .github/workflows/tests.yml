@@ -20,7 +20,7 @@ jobs:
         run: cargo test
 
   typescript_tests:
-    name: Typescript tests
+    name: TypeScript tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

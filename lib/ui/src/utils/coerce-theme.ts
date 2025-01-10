@@ -2,7 +2,7 @@ import { Theme } from '../types';
 
 export function coerceTheme(theme: unknown): Theme {
   if (!isTheme(theme)) {
-    throw new Error(`Invalid theme: "${theme}"`);
+    throw new Error(`Invalid theme provided: "${theme}"`);
   }
 
   return theme;

@@ -13,6 +13,7 @@ describe('IconBtnComponent', () => {
 
     fixture = TestBed.createComponent(IconBtnComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('ariaLabel', 'test');
     fixture.detectChanges();
   });
 

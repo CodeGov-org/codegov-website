@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from '@stencil/playwright';
+import { waitForError } from '../../../e2e-utils';
 
 test.describe('cg-badge', () => {
   const content = 'Badge content';
@@ -32,19 +33,14 @@ test.describe('cg-badge', () => {
   });
 
   test('should throw error for an invalid theme', async ({ page }) => {
-    let errorThrown = false;
-    page.on('pageerror', error => {
-      if (error.message === 'Invalid theme: "garbage"') {
-        errorThrown = true;
-      }
-    });
-
-    await page.setContent(`
-      <cg-badge theme="garbage">
-        ${content}
-      </cg-badge>
-    `);
-
-    expect(errorThrown).toBe(true);
+    await waitForError(
+      page,
+      'Invalid theme provided: "garbage"',
+      page.setContent(`
+        <cg-badge theme="garbage">
+          ${content}
+        </cg-badge>
+      `),
+    );
   });
 });

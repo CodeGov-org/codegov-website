@@ -1,0 +1,10 @@
+{
+  "name": "@cg/utils",
+  "private": true,
+  "scripts": {
+    "build": "tsc"
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.js"
+}

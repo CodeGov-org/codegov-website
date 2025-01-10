@@ -1,6 +1,6 @@
 import { Component, ComponentInterface, Host, Prop, h } from '@stencil/core';
 import { Theme } from '../../../types';
-import { coerceTheme } from '../../../coercion';
+import { coerceTheme } from '../../../utils';
 
 @Component({
   tag: 'cg-badge',

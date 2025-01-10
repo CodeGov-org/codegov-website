@@ -148,7 +148,7 @@ import { UserAuthService } from '~core/services';
               </cg-dropdown-menu>
             </cg-dropdown>
           } @else {
-            <cg-icon-btn (click)="onLoginButtonClicked()" label="Log in">
+            <cg-icon-btn (click)="onLoginButtonClicked()" ariaLabel="Log in">
               <app-login-icon />
             </cg-icon-btn>
           }
