@@ -16,8 +16,8 @@ const meta: Meta = {
     disabled: false,
   },
   render: args => `
-    <cg-icon-btn label="${args.ariaLabel}" disabled="${args.disabled}">
-      <cg-profile-icon></cg-profile-icon>
+    <cg-icon-btn aria-label="${args.ariaLabel}" disabled="${args.disabled}">
+      <cg-profile-icon />
     </cg-icon-btn>
   `,
 };

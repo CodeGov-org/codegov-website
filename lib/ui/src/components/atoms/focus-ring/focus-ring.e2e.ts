@@ -73,7 +73,7 @@ test.describe('cg-focus-ring', () => {
   test('should throw error for an invalid theme', async ({ page }) => {
     let errorThrown = false;
     page.on('pageerror', error => {
-      if (error.message === 'Invalid theme: "garbage"') {
+      if (error.message === 'Invalid theme provided: "garbage"') {
         errorThrown = true;
       }
     });

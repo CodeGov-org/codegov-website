@@ -4,6 +4,7 @@ packages:
   - lib/nns-utils
   - lib/styles
   - lib/ui
+  - lib/utils
   - src/backend/integration
   - src/docs
   - src/frontend
