@@ -3,10 +3,13 @@ import storyblok from '@storyblok/astro';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 import { loadEnv } from 'vite';
 import netlify from '@astrojs/netlify';
+import path from 'path';
 
+const globalEnvPath = path.resolve(process.cwd(), '..', '..');
+const globalEnv = loadEnv('', globalEnvPath, 'DFX_NETWORK');
 const env = loadEnv('', process.cwd(), 'STORYBLOK_TOKEN');
 
-const dfxNetwork = process.env.DFX_NETWORK ?? 'local';
+const dfxNetwork = globalEnv.DFX_NETWORK ?? 'local';
 const isMainnet = dfxNetwork === 'ic';
 const isStaging = dfxNetwork === 'staging';
 
