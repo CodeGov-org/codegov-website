@@ -5,7 +5,7 @@ use crate::repositories::{UserProfile, UserProfileRepository, UserProfileReposit
 
 #[cfg_attr(test, mockall::automock)]
 pub trait InitService {
-    async fn init(&self, calling_principal: Principal) -> Result<(), ApiError>;
+    fn init(&self, calling_principal: Principal) -> Result<(), ApiError>;
 }
 
 pub struct InitServiceImpl<T: UserProfileRepository> {
@@ -19,7 +19,7 @@ impl Default for InitServiceImpl<UserProfileRepositoryImpl> {
 }
 
 impl<T: UserProfileRepository> InitService for InitServiceImpl<T> {
-    async fn init(&self, calling_principal: Principal) -> Result<(), ApiError> {
+    fn init(&self, calling_principal: Principal) -> Result<(), ApiError> {
         if self
             .user_profile_repository
             .get_user_id_by_principal(&calling_principal)
@@ -31,8 +31,7 @@ impl<T: UserProfileRepository> InitService for InitServiceImpl<T> {
         let profile = UserProfile::new_admin();
 
         self.user_profile_repository
-            .create_user_profile(calling_principal, profile)
-            .await?;
+            .create_user_profile(calling_principal, profile)?;
 
         Ok(())
     }
@@ -54,7 +53,7 @@ mod tests {
     use rstest::*;
 
     #[rstest]
-    async fn init_with_new_principal() {
+    fn init_with_new_principal() {
         let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
         let profile = UserProfile::new_admin();
@@ -73,11 +72,11 @@ mod tests {
 
         let service = InitServiceImpl::new(repository_mock);
 
-        service.init(calling_principal).await.unwrap();
+        service.init(calling_principal).unwrap();
     }
 
     #[rstest]
-    async fn init_with_existing_principal() {
+    fn init_with_existing_principal() {
         let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
 
@@ -91,6 +90,6 @@ mod tests {
 
         let service = InitServiceImpl::new(repository_mock);
 
-        service.init(calling_principal).await.unwrap();
+        service.init(calling_principal).unwrap();
     }
 }

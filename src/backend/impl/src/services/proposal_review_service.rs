@@ -27,7 +27,7 @@ const PROPOSAL_REVIEW_IMAGES_SUB_PATH: &str = "reviews";
 
 #[cfg_attr(test, mockall::automock)]
 pub trait ProposalReviewService {
-    async fn create_proposal_review(
+    fn create_proposal_review(
         &self,
         calling_principal: Principal,
         request: CreateProposalReviewRequest,
@@ -51,7 +51,7 @@ pub trait ProposalReviewService {
         request: GetProposalReviewRequest,
     ) -> Result<GetProposalReviewResponse, ApiError>;
 
-    async fn create_proposal_review_image(
+    fn create_proposal_review_image(
         &self,
         calling_principal: Principal,
         request: CreateProposalReviewImageRequest,
@@ -123,7 +123,7 @@ impl<
         C: CertificationRepository,
     > ProposalReviewService for ProposalReviewServiceImpl<PR, U, P, PRC, I, C>
 {
-    async fn create_proposal_review(
+    fn create_proposal_review(
         &self,
         calling_principal: Principal,
         request: CreateProposalReviewRequest,
@@ -147,7 +147,7 @@ impl<
                 if proposal.is_completed() {
                     return Err(ApiError::conflict(&format!(
                         "Proposal with Id {} is already completed",
-                        proposal_id.to_string()
+                        proposal_id
                     )));
                 }
             }
@@ -166,8 +166,7 @@ impl<
         {
             return Err(ApiError::conflict(&format!(
                 "User with Id {} has already submitted a review for proposal with Id {}",
-                user_id.to_string(),
-                proposal_id.to_string()
+                user_id, proposal_id
             )));
         }
 
@@ -189,8 +188,7 @@ impl<
 
         let id = self
             .proposal_review_repository
-            .create_proposal_review(proposal_review.clone())
-            .await?;
+            .create_proposal_review(proposal_review.clone())?;
 
         Ok(map_proposal_review(id, proposal_review, vec![], vec![]))
     }
@@ -327,7 +325,7 @@ impl<
         self.map_proposal_review(proposal_review_id, proposal_review)
     }
 
-    async fn create_proposal_review_image(
+    fn create_proposal_review_image(
         &self,
         calling_principal: Principal,
         request: CreateProposalReviewImageRequest,
@@ -361,11 +359,12 @@ impl<
             content_bytes: request.content_bytes(),
         };
 
-        let image_id = self.image_repository.create_image(image.clone()).await?;
+        let image_id = self.image_repository.create_image(image.clone());
+        let image_path = image.path(&image_id);
 
         // certify the image response
         let image_http_request_path = image.path(&image_id);
-        let image_http_response = create_image_http_response(&image);
+        let image_http_response = create_image_http_response(image);
         self.certification_repository
             .certify_http_response(&image_http_request_path, &image_http_response);
 
@@ -373,9 +372,7 @@ impl<
 
         self.save_proposal_review(id, current_proposal_review)?;
 
-        Ok(CreateProposalReviewImageResponse {
-            path: image.path(&image_id),
-        })
+        Ok(CreateProposalReviewImageResponse { path: image_path })
     }
 
     fn delete_proposal_review_image(
@@ -407,7 +404,7 @@ impl<
             let deleted_image = self.image_repository.delete_image(&existing_image_id)?;
 
             let image_http_request_path = deleted_image.path(&existing_image_id);
-            let image_http_response = create_image_http_response(&deleted_image);
+            let image_http_response = create_image_http_response(deleted_image);
             self.certification_repository
                 .remove_http_response_certificate(&image_http_request_path, &image_http_response);
         } else {
@@ -656,10 +653,7 @@ impl<
             .get_proposal_by_id(&proposal_id)
             .ok_or_else(|| {
                 // this should never happen, as the proposal review is associated with a proposal that must exist
-                ApiError::not_found(&format!(
-                    "Proposal with Id {} not found",
-                    proposal_id.to_string()
-                ))
+                ApiError::not_found(&format!("Proposal with Id {} not found", proposal_id))
             })?;
 
         Ok((id, current_proposal_review, proposal, user_id))
@@ -808,9 +802,7 @@ mod tests {
     #[rstest]
     #[case::empty(proposal_review_create_empty())]
     #[case::full(proposal_review_create())]
-    async fn create_proposal_review(
-        #[case] fixture: (ProposalReview, CreateProposalReviewRequest),
-    ) {
+    fn create_proposal_review(#[case] fixture: (ProposalReview, CreateProposalReviewRequest)) {
         let calling_principal = fixtures::principal_a();
         let user_id = fixtures::user_id();
         let (proposal_review, request) = fixture;
@@ -857,7 +849,6 @@ mod tests {
 
         let result = service
             .create_proposal_review(calling_principal, request)
-            .await
             .unwrap();
 
         assert_eq!(
@@ -872,9 +863,7 @@ mod tests {
     #[rstest]
     #[case::summary_empty(proposal_review_create_summary_empty())]
     #[case::summary_too_long(proposal_review_create_summary_too_long())]
-    async fn create_proposal_review_invalid(
-        #[case] fixture: (CreateProposalReviewRequest, ApiError),
-    ) {
+    fn create_proposal_review_invalid(#[case] fixture: (CreateProposalReviewRequest, ApiError)) {
         let calling_principal = fixtures::principal_a();
         let (request, api_error) = fixture;
 
@@ -902,14 +891,13 @@ mod tests {
 
         let result = service
             .create_proposal_review(calling_principal, request)
-            .await
             .unwrap_err();
 
         assert_eq!(result, api_error);
     }
 
     #[rstest]
-    async fn create_proposal_review_no_user() {
+    fn create_proposal_review_no_user() {
         let calling_principal = fixtures::principal_a();
         let (_, request) = proposal_review_create();
 
@@ -941,7 +929,6 @@ mod tests {
 
         let result = service
             .create_proposal_review(calling_principal, request)
-            .await
             .unwrap_err();
 
         assert_eq!(
@@ -954,7 +941,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn create_proposal_review_no_proposal() {
+    fn create_proposal_review_no_proposal() {
         let calling_principal = fixtures::principal_a();
         let user_id = fixtures::user_id();
         let (_, request) = proposal_review_create();
@@ -992,7 +979,6 @@ mod tests {
 
         let result = service
             .create_proposal_review(calling_principal, request.clone())
-            .await
             .unwrap_err();
 
         assert_eq!(
@@ -1005,7 +991,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn create_proposal_review_proposal_already_completed() {
+    fn create_proposal_review_proposal_already_completed() {
         let calling_principal = fixtures::principal_a();
         let user_id = fixtures::user_id();
         let (_, request) = proposal_review_create();
@@ -1045,20 +1031,19 @@ mod tests {
 
         let result = service
             .create_proposal_review(calling_principal, request)
-            .await
             .unwrap_err();
 
         assert_eq!(
             result,
             ApiError::conflict(&format!(
                 "Proposal with Id {} is already completed",
-                proposal_id.to_string()
+                proposal_id
             ))
         );
     }
 
     #[rstest]
-    async fn create_proposal_review_already_created() {
+    fn create_proposal_review_already_created() {
         let calling_principal = fixtures::principal_a();
         let user_id = fixtures::user_id();
         let (_, request) = proposal_review_create();
@@ -1101,15 +1086,13 @@ mod tests {
 
         let result = service
             .create_proposal_review(calling_principal, request.clone())
-            .await
             .unwrap_err();
 
         assert_eq!(
             result,
             ApiError::conflict(&format!(
                 "User with Id {} has already submitted a review for proposal with Id {}",
-                user_id.to_string(),
-                request.proposal_id
+                user_id, request.proposal_id
             ))
         );
     }
@@ -1806,7 +1789,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn create_proposal_review_image() {
+    fn create_proposal_review_image() {
         let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (
@@ -1850,13 +1833,13 @@ mod tests {
             .expect_create_image()
             .once()
             .with(eq(image.clone()))
-            .return_const(Ok(image_id));
+            .return_const(image_id);
         let mut certification_repository_mock = MockCertificationRepository::new();
         certification_repository_mock
             .expect_certify_http_response()
             .with(
                 eq(image.path(&image_id)),
-                eq(create_image_http_response(&image)),
+                eq(create_image_http_response(image)),
             )
             .once()
             .return_const(());
@@ -1872,14 +1855,13 @@ mod tests {
 
         let result = service
             .create_proposal_review_image(calling_principal, request)
-            .await
             .unwrap();
 
         assert_eq!(result, expected_response);
     }
 
     #[rstest]
-    async fn create_proposal_review_image_already_exists() {
+    fn create_proposal_review_image_already_exists() {
         let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (id, original_proposal_review, image_id, _, request, _, _) =
@@ -1930,7 +1912,6 @@ mod tests {
 
         let result = service
             .create_proposal_review_image(calling_principal, request.clone())
-            .await
             .unwrap_err();
 
         assert_eq!(
@@ -1943,7 +1924,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn delete_proposal_review_image() {
+    fn delete_proposal_review_image() {
         let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (id, original_proposal_review, request, updated_proposal_review) =
@@ -1996,7 +1977,7 @@ mod tests {
             .expect_remove_http_response_certificate()
             .with(
                 eq(image_to_delete.path(&image_id_to_delete)),
-                eq(create_image_http_response(&image_to_delete)),
+                eq(create_image_http_response(image_to_delete)),
             )
             .once()
             .return_const(());
@@ -2016,7 +1997,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn delete_proposal_review_image_not_found() {
+    fn delete_proposal_review_image_not_found() {
         let calling_principal = fixtures::principal_a();
         let user_id = fixtures::uuid_a();
         let (id, original_proposal_review, request, _) = proposal_review_update_image_delete();
@@ -2194,7 +2175,7 @@ mod tests {
                 proposal_id: original_proposal_review.proposal_id.to_string(),
                 image_path: format!(
                     "{IMAGES_BASE_PATH}{PROPOSAL_REVIEW_IMAGES_SUB_PATH}/{}",
-                    image_id.to_string()
+                    image_id
                 ),
             },
             ProposalReview {

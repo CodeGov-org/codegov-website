@@ -35,7 +35,7 @@ pub trait ProposalReviewCommitRepository {
         proposal_review_id: ProposalReviewId,
     ) -> Result<Vec<(ProposalReviewCommitId, ProposalReviewCommit)>, ApiError>;
 
-    async fn create_proposal_review_commit(
+    fn create_proposal_review_commit(
         &self,
         proposal_review_commit: ProposalReviewCommit,
     ) -> Result<ProposalReviewCommitId, ApiError>;
@@ -140,11 +140,11 @@ impl ProposalReviewCommitRepository for ProposalReviewCommitRepositoryImpl {
         Ok(proposal_review_commits)
     }
 
-    async fn create_proposal_review_commit(
+    fn create_proposal_review_commit(
         &self,
         proposal_review_commit: ProposalReviewCommit,
     ) -> Result<ProposalReviewCommitId, ApiError> {
-        let proposal_review_commit_id = ProposalReviewCommitId::new().await?;
+        let proposal_review_commit_id = ProposalReviewCommitId::new();
         let proposal_review_user_key = ProposalReviewCommitProposalReviewUserKey::new(
             proposal_review_commit.proposal_review_id,
             proposal_review_commit.user_id,
@@ -171,7 +171,7 @@ impl ProposalReviewCommitRepository for ProposalReviewCommitRepositoryImpl {
             .ok_or_else(|| {
                 ApiError::not_found(&format!(
                     "Proposal review commit with id {} not found",
-                    proposal_review_commit_id.to_string()
+                    proposal_review_commit_id
                 ))
             })?;
 
@@ -191,7 +191,7 @@ impl ProposalReviewCommitRepository for ProposalReviewCommitRepositoryImpl {
             .ok_or_else(|| {
                 ApiError::not_found(&format!(
                     "Proposal review commit with id {} not found",
-                    proposal_review_commit_id.to_string()
+                    proposal_review_commit_id
                 ))
             })?;
 
@@ -240,15 +240,12 @@ mod tests {
     #[rstest]
     #[case::reviewed(fixtures::proposal_review_commit_reviewed())]
     #[case::not_reviewed(fixtures::proposal_review_commit_not_reviewed())]
-    async fn create_and_get_proposal_review_by_id(
-        #[case] proposal_review_commit: ProposalReviewCommit,
-    ) {
+    fn create_and_get_proposal_review_by_id(#[case] proposal_review_commit: ProposalReviewCommit) {
         STATE.set(ProposalReviewCommitState::default());
 
         let repository = ProposalReviewCommitRepositoryImpl::default();
         let proposal_review_id = repository
             .create_proposal_review_commit(proposal_review_commit.clone())
-            .await
             .unwrap();
 
         let result = repository.get_proposal_review_commit_by_id(&proposal_review_id);
@@ -257,7 +254,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_proposal_review_commits_by_proposal_review_id() {
+    fn get_proposal_review_commits_by_proposal_review_id() {
         STATE.set(ProposalReviewCommitState::default());
 
         let proposal_review_commits = proposal_review_commits_fixed_proposal_review_id();
@@ -267,7 +264,6 @@ mod tests {
         for proposal_review_commit in proposal_review_commits {
             repository
                 .create_proposal_review_commit(proposal_review_commit)
-                .await
                 .unwrap();
         }
 
@@ -295,7 +291,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_proposal_review_commits_by_proposal_review_id_and_user_id() {
+    fn get_proposal_review_commits_by_proposal_review_id_and_user_id() {
         STATE.set(ProposalReviewCommitState::default());
 
         let proposal_review_commits =
@@ -306,7 +302,6 @@ mod tests {
         for proposal_review_commit in proposal_review_commits {
             repository
                 .create_proposal_review_commit(proposal_review_commit)
-                .await
                 .unwrap();
         }
 
@@ -336,7 +331,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha() {
+    fn get_proposal_review_commit_by_proposal_review_id_user_id_commit_sha() {
         STATE.set(ProposalReviewCommitState::default());
 
         let proposal_review_commits =
@@ -347,7 +342,6 @@ mod tests {
         for proposal_review_commit in proposal_review_commits {
             repository
                 .create_proposal_review_commit(proposal_review_commit)
-                .await
                 .unwrap();
         }
 
@@ -378,7 +372,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn update_proposal_review_commit() {
+    fn update_proposal_review_commit() {
         STATE.set(ProposalReviewCommitState::default());
 
         let original_proposal_review_commit = fixtures::proposal_review_commit_not_reviewed();
@@ -387,7 +381,6 @@ mod tests {
         let repository = ProposalReviewCommitRepositoryImpl::default();
         let proposal_review_commit_id = repository
             .create_proposal_review_commit(original_proposal_review_commit)
-            .await
             .unwrap();
 
         repository
@@ -405,7 +398,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn delete_proposal_review_commit() {
+    fn delete_proposal_review_commit() {
         STATE.set(ProposalReviewCommitState::default());
 
         let original_proposal_review_commit = fixtures::proposal_review_commit_reviewed();
@@ -413,7 +406,6 @@ mod tests {
         let repository = ProposalReviewCommitRepositoryImpl::default();
         let proposal_review_commit_id = repository
             .create_proposal_review_commit(original_proposal_review_commit)
-            .await
             .unwrap();
 
         repository

@@ -281,17 +281,17 @@ describe('list proposal reviews', () => {
     expect(resProposal1Ok.proposal_reviews.length).toEqual(2);
     validateProposalReview(resProposal1Ok.proposal_reviews[0], {
       proposalId: proposal1Id,
-      userId: aliceId,
-      reviewStatus: { published: null },
-      commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
-      lastUpdatedAt: expect.any(String),
+      userId: bobId,
+      reviewStatus: { draft: null },
+      commits: { commitSha: [VALID_COMMIT_SHA_A] },
       vote: { yes: null },
     });
     validateProposalReview(resProposal1Ok.proposal_reviews[1], {
       proposalId: proposal1Id,
-      userId: bobId,
-      reviewStatus: { draft: null },
-      commits: { commitSha: [VALID_COMMIT_SHA_A] },
+      userId: aliceId,
+      reviewStatus: { published: null },
+      commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
+      lastUpdatedAt: expect.any(String),
       vote: { yes: null },
     });
 
@@ -303,17 +303,17 @@ describe('list proposal reviews', () => {
     expect(resProposal2Ok.proposal_reviews.length).toEqual(2);
     validateProposalReview(resProposal2Ok.proposal_reviews[0], {
       proposalId: proposal2Id,
-      userId: aliceId,
-      reviewStatus: { draft: null },
-      commits: { commitSha: [VALID_COMMIT_SHA_A] },
-      vote: { yes: null },
-    });
-    validateProposalReview(resProposal2Ok.proposal_reviews[1], {
-      proposalId: proposal2Id,
       userId: bobId,
       reviewStatus: { published: null },
       commits: { commitSha: [VALID_COMMIT_SHA_A, VALID_COMMIT_SHA_B] },
       lastUpdatedAt: expect.any(String),
+      vote: { yes: null },
+    });
+    validateProposalReview(resProposal2Ok.proposal_reviews[1], {
+      proposalId: proposal2Id,
+      userId: aliceId,
+      reviewStatus: { draft: null },
+      commits: { commitSha: [VALID_COMMIT_SHA_A] },
       vote: { yes: null },
     });
   });

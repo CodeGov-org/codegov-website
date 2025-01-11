@@ -10,16 +10,16 @@ use crate::helpers::{cbor_encode, IC_CERTIFICATE_HEADER, NOT_FOUND_PATH, RESPONS
 
 #[cfg_attr(test, mockall::automock)]
 pub trait CertificationRepository {
-    fn certify_http_response(&self, request_path: &str, res: &HttpResponse);
+    fn certify_http_response(&self, request_path: &str, res: &HttpResponse<'static>);
 
-    fn remove_http_response_certificate(&self, request_path: &str, res: &HttpResponse);
+    fn remove_http_response_certificate(&self, request_path: &str, res: &HttpResponse<'static>);
 
     fn get_certified_http_response(
         &self,
         request_path: &str,
         responding_tree_path: &str,
-        res: HttpResponse,
-    ) -> HttpResponse;
+        res: HttpResponse<'static>,
+    ) -> HttpResponse<'static>;
 }
 
 pub struct CertificationRepositoryImpl {}
@@ -55,8 +55,8 @@ impl CertificationRepository for CertificationRepositoryImpl {
         &self,
         request_path: &str,
         responding_tree_path: &str,
-        mut res: HttpResponse,
-    ) -> HttpResponse {
+        mut res: HttpResponse<'static>,
+    ) -> HttpResponse<'static> {
         let res_tree_path = Self::response_tree_path(responding_tree_path);
         let entry = Self::response_entry(&res_tree_path, &res);
 
@@ -108,7 +108,7 @@ impl CertificationRepositoryImpl {
         });
         let expr_path = cbor_encode(&expr_path);
 
-        response.headers.push((
+        response.headers_mut().push((
             IC_CERTIFICATE_HEADER.to_string(),
             format!(
                 "certificate=:{}:, tree=:{}:, expr_path=:{}:, version=2",

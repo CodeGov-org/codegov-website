@@ -15,7 +15,7 @@ fn init() {
     let calling_principal = caller();
 
     set_timer(Duration::from_secs(0), move || {
-        spawn(init_admin(calling_principal))
+        init_admin(calling_principal)
     });
 
     InitController::default().init_http_certification();
@@ -28,7 +28,7 @@ fn post_upgrade() {
     let calling_principal = caller();
 
     set_timer(Duration::from_secs(0), move || {
-        spawn(init_admin(calling_principal))
+        init_admin(calling_principal)
     });
 
     InitController::default().init_http_certification();
@@ -36,8 +36,8 @@ fn post_upgrade() {
     jobs::start_jobs();
 }
 
-async fn init_admin(calling_principal: Principal) {
-    if let Err(err) = InitController::default().init(calling_principal).await {
+fn init_admin(calling_principal: Principal) {
+    if let Err(err) = InitController::default().init(calling_principal) {
         ic_cdk::trap(&format!("Failed to initialize canister: {:?}", err));
     }
 }
@@ -73,8 +73,8 @@ impl<T: InitService, I: ImageService, H: HttpService> InitController<T, I, H> {
         }
     }
 
-    async fn init(&self, calling_principal: Principal) -> Result<(), ApiError> {
-        self.init_service.init(calling_principal).await
+    fn init(&self, calling_principal: Principal) -> Result<(), ApiError> {
+        self.init_service.init(calling_principal)
     }
 
     fn init_http_certification(&self) {

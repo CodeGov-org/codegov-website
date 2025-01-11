@@ -26,7 +26,7 @@ pub trait ProposalRepository {
         state: Option<ReviewPeriodStateKey>,
     ) -> Result<Vec<(ProposalId, Proposal)>, ApiError>;
 
-    async fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError>;
+    fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError>;
 
     fn update_proposal(&self, proposal_id: ProposalId, proposal: Proposal) -> Result<(), ApiError>;
 
@@ -121,16 +121,13 @@ impl ProposalRepository for ProposalRepositoryImpl {
         current_time: DateTime,
     ) -> Result<(), ApiError> {
         let proposal = self.get_proposal_by_id(&proposal_id).ok_or_else(|| {
-            ApiError::not_found(&format!(
-                "Proposal with Id {} not found",
-                proposal_id.to_string()
-            ))
+            ApiError::not_found(&format!("Proposal with Id {} not found", proposal_id))
         })?;
 
         if proposal.is_completed() {
             return Err(ApiError::conflict(&format!(
                 "Proposal with Id {} is already completed",
-                proposal_id.to_string()
+                proposal_id
             )));
         }
 
@@ -145,8 +142,8 @@ impl ProposalRepository for ProposalRepositoryImpl {
         )
     }
 
-    async fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError> {
-        let proposal_id = ProposalId::new().await?;
+    fn create_proposal(&self, proposal: Proposal) -> Result<ProposalId, ApiError> {
+        let proposal_id = ProposalId::new();
         let proposal_proposed_at = proposal.proposed_at()?;
         let proposal_status_key = ProposalStatusTimestampKey::new(
             proposal.state.into(),
@@ -189,10 +186,7 @@ impl ProposalRepository for ProposalRepositoryImpl {
 
     fn update_proposal(&self, proposal_id: ProposalId, proposal: Proposal) -> Result<(), ApiError> {
         let existing_proposal = self.get_proposal_by_id(&proposal_id).ok_or_else(|| {
-            ApiError::not_found(&format!(
-                "Proposal with id {} not found",
-                proposal_id.to_string()
-            ))
+            ApiError::not_found(&format!("Proposal with id {} not found", proposal_id))
         })?;
 
         if existing_proposal.nervous_system.nervous_system_id()
@@ -273,11 +267,11 @@ mod tests {
 
     #[rstest]
     #[case::nns_proposal(fixtures::nns_replica_version_management_proposal(None, None))]
-    async fn create_and_get_proposal_by_id(#[case] proposal: Proposal) {
+    fn create_and_get_proposal_by_id(#[case] proposal: Proposal) {
         STATE.set(ProposalState::default());
 
         let repository = ProposalRepositoryImpl::default();
-        let proposal_id = repository.create_proposal(proposal.clone()).await.unwrap();
+        let proposal_id = repository.create_proposal(proposal.clone()).unwrap();
 
         let result = repository.get_proposal_by_id(&proposal_id).unwrap();
 
@@ -286,16 +280,13 @@ mod tests {
 
     #[rstest]
     #[case::nns_proposal(fixtures::nns_replica_version_management_proposal(None, None))]
-    async fn create_proposal_duplicate(#[case] proposal: Proposal) {
+    fn create_proposal_duplicate(#[case] proposal: Proposal) {
         STATE.set(ProposalState::default());
 
         let repository = ProposalRepositoryImpl::default();
-        repository.create_proposal(proposal.clone()).await.unwrap();
+        repository.create_proposal(proposal.clone()).unwrap();
 
-        let result = repository
-            .create_proposal(proposal.clone())
-            .await
-            .unwrap_err();
+        let result = repository.create_proposal(proposal.clone()).unwrap_err();
 
         assert_eq!(
             result,
@@ -313,7 +304,7 @@ mod tests {
     #[case::unsorted_proposals_in_progress((unsorted_proposals(), Some(ReviewPeriodStateKey::InProgress)))]
     #[case::sorted_proposals_completed((sorted_proposals(), Some(ReviewPeriodStateKey::Completed)))]
     #[case::unsorted_proposals_completed((unsorted_proposals(), Some(ReviewPeriodStateKey::Completed)))]
-    async fn get_proposals(#[case] inputs: (Vec<Proposal>, Option<ReviewPeriodStateKey>)) {
+    fn get_proposals(#[case] inputs: (Vec<Proposal>, Option<ReviewPeriodStateKey>)) {
         STATE.set(ProposalState::default());
 
         let (input_proposals, state) = inputs;
@@ -321,7 +312,7 @@ mod tests {
         let repository = ProposalRepositoryImpl::default();
 
         for proposal in input_proposals {
-            repository.create_proposal(proposal.clone()).await.unwrap();
+            repository.create_proposal(proposal.clone()).unwrap();
         }
 
         let result = repository.get_proposals(state).unwrap();
@@ -365,7 +356,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_proposal_by_nervous_system_id() {
+    fn get_proposal_by_nervous_system_id() {
         STATE.set(ProposalState::default());
 
         let proposals = fixtures::nns_proposals();
@@ -374,7 +365,7 @@ mod tests {
 
         let mut proposals_with_ids: Vec<(ProposalId, Proposal)> = vec![];
         for proposal in proposals {
-            let proposal_id = repository.create_proposal(proposal.clone()).await.unwrap();
+            let proposal_id = repository.create_proposal(proposal.clone()).unwrap();
             proposals_with_ids.push((proposal_id, proposal));
         }
 
@@ -390,7 +381,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn complete_pending_proposals() {
+    fn complete_pending_proposals() {
         STATE.set(ProposalState::default());
 
         let repository = ProposalRepositoryImpl::default();
@@ -398,7 +389,7 @@ mod tests {
 
         let proposals = proposals_with_pending();
         for proposal in proposals {
-            repository.create_proposal(proposal).await.unwrap();
+            repository.create_proposal(proposal).unwrap();
         }
 
         repository.complete_pending_proposals(current_time).unwrap();
@@ -468,7 +459,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn update_proposal() {
+    fn update_proposal() {
         STATE.set(ProposalState::default());
 
         let repository = ProposalRepositoryImpl::default();
@@ -481,7 +472,7 @@ mod tests {
             ..proposal.clone()
         };
 
-        let proposal_id = repository.create_proposal(proposal.clone()).await.unwrap();
+        let proposal_id = repository.create_proposal(proposal.clone()).unwrap();
         repository
             .update_proposal(proposal_id, updated_proposal.clone())
             .unwrap();
@@ -493,13 +484,13 @@ mod tests {
 
     #[rstest]
     #[case::nervous_system_proposal_id_change(proposal_update_nervous_system_proposal_id_change())]
-    async fn update_proposal_invalid(#[case] inputs: (Proposal, Proposal, ApiError)) {
+    fn update_proposal_invalid(#[case] inputs: (Proposal, Proposal, ApiError)) {
         let (proposal, updated_proposal, expected_error) = inputs;
         STATE.set(ProposalState::default());
 
         let repository = ProposalRepositoryImpl::default();
 
-        let proposal_id = repository.create_proposal(proposal).await.unwrap();
+        let proposal_id = repository.create_proposal(proposal).unwrap();
         let result = repository
             .update_proposal(proposal_id, updated_proposal)
             .unwrap_err();

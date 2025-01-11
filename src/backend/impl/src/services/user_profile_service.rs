@@ -28,7 +28,7 @@ pub trait UserProfileService {
         calling_principal: Principal,
     ) -> Result<GetMyUserProfileHistoryResponse, ApiError>;
 
-    async fn create_my_user_profile(
+    fn create_my_user_profile(
         &self,
         calling_principal: Principal,
     ) -> Result<CreateMyUserProfileResponse, ApiError>;
@@ -97,7 +97,7 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
         Ok(map_get_my_user_profile_history_response(history))
     }
 
-    async fn create_my_user_profile(
+    fn create_my_user_profile(
         &self,
         calling_principal: Principal,
     ) -> Result<CreateMyUserProfileResponse, ApiError> {
@@ -115,8 +115,7 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
         let profile = UserProfile::new_anonymous();
         let id = self
             .user_profile_repository
-            .create_user_profile(calling_principal, profile.clone())
-            .await?;
+            .create_user_profile(calling_principal, profile.clone())?;
 
         Ok(map_create_my_user_profile_response(id, profile))
     }
@@ -213,7 +212,7 @@ impl<T: UserProfileRepository> UserProfileService for UserProfileServiceImpl<T> 
             .ok_or_else(|| {
                 ApiError::not_found(&format!(
                     "User profile for user with id {} not found",
-                    user_id.to_string()
+                    user_id
                 ))
             })?;
 
@@ -313,7 +312,7 @@ mod tests {
     use rstest::*;
 
     #[rstest]
-    async fn list_reviewer_profiles() {
+    fn list_reviewer_profiles() {
         let profiles = vec![(fixtures::user_id(), fixtures::reviewer_user_profile())];
 
         let mut repository_mock = MockUserProfileRepository::new();
@@ -330,7 +329,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_my_user_profile() {
+    fn get_my_user_profile() {
         let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
         let profile = fixtures::admin_user_profile();
@@ -357,7 +356,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_my_user_profile_no_profile() {
+    fn get_my_user_profile_no_profile() {
         let calling_principal = fixtures::principal_a();
 
         let mut repository_mock = MockUserProfileRepository::new();
@@ -441,7 +440,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn create_my_user_profile() {
+    fn create_my_user_profile() {
         let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
         let profile = UserProfile::new_anonymous();
@@ -460,10 +459,7 @@ mod tests {
 
         let service = UserProfileServiceImpl::new(repository_mock);
 
-        let result = service
-            .create_my_user_profile(calling_principal)
-            .await
-            .unwrap();
+        let result = service.create_my_user_profile(calling_principal).unwrap();
 
         assert_eq!(
             result,
@@ -476,7 +472,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn create_my_user_profile_existing_profile() {
+    fn create_my_user_profile_existing_profile() {
         let calling_principal = fixtures::principal_a();
         let id = fixtures::user_id();
 
@@ -492,7 +488,6 @@ mod tests {
 
         let result = service
             .create_my_user_profile(calling_principal)
-            .await
             .unwrap_err();
 
         assert_eq!(
@@ -882,7 +877,7 @@ mod tests {
             result,
             ApiError::not_found(&format!(
                 "User profile for user with id {} not found",
-                user_id.to_string()
+                user_id
             ))
         )
     }

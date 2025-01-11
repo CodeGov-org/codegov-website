@@ -4,8 +4,8 @@ use crate::repositories::Image;
 
 use super::{IC_CERTIFICATE_EXPRESSION_HEADER, RESPONSE_ONLY_CEL_EXPR};
 
-pub fn create_image_http_response(image: &Image) -> HttpResponse {
-    let body = &image.content_bytes;
+pub fn create_image_http_response<'a>(image: Image) -> HttpResponse<'a> {
+    let body = image.content_bytes;
     let headers = vec![
             ("strict-transport-security".to_string(), "max-age=31536000; includeSubDomains".to_string()),
             ("x-frame-options".to_string(), "DENY".to_string()),
@@ -25,10 +25,5 @@ pub fn create_image_http_response(image: &Image) -> HttpResponse {
             ("content-type".to_string(), image.content_type.clone()),
         ];
 
-    HttpResponse {
-        status_code: 200,
-        headers,
-        body: body.to_vec(),
-        upgrade: None,
-    }
+    HttpResponse::ok(body, headers).build()
 }

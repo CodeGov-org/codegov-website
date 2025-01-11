@@ -25,7 +25,7 @@ pub trait UserProfileRepository {
 
     fn get_user_id_by_principal(&self, principal: &Principal) -> Option<UserId>;
 
-    async fn create_user_profile(
+    fn create_user_profile(
         &self,
         calling_principal: Principal,
         user_profile: UserProfile,
@@ -85,12 +85,12 @@ impl UserProfileRepository for UserProfileRepositoryImpl {
         STATE.with_borrow(|s| s.principal_index.get(principal))
     }
 
-    async fn create_user_profile(
+    fn create_user_profile(
         &self,
         calling_principal: Principal,
         user_profile: UserProfile,
     ) -> Result<UserId, ApiError> {
-        let user_id = UserId::new().await?;
+        let user_id = UserId::new();
         let history_entry_id = Self::get_next_history_id()?;
 
         STATE.with_borrow_mut(|s| {
@@ -202,21 +202,18 @@ mod tests {
     use rstest::*;
 
     #[rstest]
-    async fn get_all_reviewer_profiles() {
+    fn get_all_reviewer_profiles() {
         STATE.set(UserProfileState::default());
         let repository = UserProfileRepositoryImpl::default();
 
         repository
             .create_user_profile(fixtures::principal_a(), fixtures::anonymous_user_profile())
-            .await
             .unwrap();
         repository
             .create_user_profile(fixtures::principal_b(), fixtures::admin_user_profile())
-            .await
             .unwrap();
         let reviewer_id = repository
             .create_user_profile(fixtures::principal_c(), fixtures::reviewer_user_profile())
-            .await
             .unwrap();
 
         let result = repository.get_all_reviewer_profiles();
@@ -229,7 +226,7 @@ mod tests {
     #[case::anonymous_user(fixtures::anonymous_user_profile())]
     #[case::reviewer(fixtures::reviewer_user_profile())]
     #[case::admin(fixtures::admin_user_profile())]
-    async fn create_and_get_user_profile_by_principal(#[case] profile: UserProfile) {
+    fn create_and_get_user_profile_by_principal(#[case] profile: UserProfile) {
         STATE.set(UserProfileState::default());
         let principal = fixtures::principal_a();
         let date_time = get_date_time().unwrap();
@@ -237,7 +234,6 @@ mod tests {
         let repository = UserProfileRepositoryImpl::default();
         let user_id = repository
             .create_user_profile(principal, profile.clone())
-            .await
             .unwrap();
 
         let result = repository.get_user_profile_by_principal(&principal);
@@ -263,7 +259,7 @@ mod tests {
     #[case::anonymous_user(fixtures::anonymous_user_profile(), updated_anonymous_user_profile())]
     #[case::anonymous_user(fixtures::reviewer_user_profile(), updated_reviewer_user_profile())]
     #[case::anonymous_user(fixtures::admin_user_profile(), updated_admin_user_profile())]
-    async fn update_and_get_user_profile_by_user_id(
+    fn update_and_get_user_profile_by_user_id(
         #[case] original_profile: UserProfile,
         #[case] updated_profile: UserProfile,
     ) {
@@ -274,7 +270,6 @@ mod tests {
         let repository = UserProfileRepositoryImpl::default();
         let user_id = repository
             .create_user_profile(principal, original_profile.clone())
-            .await
             .unwrap();
 
         repository

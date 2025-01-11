@@ -40,12 +40,11 @@ fn get_my_user_profile_history() -> ApiResult<GetMyUserProfileHistoryResponse> {
 
 #[update]
 #[log_errors(crate::services::log_update_call_error)]
-async fn create_my_user_profile() -> ApiResult<CreateMyUserProfileResponse> {
+fn create_my_user_profile() -> ApiResult<CreateMyUserProfileResponse> {
     let calling_principal = caller();
 
     UserProfileController::default()
         .create_my_user_profile(calling_principal)
-        .await
         .into()
 }
 
@@ -61,7 +60,7 @@ fn update_my_user_profile(request: UpdateMyUserProfileRequest) -> ApiResult<()> 
 
 #[update]
 #[log_errors(crate::services::log_update_call_error)]
-async fn update_user_profile(request: UpdateUserProfileRequest) -> ApiResult<()> {
+fn update_user_profile(request: UpdateUserProfileRequest) -> ApiResult<()> {
     let calling_principal = caller();
 
     UserProfileController::default()
@@ -130,7 +129,7 @@ impl<A: AccessControlService, U: UserProfileService> UserProfileController<A, U>
         Ok(profile_history)
     }
 
-    async fn create_my_user_profile(
+    fn create_my_user_profile(
         &self,
         calling_principal: Principal,
     ) -> Result<CreateMyUserProfileResponse, ApiError> {
@@ -139,8 +138,7 @@ impl<A: AccessControlService, U: UserProfileService> UserProfileController<A, U>
 
         let profile = self
             .user_profile_service
-            .create_my_user_profile(calling_principal)
-            .await?;
+            .create_my_user_profile(calling_principal)?;
 
         Ok(profile)
     }
@@ -369,7 +367,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn create_my_user_profile() {
+    fn create_my_user_profile() {
         let calling_principal = fixtures::principal_a();
         let profile = CreateMyUserProfileResponse {
             id: "id".to_string(),
@@ -396,14 +394,13 @@ mod tests {
 
         let result = controller
             .create_my_user_profile(calling_principal)
-            .await
             .unwrap();
 
         assert_eq!(result, profile);
     }
 
     #[rstest]
-    async fn create_my_user_profile_anonymous_principal() {
+    fn create_my_user_profile_anonymous_principal() {
         let calling_principal = Principal::anonymous();
 
         let mut access_control_service_mock = MockAccessControlService::new();
@@ -420,7 +417,6 @@ mod tests {
 
         let result = controller
             .create_my_user_profile(calling_principal)
-            .await
             .unwrap_err();
 
         assert_eq!(result, ApiError::unauthenticated());
