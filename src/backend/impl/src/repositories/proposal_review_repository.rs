@@ -33,7 +33,7 @@ pub trait ProposalReviewRepository {
         user_id: UserId,
     ) -> Result<Vec<(ProposalReviewId, ProposalReview)>, ApiError>;
 
-    async fn create_proposal_review(
+    fn create_proposal_review(
         &self,
         proposal_review: ProposalReview,
     ) -> Result<ProposalReviewId, ApiError>;
@@ -125,11 +125,11 @@ impl ProposalReviewRepository for ProposalReviewRepositoryImpl {
         Ok(proposal_reviews)
     }
 
-    async fn create_proposal_review(
+    fn create_proposal_review(
         &self,
         proposal_review: ProposalReview,
     ) -> Result<ProposalReviewId, ApiError> {
-        let proposal_review_id = ProposalReviewId::new().await?;
+        let proposal_review_id = ProposalReviewId::new();
         let proposal_user_key = ProposalReviewProposalUserKey::new(
             proposal_review.proposal_id,
             proposal_review.user_id,
@@ -157,7 +157,7 @@ impl ProposalReviewRepository for ProposalReviewRepositoryImpl {
             .ok_or_else(|| {
                 ApiError::not_found(&format!(
                     "Proposal review with id {} not found",
-                    proposal_review_id.to_string()
+                    proposal_review_id
                 ))
             })?;
 
@@ -208,13 +208,12 @@ mod tests {
     #[rstest]
     #[case::proposal_review_draft(fixtures::proposal_review_draft())]
     #[case::proposal_review_published(fixtures::proposal_review_published())]
-    async fn create_and_get_proposal_review_by_id(#[case] proposal_review: ProposalReview) {
+    fn create_and_get_proposal_review_by_id(#[case] proposal_review: ProposalReview) {
         STATE.set(ProposalReviewState::default());
 
         let repository = ProposalReviewRepositoryImpl::default();
         let proposal_review_id = repository
             .create_proposal_review(proposal_review.clone())
-            .await
             .unwrap();
 
         let result = repository.get_proposal_review_by_id(&proposal_review_id);
@@ -223,7 +222,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_proposal_reviews_by_proposal_id() {
+    fn get_proposal_reviews_by_proposal_id() {
         STATE.set(ProposalReviewState::default());
 
         let proposal_reviews = proposal_reviews_fixed_proposal_id();
@@ -231,10 +230,7 @@ mod tests {
         let repository = ProposalReviewRepositoryImpl::default();
 
         for proposal_review in proposal_reviews {
-            repository
-                .create_proposal_review(proposal_review)
-                .await
-                .unwrap();
+            repository.create_proposal_review(proposal_review).unwrap();
         }
 
         let result = repository
@@ -247,18 +243,18 @@ mod tests {
             vec![
                 ProposalReview {
                     proposal_id: uuid_a(),
-                    ..fixtures::proposal_review_draft()
+                    ..fixtures::proposal_review_published()
                 },
                 ProposalReview {
                     proposal_id: uuid_a(),
-                    ..fixtures::proposal_review_published()
+                    ..fixtures::proposal_review_draft()
                 },
             ]
         );
     }
 
     #[rstest]
-    async fn get_proposal_reviews_by_proposal_id_and_user_id() {
+    fn get_proposal_reviews_by_proposal_id_and_user_id() {
         STATE.set(ProposalReviewState::default());
 
         let proposal_reviews = proposal_reviews_fixed_proposal_id_and_user_id();
@@ -266,10 +262,7 @@ mod tests {
         let repository = ProposalReviewRepositoryImpl::default();
 
         for proposal_review in proposal_reviews {
-            repository
-                .create_proposal_review(proposal_review)
-                .await
-                .unwrap();
+            repository.create_proposal_review(proposal_review).unwrap();
         }
 
         for (proposal_id, user_id) in [
@@ -294,7 +287,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_proposal_reviews_by_user_id() {
+    fn get_proposal_reviews_by_user_id() {
         STATE.set(ProposalReviewState::default());
 
         let proposal_reviews = proposal_reviews_fixed_user_id();
@@ -302,10 +295,7 @@ mod tests {
         let repository = ProposalReviewRepositoryImpl::default();
 
         for proposal_review in proposal_reviews {
-            repository
-                .create_proposal_review(proposal_review)
-                .await
-                .unwrap();
+            repository.create_proposal_review(proposal_review).unwrap();
         }
 
         let result = repository
@@ -318,18 +308,18 @@ mod tests {
             vec![
                 ProposalReview {
                     user_id: uuid_a(),
-                    ..fixtures::proposal_review_draft()
+                    ..fixtures::proposal_review_published()
                 },
                 ProposalReview {
                     user_id: uuid_a(),
-                    ..fixtures::proposal_review_published()
+                    ..fixtures::proposal_review_draft()
                 },
             ]
         );
     }
 
     #[rstest]
-    async fn update_proposal_review() {
+    fn update_proposal_review() {
         STATE.set(ProposalReviewState::default());
 
         let original_proposal_review = fixtures::proposal_review_draft();
@@ -338,7 +328,6 @@ mod tests {
         let repository = ProposalReviewRepositoryImpl::default();
         let proposal_review_id = repository
             .create_proposal_review(original_proposal_review)
-            .await
             .unwrap();
 
         repository

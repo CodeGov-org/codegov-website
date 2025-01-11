@@ -10,7 +10,7 @@ pub trait ImageRepository {
 
     fn get_all_images(&self) -> Vec<(ImageId, Image)>;
 
-    async fn create_image(&self, image: Image) -> Result<ImageId, ApiError>;
+    fn create_image(&self, image: Image) -> ImageId;
 
     fn delete_image(&self, image_id: &ImageId) -> Result<Image, ApiError>;
 }
@@ -32,14 +32,14 @@ impl ImageRepository for ImageRepositoryImpl {
         STATE.with_borrow(|s| s.images.range(ImageId::min()..).collect())
     }
 
-    async fn create_image(&self, image: Image) -> Result<ImageId, ApiError> {
-        let image_id = ImageId::new().await?;
+    fn create_image(&self, image: Image) -> ImageId {
+        let image_id = ImageId::new();
 
         STATE.with_borrow_mut(|s| {
             s.images.insert(image_id, image.clone());
         });
 
-        Ok(image_id)
+        image_id
     }
 
     fn delete_image(&self, image_id: &ImageId) -> Result<Image, ApiError> {
@@ -47,7 +47,7 @@ impl ImageRepository for ImageRepositoryImpl {
             .with_borrow_mut(|s| s.images.remove(image_id))
             .ok_or(ApiError::not_found(&format!(
                 "Image with id {} not found",
-                image_id.to_string()
+                image_id
             )))
     }
 }
@@ -86,11 +86,11 @@ mod tests {
     #[rstest]
     #[case::image_with_subpath(fixtures::image_with_subpath())]
     #[case::image_without_subpath(fixtures::image_without_subpath())]
-    async fn create_and_get_image_by_id(#[case] image: Image) {
+    fn create_and_get_image_by_id(#[case] image: Image) {
         STATE.set(ImageRepositoryState::default());
 
         let repository = ImageRepositoryImpl::default();
-        let image_id = repository.create_image(image.clone()).await.unwrap();
+        let image_id = repository.create_image(image.clone());
 
         let result = repository.get_image_by_id(&image_id);
 
@@ -98,16 +98,13 @@ mod tests {
     }
 
     #[rstest]
-    async fn delete_image() {
+    fn delete_image() {
         STATE.set(ImageRepositoryState::default());
 
         let original_image = fixtures::image_with_subpath();
 
         let repository = ImageRepositoryImpl::default();
-        let image_id = repository
-            .create_image(original_image.clone())
-            .await
-            .unwrap();
+        let image_id = repository.create_image(original_image.clone());
 
         let deleted_image = repository.delete_image(&image_id).unwrap();
 
@@ -120,12 +117,12 @@ mod tests {
         let result = repository.delete_image(&image_id).unwrap_err();
         assert_eq!(
             result,
-            ApiError::not_found(&format!("Image with id {} not found", image_id.to_string()))
+            ApiError::not_found(&format!("Image with id {} not found", image_id))
         );
     }
 
     #[rstest]
-    async fn get_all_images() {
+    fn get_all_images() {
         STATE.set(ImageRepositoryState::default());
 
         let repository = ImageRepositoryImpl::default();
@@ -134,7 +131,7 @@ mod tests {
         for _ in 0..10 {
             let image = fixtures::image_with_subpath();
 
-            let image_id = repository.create_image(image.clone()).await.unwrap();
+            let image_id = repository.create_image(image.clone());
 
             expected_images.insert(image_id, image);
         }

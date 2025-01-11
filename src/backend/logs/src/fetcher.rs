@@ -62,6 +62,7 @@ impl LogFetcher {
             .create(true)
             .read(true)
             .write(true)
+            .truncate(false)
             .open(path)?;
         let mut last_fetch_timestamp = String::new();
         file.read_to_string(&mut last_fetch_timestamp)?;

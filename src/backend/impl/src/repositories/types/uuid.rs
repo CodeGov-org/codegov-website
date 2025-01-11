@@ -3,6 +3,7 @@ use candid::{
     types::{Serializer, Type, TypeInner},
     CandidType, Deserialize,
 };
+use core::fmt::{Display, Formatter};
 use ic_stable_structures::{storable::Bound, Storable};
 use std::borrow::Cow;
 use uuid::{Builder, Uuid as UuidImpl};
@@ -18,8 +19,8 @@ impl Uuid {
     pub const MIN: Uuid = Self(UuidImpl::from_bytes([0; UUID_SIZE]));
     pub const MAX: Uuid = Self(UuidImpl::from_bytes([255; UUID_SIZE]));
 
-    pub async fn new() -> Result<Self, ApiError> {
-        with_random_bytes(|bytes: [u8; UUID_SIZE]| Self::from_random_bytes(bytes)).await
+    pub fn new() -> Self {
+        with_random_bytes(|bytes: [u8; UUID_SIZE]| Self::from_random_bytes(bytes))
     }
 
     pub fn from_random_bytes(bytes: [u8; UUID_SIZE]) -> Self {
@@ -47,9 +48,9 @@ impl TryFrom<&str> for Uuid {
     }
 }
 
-impl ToString for Uuid {
-    fn to_string(&self) -> String {
-        self.0.to_string()
+impl Display for Uuid {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 

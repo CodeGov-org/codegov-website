@@ -8,10 +8,7 @@ use crate::{
     },
     system_api::get_date_time,
 };
-use backend_api::{
-    ApiError, GetProposalResponse, ListProposalsRequest, ListProposalsResponse,
-    SyncProposalsResponse,
-};
+use backend_api::{ApiError, ListProposalsRequest, ListProposalsResponse, SyncProposalsResponse};
 use candid::Principal;
 use external_canisters::nns::GovernanceCanisterService;
 use ic_nns_common::pb::v1::ProposalId as NnsProposalId;
@@ -32,7 +29,7 @@ async fn fetch_open_nns_proposals(
             limit: LIST_PROPOSALS_LIMIT,
             // only fetch for:
             // - NetworkCanisterManagement
-            // - ReplicaVersionManagement
+            // - IcOsVersionElection
             exclude_topic: vec![
                 Topic::Unspecified,
                 Topic::NeuronManagement,
@@ -44,10 +41,11 @@ async fn fetch_open_nns_proposals(
                 Topic::SubnetManagement,
                 Topic::Kyc,
                 Topic::NodeProviderRewards,
-                Topic::SnsDecentralizationSale,
-                Topic::SubnetReplicaVersionManagement,
+                Topic::IcOsVersionDeployment,
                 Topic::SnsAndCommunityFund,
                 Topic::ApiBoundaryNodeManagement,
+                Topic::ProtocolCanisterManagement,
+                Topic::ServiceNervousSystemManagement,
             ]
             .into_iter()
             .map(Into::into)
@@ -59,7 +57,17 @@ async fn fetch_open_nns_proposals(
                 .collect(),
         })
         .await
-        .map(|res| res.proposal_info)
+        .map(|res| {
+            // since the NNS can add new proposal topics, our `exclude_topic` list may not be exhaustive.
+            // therefore, we filter out the proposals here as well
+            res.proposal_info
+                .into_iter()
+                .filter(|res| {
+                    res.topic == Topic::NetworkCanisterManagement as i32
+                        || res.topic == Topic::IcOsVersionElection as i32
+                })
+                .collect()
+        })
         .map_err(|err| ApiError::internal(&format!("Failed to fetch proposals: {:?}", err)))
 }
 
@@ -75,8 +83,6 @@ const LIST_PROPOSALS_LIMIT: u32 = 50;
 
 #[cfg_attr(test, mockall::automock)]
 pub trait ProposalService {
-    fn get_proposal(&self, id: ProposalId) -> Result<GetProposalResponse, ApiError>;
-
     fn list_proposals(
         &self,
         request: ListProposalsRequest,
@@ -99,17 +105,6 @@ impl Default for ProposalServiceImpl<ProposalRepositoryImpl, LogServiceImpl<LogR
 }
 
 impl<T: ProposalRepository, L: LogService> ProposalService for ProposalServiceImpl<T, L> {
-    fn get_proposal(&self, id: ProposalId) -> Result<GetProposalResponse, ApiError> {
-        let proposal = self
-            .proposal_repository
-            .get_proposal_by_id(&id)
-            .ok_or_else(|| {
-                ApiError::not_found(&format!("Proposal with id {} not found", &id.to_string()))
-            })?;
-
-        map_get_proposal_response(id, proposal)
-    }
-
     fn list_proposals(
         &self,
         request: ListProposalsRequest,
@@ -170,15 +165,11 @@ impl<T: ProposalRepository, L: LogService> ProposalService for ProposalServiceIm
                     )?;
                 }
                 None => {
-                    if let Err(err) = self
-                        .proposal_repository
-                        .create_proposal(Proposal {
-                            nervous_system,
-                            synced_at: current_time,
-                            state: ReviewPeriodState::InProgress,
-                        })
-                        .await
-                    {
+                    if let Err(err) = self.proposal_repository.create_proposal(Proposal {
+                        nervous_system,
+                        synced_at: current_time,
+                        state: ReviewPeriodState::InProgress,
+                    }) {
                         let _ = self.log_service.log_error(
                             format!("Failed to create proposal: {err}"),
                             Some("fetch_and_save_nns_proposals".to_string()),
@@ -236,7 +227,7 @@ impl<T: ProposalRepository, L: LogService> ProposalServiceImpl<T, L> {
                 let proposal_id = proposal.nervous_system.proposal_id();
                 let already_exists = nns_proposals
                     .iter()
-                    .any(|p| p.id.map_or(false, |nns_id| nns_id.id == proposal_id));
+                    .any(|p| p.id.is_some_and(|nns_id| nns_id.id == proposal_id));
                 if already_exists {
                     None
                 } else {
@@ -285,57 +276,6 @@ mod tests {
     };
     use mockall::predicate::*;
     use rstest::*;
-
-    #[rstest]
-    async fn get_proposal() {
-        let proposal_id = fixtures::proposal_id();
-        let proposal = fixtures::nns_replica_version_management_proposal(None, None);
-
-        let mut repository_mock = MockProposalRepository::new();
-        repository_mock
-            .expect_get_proposal_by_id()
-            .once()
-            .with(eq(proposal_id))
-            .return_const(Some(proposal.clone()));
-        let log_service_mock = MockLogService::new();
-
-        let service = ProposalServiceImpl::new(repository_mock, log_service_mock);
-
-        let result = service.get_proposal(proposal_id).unwrap();
-
-        assert_eq!(
-            result,
-            GetProposalResponse {
-                id: proposal_id.to_string(),
-                proposal: proposal.try_into().unwrap(),
-            },
-        )
-    }
-
-    #[rstest]
-    async fn get_proposal_not_found() {
-        let proposal_id = fixtures::proposal_id();
-
-        let mut repository_mock = MockProposalRepository::new();
-        repository_mock
-            .expect_get_proposal_by_id()
-            .once()
-            .with(eq(proposal_id))
-            .return_const(None);
-        let log_service_mock = MockLogService::new();
-
-        let service = ProposalServiceImpl::new(repository_mock, log_service_mock);
-
-        let result = service.get_proposal(proposal_id).unwrap_err();
-
-        assert_eq!(
-            result,
-            ApiError::not_found(&format!(
-                "Proposal with id {} not found",
-                &proposal_id.to_string()
-            ))
-        )
-    }
 
     #[rstest]
     fn list_proposals() {

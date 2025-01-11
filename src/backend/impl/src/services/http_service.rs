@@ -6,7 +6,7 @@ use ic_http_certification::HttpResponse;
 
 #[cfg_attr(test, mockall::automock)]
 pub trait HttpService {
-    fn http_response_404(&self, request_path: &str) -> HttpResponse;
+    fn http_response_404(&self, request_path: &str) -> HttpResponse<'static>;
 
     /// Certifies default responses, such as 404.
     ///
@@ -25,7 +25,7 @@ impl Default for HttpServiceImpl<CertificationRepositoryImpl> {
 }
 
 impl<C: CertificationRepository> HttpService for HttpServiceImpl<C> {
-    fn http_response_404(&self, request_path: &str) -> HttpResponse {
+    fn http_response_404(&self, request_path: &str) -> HttpResponse<'static> {
         self.certification_repository.get_certified_http_response(
             request_path,
             NOT_FOUND_PATH,

@@ -22,14 +22,13 @@ use ic_cdk::*;
 
 #[update]
 #[log_errors(crate::services::log_update_call_error)]
-async fn create_proposal_review(
+fn create_proposal_review(
     request: CreateProposalReviewRequest,
 ) -> ApiResult<CreateProposalReviewResponse> {
     let calling_principal = caller();
 
     ProposalReviewController::default()
         .create_proposal_review(calling_principal, request)
-        .await
         .into()
 }
 
@@ -65,14 +64,13 @@ fn get_proposal_review(request: GetProposalReviewRequest) -> ApiResult<GetPropos
 
 #[update]
 #[log_errors(crate::services::log_update_call_error)]
-async fn create_proposal_review_image(
+fn create_proposal_review_image(
     request: CreateProposalReviewImageRequest,
 ) -> ApiResult<CreateProposalReviewImageResponse> {
     let calling_principal = caller();
 
     ProposalReviewController::default()
         .create_proposal_review_image(calling_principal, request)
-        .await
         .into()
 }
 
@@ -142,7 +140,7 @@ impl<A: AccessControlService, P: ProposalReviewService> ProposalReviewController
         }
     }
 
-    async fn create_proposal_review(
+    fn create_proposal_review(
         &self,
         calling_principal: Principal,
         request: CreateProposalReviewRequest,
@@ -152,8 +150,7 @@ impl<A: AccessControlService, P: ProposalReviewService> ProposalReviewController
 
         let proposal_review = self
             .proposal_review_service
-            .create_proposal_review(calling_principal, request)
-            .await?;
+            .create_proposal_review(calling_principal, request)?;
 
         Ok(proposal_review)
     }
@@ -188,7 +185,7 @@ impl<A: AccessControlService, P: ProposalReviewService> ProposalReviewController
             .get_proposal_review(calling_principal, request)
     }
 
-    async fn create_proposal_review_image(
+    fn create_proposal_review_image(
         &self,
         calling_principal: Principal,
         request: CreateProposalReviewImageRequest,
@@ -198,7 +195,6 @@ impl<A: AccessControlService, P: ProposalReviewService> ProposalReviewController
 
         self.proposal_review_service
             .create_proposal_review_image(calling_principal, request)
-            .await
     }
 
     fn get_my_proposal_review(
@@ -254,7 +250,7 @@ mod tests {
     use rstest::*;
 
     #[rstest]
-    async fn create_proposal_review() {
+    fn create_proposal_review() {
         let calling_principal = fixtures::principal_a();
         let request = CreateProposalReviewRequest {
             proposal_id: "proposal_id".to_string(),
@@ -289,14 +285,13 @@ mod tests {
 
         let result = controller
             .create_proposal_review(calling_principal, request)
-            .await
             .unwrap();
 
         assert_eq!(result, response);
     }
 
     #[rstest]
-    async fn create_proposal_review_unauthorized() {
+    fn create_proposal_review_unauthorized() {
         let calling_principal = fixtures::principal_a();
         let request = CreateProposalReviewRequest {
             proposal_id: "proposal_id".to_string(),
@@ -328,7 +323,6 @@ mod tests {
 
         let result = controller
             .create_proposal_review(calling_principal, request)
-            .await
             .unwrap_err();
 
         assert_eq!(result, error);
@@ -409,7 +403,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn create_proposal_review_image() {
+    fn create_proposal_review_image() {
         let calling_principal = fixtures::principal_a();
         let request = CreateProposalReviewImageRequest {
             proposal_id: fixtures::proposal_id().to_string(),
@@ -441,14 +435,13 @@ mod tests {
 
         let result = controller
             .create_proposal_review_image(calling_principal, request)
-            .await
             .unwrap();
 
         assert_eq!(result, response);
     }
 
     #[rstest]
-    async fn create_proposal_review_image_unauthorized() {
+    fn create_proposal_review_image_unauthorized() {
         let calling_principal = fixtures::principal_a();
         let request = CreateProposalReviewImageRequest {
             proposal_id: fixtures::proposal_id().to_string(),
@@ -479,14 +472,13 @@ mod tests {
 
         let result = controller
             .create_proposal_review_image(calling_principal, request)
-            .await
             .unwrap_err();
 
         assert_eq!(result, error);
     }
 
     #[rstest]
-    async fn delete_proposal_review_image() {
+    fn delete_proposal_review_image() {
         let calling_principal = fixtures::principal_a();
         let request = DeleteProposalReviewImageRequest {
             proposal_id: fixtures::proposal_id().to_string(),
@@ -518,7 +510,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn delete_proposal_review_image_unauthorized() {
+    fn delete_proposal_review_image_unauthorized() {
         let calling_principal = fixtures::principal_a();
         let request = DeleteProposalReviewImageRequest {
             proposal_id: fixtures::proposal_id().to_string(),

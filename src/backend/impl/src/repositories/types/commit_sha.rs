@@ -1,3 +1,4 @@
+use core::fmt::{Display, Formatter};
 use std::borrow::Cow;
 
 use backend_api::ApiError;
@@ -65,9 +66,9 @@ impl TryFrom<Vec<u8>> for CommitSha {
     }
 }
 
-impl ToString for CommitSha {
-    fn to_string(&self) -> String {
-        hex::encode(self.0)
+impl Display for CommitSha {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", hex::encode(self.0))
     }
 }
 

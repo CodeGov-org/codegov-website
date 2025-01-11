@@ -20,7 +20,7 @@ const MAX_PROPOSAL_REVIEW_COMMIT_COMMENT_CHARS: usize = 1000;
 
 #[cfg_attr(test, mockall::automock)]
 pub trait ProposalReviewCommitService {
-    async fn create_proposal_review_commit(
+    fn create_proposal_review_commit(
         &self,
         calling_principal: Principal,
         request: CreateProposalReviewCommitRequest,
@@ -76,7 +76,7 @@ impl<
         P: ProposalRepository,
     > ProposalReviewCommitService for ProposalReviewCommitServiceImpl<PRC, U, PR, P>
 {
-    async fn create_proposal_review_commit(
+    fn create_proposal_review_commit(
         &self,
         calling_principal: Principal,
         request: CreateProposalReviewCommitRequest,
@@ -108,9 +108,9 @@ impl<
         {
             return Err(ApiError::conflict(&format!(
                 "User with Id {} has already created {} proposal review commits for proposal review with Id {}",
-                user_id.to_string(),
+                user_id,
                 MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER,
-                proposal_review_id.to_string()
+                proposal_review_id
             )));
         }
 
@@ -125,9 +125,9 @@ impl<
         {
             return Err(ApiError::conflict(&format!(
                 "User with Id {} has already created a commit review for proposal review with Id {} and commit sha {}",
-                user_id.to_string(),
-                proposal_review_id.to_string(),
-                commit_sha.to_string()
+                user_id,
+                proposal_review_id,
+                commit_sha
             )));
         }
 
@@ -146,8 +146,7 @@ impl<
 
         let id = self
             .proposal_review_commit_repository
-            .create_proposal_review_commit(proposal_review_commit.clone())
-            .await?;
+            .create_proposal_review_commit(proposal_review_commit.clone())?;
 
         Ok(map_proposal_review_commit(id, proposal_review_commit))
     }
@@ -266,14 +265,13 @@ impl<
             .get_proposal_review_commit_by_id(proposal_review_commit_id)
             .ok_or(ApiError::not_found(&format!(
                 "Proposal review commit with Id {} not found",
-                proposal_review_commit_id.to_string()
+                proposal_review_commit_id
             )))?;
 
         if proposal_review_commit.user_id.ne(user_id) {
             return Err(ApiError::permission_denied(&format!(
                 "Proposal review commit with Id {} does not belong to user with Id {}",
-                proposal_review_commit_id.to_string(),
-                user_id.to_string(),
+                proposal_review_commit_id, user_id,
             )));
         }
 
@@ -293,15 +291,14 @@ impl<
                 if proposal_review.is_published() {
                     return Err(ApiError::conflict(&format!(
                         "Proposal review with Id {} is already published",
-                        proposal_review_id.to_string()
+                        proposal_review_id
                     )));
                 }
 
                 if proposal_review.user_id.ne(user_id) {
                     return Err(ApiError::permission_denied(&format!(
                         "Proposal review with Id {} does not belong to user with Id {}",
-                        proposal_review_id.to_string(),
-                        user_id.to_string(),
+                        proposal_review_id, user_id,
                     )));
                 }
 
@@ -310,7 +307,7 @@ impl<
             None => {
                 return Err(ApiError::not_found(&format!(
                     "Proposal review with Id {} not found",
-                    proposal_review_id.to_string()
+                    proposal_review_id
                 )))
             }
         };
@@ -320,7 +317,7 @@ impl<
             if proposal.is_completed() {
                 return Err(ApiError::conflict(&format!(
                     "Proposal with Id {} is already completed",
-                    proposal_id.to_string()
+                    proposal_id
                 )));
             }
         }
@@ -348,7 +345,7 @@ mod tests {
     #[rstest]
     #[case::not_reviewed(proposal_review_commit_create_not_reviewed())]
     #[case::reviewed(proposal_review_commit_create_reviewed())]
-    async fn create_proposal_review(
+    fn create_proposal_review(
         #[case] fixture: (
             ProposalReviewCommit,
             ProposalReview,
@@ -408,7 +405,6 @@ mod tests {
 
         let result = service
             .create_proposal_review_commit(calling_principal, request)
-            .await
             .unwrap();
 
         assert_eq!(
@@ -421,7 +417,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn create_proposal_review_commit_no_user() {
+    fn create_proposal_review_commit_no_user() {
         let calling_principal = fixtures::principal_a();
         let (_, _, _, request) = proposal_review_commit_create_not_reviewed();
 
@@ -458,7 +454,6 @@ mod tests {
 
         let result = service
             .create_proposal_review_commit(calling_principal, request)
-            .await
             .unwrap_err();
 
         assert_eq!(
@@ -471,7 +466,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn create_proposal_review_commit_too_many() {
+    fn create_proposal_review_commit_too_many() {
         let calling_principal = fixtures::principal_a();
         let (proposal_review_commit, _, _, request) = proposal_review_commit_create_not_reviewed();
         let user_id = proposal_review_commit.user_id;
@@ -518,22 +513,21 @@ mod tests {
 
         let result = service
             .create_proposal_review_commit(calling_principal, request)
-            .await
             .unwrap_err();
 
         assert_eq!(
             result,
             ApiError::conflict(&format!(
                 "User with Id {} has already created {} proposal review commits for proposal review with Id {}",
-                user_id.to_string(),
+                user_id,
                 MAX_PROPOSAL_REVIEW_COMMITS_PER_PROPOSAL_REVIEW_PER_USER,
-                proposal_review_id.to_string()
+                proposal_review_id
             ))
         );
     }
 
     #[rstest]
-    async fn create_proposal_review_commit_already_created() {
+    fn create_proposal_review_commit_already_created() {
         let calling_principal = fixtures::principal_a();
         let (proposal_review_commit, _, _, request) = proposal_review_commit_create_reviewed();
         let user_id = proposal_review_commit.user_id;
@@ -577,16 +571,15 @@ mod tests {
 
         let result = service
             .create_proposal_review_commit(calling_principal, request)
-            .await
             .unwrap_err();
 
         assert_eq!(
             result,
             ApiError::conflict(&format!(
                 "User with Id {} has already created a commit review for proposal review with Id {} and commit sha {}",
-                user_id.to_string(),
-                proposal_review_id.to_string(),
-                commit_sha.to_string()
+                user_id,
+                proposal_review_id,
+                commit_sha
             ))
         );
     }
@@ -595,7 +588,7 @@ mod tests {
     #[case::not_found(proposal_review_commit_create_proposal_review_not_found())]
     #[case::published(proposal_review_commit_create_proposal_review_published())]
     #[case::another_user(proposal_review_commit_create_proposal_review_another_user())]
-    async fn create_proposal_review_proposal_review_invalid(
+    fn create_proposal_review_proposal_review_invalid(
         #[case] fixture: (
             ProposalReviewCommit,
             Option<ProposalReview>,
@@ -649,14 +642,13 @@ mod tests {
 
         let result = service
             .create_proposal_review_commit(calling_principal, request)
-            .await
             .unwrap_err();
 
         assert_eq!(result, expected_result);
     }
 
     #[rstest]
-    async fn create_proposal_review_commit_proposal_completed() {
+    fn create_proposal_review_commit_proposal_completed() {
         let calling_principal = fixtures::principal_a();
         let (proposal_review_commit, proposal_review, proposal, request) =
             proposal_review_commit_create_proposal_completed();
@@ -707,14 +699,13 @@ mod tests {
 
         let result = service
             .create_proposal_review_commit(calling_principal, request)
-            .await
             .unwrap_err();
 
         assert_eq!(
             result,
             ApiError::conflict(&format!(
                 "Proposal with Id {} is already completed",
-                proposal_review.proposal_id.to_string()
+                proposal_review.proposal_id
             ))
         );
     }
@@ -722,7 +713,7 @@ mod tests {
     #[rstest]
     #[case::comment_empty(proposal_review_commit_create_comment_empty())]
     #[case::comment_too_long(proposal_review_commit_create_comment_too_long())]
-    async fn create_proposal_review_commit_comment_invalid_fields(
+    fn create_proposal_review_commit_comment_invalid_fields(
         #[case] fixture: (CreateProposalReviewCommitRequest, ApiError),
     ) {
         let calling_principal = fixtures::principal_a();
@@ -757,7 +748,6 @@ mod tests {
 
         let result = service
             .create_proposal_review_commit(calling_principal, request)
-            .await
             .unwrap_err();
 
         assert_eq!(result, expected_result);
@@ -845,7 +835,7 @@ mod tests {
             request,
             ApiError::not_found(&format!(
                 "Proposal review with Id {} not found",
-                proposal_review_id.to_string()
+                proposal_review_id
             )),
         )
     }
@@ -871,7 +861,7 @@ mod tests {
             request,
             ApiError::conflict(&format!(
                 "Proposal review with Id {} is already published",
-                proposal_review_id.to_string()
+                proposal_review_id
             )),
         )
     }
@@ -894,8 +884,7 @@ mod tests {
             request,
             ApiError::permission_denied(&format!(
                 "Proposal review with Id {} does not belong to user with Id {}",
-                prc.proposal_review_id.to_string(),
-                prc.user_id.to_string(),
+                prc.proposal_review_id, prc.user_id,
             )),
         )
     }
@@ -1168,8 +1157,7 @@ mod tests {
             result,
             ApiError::permission_denied(&format!(
                 "Proposal review commit with Id {} does not belong to user with Id {}",
-                request.id,
-                user_id.to_string(),
+                request.id, user_id,
             ))
         );
     }
@@ -1282,7 +1270,7 @@ mod tests {
             result,
             ApiError::conflict(&format!(
                 "Proposal with Id {} is already completed",
-                proposal_review.proposal_id.to_string()
+                proposal_review.proposal_id
             ))
         )
     }
@@ -1427,7 +1415,7 @@ mod tests {
             request,
             ApiError::not_found(&format!(
                 "Proposal review with Id {} not found",
-                prc.proposal_review_id.to_string(),
+                prc.proposal_review_id,
             )),
         )
     }
@@ -1452,7 +1440,7 @@ mod tests {
             request,
             ApiError::conflict(&format!(
                 "Proposal review with Id {} is already published",
-                prc.proposal_review_id.to_string(),
+                prc.proposal_review_id,
             )),
         )
     }
@@ -1475,8 +1463,7 @@ mod tests {
             request,
             ApiError::permission_denied(&format!(
                 "Proposal review with Id {} does not belong to user with Id {}",
-                prc.proposal_review_id.to_string(),
-                prc.user_id.to_string(),
+                prc.proposal_review_id, prc.user_id,
             )),
         )
     }
@@ -1688,10 +1675,7 @@ mod tests {
 
         assert_eq!(
             result,
-            ApiError::not_found(&format!(
-                "Proposal review commit with Id {} not found",
-                id.to_string()
-            ))
+            ApiError::not_found(&format!("Proposal review commit with Id {} not found", id))
         )
     }
 
@@ -1746,8 +1730,7 @@ mod tests {
             result,
             ApiError::permission_denied(&format!(
                 "Proposal review commit with Id {} does not belong to user with Id {}",
-                id.to_string(),
-                user_id.to_string(),
+                id, user_id,
             ))
         )
     }
@@ -1867,7 +1850,7 @@ mod tests {
             result,
             ApiError::conflict(&format!(
                 "Proposal with Id {} is already completed",
-                proposal_review.proposal_id.to_string()
+                proposal_review.proposal_id
             ))
         )
     }
@@ -1888,7 +1871,7 @@ mod tests {
             None,
             ApiError::not_found(&format!(
                 "Proposal review with Id {} not found",
-                proposal_review_commit.proposal_review_id.to_string(),
+                proposal_review_commit.proposal_review_id,
             )),
         )
     }
@@ -1913,7 +1896,7 @@ mod tests {
             Some(proposal_review),
             ApiError::conflict(&format!(
                 "Proposal review with Id {} is already published",
-                proposal_review_commit.proposal_review_id.to_string(),
+                proposal_review_commit.proposal_review_id,
             )),
         )
     }
@@ -1942,8 +1925,7 @@ mod tests {
             Some(proposal_review),
             ApiError::permission_denied(&format!(
                 "Proposal review with Id {} does not belong to user with Id {}",
-                proposal_review_commit.proposal_review_id.to_string(),
-                user_id.to_string(),
+                proposal_review_commit.proposal_review_id, user_id,
             )),
         )
     }

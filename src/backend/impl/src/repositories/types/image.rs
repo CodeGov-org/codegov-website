@@ -117,7 +117,7 @@ mod tests {
                     sub_path: Some(PathBuf::from("logos")),
                     ..fixtures::image_without_subpath()
                 },
-                format!("{}logos/{}", IMAGES_BASE_PATH, uuid_a().to_string()),
+                format!("{}logos/{}", IMAGES_BASE_PATH, uuid_a()),
             ),
             (
                 uuid_a(),
@@ -125,7 +125,7 @@ mod tests {
                     sub_path: Some(PathBuf::from("logos/")),
                     ..fixtures::image_without_subpath()
                 },
-                format!("{}logos/{}", IMAGES_BASE_PATH, uuid_a().to_string()),
+                format!("{}logos/{}", IMAGES_BASE_PATH, uuid_a()),
             ),
             (
                 uuid_a(),
@@ -133,7 +133,7 @@ mod tests {
                     sub_path: Some(PathBuf::from("logos/subpath")),
                     ..fixtures::image_without_subpath()
                 },
-                format!("{}logos/subpath/{}", IMAGES_BASE_PATH, uuid_a().to_string()),
+                format!("{}logos/subpath/{}", IMAGES_BASE_PATH, uuid_a()),
             ),
             (
                 uuid_a(),
@@ -141,12 +141,12 @@ mod tests {
                     sub_path: Some(PathBuf::from("")),
                     ..fixtures::image_without_subpath()
                 },
-                format!("{}{}", IMAGES_BASE_PATH, uuid_a().to_string()),
+                format!("{}{}", IMAGES_BASE_PATH, uuid_a()),
             ),
             (
                 uuid_b(),
                 fixtures::image_without_subpath(),
-                format!("{}{}", IMAGES_BASE_PATH, uuid_b().to_string()),
+                format!("{}{}", IMAGES_BASE_PATH, uuid_b()),
             ),
         ]
     }

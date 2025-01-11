@@ -35,7 +35,7 @@ impl<I: ImageService, H: HttpService> HttpController<I, H> {
         }
     }
 
-    fn handle_http_request(&self, req: HttpRequest) -> HttpResponse {
+    fn handle_http_request(&self, req: HttpRequest) -> HttpResponse<'static> {
         let req_path = req.get_path().expect("Missing path in request");
 
         if req_path.starts_with(IMAGES_BASE_PATH) {

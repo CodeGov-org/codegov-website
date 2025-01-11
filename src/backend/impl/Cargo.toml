@@ -20,9 +20,7 @@ ic-cdk-timers.workspace = true
 ic-stable-structures.workspace = true
 ic-nns-governance.workspace = true
 ic-nns-common.workspace = true
-ic-http-certification = { git = "https://github.com/dfinity/response-verification", features = [
-  "serde",
-] }
+ic-http-certification = "3"
 
 candid.workspace = true
 candid_parser.workspace = true
@@ -35,8 +33,7 @@ hex = "0.4"
 lazy_static = "1.4"
 base64.workspace = true
 
-rand = { version = "0.8", default-features = false }
-rand_chacha = { version = "0.3", default-features = false }
+fastrand = "2"
 
 [dev-dependencies]
 mockall.workspace = true

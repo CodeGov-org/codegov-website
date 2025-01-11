@@ -19,22 +19,19 @@ use crate::{
 
 #[update]
 #[log_errors(crate::services::log_update_call_error)]
-async fn create_proposal_review_commit(
+fn create_proposal_review_commit(
     request: CreateProposalReviewCommitRequest,
 ) -> ApiResult<CreateProposalReviewCommitResponse> {
     let calling_principal = caller();
 
     ProposalReviewCommitController::default()
         .create_proposal_review_commit(calling_principal, request)
-        .await
         .into()
 }
 
 #[update]
 #[log_errors(crate::services::log_update_call_error)]
-async fn update_proposal_review_commit(
-    request: UpdateProposalReviewCommitRequest,
-) -> ApiResult<()> {
+fn update_proposal_review_commit(request: UpdateProposalReviewCommitRequest) -> ApiResult<()> {
     let calling_principal = caller();
 
     ProposalReviewCommitController::default()
@@ -44,9 +41,7 @@ async fn update_proposal_review_commit(
 
 #[update]
 #[log_errors(crate::services::log_update_call_error)]
-async fn delete_proposal_review_commit(
-    request: DeleteProposalReviewCommitRequest,
-) -> ApiResult<()> {
+fn delete_proposal_review_commit(request: DeleteProposalReviewCommitRequest) -> ApiResult<()> {
     let calling_principal = caller();
 
     ProposalReviewCommitController::default()
@@ -89,7 +84,7 @@ impl<A: AccessControlService, P: ProposalReviewCommitService> ProposalReviewComm
         }
     }
 
-    async fn create_proposal_review_commit(
+    fn create_proposal_review_commit(
         &self,
         calling_principal: Principal,
         request: CreateProposalReviewCommitRequest,
@@ -99,7 +94,6 @@ impl<A: AccessControlService, P: ProposalReviewCommitService> ProposalReviewComm
 
         self.proposal_review_commit_service
             .create_proposal_review_commit(calling_principal, request)
-            .await
     }
 
     fn update_proposal_review_commit(
@@ -138,7 +132,7 @@ mod tests {
     use rstest::*;
 
     #[rstest]
-    async fn create_proposal_review_commit() {
+    fn create_proposal_review_commit() {
         let calling_principal = fixtures::principal_a();
         let request = CreateProposalReviewCommitRequest {
             proposal_review_id: "proposal_review_id".to_string(),
@@ -172,14 +166,13 @@ mod tests {
 
         let result = controller
             .create_proposal_review_commit(calling_principal, request)
-            .await
             .unwrap();
 
         assert_eq!(result, response);
     }
 
     #[rstest]
-    async fn create_proposal_review_commit_unauthorized() {
+    fn create_proposal_review_commit_unauthorized() {
         let calling_principal = fixtures::principal_a();
         let request = CreateProposalReviewCommitRequest {
             proposal_review_id: "proposal_review_id".to_string(),
@@ -209,7 +202,6 @@ mod tests {
 
         let result = controller
             .create_proposal_review_commit(calling_principal, request)
-            .await
             .unwrap_err();
 
         assert_eq!(result, error);

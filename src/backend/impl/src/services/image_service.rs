@@ -10,7 +10,10 @@ use crate::{
 
 #[cfg_attr(test, mockall::automock)]
 pub trait ImageService {
-    fn get_image_http_response(&self, req: &HttpRequest) -> Option<HttpResponse>;
+    fn get_image_http_response<'a>(
+        &self,
+        req: &'a HttpRequest<'a>,
+    ) -> Option<HttpResponse<'static>>;
 
     /// Certifies all images responses.
     ///
@@ -33,7 +36,7 @@ impl Default for ImageServiceImpl<ImageRepositoryImpl, CertificationRepositoryIm
 }
 
 impl<I: ImageRepository, C: CertificationRepository> ImageService for ImageServiceImpl<I, C> {
-    fn get_image_http_response(&self, req: &HttpRequest) -> Option<HttpResponse> {
+    fn get_image_http_response(&self, req: &HttpRequest) -> Option<HttpResponse<'static>> {
         let req_path = req.get_path().expect("Missing path in request");
 
         let image_id = req_path
@@ -42,7 +45,7 @@ impl<I: ImageRepository, C: CertificationRepository> ImageService for ImageServi
             .and_then(|s| ImageId::try_from(s).ok())?;
 
         let image = self.image_repository.get_image_by_id(&image_id)?;
-        let image_http_response = create_image_http_response(&image);
+        let image_http_response = create_image_http_response(image);
 
         let certified_response = self.certification_repository.get_certified_http_response(
             &req_path,
@@ -55,9 +58,10 @@ impl<I: ImageRepository, C: CertificationRepository> ImageService for ImageServi
 
     fn certify_all_http_responses(&self) {
         for (image_id, image) in self.image_repository.get_all_images() {
-            let image_http_response = create_image_http_response(&image);
+            let image_path = image.path(&image_id);
+            let image_http_response = create_image_http_response(image);
             self.certification_repository
-                .certify_http_response(&image.path(&image_id), &image_http_response);
+                .certify_http_response(&image_path, &image_http_response);
         }
     }
 }

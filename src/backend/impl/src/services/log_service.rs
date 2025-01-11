@@ -18,6 +18,7 @@ pub trait LogService {
 
     fn log_info(&self, message: String, context: Option<String>) -> Result<(), ApiError>;
 
+    #[allow(dead_code)]
     fn log_warn(&self, message: String, context: Option<String>) -> Result<(), ApiError>;
 
     fn log_error(&self, message: String, context: Option<String>) -> Result<(), ApiError>;
