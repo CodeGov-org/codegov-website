@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "scripts": {
     "start": "astro dev",
-    "build": "astro check && astro build && node ./generate-alt-origins.mjs"
+    "build": "astro check && astro build"
   },
   "dependencies": {
     "@astrojs/netlify": "^5.2.0",
