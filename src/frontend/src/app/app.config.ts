@@ -29,7 +29,6 @@ export const APP_CONFIG: ApplicationConfig = {
     }),
     provideIcAuth({
       identityProvider: ENV.IDENTITY_PROVIDER,
-      derivationOrigin: ENV.DERIVATION_ORIGIN,
     }),
   ],
 };

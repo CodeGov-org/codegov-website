@@ -41,9 +41,9 @@ describe('User Profile', () => {
       const res = await driver.actor.list_reviewer_profiles();
       const resOk = extractOkResponse(res);
 
-      expect(resOk).toEqual({
-        profiles: [alice, bob],
-      });
+      expect(resOk.profiles).toBeArrayOfSize(2);
+      expect(resOk.profiles).toContainEqual(alice);
+      expect(resOk.profiles).toContainEqual(bob);
     });
   });
 

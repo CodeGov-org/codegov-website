@@ -11,17 +11,5 @@
       "X-XSS-Protection": "1; mode=block"
     },
     "allow_raw_access": false
-  },
-  {
-    "match": ".well-known",
-    "ignore": false
-  },
-  {
-    "match": ".well-known/ii-alternative-origins",
-    "headers": {
-      "Access-Control-Allow-Origin": "*",
-      "Content-Type": "application/json"
-    },
-    "ignore": false
   }
 ]
