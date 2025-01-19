@@ -4,7 +4,6 @@ members = [
   "src/backend/api",
   "src/backend/impl",
   "src/backend/external_canisters",
-  "src/backend/logs",
   "src/backend/macros",
 ]
 
