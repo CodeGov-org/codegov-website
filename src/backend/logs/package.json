@@ -1,0 +1,24 @@
+{
+  "name": "backend-logs",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --test-scheduled",
+    "start": "wrangler dev --test-scheduled",
+    "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "@cg/backend": "workspace:*",
+    "@dfinity/identity-secp256k1": "^2.2.0",
+    "@opentelemetry/api-logs": "^0.57.1",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.57.1",
+    "@opentelemetry/resources": "^1.30.1",
+    "@opentelemetry/sdk-logs": "^0.57.1",
+    "@opentelemetry/semantic-conventions": "^1.28.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250109.0",
+    "wrangler": "^3.103.2"
+  }
+}

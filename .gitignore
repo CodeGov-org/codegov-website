@@ -28,3 +28,7 @@ test-results/
 /data/
 
 /src/backend/integration/state/*nns_state
+
+# Cloudflare Workers (wrangler)
+.dev.vars
+.wrangler/
