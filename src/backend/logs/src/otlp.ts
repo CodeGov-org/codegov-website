@@ -14,10 +14,13 @@ const LOGS_PROCESSOR_MAX_QUEUE_SIZE_DEFAULT = 2_048 * 4;
 export const getLogger = (
   env: Env,
 ): { logger: Logger; shutdown: () => Promise<void> } => {
+  const authToken = Buffer.from(
+    `${env.LOKI_USERNAME}:${env.LOKI_PASSWORD}`,
+  ).toString('base64');
   const logExporter = new OTLPLogExporter({
     url: env.LOKI_ENDPOINT,
     headers: {
-      Authorization: `Basic ${btoa(`${env.LOKI_USERNAME}:${env.LOKI_PASSWORD}`)}`,
+      Authorization: `Basic ${authToken}`,
     },
   });
 
