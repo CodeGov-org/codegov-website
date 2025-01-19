@@ -3,7 +3,7 @@ import {
   LoggerProvider,
 } from '@opentelemetry/sdk-logs';
 import { Logger } from '@opentelemetry/api-logs';
-import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http/build/esnext';
 import { Resource } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 

@@ -39,6 +39,10 @@ export const fetchLogs = async (env: Env): Promise<Array<LogEntry>> => {
 
   const lastFetchTimestamp = await getLastFetchTimestamp(env);
 
+  console.log(
+    `Fetching logs since ${new Date(Number(lastFetchTimestamp)).toISOString()}`,
+  );
+
   const res = await backendActor.list_logs({
     after_timestamp_ms: [lastFetchTimestamp],
     before_timestamp_ms: [],

@@ -42,6 +42,6 @@ export default {
 
     await shutdown();
 
-    console.log('Logs emitted');
+    console.log(`Fetched ${logs.length} logs.`);
   },
 } satisfies ExportedHandler<Env>;
