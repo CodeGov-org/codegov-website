@@ -5,6 +5,7 @@
     "start": "bun run ./src/index.ts"
   },
   "dependencies": {
-    "@cg/nns-utils": "workspace:*"
+    "@cg/nns-utils": "workspace:*",
+    "@cg/utils": "workspace:*"
   }
 }

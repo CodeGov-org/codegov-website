@@ -3,6 +3,7 @@ import {
   ProposalResponse,
   ReviewPeriodState,
 } from '@cg/backend';
+import { addDays } from '@cg/utils';
 import {
   fromCandidDate,
   fromCandidOpt,
@@ -12,7 +13,7 @@ import {
 import {
   GetProposalResponse,
   ListProposalsRequest,
-  ProposalLinkBaseUrl,
+  BaseUrl,
   ProposalState,
   ProposalTopic,
   ProposalVotingLinkType,
@@ -61,13 +62,11 @@ export function mapGetProposalResponse(
     proposalLinks: [
       {
         type: ProposalVotingLinkType.NNSDApp,
-        link:
-          ProposalLinkBaseUrl.NNSDApp + res.proposal.nervous_system.network.id,
+        link: BaseUrl.NNSDApp + res.proposal.nervous_system.network.id,
       },
       {
         type: ProposalVotingLinkType.ICLight,
-        link:
-          ProposalLinkBaseUrl.ICLight + res.proposal.nervous_system.network.id,
+        link: BaseUrl.ICLight + res.proposal.nervous_system.network.id,
       },
     ],
   };
@@ -75,22 +74,24 @@ export function mapGetProposalResponse(
 
 function getProposalTopic(nnsProposalTopic: number): ProposalTopic {
   if (nnsProposalTopic === 13) {
-    return ProposalTopic.RVM;
-  } else if (nnsProposalTopic === 8) {
-    return ProposalTopic.SCM;
-  } else throw new Error('Unknown proposal topic');
+    return ProposalTopic.IcOsVersionElection;
+  }
+
+  if (nnsProposalTopic === 8) {
+    return ProposalTopic.NetworkCanisterManagement;
+  }
+
+  throw new Error('Unknown proposal topic');
 }
 
 function getProposalState(proposalState: ReviewPeriodState): ProposalState {
   if ('in_progress' in proposalState) {
     return ProposalState.InProgress;
-  } else if ('completed' in proposalState) {
-    return ProposalState.Completed;
-  } else throw new Error('Unknown proposal state');
-}
+  }
 
-function addDays(date: Date, days: number): Date {
-  const result = new Date(date);
-  result.setDate(date.getDate() + days);
-  return result;
+  if ('completed' in proposalState) {
+    return ProposalState.Completed;
+  }
+
+  throw new Error('Unknown proposal state');
 }

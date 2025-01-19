@@ -8,21 +8,17 @@ import { ProposalState } from '~core/api';
   providedIn: 'root',
 })
 export class ProposalService {
-  private readonly proposalApiService = inject(ProposalApiService);
+  readonly #proposalApiService = inject(ProposalApiService);
 
-  private readonly currentProposalListSubject = new BehaviorSubject<
-    GetProposalResponse[]
-  >([]);
-  public readonly currentProposalList$ =
-    this.currentProposalListSubject.asObservable();
+  readonly #currentProposals = new BehaviorSubject<GetProposalResponse[]>([]);
+  public readonly currentProposals$ = this.#currentProposals.asObservable();
 
-  private currentProposalIdSubject = new BehaviorSubject<string | null>(null);
-  public readonly currentProposalId$ =
-    this.currentProposalIdSubject.asObservable();
+  readonly #currentProposalId = new BehaviorSubject<string | null>(null);
+  public readonly currentProposalId$ = this.#currentProposalId.asObservable();
 
   public readonly currentProposal$ = this.currentProposalId$.pipe(
     switchMap(proposalId =>
-      this.currentProposalList$.pipe(
+      this.currentProposals$.pipe(
         map(
           proposals =>
             proposals.find(proposal => proposal.id === proposalId) ?? null,
@@ -31,7 +27,7 @@ export class ProposalService {
     ),
   );
 
-  public async loadProposalList(state: ProposalState): Promise<void> {
+  public async loadProposals(state: ProposalState): Promise<void> {
     switch (state) {
       case ProposalState.InProgress:
         return await this.loadOpenProposals();
@@ -43,24 +39,24 @@ export class ProposalService {
   }
 
   public async setCurrentProposalId(proposalId: string): Promise<void> {
-    this.currentProposalIdSubject.next(proposalId);
+    this.#currentProposalId.next(proposalId);
   }
 
   private async loadOpenProposals(): Promise<void> {
-    const getResponse = await this.proposalApiService.listOpenProposals();
+    const getResponse = await this.#proposalApiService.listOpenProposals();
 
-    this.currentProposalListSubject.next(getResponse);
+    this.#currentProposals.next(getResponse);
   }
 
   private async loadClosedProposals(): Promise<void> {
-    const getResponse = await this.proposalApiService.listClosedProposals();
+    const getResponse = await this.#proposalApiService.listClosedProposals();
 
-    this.currentProposalListSubject.next(getResponse);
+    this.#currentProposals.next(getResponse);
   }
 
   private async loadAllProposals(): Promise<void> {
-    const getResponse = await this.proposalApiService.listAllProposals();
+    const getResponse = await this.#proposalApiService.listAllProposals();
 
-    this.currentProposalListSubject.next(getResponse);
+    this.#currentProposals.next(getResponse);
   }
 }

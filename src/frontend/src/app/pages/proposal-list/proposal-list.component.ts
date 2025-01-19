@@ -4,9 +4,11 @@ import {
   Component,
   computed,
   effect,
+  inject,
+  OnInit,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -15,7 +17,7 @@ import {
   LinkTextBtnComponent,
   RadioInputComponent,
 } from '@cg/angular-ui';
-import { ProposalLinkBaseUrl, ProposalReviewStatus } from '~core/api';
+import { BaseUrl, ProposalReviewStatus, ProposalTopic } from '~core/api';
 import { ProposalState } from '~core/api';
 import { FormatDatePipe } from '~core/pipes';
 import { ProfileService, ProposalService, ReviewService } from '~core/state';
@@ -26,22 +28,22 @@ import {
   FormFieldComponent,
   InputDirective,
 } from '~core/ui';
-import { isNotNil } from '~core/utils';
+import { isNotNil, toSyncSignal } from '~core/utils';
 
-enum ReviewPeriodStateFilter {
+enum ReviewPeriodFilter {
   InReview = 'InReview',
   Reviewed = 'Reviewed',
   All = 'All',
 }
 
-const reviewPeriodStateFilter = {
-  [ReviewPeriodStateFilter.InReview]: 'In Review',
-  [ReviewPeriodStateFilter.Reviewed]: 'Reviewed',
-  [ReviewPeriodStateFilter.All]: 'All',
+const reviewPeriodFilters = {
+  [ReviewPeriodFilter.InReview]: 'In Review',
+  [ReviewPeriodFilter.Reviewed]: 'Reviewed',
+  [ReviewPeriodFilter.All]: 'All',
 };
 
 interface FilterForm {
-  reviewPeriodState: FormControl<ReviewPeriodStateFilter>;
+  reviewPeriod: FormControl<ReviewPeriodFilter>;
 }
 
 @Component({
@@ -115,21 +117,30 @@ interface FilterForm {
     }
   `,
   template: `
+    @let filterForm = this.filterForm();
+    @let listFilters = this.listFilters();
+    @let proposals = this.proposalsWithReviewIds();
+    @let isReviewer = this.isReviewer();
+
+    @let ProposalState = this.ProposalState();
+    @let ProposalReviewStatus = this.ProposalReviewStatus();
+    @let BaseUrl = this.BaseUrl();
+
     <div class="page-heading">
       <h1 class="h3">Proposals</h1>
     </div>
 
-    <form [formGroup]="filterForm()">
+    <form [formGroup]="filterForm">
       <div class="filter">
         <div class="filter__label">Select code review status:</div>
         <app-form-field class="filter__value">
           <div class="radio-group">
-            @for (property of listFilter() | keyvalue; track property.key) {
+            @for (property of listFilters | keyvalue; track property.key) {
               <cg-radio-input
                 appInput
                 [value]="property.key"
-                formControlName="reviewPeriodState"
-                name="reviewPeriodState"
+                formControlName="reviewPeriod"
+                name="reviewPeriod"
               >
                 {{ property.value }}
               </cg-radio-input>
@@ -139,11 +150,7 @@ interface FilterForm {
       </div>
     </form>
 
-    @for (
-      proposal of proposalListWithReviewIds();
-      track proposal.id;
-      let i = $index
-    ) {
+    @for (proposal of proposals; track proposal.id; let i = $index) {
       <cg-card class="proposal">
         <h2 class="h4 proposal__title" slot="cardTitle">
           {{ proposal.title }}
@@ -154,7 +161,7 @@ interface FilterForm {
             <app-key-col [id]="'proposal-id-' + i">ID</app-key-col>
             <app-value-col [attr.aria-labelledby]="'proposal-id-' + i">
               <a
-                [href]="linkBaseUrl().Proposal + proposal.nsProposalId"
+                [href]="BaseUrl.Proposal + proposal.nsProposalId"
                 target="_blank"
                 rel="nofollow noreferrer"
               >
@@ -200,7 +207,7 @@ interface FilterForm {
               class="proposal__proposer"
             >
               <a
-                [href]="linkBaseUrl().Neuron + proposal.proposedBy"
+                [href]="BaseUrl.Neuron + proposal.proposedBy"
                 target="_blank"
                 rel="nofollow noreferrer"
               >
@@ -237,31 +244,31 @@ interface FilterForm {
           </app-key-value-grid>
 
           <div class="btn-group">
-            @if (
-              proposal.state === proposalState().InProgress && isReviewer()
-            ) {
+            @if (proposal.state === ProposalState.InProgress && isReviewer) {
               @if (proposal.reviewState === undefined) {
                 <cg-link-text-btn
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Create review
                 </cg-link-text-btn>
-              } @else if (
-                proposal.reviewState === ProposalReviewStatus().Draft
-              ) {
+              } @else if (proposal.reviewState === ProposalReviewStatus.Draft) {
                 <cg-link-text-btn
                   [routerLink]="['/review', proposal.id, 'edit']"
                 >
                   Edit review
                 </cg-link-text-btn>
               } @else if (
-                proposal.reviewState === ProposalReviewStatus().Published
+                proposal.reviewState === ProposalReviewStatus.Published
               ) {
-                <cg-link-text-btn
-                  [routerLink]="['/review', proposal.reviewId ?? '', 'view']"
-                >
-                  My review
-                </cg-link-text-btn>
+                @if (proposal.reviewId) {
+                  <cg-link-text-btn
+                    [routerLink]="['/review', proposal.reviewId, 'view']"
+                  >
+                    My review
+                  </cg-link-text-btn>
+                } @else {
+                  No review found for this proposal.
+                }
               }
             }
 
@@ -274,83 +281,96 @@ interface FilterForm {
     }
   `,
 })
-export class ProposalListComponent {
-  public readonly ProposalReviewStatus = signal(ProposalReviewStatus);
+export class ProposalListComponent implements OnInit {
+  readonly #proposalService = inject(ProposalService);
+  readonly #profileService = inject(ProfileService);
+  readonly #reviewService = inject(ReviewService);
 
-  public readonly proposalList = toSignal(
-    this.proposalService.currentProposalList$,
+  public readonly proposals = toSyncSignal(
+    this.#proposalService.currentProposals$,
+  );
+  public readonly isReviewer = toSyncSignal(
+    this.#profileService.isCurrentUserReviewer$,
   );
 
-  public readonly isReviewer = toSignal(
-    this.profileService.isCurrentUserReviewer$,
-  );
-  public readonly userProfile = toSignal(this.profileService.currentUser$);
-  public readonly userReviewList = toSignal(
-    this.reviewService.currentUserReviews$,
+  readonly #userProfile = toSyncSignal(this.#profileService.currentUser$);
+  readonly #currentUserReviews = toSyncSignal(
+    this.#reviewService.currentUserReviews$,
   );
 
-  public readonly proposalListWithReviewIds = computed(() => {
-    return this.proposalList()?.map(proposal => {
-      const review = this.userReviewList()?.find(
-        review => review.proposalId === proposal.id,
-      );
-      return {
-        ...proposal,
-        reviewId: review?.id,
-        reviewState: review?.status,
-      };
-    });
+  public readonly proposalsWithReviewIds = computed(() => {
+    const proposals = this.proposals();
+    const userReviews = this.#currentUserReviews();
+
+    return (
+      proposals
+        // [TODO]: Temporarily filter proposal to only IcOsVersionElection
+        // until we support other proposal types
+        .filter(
+          proposal => proposal.topic === ProposalTopic.IcOsVersionElection,
+        )
+        .map(proposal => {
+          const review = userReviews.find(
+            review => review.proposalId === proposal.id,
+          );
+
+          return {
+            ...proposal,
+            reviewId: review?.id,
+            reviewState: review?.status,
+          };
+        })
+    );
   });
 
   public readonly filterForm = signal(
     new FormGroup<FilterForm>({
-      reviewPeriodState: new FormControl(ReviewPeriodStateFilter.InReview, {
+      reviewPeriod: new FormControl(ReviewPeriodFilter.InReview, {
         nonNullable: true,
       }),
     }),
   );
 
-  public readonly proposalState = signal(ProposalState);
-  public readonly listFilter = signal(reviewPeriodStateFilter);
-  public readonly linkBaseUrl = signal(ProposalLinkBaseUrl);
+  public readonly ProposalReviewStatus = signal(ProposalReviewStatus);
+  public readonly ProposalState = signal(ProposalState);
+  public readonly BaseUrl = signal(BaseUrl);
+  public readonly listFilters = signal(reviewPeriodFilters);
 
-  constructor(
-    private readonly proposalService: ProposalService,
-    private readonly profileService: ProfileService,
-    private readonly reviewService: ReviewService,
-  ) {
-    this.proposalService.loadProposalList(ProposalState.InProgress);
-
+  constructor() {
     effect(() => {
-      const userProfile = this.userProfile();
+      const userProfile = this.#userProfile();
 
       if (isNotNil(userProfile)) {
-        this.reviewService.loadReviewsByReviewerId(userProfile.id);
+        this.#reviewService.loadReviewsByReviewerId(userProfile.id);
       }
     });
 
     this.filterForm()
       .valueChanges.pipe(takeUntilDestroyed())
       .subscribe(formValue => {
-        this.onFilterFormUpdated(formValue.reviewPeriodState);
+        this.onFilterFormUpdated(formValue.reviewPeriod);
       });
   }
 
-  private async onFilterFormUpdated(
-    formValue: ReviewPeriodStateFilter | undefined,
-  ): Promise<void> {
-    let inputParam: ProposalState = ProposalState.Any;
+  public ngOnInit(): void {
+    this.#proposalService.loadProposals(ProposalState.InProgress);
+  }
 
+  private async onFilterFormUpdated(
+    formValue: ReviewPeriodFilter | undefined,
+  ): Promise<void> {
     switch (formValue) {
-      case ReviewPeriodStateFilter.InReview:
-        inputParam = ProposalState.InProgress;
+      case ReviewPeriodFilter.InReview:
+        await this.#proposalService.loadProposals(ProposalState.InProgress);
         break;
 
-      case ReviewPeriodStateFilter.Reviewed:
-        inputParam = ProposalState.Completed;
+      case ReviewPeriodFilter.Reviewed:
+        await this.#proposalService.loadProposals(ProposalState.Completed);
+        break;
+
+      default:
+        await this.#proposalService.loadProposals(ProposalState.Any);
         break;
     }
-
-    await this.proposalService.loadProposalList(inputParam);
   }
 }

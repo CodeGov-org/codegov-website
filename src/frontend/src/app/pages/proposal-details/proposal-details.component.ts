@@ -19,7 +19,7 @@ import {
 } from '@cg/angular-ui';
 import {
   GetProposalReviewResponse,
-  ProposalLinkBaseUrl,
+  BaseUrl,
   ProposalReviewStatus,
   ProposalState,
 } from '~core/api';
@@ -219,7 +219,7 @@ import { ClosedProposalSummaryComponent } from './closed-proposal-summary';
 export class ProposalDetailsComponent implements OnInit {
   public readonly ProposalReviewStatus = signal(ProposalReviewStatus);
   public readonly ProposalState = signal(ProposalState);
-  public readonly LinkBaseUrl = signal(ProposalLinkBaseUrl);
+  public readonly LinkBaseUrl = signal(BaseUrl);
 
   public readonly currentProposal = toSyncSignal(
     this.proposalService.currentProposal$,
@@ -281,7 +281,7 @@ export class ProposalDetailsComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.proposalService.loadProposalList(ProposalState.Any);
+    this.proposalService.loadProposals(ProposalState.Any);
   }
 
   public onToggleSummary(): void {

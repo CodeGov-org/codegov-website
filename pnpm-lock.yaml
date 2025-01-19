@@ -201,6 +201,9 @@ importers:
       prettier-plugin-astro:
         specifier: ^0.13.0
         version: 0.13.0
+      prettier-plugin-motoko:
+        specifier: ^0.10.2
+        version: 0.10.2(prettier@3.4.2)
       turbo:
         specifier: ^2.3.3
         version: 2.3.3
@@ -253,7 +256,7 @@ importers:
         version: 8.4.7(lit@3.2.1)(storybook@8.4.7(prettier@3.4.2))
       '@storybook/web-components-vite':
         specifier: ^8.4.7
-        version: 8.4.7(lit@3.2.1)(storybook@8.4.7(prettier@3.4.2))(vite@5.4.11(@types/node@22.10.3)(less@4.2.1)(sass@1.83.0)(terser@5.37.0))
+        version: 8.4.7(lit@3.2.1)(storybook@8.4.7(prettier@3.4.2))(vite@5.4.11(@types/node@20.17.11)(less@4.2.1)(sass@1.83.0)(terser@5.37.0))
       storybook:
         specifier: ^8.4.7
         version: 8.4.7(prettier@3.4.2)
@@ -268,6 +271,9 @@ importers:
       '@cg/nns-utils':
         specifier: workspace:*
         version: link:../../../lib/nns-utils
+      '@cg/utils':
+        specifier: workspace:*
+        version: link:../../../lib/utils
       '@dfinity/response-verification':
         specifier: ^2.4.0
         version: 2.6.0
@@ -317,12 +323,15 @@ importers:
       '@cg/styles':
         specifier: workspace:*
         version: link:../../lib/styles
+      '@cg/utils':
+        specifier: workspace:*
+        version: link:../../lib/utils
 
   src/marketing:
     dependencies:
       '@astrojs/netlify':
         specifier: ^5.2.0
-        version: 5.5.4(@types/node@22.10.3)(astro@4.16.18(@types/node@22.10.3)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4))(encoding@0.1.13)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)
+        version: 5.5.4(@types/node@20.17.11)(astro@4.16.18(@types/node@20.17.11)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4))(encoding@0.1.13)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)
       '@cg/styles':
         specifier: workspace:*
         version: link:../../lib/styles
@@ -331,10 +340,10 @@ importers:
         version: link:../../lib/ui
       '@storyblok/astro':
         specifier: ^4.0.4
-        version: 4.1.1(astro@4.16.18(@types/node@22.10.3)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4))
+        version: 4.1.1(astro@4.16.18(@types/node@20.17.11)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4))
       astro:
         specifier: ^4.5.16
-        version: 4.16.18(@types/node@22.10.3)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4)
+        version: 4.16.18(@types/node@20.17.11)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4)
     devDependencies:
       '@astrojs/check':
         specifier: ^0.5.10
@@ -348,6 +357,9 @@ importers:
       '@cg/nns-utils':
         specifier: workspace:*
         version: link:../../lib/nns-utils
+      '@cg/utils':
+        specifier: workspace:*
+        version: link:../../lib/utils
 
 packages:
 
@@ -5531,6 +5543,10 @@ packages:
     resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
     hasBin: true
 
+  glob@7.1.7:
+    resolution: {integrity: sha512-OvD9ENzPLbegENnYP5UUfJIirTg4+XwMWGaQfQTY0JenxNvvIKP3U3/tAQSPIu/lHxXYSZmpXlUHeqAIdKzBLQ==}
+    deprecated: Glob versions prior to v9 are no longer supported
+
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
     deprecated: Glob versions prior to v9 are no longer supported
@@ -7267,6 +7283,11 @@ packages:
     resolution: {integrity: sha512-D2FR03Vir7FIu45XBY20mTb+/ZSWB00sjU9jdQXt83gDrI4Ztz5Fs7/yy74g2N5SVQY4xY1qDr4rNddwYRVX0g==}
     engines: {node: '>=0.10.0'}
 
+  out-of-character@1.2.2:
+    resolution: {integrity: sha512-UpQ85sBLHdx84mnHR3jjX4xWpr06s7ptAVYYO2ya+xIvgHf+XDBtK1GOxNfXXIUXV8hHFEAXUIG1K+juchKaUQ==}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
   own-keys@1.0.1:
     resolution: {integrity: sha512-qFOyK5PjiWZd+QQIh+1jhdb9LpxTF0qs7Pm8o5QHYZ0M3vKqSqzsZaEB6oWlxZ+q2sJBMI/Ktgd2N5ZwQoRHfg==}
     engines: {node: '>= 0.4'}
@@ -7769,6 +7790,11 @@ packages:
   prettier-plugin-astro@0.13.0:
     resolution: {integrity: sha512-5HrJNnPmZqTUNoA97zn4gNQv9BgVhv+et03314WpQ9H9N8m2L9OSV798olwmG2YLXPl1iSstlJCR1zB3x5xG4g==}
     engines: {node: ^14.15.0 || >=16.0.0}
+
+  prettier-plugin-motoko@0.10.2:
+    resolution: {integrity: sha512-/94ns1Js51+6dYQF66kLBJvps7a147Pl7UHamxec5HovhV3eU/s0gkjLooxb9zYpjkd6e8Q2Ol5ugdrTiaz24A==}
+    peerDependencies:
+      prettier: ^2.7 || ^3.0
 
   prettier@2.8.7:
     resolution: {integrity: sha512-yPngTo3aXUUmyuTjeTUT75txrf+aMh9FiD7q9ZE/i6r0bPb22g4FsE6Y338PQX1bmfy08i9QQCB7/rcUAVntfw==}
@@ -10064,7 +10090,7 @@ snapshots:
       '@babel/helper-split-export-declaration': 7.24.7
       '@babel/plugin-syntax-import-attributes': 7.26.0(@babel/core@7.26.0)
       '@inquirer/confirm': 5.0.2(@types/node@20.17.11)
-      '@vitejs/plugin-basic-ssl': 1.1.0(vite@5.4.11(@types/node@20.17.11)(less@4.2.0)(sass@1.80.7)(terser@5.37.0))
+      '@vitejs/plugin-basic-ssl': 1.1.0(vite@5.4.11(@types/node@20.17.11)(less@4.2.0)(sass@1.80.7)(terser@5.36.0))
       beasties: 0.1.0
       browserslist: 4.24.3
       esbuild: 0.24.0
@@ -10307,15 +10333,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/netlify@5.5.4(@types/node@22.10.3)(astro@4.16.18(@types/node@22.10.3)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4))(encoding@0.1.13)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)':
+  '@astrojs/netlify@5.5.4(@types/node@20.17.11)(astro@4.16.18(@types/node@20.17.11)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4))(encoding@0.1.13)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)':
     dependencies:
       '@astrojs/internal-helpers': 0.4.1
       '@astrojs/underscore-redirects': 0.3.4
       '@netlify/functions': 2.8.2
       '@vercel/nft': 0.27.10(encoding@0.1.13)(rollup@4.29.1)
-      astro: 4.16.18(@types/node@22.10.3)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4)
+      astro: 4.16.18(@types/node@20.17.11)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4)
       esbuild: 0.21.5
-      vite: 5.4.11(@types/node@22.10.3)(less@4.2.1)(sass@1.83.0)(terser@5.37.0)
+      vite: 5.4.11(@types/node@20.17.11)(less@4.2.1)(sass@1.83.0)(terser@5.37.0)
     transitivePeerDependencies:
       - '@types/node'
       - encoding
@@ -13175,10 +13201,10 @@ snapshots:
     dependencies:
       '@stencil/core': 4.23.1
 
-  '@storyblok/astro@4.1.1(astro@4.16.18(@types/node@22.10.3)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4))':
+  '@storyblok/astro@4.1.1(astro@4.16.18(@types/node@20.17.11)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4))':
     dependencies:
       '@storyblok/js': 3.2.1
-      astro: 4.16.18(@types/node@22.10.3)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4)
+      astro: 4.16.18(@types/node@20.17.11)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4)
       camelcase: 8.0.0
       lodash.mergewith: 4.6.2
 
@@ -13277,13 +13303,13 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@storybook/builder-vite@8.4.7(storybook@8.4.7(prettier@3.4.2))(vite@5.4.11(@types/node@22.10.3)(less@4.2.1)(sass@1.83.0)(terser@5.37.0))':
+  '@storybook/builder-vite@8.4.7(storybook@8.4.7(prettier@3.4.2))(vite@5.4.11(@types/node@20.17.11)(less@4.2.1)(sass@1.83.0)(terser@5.37.0))':
     dependencies:
       '@storybook/csf-plugin': 8.4.7(storybook@8.4.7(prettier@3.4.2))
       browser-assert: 1.2.1
       storybook: 8.4.7(prettier@3.4.2)
       ts-dedent: 2.2.0
-      vite: 5.4.11(@types/node@22.10.3)(less@4.2.1)(sass@1.83.0)(terser@5.37.0)
+      vite: 5.4.11(@types/node@20.17.11)(less@4.2.1)(sass@1.83.0)(terser@5.37.0)
 
   '@storybook/components@8.4.7(storybook@8.4.7(prettier@3.4.2))':
     dependencies:
@@ -13361,9 +13387,9 @@ snapshots:
     dependencies:
       storybook: 8.4.7(prettier@3.4.2)
 
-  '@storybook/web-components-vite@8.4.7(lit@3.2.1)(storybook@8.4.7(prettier@3.4.2))(vite@5.4.11(@types/node@22.10.3)(less@4.2.1)(sass@1.83.0)(terser@5.37.0))':
+  '@storybook/web-components-vite@8.4.7(lit@3.2.1)(storybook@8.4.7(prettier@3.4.2))(vite@5.4.11(@types/node@20.17.11)(less@4.2.1)(sass@1.83.0)(terser@5.37.0))':
     dependencies:
-      '@storybook/builder-vite': 8.4.7(storybook@8.4.7(prettier@3.4.2))(vite@5.4.11(@types/node@22.10.3)(less@4.2.1)(sass@1.83.0)(terser@5.37.0))
+      '@storybook/builder-vite': 8.4.7(storybook@8.4.7(prettier@3.4.2))(vite@5.4.11(@types/node@20.17.11)(less@4.2.1)(sass@1.83.0)(terser@5.37.0))
       '@storybook/web-components': 8.4.7(lit@3.2.1)(storybook@8.4.7(prettier@3.4.2))
       magic-string: 0.30.17
       storybook: 8.4.7(prettier@3.4.2)
@@ -13875,6 +13901,10 @@ snapshots:
       - rollup
       - supports-color
 
+  '@vitejs/plugin-basic-ssl@1.1.0(vite@5.4.11(@types/node@20.17.11)(less@4.2.0)(sass@1.80.7)(terser@5.36.0))':
+    dependencies:
+      vite: 5.4.11(@types/node@20.17.11)(less@4.2.0)(sass@1.80.7)(terser@5.36.0)
+
   '@vitejs/plugin-basic-ssl@1.1.0(vite@5.4.11(@types/node@20.17.11)(less@4.2.0)(sass@1.80.7)(terser@5.37.0))':
     dependencies:
       vite: 5.4.11(@types/node@20.17.11)(less@4.2.0)(sass@1.80.7)(terser@5.37.0)
@@ -14273,7 +14303,7 @@ snapshots:
 
   astring@1.9.0: {}
 
-  astro@4.16.18(@types/node@22.10.3)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4):
+  astro@4.16.18(@types/node@20.17.11)(less@4.2.1)(rollup@4.29.1)(sass@1.83.0)(terser@5.37.0)(typescript@5.5.4):
     dependencies:
       '@astrojs/compiler': 2.10.3
       '@astrojs/internal-helpers': 0.4.1
@@ -14329,8 +14359,8 @@ snapshots:
       tsconfck: 3.1.4(typescript@5.5.4)
       unist-util-visit: 5.0.0
       vfile: 6.0.3
-      vite: 5.4.11(@types/node@22.10.3)(less@4.2.1)(sass@1.83.0)(terser@5.37.0)
-      vitefu: 1.0.5(vite@5.4.11(@types/node@22.10.3)(less@4.2.1)(sass@1.83.0)(terser@5.37.0))
+      vite: 5.4.11(@types/node@20.17.11)(less@4.2.1)(sass@1.83.0)(terser@5.37.0)
+      vitefu: 1.0.5(vite@5.4.11(@types/node@20.17.11)(less@4.2.1)(sass@1.83.0)(terser@5.37.0))
       which-pm: 3.0.0
       xxhash-wasm: 1.1.0
       yargs-parser: 21.1.1
@@ -15717,7 +15747,7 @@ snapshots:
       - bluebird
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@8.57.1):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -15739,7 +15769,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@8.57.1)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1)
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -16281,6 +16311,15 @@ snapshots:
       minipass: 7.1.2
       package-json-from-dist: 1.0.1
       path-scurry: 1.11.1
+
+  glob@7.1.7:
+    dependencies:
+      fs.realpath: 1.0.0
+      inflight: 1.0.6
+      inherits: 2.0.4
+      minimatch: 3.1.2
+      once: 1.4.0
+      path-is-absolute: 1.0.1
 
   glob@7.2.3:
     dependencies:
@@ -18532,6 +18571,11 @@ snapshots:
 
   os-tmpdir@1.0.2: {}
 
+  out-of-character@1.2.2:
+    dependencies:
+      colorette: 2.0.20
+      glob: 7.1.7
+
   own-keys@1.0.1:
     dependencies:
       get-intrinsic: 1.2.6
@@ -19041,6 +19085,11 @@ snapshots:
       '@astrojs/compiler': 1.8.2
       prettier: 3.4.2
       sass-formatter: 0.7.9
+
+  prettier-plugin-motoko@0.10.2(prettier@3.4.2):
+    dependencies:
+      out-of-character: 1.2.2
+      prettier: 3.4.2
 
   prettier@2.8.7:
     optional: true
@@ -20349,7 +20398,7 @@ snapshots:
       mkdirp: 3.0.1
       yallist: 5.0.0
 
-  terser-webpack-plugin@5.3.11(esbuild@0.24.0)(webpack@5.96.1(esbuild@0.24.0)):
+  terser-webpack-plugin@5.3.11(esbuild@0.24.2)(webpack@5.96.1(esbuild@0.24.0)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       jest-worker: 27.5.1
@@ -20358,7 +20407,7 @@ snapshots:
       terser: 5.37.0
       webpack: 5.96.1(esbuild@0.24.2)
     optionalDependencies:
-      esbuild: 0.24.0
+      esbuild: 0.24.2
 
   terser-webpack-plugin@5.3.11(esbuild@0.24.2)(webpack@5.97.1(esbuild@0.24.2)):
     dependencies:
@@ -20837,21 +20886,21 @@ snapshots:
       sass: 1.80.7
       terser: 5.37.0
 
-  vite@5.4.11(@types/node@22.10.3)(less@4.2.1)(sass@1.83.0)(terser@5.37.0):
+  vite@5.4.11(@types/node@20.17.11)(less@4.2.1)(sass@1.83.0)(terser@5.37.0):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.4.49
       rollup: 4.26.0
     optionalDependencies:
-      '@types/node': 22.10.3
+      '@types/node': 20.17.11
       fsevents: 2.3.3
       less: 4.2.1
       sass: 1.83.0
       terser: 5.37.0
 
-  vitefu@1.0.5(vite@5.4.11(@types/node@22.10.3)(less@4.2.1)(sass@1.83.0)(terser@5.37.0)):
+  vitefu@1.0.5(vite@5.4.11(@types/node@20.17.11)(less@4.2.1)(sass@1.83.0)(terser@5.37.0)):
     optionalDependencies:
-      vite: 5.4.11(@types/node@22.10.3)(less@4.2.1)(sass@1.83.0)(terser@5.37.0)
+      vite: 5.4.11(@types/node@20.17.11)(less@4.2.1)(sass@1.83.0)(terser@5.37.0)
 
   void-elements@2.0.1: {}
 
@@ -21148,7 +21197,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 3.3.0
       tapable: 2.2.1
-      terser-webpack-plugin: 5.3.11(esbuild@0.24.0)(webpack@5.96.1(esbuild@0.24.0))
+      terser-webpack-plugin: 5.3.11(esbuild@0.24.2)(webpack@5.96.1(esbuild@0.24.0))
       watchpack: 2.4.2
       webpack-sources: 3.2.3
     transitivePeerDependencies:

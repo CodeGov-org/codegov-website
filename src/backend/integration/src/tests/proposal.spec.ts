@@ -19,8 +19,8 @@ const FETCH_PROPOSALS_LIMIT = 50; // same as on the canister
 describe('Proposal', () => {
   let driver: TestDriver;
   let governance: Governance;
-  const rvmProposalsCount = 10;
-  let rvmProposalIds: bigint[] = [];
+  const proposalsCount = 10;
+  let proposalIds: bigint[] = [];
 
   const advanceTimeToSyncProposals = async (): Promise<number> => {
     const advanceMillis = PROPOSAL_SYNC_INTERVAL_MS + 1;
@@ -34,13 +34,13 @@ describe('Proposal', () => {
     await driver.advanceTime(REVIEW_PERIOD_MS + 1);
   };
 
-  const createRvmProposalsBatch = async (count: number): Promise<bigint[]> => {
+  const createProposalsBatch = async (count: number): Promise<bigint[]> => {
     const ids = [];
     for (let i = 0; i < count; i++) {
       // Create a neuron for each proposal to avoid incurring in neuron's lack of funds.
       // Not an optimal solution, but increasing the staked ICPs doesn't seem to work
       const neuronId = await governance.createNeuron(nnsProposerIdentity);
-      const rvmProposalId = await governance.createRvmProposal(
+      const proposalId = await governance.createIcOsVersionElectionProposal(
         nnsProposerIdentity,
         {
           neuronId,
@@ -49,7 +49,7 @@ describe('Proposal', () => {
           replicaVersion: 'd19fa446ab35780b2c6d8b82ea32d808cca558d5',
         },
       );
-      ids.push(rvmProposalId);
+      ids.push(proposalId);
     }
     return ids;
   };
@@ -59,11 +59,11 @@ describe('Proposal', () => {
     expectedCount?: number,
   ) => {
     const { proposals } = extractOkResponse(res);
-    expect(proposals.length).toEqual(expectedCount ?? rvmProposalsCount);
-    for (const rvmProposalId of rvmProposalIds) {
+    expect(proposals.length).toEqual(expectedCount ?? proposalsCount);
+    for (const proposalId of proposalIds) {
       expect(
         proposals.findIndex(
-          p => p.proposal.nervous_system.network.id === rvmProposalId,
+          p => p.proposal.nervous_system.network.id === proposalId,
         ),
       ).toBeGreaterThan(-1);
     }
@@ -72,7 +72,7 @@ describe('Proposal', () => {
   beforeEach(async () => {
     driver = await TestDriver.createWithNnsState();
     governance = new Governance(driver.pic);
-    rvmProposalIds = await createRvmProposalsBatch(rvmProposalsCount);
+    proposalIds = await createProposalsBatch(proposalsCount);
   });
 
   afterEach(async () => {
@@ -158,10 +158,10 @@ describe('Proposal', () => {
     it('should sync proposals recursively', async () => {
       // create more proposals than FETCH_PROPOSALS_LIMIT
       const totalProposals = FETCH_PROPOSALS_LIMIT + 5;
-      const createdIds = await createRvmProposalsBatch(
-        totalProposals - rvmProposalsCount,
+      const createdIds = await createProposalsBatch(
+        totalProposals - proposalsCount,
       );
-      rvmProposalIds = rvmProposalIds.concat(createdIds);
+      proposalIds = proposalIds.concat(createdIds);
 
       await advanceTimeToSyncProposals();
 
@@ -241,7 +241,7 @@ describe('Proposal', () => {
       for (let i = 0; i < proposalsCount; i++) {
         await driver.advanceTime(60 * MS_IN_MINUTE); // 1 hour
 
-        const proposalId = await governance.createRvmProposal(
+        const proposalId = await governance.createIcOsVersionElectionProposal(
           nnsProposerIdentity,
           {
             neuronId,
@@ -279,20 +279,17 @@ describe('Proposal', () => {
       await advanceTimeToSyncProposals();
 
       // only these proposals will be in progress
-      const lastRvmProposalIds = await createProposalsEveryHour(5);
-      lastRvmProposalIds.reverse();
+      const lastProposalIds = await createProposalsEveryHour(5);
+      lastProposalIds.reverse();
 
       await advanceTimeToSyncProposals();
 
       const res = await driver.actor.list_proposals({ state: [] });
-      expectListProposalsResult(
-        res,
-        rvmProposalsCount + lastRvmProposalIds.length,
-      );
+      expectListProposalsResult(res, proposalsCount + lastProposalIds.length);
       const { proposals } = extractOkResponse(res);
       expectProposalsSortedByTimestampDesc(
         proposals.filter(p =>
-          lastRvmProposalIds.includes(p.proposal.nervous_system.network.id),
+          lastProposalIds.includes(p.proposal.nervous_system.network.id),
         ),
       );
     });
@@ -303,8 +300,8 @@ describe('Proposal', () => {
       await advanceTimeToCompleteProposals();
 
       // only these proposals will be in progress
-      const lastRvmProposalIds = await createProposalsEveryHour(5);
-      lastRvmProposalIds.reverse();
+      const lastProposalIds = await createProposalsEveryHour(5);
+      lastProposalIds.reverse();
 
       await advanceTimeToSyncProposals();
 
@@ -315,7 +312,7 @@ describe('Proposal', () => {
         extractOkResponse(resInProgress);
       expectProposalsSortedByTimestampDesc(
         proposalsInProgress.filter(p =>
-          lastRvmProposalIds.includes(p.proposal.nervous_system.network.id),
+          lastProposalIds.includes(p.proposal.nervous_system.network.id),
         ),
       );
 
@@ -327,7 +324,7 @@ describe('Proposal', () => {
       const { proposals: proposalsCompleted } = extractOkResponse(resCompleted);
       expectProposalsSortedByTimestampDesc(
         proposalsCompleted.filter(p =>
-          lastRvmProposalIds.includes(p.proposal.nervous_system.network.id),
+          lastProposalIds.includes(p.proposal.nervous_system.network.id),
         ),
       );
     });

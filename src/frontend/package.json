@@ -12,6 +12,7 @@
   "dependencies": {
     "@cg/angular-ui": "workspace:*",
     "@cg/backend": "workspace:*",
-    "@cg/styles": "workspace:*"
+    "@cg/styles": "workspace:*",
+    "@cg/utils": "workspace:*"
   }
 }
