@@ -18,7 +18,9 @@ export const getLogger = (
     `${env.LOKI_USERNAME}:${env.LOKI_PASSWORD}`,
   ).toString('base64');
   const logExporter = new OTLPLogExporter({
-    url: env.LOKI_ENDPOINT,
+    // from https://grafana.com/docs/loki/latest/reference/loki-http-api/#ingest-logs-using-otlp
+    url: `${env.LOKI_ENDPOINT}/otlp/v1/logs`,
+
     headers: {
       Authorization: `Basic ${authToken}`,
     },
@@ -26,7 +28,7 @@ export const getLogger = (
 
   const loggerProvider = new LoggerProvider({
     resource: new Resource({
-      [ATTR_SERVICE_NAME]: 'backend-canister-logger',
+      [ATTR_SERVICE_NAME]: 'backend_canister',
       canister_id: env.BACKEND_CANISTER_ID,
     }),
   });

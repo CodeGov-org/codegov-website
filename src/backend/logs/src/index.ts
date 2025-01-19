@@ -35,6 +35,11 @@ export default {
   async scheduled(_event, env, _ctx): Promise<void> {
     const logs = await fetchLogs(env);
 
+    if (logs.length === 0) {
+      console.log('No logs fetched.');
+      return;
+    }
+
     const { logger, shutdown } = getLogger(env);
     for (const log of logs) {
       logger.emit(mapLog(log));
@@ -42,6 +47,6 @@ export default {
 
     await shutdown();
 
-    console.log(`Fetched ${logs.length} logs.`);
+    console.log(`Fetched and emitted ${logs.length} logs.`);
   },
 } satisfies ExportedHandler<Env>;
