@@ -1,7 +1,10 @@
+import './polyfill';
+
 import { type LogLevel, type LogEntry } from '@cg/backend';
 import { fetchLogs } from './fetcher';
 import { getLogger } from './otlp';
 import { type LogRecord, SeverityNumber } from '@opentelemetry/api-logs';
+import { diag, DiagConsoleLogger } from '@opentelemetry/api';
 
 const mapLogLevel = (level: LogLevel): SeverityNumber => {
   if ('info' in level) {
@@ -31,6 +34,8 @@ export default {
   // [[triggers]] configuration.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async scheduled(_event, env, _ctx): Promise<void> {
+    diag.setLogger(new DiagConsoleLogger());
+
     const logs = await fetchLogs(env);
 
     if (logs.length === 0) {

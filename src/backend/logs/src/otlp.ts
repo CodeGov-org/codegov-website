@@ -23,6 +23,7 @@ export const getLogger = (
     headers: {
       Authorization: `Basic ${authToken}`,
     },
+    keepAlive: false,
   });
 
   const loggerProvider = new LoggerProvider({

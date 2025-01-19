@@ -283,6 +283,9 @@ importers:
       '@dfinity/identity-secp256k1':
         specifier: ^2.2.0
         version: 2.2.0(@dfinity/candid@2.2.0(@dfinity/principal@2.2.0))(@dfinity/principal@2.2.0)
+      '@opentelemetry/api':
+        specifier: ^1.9.0
+        version: 1.9.0
       '@opentelemetry/api-logs':
         specifier: ^0.57.1
         version: 0.57.1
@@ -11673,7 +11676,7 @@ snapshots:
 
   '@dfinity/principal@2.2.0':
     dependencies:
-      '@noble/hashes': 1.6.1
+      '@noble/hashes': 1.7.1
 
   '@dfinity/response-verification@2.6.0': {}
 
