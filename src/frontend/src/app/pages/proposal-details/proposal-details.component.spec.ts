@@ -10,7 +10,7 @@ import {
   ProposalTopic,
   ProposalState,
   ProposalVotingLinkType,
-  ProposalLinkBaseUrl,
+  BaseUrl,
 } from '~core/api';
 import { ProfileService, ReviewService, ProposalService } from '~core/state';
 import {
@@ -49,7 +49,7 @@ describe('ProposalDetailsComponent', () => {
         id: '1',
         nsProposalId: 1n,
         title: 'title',
-        topic: ProposalTopic.RVM,
+        topic: ProposalTopic.IcOsVersionElection,
         type: 'unknown',
         state: ProposalState.InProgress,
         reviewPeriodEnd: new Date(2024, 1, 17, 1, 1, 25),
@@ -63,7 +63,7 @@ describe('ProposalDetailsComponent', () => {
         proposalLinks: [
           {
             type: ProposalVotingLinkType.NNSDApp,
-            link: ProposalLinkBaseUrl.NNSDApp + 1,
+            link: BaseUrl.NNSDApp + 1,
           },
         ],
       }),

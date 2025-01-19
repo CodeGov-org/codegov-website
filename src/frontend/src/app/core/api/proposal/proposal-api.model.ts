@@ -26,8 +26,8 @@ export interface GetProposalResponse {
 }
 
 export enum ProposalTopic {
-  SCM = 'SystemCanisterManagement',
-  RVM = 'ReplicaVersionManagement',
+  NetworkCanisterManagement = 'NetworkCanisterManagement',
+  IcOsVersionElection = 'IcOsVersionElection',
 }
 
 export interface ProposalVotingLink {
@@ -40,11 +40,9 @@ export enum ProposalVotingLinkType {
   ICLight = 'ICLight',
 }
 
-export enum ProposalLinkBaseUrl {
+export enum BaseUrl {
   NNSDApp = 'https://nns.ic0.app/proposal/?u=qoctq-giaaa-aaaaa-aaaea-cai&proposal=',
   Proposal = 'https://dashboard.internetcomputer.org/proposal/',
   Neuron = 'https://dashboard.internetcomputer.org/neuron/',
   ICLight = 'https://iclight.io/nns/proposals/',
 }
-
-export type ProposalCodeGovVote = 'ADOPT' | 'REJECT' | 'NO VOTE';

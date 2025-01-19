@@ -7,6 +7,7 @@
   "devDependencies": {
     "@cg/backend": "workspace:*",
     "@cg/nns-utils": "workspace:*",
+    "@cg/utils": "workspace:*",
     "@dfinity/response-verification": "^2.4.0",
     "date-fns-tz": "^3.1.3"
   }

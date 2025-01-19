@@ -1,4 +1,10 @@
-import { AnonymousIdentity, HttpAgent, Identity } from '@dfinity/agent';
+import {
+  Actor,
+  ActorSubclass,
+  AnonymousIdentity,
+  HttpAgent,
+  Identity,
+} from '@dfinity/agent';
 import { AccountIdentifier } from '@dfinity/ledger-icp';
 import {
   GovernanceCanister,
@@ -6,6 +12,7 @@ import {
   GovernanceError,
 } from '@dfinity/nns';
 import { isNullish } from '@dfinity/utils';
+import { isNil } from '@cg/utils';
 
 import { Ledger } from '../icp-ledger';
 import { CreateAgentOptions, createAgent } from '../agent';
@@ -15,21 +22,37 @@ import {
   generateNonce,
   getNeuronSubaccount,
   optional,
+  GovernanceDeclarations,
 } from '@cg/nns-utils';
-import { CreateRvmProposalRequest } from './types';
+import {
+  CreateIcOsVersionElectionProposalRequest,
+  SyncMainnetProposalRequest,
+} from './types';
 import { Ora } from 'ora';
 
 export class Governance {
-  private readonly governanceCanister: GovernanceCanister;
-  private readonly defaultIdentity = new AnonymousIdentity();
+  readonly #governanceCanister: GovernanceCanister;
+  readonly #defaultIdentity = new AnonymousIdentity();
+
+  readonly #mainnetGovernanceActor: ActorSubclass<GovernanceDeclarations._SERVICE>;
 
   private constructor(
     private readonly agent: HttpAgent,
+    mainnetAgent: HttpAgent,
     private readonly ledger: Ledger,
   ) {
-    agent.replaceIdentity(this.defaultIdentity);
+    agent.replaceIdentity(this.#defaultIdentity);
+    mainnetAgent.replaceIdentity(this.#defaultIdentity);
 
-    this.governanceCanister = GovernanceCanister.create({
+    this.#mainnetGovernanceActor = Actor.createActor(
+      GovernanceDeclarations.idlFactory,
+      {
+        canisterId: GOVERNANCE_CANISTER_ID,
+        agent: mainnetAgent,
+      },
+    );
+
+    this.#governanceCanister = GovernanceCanister.create({
       agent,
       canisterId: GOVERNANCE_CANISTER_ID,
     });
@@ -39,9 +62,13 @@ export class Governance {
     agentOptions: CreateAgentOptions,
   ): Promise<Governance> {
     const agent = await createAgent(agentOptions);
+    const mainnetAgent = new HttpAgent({
+      ...agentOptions,
+      host: 'https://icp-api.io',
+    });
     const ledger = await Ledger.create(agentOptions);
 
-    return new Governance(agent, ledger);
+    return new Governance(agent, mainnetAgent, ledger);
   }
 
   public async createNeuron(identity: Identity, spinner: Ora): Promise<bigint> {
@@ -70,7 +97,7 @@ export class Governance {
 
       spinner.text = 'Creating neuron...';
       const neuronId =
-        await this.governanceCanister.claimOrRefreshNeuronFromAccount({
+        await this.#governanceCanister.claimOrRefreshNeuronFromAccount({
           controller: ownerPrincipal,
           memo: nonce,
         });
@@ -80,7 +107,7 @@ export class Governance {
       }
 
       spinner.text = 'Increasing dissolve delay...';
-      await this.governanceCanister.increaseDissolveDelay({
+      await this.#governanceCanister.increaseDissolveDelay({
         neuronId,
         additionalDissolveDelaySeconds: 60 * 60 * 24 * 7 * 52 * 1, // 1 year
       });
@@ -93,15 +120,15 @@ export class Governance {
 
       throw error;
     } finally {
-      this.agent.replaceIdentity(this.defaultIdentity);
+      this.agent.replaceIdentity(this.#defaultIdentity);
     }
   }
 
-  public async createRvmProposal(
+  public async createIcOsVersionElectionProposal(
     identity: Identity,
-    payload: CreateRvmProposalRequest,
+    payload: CreateIcOsVersionElectionProposalRequest,
   ): Promise<void> {
-    const rvmPayload = encodeUpdateElectedReplicaVersionsPayload({
+    const payloadBytes = encodeUpdateElectedReplicaVersionsPayload({
       release_package_urls: [
         `https://download.dfinity.systems/ic/${payload.replicaVersion}/guest-os/update-img/update-img.tar.gz`,
         `https://download.dfinity.network/ic/${payload.replicaVersion}/guest-os/update-img/update-img.tar.gz`,
@@ -112,7 +139,7 @@ export class Governance {
       replica_versions_to_unelect: [],
     });
 
-    const args: MakeProposalRequest = {
+    return await this.makeProposal(identity, {
       neuronId: payload.neuronId,
       summary: payload.summary,
       title: payload.title,
@@ -120,14 +147,71 @@ export class Governance {
       action: {
         ExecuteNnsFunction: {
           nnsFunctionId: 38,
-          payloadBytes: rvmPayload,
+          payloadBytes,
         },
       },
-    };
+    });
+  }
 
+  public async syncMainnetProposal(
+    identity: Identity,
+    payload: SyncMainnetProposalRequest,
+    spinner: Ora,
+  ): Promise<void> {
+    const { neuronId, proposalId } = payload;
+
+    spinner.text = `Fetching proposal with ID ${proposalId} from mainnet...`;
+    const [proposalInfo] =
+      await this.#mainnetGovernanceActor.get_proposal_info(proposalId);
+    if (isNil(proposalInfo)) {
+      throw new Error(`Proposal with ID ${proposalId} not found on mainnet.`);
+    }
+
+    const [proposal] = proposalInfo.proposal;
+    if (isNil(proposal)) {
+      throw new Error(
+        `Proposal with ID ${proposalId} was found on mainnet but has no payload.`,
+      );
+    }
+
+    const [action] = proposal.action;
+    if (isNil(action)) {
+      throw new Error(
+        `Proposal with ID ${proposalId} was found on mainnet but has no action.`,
+      );
+    }
+
+    const [title] = proposal.title;
+    if ('ExecuteNnsFunction' in action) {
+      return await this.makeProposal(identity, {
+        action: {
+          ExecuteNnsFunction: {
+            nnsFunctionId: action.ExecuteNnsFunction.nns_function,
+            payloadBytes:
+              action.ExecuteNnsFunction.payload instanceof Uint8Array
+                ? (action.ExecuteNnsFunction.payload.buffer as ArrayBuffer)
+                : new Uint8Array(action.ExecuteNnsFunction.payload).buffer,
+          },
+        },
+        neuronId,
+        summary: proposal.summary,
+        title,
+        url: proposal.url,
+      });
+    }
+
+    throw new Error(
+      'Only proposals that use the `ExecuteNnsFunction` action can be synced.',
+    );
+  }
+
+  private async makeProposal(
+    identity: Identity,
+    req: MakeProposalRequest,
+  ): Promise<void> {
     try {
       this.agent.replaceIdentity(identity);
-      await this.governanceCanister.makeProposal(args);
+      await this.#governanceCanister.makeProposal(req);
     } catch (error) {
       if (error instanceof GovernanceError) {
         throw error.detail;
@@ -135,7 +219,7 @@ export class Governance {
 
       throw error;
     } finally {
-      this.agent.replaceIdentity(this.defaultIdentity);
+      this.agent.replaceIdentity(this.#defaultIdentity);
     }
   }
 }

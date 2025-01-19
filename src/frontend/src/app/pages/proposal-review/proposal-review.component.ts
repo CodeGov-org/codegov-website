@@ -60,13 +60,14 @@ import { isNil, isNotNil, routeParamSignal, toSyncSignal } from '~core/utils';
     }
   `,
   template: `
-    @let review = this.currentReview();
+    @let review = this.review();
     @let proposal = this.currentProposal();
     @let reviewer = this.currentReviewer();
+    @let isReviewOwner = this.isReviewOwner();
+    @let reviewSummary = this.reviewSummary();
+
     @let ProposalReviewStatus = this.ProposalReviewStatus();
     @let ProposalState = this.ProposalState();
-    @let isReviewOwner = this.isReviewOwner();
-    @let currentReviewSummary = this.currentReviewSummary();
 
     @if (review && proposal && reviewer) {
       <div class="page-heading">
@@ -194,44 +195,40 @@ import { isNil, isNotNil, routeParamSignal, toSyncSignal } from '~core/utils';
         </cg-card>
       }
 
-      @if (isReviewOwner && currentReviewSummary) {
+      @if (isReviewOwner && reviewSummary) {
         <h2 class="h4">Proposal summary markdown</h2>
 
         <cg-copy-to-clipboard
           type="textarea"
-          [value]="currentReviewSummary.summaryMarkdown"
+          [value]="reviewSummary.summaryMarkdown"
         />
       }
     }
   `,
 })
 export class ProposalReviewComponent implements OnInit {
-  private readonly reviewService = inject(ReviewService);
-  private readonly proposalService = inject(ProposalService);
-  private readonly profileService = inject(ProfileService);
+  readonly #reviewService = inject(ReviewService);
+  readonly #proposalService = inject(ProposalService);
+  readonly #profileService = inject(ProfileService);
 
   public readonly ProposalReviewStatus = signal(ProposalReviewStatus);
   public readonly ProposalState = signal(ProposalState);
 
-  public readonly currentReviewId = routeParamSignal('reviewId');
+  readonly #reviewId = routeParamSignal('reviewId');
+  readonly #currentUser = toSyncSignal(this.#profileService.currentUser$);
+  readonly #reviewers = toSyncSignal(this.#profileService.reviewers$);
 
-  public readonly currentReview = toSyncSignal(
-    this.reviewService.currentReview$,
-  );
-  public readonly currentReviewSummary = toSyncSignal(
-    this.reviewService.currentUserReviewSummary$,
-  );
-  private readonly currentUser$ = toSyncSignal(
-    this.profileService.currentUser$,
+  public readonly review = toSyncSignal(this.#reviewService.currentReview$);
+  public readonly reviewSummary = toSyncSignal(
+    this.#reviewService.currentUserReviewSummary$,
   );
   public readonly currentProposal = toSyncSignal(
-    this.proposalService.currentProposal$,
+    this.#proposalService.currentProposal$,
   );
-  private readonly reviewers = toSyncSignal(this.profileService.reviewers$);
 
   public readonly currentReviewer = computed(() => {
-    const reviewerId = this.reviewOwnerId();
-    const reviewers = this.reviewers();
+    const reviewerId = this.#reviewOwnerId();
+    const reviewers = this.#reviewers();
     if (isNil(reviewerId) || isNil(reviewers)) {
       return null;
     }
@@ -240,8 +237,8 @@ export class ProposalReviewComponent implements OnInit {
   });
 
   public readonly isReviewOwner = computed(() => {
-    const reviewOwnerId = this.reviewOwnerId();
-    const currentUserId = this.currentUserId();
+    const reviewOwnerId = this.#reviewOwnerId();
+    const currentUserId = this.#currentUserId();
 
     if (isNil(reviewOwnerId) || isNil(currentUserId)) {
       return false;
@@ -250,8 +247,8 @@ export class ProposalReviewComponent implements OnInit {
     return reviewOwnerId === currentUserId;
   });
 
-  private readonly reviewOwnerId = computed(() => {
-    const review = this.currentReview();
+  readonly #reviewOwnerId = computed(() => {
+    const review = this.review();
     if (isNil(review)) {
       return null;
     }
@@ -259,8 +256,8 @@ export class ProposalReviewComponent implements OnInit {
     return review.userId;
   });
 
-  private readonly currentUserId = computed(() => {
-    const user = this.currentUser$();
+  readonly #currentUserId = computed(() => {
+    const user = this.#currentUser();
     if (isNil(user)) {
       return null;
     }
@@ -268,8 +265,8 @@ export class ProposalReviewComponent implements OnInit {
     return user.id;
   });
 
-  private readonly currentProposalId = computed(() => {
-    const currentReview = this.currentReview();
+  readonly #currentProposalId = computed(() => {
+    const currentReview = this.review();
     if (isNil(currentReview)) {
       return null;
     }
@@ -279,33 +276,33 @@ export class ProposalReviewComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      const reviewId = this.currentReviewId();
+      const reviewId = this.#reviewId();
 
       if (isNotNil(reviewId)) {
-        this.reviewService.loadReview(reviewId);
+        this.#reviewService.loadReview(reviewId);
       }
     });
 
     effect(() => {
       const isReviewOwner = this.isReviewOwner();
-      const currentProposalId = this.currentProposalId();
+      const currentProposalId = this.#currentProposalId();
 
       if (isReviewOwner && isNotNil(currentProposalId)) {
-        this.reviewService.loadReviewSummary(currentProposalId);
+        this.#reviewService.loadReviewSummary(currentProposalId);
       }
     });
 
     effect(() => {
-      const proposalId = this.currentProposalId();
+      const proposalId = this.#currentProposalId();
 
       if (isNotNil(proposalId)) {
-        this.proposalService.setCurrentProposalId(proposalId);
+        this.#proposalService.setCurrentProposalId(proposalId);
       }
     });
   }
 
   public ngOnInit(): void {
-    this.proposalService.loadProposalList(ProposalState.Any);
-    this.profileService.loadReviewerProfiles();
+    this.#proposalService.loadProposals(ProposalState.Any);
+    this.#profileService.loadReviewerProfiles();
   }
 }

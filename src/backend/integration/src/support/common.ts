@@ -15,7 +15,7 @@ import { Identity } from '@dfinity/agent';
 type BackendActorService = Actor<_SERVICE>;
 
 /**
- * Creates an RVM proposal and syncs the proposals on the backend canister.
+ * Creates an IcOsVersionElection proposal and syncs the proposals on the backend canister.
  *
  * @returns {Promise<string>} the backend canister id of created proposal
  */
@@ -29,7 +29,7 @@ export async function createProposal(
 }> {
   const neuronId = await governance.createNeuron(nnsProposerIdentity);
 
-  const rvmProposalId = await governance.createRvmProposal(
+  const proposalId = await governance.createIcOsVersionElectionProposal(
     nnsProposerIdentity,
     {
       neuronId,
@@ -49,17 +49,14 @@ export async function createProposal(
 
   const proposal = proposals.find(
     p =>
-      p.proposal.nervous_system.network.proposal_info.id[0]!.id ===
-      rvmProposalId,
+      p.proposal.nervous_system.network.proposal_info.id[0]!.id === proposalId,
   );
   if (!proposal) {
-    throw new Error(
-      `Could not find proposal with id ${rvmProposalId.toString()}`,
-    );
+    throw new Error(`Could not find proposal with id ${proposalId.toString()}`);
   }
 
   return {
-    nnsProposalId: rvmProposalId,
+    nnsProposalId: proposalId,
     proposalId: proposal.id,
   };
 }
@@ -94,10 +91,10 @@ export async function completeProposal(
 }
 
 /**
- * Creates an RVM proposal using the {@link createProposal} function
+ * Creates an IcOsVersionElection proposal using the {@link createProposal} function
  * and creates a review for that proposal.
  *
- * Skips creating the RVM proposal if a proposal id is specified as last parameter.
+ * Skips creating the IcOsVersionElection proposal if a proposal id is specified as last parameter.
  *
  * @returns the backend canister id of created proposal and the backend canister id of created review
  */
@@ -146,7 +143,7 @@ export const VALID_IMAGE_BYTES = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
  * Same as {@link createProposalReview} function,
  * but uploads the provided image too.
  *
- * Skips creating the RVM proposal if a proposal id is specified as last parameter.
+ * Skips creating the IcOsVersionElection proposal if a proposal id is specified as last parameter.
  *
  * @returns the backend canister id of created proposal, the backend canister id of created review
  * and the image path.
