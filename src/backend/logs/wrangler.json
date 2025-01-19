@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "codegov-gaas-backend-logs",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-01-09",
+  "observability": {
+    "enabled": true
+  },
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  },
+  "vars": {
+    "BACKEND_CANISTER_ID": "nijcm-2qaaa-aaaal-qcx2a-cai"
+  },
+  "compatibility_flags": ["nodejs_compat"],
+  "kv_namespaces": [
+    {
+      "binding": "METADATA",
+      "id": "3851fdfabb5e4bfb949612219942a7c6"
+    }
+  ]
+}
