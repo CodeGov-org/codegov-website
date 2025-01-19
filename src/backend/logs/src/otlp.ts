@@ -20,7 +20,6 @@ export const getLogger = (
   const logExporter = new OTLPLogExporter({
     // from https://grafana.com/docs/loki/latest/reference/loki-http-api/#ingest-logs-using-otlp
     url: `${env.LOKI_ENDPOINT}/otlp/v1/logs`,
-
     headers: {
       Authorization: `Basic ${authToken}`,
     },

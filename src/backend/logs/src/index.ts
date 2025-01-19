@@ -15,10 +15,8 @@ const mapLogLevel = (level: LogLevel): SeverityNumber => {
 };
 
 const mapLog = (canisterLog: LogEntry): LogRecord => {
-  const timestamp = new Date(canisterLog.date_time);
-
   return {
-    timestamp,
+    timestamp: new Date(canisterLog.date_time),
     observedTimestamp: new Date(),
     severityNumber: mapLogLevel(canisterLog.level),
     body: {
