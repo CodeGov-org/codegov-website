@@ -1,7 +1,7 @@
 #!/bin/bash
 
 QUILL_VERSION="0.4.3"
-DIDC_VERSION="2024-01-30"
+DIDC_VERSION="2024-07-29"
 
 # Assumes that ~/bin is already added to PATH
 BIN="$HOME/bin"

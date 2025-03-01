@@ -1,19 +1,20 @@
 import { Separator, editor, input, select, confirm } from '@inquirer/prompts';
-import { isNullish, nonNullish } from '@dfinity/utils';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
-import ora from 'ora';
+import ora, { Ora } from 'ora';
 
 import { Store } from './util';
 import { checkDfxRunning, getReplicaPort } from './dfx';
 import { Governance } from './governance';
+import { isNil, isNotNil } from '@cg/utils';
 
 const store = await Store.create();
 
 enum Command {
   GenerateIdentity = 'generateIdentity',
   CreateNeuron = 'createNeuron',
-  CreateRvmProposal = 'createRvmProposal',
-  CreateRvmProposalWithDefaults = 'createRvmProposalWithDefaults',
+  SyncMainnetProposal = 'syncMainnetProposal',
+  CreateIcOsVersionElectionProposal = 'createIcOsVersionElectionProposal',
+  CreateIcOsVersionElectionProposalWithDefaults = 'createIcOsVersionElectionProposalWithDefaults',
   DeleteIdentity = 'deleteIdentity',
   DeleteNeuron = 'deleteNeuron',
   Exit = 'exit',
@@ -24,7 +25,7 @@ while (shouldRun) {
   const isDfxRunning = await checkDfxRunning();
 
   if (!isDfxRunning) {
-    console.log('DFX is not running, please start it and try again.');
+    console.info('DFX is not running, please start it and try again.');
     shouldRun = false;
     break;
   }
@@ -40,10 +41,17 @@ while (shouldRun) {
       { name: 'Generate an identity', value: Command.GenerateIdentity },
       { name: 'Create a neuron', value: Command.CreateNeuron },
       new Separator(),
-      { name: 'Create RVM proposal', value: Command.CreateRvmProposal },
       {
-        name: 'Create RVM proposal (with defaults)',
-        value: Command.CreateRvmProposalWithDefaults,
+        name: 'Sync mainnet proposal',
+        value: Command.SyncMainnetProposal,
+      },
+      {
+        name: 'Create IcOsVersionElection proposal',
+        value: Command.CreateIcOsVersionElectionProposal,
+      },
+      {
+        name: 'Create IcOsVersionElection proposal (with defaults)',
+        value: Command.CreateIcOsVersionElectionProposalWithDefaults,
       },
       new Separator(),
       { name: 'Delete identity', value: Command.DeleteIdentity },
@@ -63,12 +71,16 @@ while (shouldRun) {
         await createNeuron(config);
         break;
 
-      case Command.CreateRvmProposal:
-        await createRvmProposal(config);
+      case Command.SyncMainnetProposal:
+        await syncMainnetProposal(config);
         break;
 
-      case Command.CreateRvmProposalWithDefaults:
-        await createRvmProposal(config, true);
+      case Command.CreateIcOsVersionElectionProposal:
+        await createIcOsVersionElectionProposal(config);
+        break;
+
+      case Command.CreateIcOsVersionElectionProposalWithDefaults:
+        await createIcOsVersionElectionProposal(config, true);
         break;
 
       case Command.DeleteIdentity:
@@ -131,21 +143,21 @@ function printConfig({ neuronId, replicaPort, host, identity }: Config): void {
   Replica port: ${replicaPort}
   Replica host: ${host}`;
 
-  if (nonNullish(identity)) {
+  if (isNotNil(identity)) {
     const principal = identity.getPrincipal().toText();
     configString += `\n  Principal: ${principal}`;
   } else {
     configString += '\n  No identity found';
   }
 
-  if (nonNullish(neuronId)) {
+  if (isNotNil(neuronId)) {
     configString += `\n  Neuron ID: ${neuronId}`;
   } else {
     configString += '\n  No neuron ID found';
   }
 
   configString += '\n';
-  console.log(configString);
+  console.info(configString);
 }
 
 async function generateIdentity(): Promise<Ed25519KeyIdentity> {
@@ -157,51 +169,59 @@ async function generateIdentity(): Promise<Ed25519KeyIdentity> {
   return identity;
 }
 
-async function createNeuron({ identity, host }: Config): Promise<bigint> {
-  if (isNullish(identity)) {
-    console.log('No identity found, generating one now...');
-
-    identity = await generateIdentity();
-  }
-
+async function createNeuron(config: Config): Promise<bigint> {
   const spinner = ora().start();
-  const governance = await Governance.create({ host: host });
-
-  const neuronId = await governance.createNeuron(identity, spinner);
 
   try {
+    const identity = await getOrCreateIdentity(config.identity, spinner);
+    const governance = await Governance.create({ host: config.host });
+    const neuronId = await governance.createNeuron(identity, spinner);
+
     await store.setNeuronId(neuronId.toString());
+    return neuronId;
   } finally {
     spinner.stop();
   }
-
-  return neuronId;
 }
 
-async function createRvmProposal(
+async function syncMainnetProposal(config: Config): Promise<void> {
+  const spinner = ora().start();
+  const identity = await getOrCreateIdentity(config.identity, spinner);
+  const neuronId = await getOrCreateNeuron(identity, config, spinner);
+  spinner.stop();
+
+  const governance = await Governance.create({ host: config.host });
+  const proposalId = await input({
+    message: 'Enter the proposal ID to sync:',
+  });
+
+  spinner.start('Syncing mainnet proposal...');
+
+  try {
+    await governance.syncMainnetProposal(
+      identity,
+      {
+        neuronId,
+        proposalId: BigInt(proposalId),
+      },
+      spinner,
+    );
+  } finally {
+    spinner.stop();
+  }
+}
+
+async function createIcOsVersionElectionProposal(
   config: Config,
   withDefaults = false,
 ): Promise<void> {
-  let { identity } = config;
-  let neuronId = 0n;
+  const spinner = ora().start();
 
-  if (isNullish(identity)) {
-    console.log('No identity found, generating one now...');
-
-    identity = await generateIdentity();
-  }
-
-  if (isNullish(config.neuronId)) {
-    console.log('No neuron ID found, creating a neuron now...');
-    neuronId = await createNeuron({
-      ...config,
-      identity,
-    });
-  } else {
-    neuronId = BigInt(config.neuronId);
-  }
-
+  const identity = await getOrCreateIdentity(config.identity, spinner);
+  const neuronId = await getOrCreateNeuron(identity, config, spinner);
   const governance = await Governance.create({ host: config.host });
+
+  spinner.stop();
 
   const title = await input({
     message: 'Enter the proposal title:',
@@ -225,10 +245,9 @@ async function createRvmProposal(
       : undefined,
   });
 
-  const spinner = ora('Creating RVM proposal...').start();
-
+  spinner.start('Creating IcOsVersionElection proposal...');
   try {
-    await governance.createRvmProposal(identity, {
+    await governance.createIcOsVersionElectionProposal(identity, {
       neuronId,
       title,
       summary,
@@ -246,4 +265,36 @@ async function deleteIdentity(): Promise<void> {
 
 async function deleteNeuron(): Promise<void> {
   await store.deleteNeuronId();
+}
+
+async function getOrCreateIdentity(
+  identity: Ed25519KeyIdentity | undefined,
+  spinner: Ora,
+): Promise<Ed25519KeyIdentity> {
+  if (isNil(identity)) {
+    spinner.text = 'No identity found, generating one now...';
+    identity = await generateIdentity();
+  }
+
+  return identity;
+}
+
+async function getOrCreateNeuron(
+  identity: Ed25519KeyIdentity,
+  config: Config,
+  spinner: Ora,
+): Promise<bigint> {
+  let neuronId = 0n;
+
+  if (isNil(config.neuronId)) {
+    spinner.text = 'No neuron ID found, creating a neuron now...';
+    neuronId = await createNeuron({
+      ...config,
+      identity,
+    });
+  } else {
+    neuronId = BigInt(config.neuronId);
+  }
+
+  return neuronId;
 }

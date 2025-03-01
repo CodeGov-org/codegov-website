@@ -15,7 +15,7 @@ import {
 type GovernanceService = GovernanceDeclarations._SERVICE;
 const governanceIdlFactory = GovernanceDeclarations.idlFactory;
 
-export interface CreateRvmProposalRequest {
+export interface CreateIcOsVersionElectionProposalRequest {
   neuronId: bigint;
   title: string;
   summary: string;
@@ -109,11 +109,11 @@ export class Governance {
     }
   }
 
-  public async createRvmProposal(
+  public async createIcOsVersionElectionProposal(
     identity: Identity,
-    payload: CreateRvmProposalRequest,
+    payload: CreateIcOsVersionElectionProposalRequest,
   ): Promise<bigint> {
-    const rvmPayload = encodeUpdateElectedReplicaVersionsPayload({
+    const proposalPayload = encodeUpdateElectedReplicaVersionsPayload({
       release_package_urls: [
         `https://download.dfinity.systems/ic/${payload.replicaVersion}/guest-os/update-img/update-img.tar.gz`,
         `https://download.dfinity.network/ic/${payload.replicaVersion}/guest-os/update-img/update-img.tar.gz`,
@@ -138,7 +138,7 @@ export class Governance {
               action: optional({
                 ExecuteNnsFunction: {
                   nns_function: 38,
-                  payload: new Uint8Array(rvmPayload),
+                  payload: new Uint8Array(proposalPayload),
                 },
               }),
             },

@@ -288,6 +288,12 @@ To assign a user as an admin, run the following command:
 dfx canister call backend update_user_profile '(record { user_id = "${userId}"; username = opt "${username}"; config = opt variant { admin = record { bio = opt "${bio}" } } })'
 ```
 
+To only upgrade a user to admin without changing any other properties:
+
+```bash
+dfx canister call backend update_user_profile '(record { user_id = "${userId}"; config = opt variant { admin = record {} } })'
+```
+
 To assign a user as a reviewer, run the following command:
 
 - Replace `${userId}` with the ID of the profile that was created earlier.
@@ -316,10 +322,16 @@ dfx canister call backend update_user_profile '(record { user_id = "${userId}"; 
 
 ### Listing open proposals
 
-To list open replica version management proposals:
+To list open IcOsVersionElection proposals:
 
 ```bash
-./scripts/list-open-rvm-proposals.sh
+./scripts/list-open-ic-os-version-election-proposals.sh
+```
+
+To list open IcOsVersionDeployment proposals on mainnet:
+
+```bash
+./scripts/list-open-ic-os-version-election-proposals.sh --ic
 ```
 
 ### Creating closed proposals
@@ -366,33 +378,6 @@ To list open replica version management proposals:
   - `payload` is the Candid encoded argument for the corresponding NNS function. The types for this argument can be found in the appropriate canister's declaration. A mapping between NNS functions and their corresponding canisters can be found in the [`NnsFunction::canister_and_function`](https://github.com/dfinity/ic/blob/master/rs/nns/governance/src/governance.rs#L527-L631) function definition.
   - For example, the `UpdateElectedReplicaVersions` uses number `38` and its payload is the [`UpdateElectedReplicaVersionsPayload`](https://github.com/dfinity/ic/blob/master/rs/registry/canister/canister/registry.did#L217-L223) record.
 
-### Getting proposals for testing
-
-Open the [NNS canister interface on the dashboard](https://dashboard.internetcomputer.org/canister/rrkah-fqaaa-aaaaa-aaaaq-cai#list_proposals). It should open on the `list_proposals` method.
-
-- Set `limit` to whatever you want, although lower numbers are recommended for a more manageable data set.
-- Set the `exclude_topic` length to `17`
-- Add the following topics to the `exclude_topic` list:
-  - `0` for `Unspecified`
-  - `1` for `NeuronManagement`
-  - `2` for `ExchangeRate`
-  - `3` for `NetworkEconomics`
-  - `4` for `Governance`
-  - `5` for `NodeAdmin`
-  - `6` for `ParticipantManagement`
-  - `7` for `SubnetManagement`
-  - `8` for `NetworkCanisterManagement`
-  - `9` for `Kyc`
-  - `10` for `NodeProviderRewards`
-  - `12` for `IcOsVersionDeployment`
-  - `14` for `SnsAndCommunityFund`
-  - `15` for `ApiBoundaryNodeManagement`
-  - `16` for `SubnetRental`
-  - `17` for `ProtocolCanisterManagement`
-  - `18` for `ServiceNervousSystemManagement`
-- Note that `11` currently doesn't exist, and `13` is `IcOsVersionElection`, the topic we want.
-- Finally, click the `Call` button to get a list of proposals.
-
 ### Manually syncing proposals
 
 To manually trigger the proposals synchronization from the Nervous Systems, run the following command:
@@ -402,3 +387,13 @@ dfx canister call backend sync_proposals
 ```
 
 This method can be called at any time, since if the proposals were already synced in the cron job, they won't be synced again.
+
+## Updating Candid files for external canisters
+
+To update the Candid files for external canisters, update the `RELEASE` variable in the `./scripts/update-scripts-canisters.sh` file. Make sure to also update referenced tag for the `ic-nns-governance` and `ic-nns-common` crates in the `Cargo.toml` file.
+
+Then run the following script:
+
+```bash
+./scripts/update-external-canisters.sh
+```

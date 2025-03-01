@@ -27,7 +27,7 @@ describe('ProposalListComponent', () => {
 
   beforeEach(async () => {
     proposalServiceMock = proposalServiceMockFactory();
-    defineProp(proposalServiceMock, 'currentProposalList$', of([]));
+    defineProp(proposalServiceMock, 'currentProposals$', of([]));
 
     profileServiceMock = profileServiceMockFactory();
     defineProp(profileServiceMock, 'isCurrentUserReviewer$', of(true));

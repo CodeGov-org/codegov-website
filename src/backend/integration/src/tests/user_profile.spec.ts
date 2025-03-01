@@ -1,5 +1,6 @@
 import { describe, beforeAll, afterAll, it, expect } from 'bun:test';
 import { SocialLink } from '@cg/backend';
+import { addDays } from '@cg/utils';
 import { generateRandomIdentity } from '@hadronous/pic';
 import {
   BACKEND_WASM_PATH,
@@ -12,12 +13,6 @@ import {
 } from '../support';
 
 const initialDate = new Date();
-
-function addDays(date: Date, days: number): Date {
-  const newDate = new Date(date);
-  newDate.setDate(date.getDate() + days);
-  return newDate;
-}
 
 describe('User Profile', () => {
   let driver: TestDriver;

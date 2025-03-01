@@ -4,7 +4,7 @@ module.exports = {
   trailingComma: 'all',
   arrowParens: 'avoid',
   htmlWhitespaceSensitivity: 'strict',
-  plugins: ['prettier-plugin-astro'],
+  plugins: ['prettier-plugin-astro', 'prettier-plugin-motoko'],
   overrides: [
     {
       files: '*.astro',
