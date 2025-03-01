@@ -185,7 +185,6 @@ async function createNeuron(config: Config): Promise<bigint> {
 }
 
 async function syncMainnetProposal(config: Config): Promise<void> {
-  console.log('Config', config);
   const spinner = ora().start();
   const identity = await getOrCreateIdentity(config.identity, spinner);
   const neuronId = await getOrCreateNeuron(identity, config, spinner);
@@ -296,8 +295,6 @@ async function getOrCreateNeuron(
   } else {
     neuronId = BigInt(config.neuronId);
   }
-
-  console.log('Neuron id', neuronId);
 
   return neuronId;
 }
