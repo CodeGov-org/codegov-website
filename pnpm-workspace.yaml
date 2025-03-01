@@ -6,6 +6,7 @@ packages:
   - lib/ui
   - lib/utils
   - src/backend/integration
+  - src/backend/logs
   - src/docs
   - src/frontend
   - src/marketing
