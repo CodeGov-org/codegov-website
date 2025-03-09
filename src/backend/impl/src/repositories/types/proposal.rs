@@ -9,6 +9,8 @@ use ic_stable_structures::{
 };
 use std::{borrow::Cow, ops::RangeBounds};
 
+pub(crate) const PROPOSAL_REVIEW_PERIOD_DURATION: Duration = Duration::hours(96);
+
 pub type ProposalId = Uuid;
 pub type NervousSystemProposalId = u64;
 pub type NeuronId = u64;
@@ -135,10 +137,10 @@ impl Storable for Proposal {
 
 impl Proposal {
     /// Checks if the proposal is in [ReviewPeriodState::InProgress] state
-    /// and was proposed more than **48 hours** ago.
+    /// and was proposed more than [PROPOSAL_REVIEW_PERIOD_DURATION].
     pub fn is_pending(&self, current_time: &DateTime) -> bool {
         self.state == ReviewPeriodState::InProgress
-            && self.proposed_at().unwrap() <= current_time.sub(Duration::hours(48))
+            && self.proposed_at().unwrap() <= current_time.sub(PROPOSAL_REVIEW_PERIOD_DURATION)
     }
 
     /// Checks if the proposal is in [ReviewPeriodState::Completed] state.
@@ -487,8 +489,10 @@ mod tests {
                 state: ReviewPeriodState::InProgress,
                 ..fixtures::nns_replica_version_management_proposal(
                     Some(
-                        DateTime::new(current_time - Duration::hours(48) - Duration::minutes(1))
-                            .unwrap(),
+                        DateTime::new(
+                            current_time - (PROPOSAL_REVIEW_PERIOD_DURATION + Duration::minutes(1)),
+                        )
+                        .unwrap(),
                     ),
                     None,
                 )
@@ -496,7 +500,12 @@ mod tests {
             Proposal {
                 state: ReviewPeriodState::InProgress,
                 ..fixtures::nns_replica_version_management_proposal(
-                    Some(DateTime::new(current_time - Duration::hours(60)).unwrap()),
+                    Some(
+                        DateTime::new(
+                            current_time - PROPOSAL_REVIEW_PERIOD_DURATION.checked_mul(2).unwrap(),
+                        )
+                        .unwrap(),
+                    ),
                     None,
                 )
             },
