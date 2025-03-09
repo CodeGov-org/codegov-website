@@ -1,7 +1,7 @@
 import { describe, beforeEach, afterEach, it, expect } from 'bun:test';
 import {
   Governance,
-  REVIEW_PERIOD_MS,
+  PROPOSAL_REVIEW_PERIOD_MS,
   TestDriver,
   extractErrResponse,
   extractOkResponse,
@@ -31,7 +31,7 @@ describe('Proposal', () => {
   };
 
   const advanceTimeToCompleteProposals = async () => {
-    await driver.advanceTime(REVIEW_PERIOD_MS + 1);
+    await driver.advanceTime(PROPOSAL_REVIEW_PERIOD_MS + 1);
   };
 
   const createProposalsBatch = async (count: number): Promise<bigint[]> => {
@@ -180,7 +180,7 @@ describe('Proposal', () => {
       expectListProposalsResult(resInProgress);
 
       // advance time, but do not reach the review deadline
-      await driver.advanceTime(REVIEW_PERIOD_MS - advancedTimeMs - 1);
+      await driver.advanceTime(PROPOSAL_REVIEW_PERIOD_MS - advancedTimeMs - 1);
 
       const resCompleted = await driver.actor.list_proposals({
         state: [{ completed: null }],

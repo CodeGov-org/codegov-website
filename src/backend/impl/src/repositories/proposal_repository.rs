@@ -259,7 +259,7 @@ mod tests {
     use super::*;
     use crate::{
         fixtures::{self, date_time_a, date_time_b, date_time_c},
-        repositories::NervousSystem,
+        repositories::{NervousSystem, PROPOSAL_REVIEW_PERIOD_DURATION},
         system_api::get_date_time,
     };
     use chrono::Duration;
@@ -401,8 +401,8 @@ mod tests {
             .get_proposals(Some(ReviewPeriodStateKey::Completed))
             .unwrap();
 
-        assert_eq!(in_progress_result.len(), 4);
-        assert_eq!(completed_result.len(), 2);
+        assert_eq!(in_progress_result.len(), 5);
+        assert_eq!(completed_result.len(), 3);
     }
 
     #[fixture]
@@ -441,18 +441,40 @@ mod tests {
             Proposal {
                 state: ReviewPeriodState::InProgress,
                 ..fixtures::nns_replica_version_management_proposal(
-                    Some(
-                        DateTime::new(current_time - Duration::hours(48) - Duration::minutes(1))
-                            .unwrap(),
-                    ),
+                    Some(DateTime::new(current_time - Duration::hours(48)).unwrap()),
                     Some(130396),
                 )
             },
             Proposal {
                 state: ReviewPeriodState::InProgress,
                 ..fixtures::nns_replica_version_management_proposal(
-                    Some(DateTime::new(current_time - Duration::hours(60)).unwrap()),
+                    Some(DateTime::new(current_time - PROPOSAL_REVIEW_PERIOD_DURATION).unwrap()),
                     Some(130395),
+                )
+            },
+            Proposal {
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(
+                        DateTime::new(
+                            current_time - (PROPOSAL_REVIEW_PERIOD_DURATION + Duration::minutes(1)),
+                        )
+                        .unwrap(),
+                    ),
+                    Some(130394),
+                )
+            },
+            Proposal {
+                state: ReviewPeriodState::InProgress,
+                ..fixtures::nns_replica_version_management_proposal(
+                    Some(
+                        DateTime::new(
+                            current_time
+                                - (PROPOSAL_REVIEW_PERIOD_DURATION.checked_mul(2).unwrap()),
+                        )
+                        .unwrap(),
+                    ),
+                    Some(130393),
                 )
             },
         ]
