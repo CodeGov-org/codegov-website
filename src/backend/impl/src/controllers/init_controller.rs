@@ -1,7 +1,8 @@
 use crate::{
     repositories::{CertificationRepositoryImpl, ImageRepositoryImpl, UserProfileRepositoryImpl},
     services::{
-        HttpService, HttpServiceImpl, ImageService, ImageServiceImpl, InitService, InitServiceImpl,
+        AssetService, AssetServiceImpl, HttpService, HttpServiceImpl, ImageService,
+        ImageServiceImpl, InitService, InitServiceImpl,
     },
 };
 use backend_api::ApiError;
@@ -42,10 +43,11 @@ fn init_admin(calling_principal: Principal) {
     }
 }
 
-struct InitController<T: InitService, I: ImageService, H: HttpService> {
+struct InitController<T: InitService, I: ImageService, H: HttpService, A: AssetService> {
     init_service: T,
     image_service: I,
     http_service: H,
+    asset_service: A,
 }
 
 impl Default
@@ -53,6 +55,7 @@ impl Default
         InitServiceImpl<UserProfileRepositoryImpl>,
         ImageServiceImpl<ImageRepositoryImpl, CertificationRepositoryImpl>,
         HttpServiceImpl<CertificationRepositoryImpl>,
+        AssetServiceImpl<CertificationRepositoryImpl>,
     >
 {
     fn default() -> Self {
@@ -60,16 +63,18 @@ impl Default
             InitServiceImpl::default(),
             ImageServiceImpl::default(),
             HttpServiceImpl::default(),
+            AssetServiceImpl::default(),
         )
     }
 }
 
-impl<T: InitService, I: ImageService, H: HttpService> InitController<T, I, H> {
-    fn new(init_service: T, image_service: I, http_service: H) -> Self {
+impl<T: InitService, I: ImageService, H: HttpService, A: AssetService> InitController<T, I, H, A> {
+    fn new(init_service: T, image_service: I, http_service: H, asset_service: A) -> Self {
         Self {
             init_service,
             image_service,
             http_service,
+            asset_service,
         }
     }
 
@@ -80,6 +85,7 @@ impl<T: InitService, I: ImageService, H: HttpService> InitController<T, I, H> {
     fn init_http_certification(&self) {
         self.image_service.certify_all_http_responses();
         self.http_service.certify_default_responses();
+        self.asset_service.certify_all_assets();
     }
 }
 

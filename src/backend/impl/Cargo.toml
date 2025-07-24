@@ -21,6 +21,7 @@ ic-stable-structures.workspace = true
 ic-nns-governance.workspace = true
 ic-nns-common.workspace = true
 ic-http-certification = "3"
+ic-asset-certification = "3"
 
 candid.workspace = true
 candid_parser.workspace = true
@@ -31,7 +32,9 @@ uuid = { workspace = true, features = ["serde"] }
 chrono.workspace = true
 hex = "0.4"
 lazy_static = "1.4"
+once_cell = "1"
 base64.workspace = true
+include_dir = "0.7"
 
 fastrand = "2"
 

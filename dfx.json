@@ -17,21 +17,17 @@
       "gzip": true,
       "optimize": "cycles",
       "wasm": "./target/wasm32-unknown-unknown/release/backend_impl.wasm",
-      "build": ["./scripts/build-canister.sh backend_impl"],
+      "build": [
+        "pnpm turbo build --filter frontend",
+        "./scripts/compress-assets.sh ./src/frontend/dist/browser",
+        "./scripts/build-canister.sh backend_impl"
+      ],
       "candid": "src/backend/api/backend.did",
+      "frontend": {},
       "declarations": {
         "bindings": ["js", "ts", "did"],
         "output": "./dist"
       }
-    },
-    "frontend": {
-      "dependencies": ["backend", "internet_identity"],
-      "frontend": {
-        "entrypoint": "src/frontend/dist/browser/index.html"
-      },
-      "source": ["src/frontend/dist/browser"],
-      "type": "assets",
-      "build": ["pnpm turbo build --filter frontend"]
     },
     "marketing": {
       "type": "assets",

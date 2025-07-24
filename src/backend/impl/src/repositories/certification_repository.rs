@@ -1,12 +1,11 @@
-use std::cell::RefCell;
-
+use crate::helpers::{cbor_encode, IC_CERTIFICATE_HEADER, NOT_FOUND_PATH, RESPONSE_ONLY_CEL_EXPR};
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
+use ic_asset_certification::{Asset, AssetConfig, AssetRouter};
 use ic_http_certification::{
     HttpCertification, HttpCertificationPath, HttpCertificationTree, HttpCertificationTreeEntry,
-    HttpResponse,
+    HttpRequest, HttpResponse,
 };
-
-use crate::helpers::{cbor_encode, IC_CERTIFICATE_HEADER, NOT_FOUND_PATH, RESPONSE_ONLY_CEL_EXPR};
+use std::{cell::RefCell, rc::Rc};
 
 #[cfg_attr(test, mockall::automock)]
 pub trait CertificationRepository {
@@ -20,6 +19,14 @@ pub trait CertificationRepository {
         responding_tree_path: &str,
         res: HttpResponse<'static>,
     ) -> HttpResponse<'static>;
+
+    fn serve_asset<'a>(&self, req: &HttpRequest<'a>) -> HttpResponse<'static>;
+
+    fn certify_assets<'path>(
+        &self,
+        assets: Vec<Asset<'static, 'path>>,
+        asset_configs: Vec<AssetConfig>,
+    );
 }
 
 pub struct CertificationRepositoryImpl {}
@@ -35,20 +42,20 @@ impl CertificationRepository for CertificationRepositoryImpl {
         let res_tree_path = Self::response_tree_path(request_path);
         let entry = Self::response_entry(&res_tree_path, res);
 
-        STATE.with_borrow_mut(|s| {
-            s.http_tree.insert(&entry);
+        with_http_tree_mut(|http_tree| {
+            http_tree.insert(&entry);
         });
-        Self::set_certified_http_tree();
+        Self::set_certified_data();
     }
 
     fn remove_http_response_certificate(&self, request_path: &str, res: &HttpResponse) {
         let res_tree_path = Self::response_tree_path(request_path);
         let entry = Self::response_entry(&res_tree_path, res);
 
-        STATE.with_borrow_mut(|s| {
-            s.http_tree.delete(&entry);
+        with_http_tree_mut(|http_tree| {
+            http_tree.delete(&entry);
         });
-        Self::set_certified_http_tree();
+        Self::set_certified_data();
     }
 
     fn get_certified_http_response(
@@ -68,6 +75,24 @@ impl CertificationRepository for CertificationRepositoryImpl {
         );
 
         res
+    }
+
+    fn serve_asset(&self, req: &HttpRequest) -> HttpResponse<'static> {
+        with_asset_router(|asset_router| asset_router.serve_asset(&Self::certified_data(), req))
+            .expect("Failed to serve static asset")
+    }
+
+    fn certify_assets<'path>(
+        &self,
+        assets: Vec<Asset<'static, 'path>>,
+        asset_configs: Vec<AssetConfig>,
+    ) {
+        with_asset_router_mut(|asset_router| {
+            asset_router
+                .certify_assets(assets, asset_configs)
+                .expect("Failed to certify assets")
+        });
+        Self::set_certified_data();
     }
 }
 
@@ -101,8 +126,8 @@ impl CertificationRepositoryImpl {
         expr_path: &[String],
     ) {
         let certified_data = Self::certified_data();
-        let witness = STATE.with_borrow(|s| {
-            let witness = s.http_tree.witness(entry, request_url).unwrap();
+        let witness = with_http_tree(|http_tree| {
+            let witness = http_tree.witness(entry, request_url).unwrap();
 
             cbor_encode(&witness)
         });
@@ -119,11 +144,11 @@ impl CertificationRepositoryImpl {
         ));
     }
 
-    fn set_certified_http_tree() {
+    fn set_certified_data() {
         #[cfg(not(test))]
         {
-            STATE.with_borrow(|s| {
-                ic_cdk::api::set_certified_data(&s.http_tree.root_hash());
+            with_http_tree(|http_tree| {
+                ic_cdk::api::set_certified_data(&http_tree.root_hash());
             })
         }
     }
@@ -141,11 +166,35 @@ impl CertificationRepositoryImpl {
     }
 }
 
-#[derive(Default)]
-struct CertificationRepositoryState {
-    http_tree: HttpCertificationTree,
+fn with_http_tree<F, R>(f: F) -> R
+where
+    F: FnOnce(&HttpCertificationTree) -> R,
+{
+    HTTP_TREE.with(|tree| f(&tree.borrow()))
+}
+
+fn with_http_tree_mut<F, R>(f: F) -> R
+where
+    F: FnOnce(&mut HttpCertificationTree) -> R,
+{
+    HTTP_TREE.with(|tree| f(&mut tree.borrow_mut()))
+}
+
+fn with_asset_router<F, R>(f: F) -> R
+where
+    F: FnOnce(&AssetRouter<'static>) -> R,
+{
+    ASSET_ROUTER.with(|router| f(&router.borrow()))
+}
+
+fn with_asset_router_mut<F, R>(f: F) -> R
+where
+    F: FnOnce(&mut AssetRouter<'static>) -> R,
+{
+    ASSET_ROUTER.with(|router| f(&mut router.borrow_mut()))
 }
 
 thread_local! {
-    static STATE: RefCell<CertificationRepositoryState> = RefCell::new(CertificationRepositoryState::default());
+    static HTTP_TREE: Rc<RefCell<HttpCertificationTree>> = Default::default();
+    static ASSET_ROUTER: RefCell<AssetRouter<'static>> = RefCell::new(AssetRouter::with_tree(HTTP_TREE.with(|tree| tree.clone())));
 }

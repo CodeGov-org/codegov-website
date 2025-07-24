@@ -1,4 +1,5 @@
 mod access_control_service;
+mod asset_service;
 #[cfg(feature = "dev")]
 mod dev_service;
 mod http_service;
@@ -11,6 +12,7 @@ mod proposal_service;
 mod user_profile_service;
 
 pub use access_control_service::*;
+pub use asset_service::*;
 #[cfg(feature = "dev")]
 pub use dev_service::*;
 pub use http_service::*;

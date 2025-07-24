@@ -7,6 +7,13 @@ DIDC_VERSION="2024-07-29"
 BIN="$HOME/bin"
 mkdir -p $BIN
 
+# Install compression tools
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  brew install gzip brotli
+else
+  sudo apt-get install -y gzip brotli
+fi
+
 # Install FNM
 echo "****** SYSTEM SETUP: Installing FNM ******"
 curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell --install-dir ~/.fnm
@@ -47,7 +54,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 else
   source "$HOME/.local/share/dfx/env"
 fi
-
 
 echo "****** SYSTEM SETUP: DFX version ******"
 dfx --version
